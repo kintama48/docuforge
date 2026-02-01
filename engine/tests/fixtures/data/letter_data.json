@@ -1,0 +1,12 @@
+{
+  "date": "January 15, 2024",
+  "recipient": {
+    "name": "John Smith",
+    "address": "456 Oak Street, Boston, MA 02101"
+  },
+  "sender": {
+    "name": "Jane Doe",
+    "title": "CEO, DocuForge Inc."
+  },
+  "body": "Thank you for your recent inquiry about our services. We are pleased to inform you that we can accommodate your request for a custom solution.\n\nOur team will be in touch within the next 48 hours to discuss the details of your project and provide a detailed proposal.\n\nWe look forward to working with you."
+}

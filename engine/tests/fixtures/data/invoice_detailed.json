@@ -1,0 +1,120 @@
+{
+  "invoice_number": "INV-2024-0142",
+  "invoice_date": "January 15, 2024",
+  "due_date": "February 14, 2024",
+  "po_number": "PO-78234",
+  "company": {
+    "name": "TechFlow Solutions Inc.",
+    "address": "1234 Innovation Drive, Suite 500",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94107",
+    "phone": "(415) 555-0198",
+    "email": "billing@techflow.io",
+    "website": "www.techflow.io"
+  },
+  "customer": {
+    "name": "Sarah Johnson",
+    "company": "Global Enterprises LLC",
+    "address": "5678 Commerce Boulevard",
+    "city": "New York",
+    "state": "NY",
+    "zip": "10001",
+    "email": "sarah.johnson@globalent.com"
+  },
+  "items": [
+    {
+      "name": "Enterprise Software License",
+      "description": "Annual subscription for up to 100 users",
+      "quantity": 1,
+      "unit_price": 4999.99
+    },
+    {
+      "name": "Professional Services - Setup",
+      "description": "Initial configuration and deployment",
+      "quantity": 8,
+      "unit_price": 175.00
+    },
+    {
+      "name": "Training Session - On-site",
+      "description": "Full-day training for team leads",
+      "quantity": 2,
+      "unit_price": 1500.00
+    },
+    {
+      "name": "Cloud Storage Add-on",
+      "description": "Additional 500GB cloud storage",
+      "quantity": 5,
+      "unit_price": 29.99
+    },
+    {
+      "name": "API Integration Module",
+      "description": "REST API access with premium support",
+      "quantity": 1,
+      "unit_price": 799.00
+    },
+    {
+      "name": "Custom Report Builder",
+      "description": "Advanced reporting and analytics module",
+      "quantity": 1,
+      "unit_price": 599.00
+    },
+    {
+      "name": "Mobile App License",
+      "description": "iOS and Android app access for all users",
+      "quantity": 1,
+      "unit_price": 399.00
+    },
+    {
+      "name": "Priority Support Package",
+      "description": "24/7 phone and email support",
+      "quantity": 1,
+      "unit_price": 1200.00
+    },
+    {
+      "name": "Data Migration Service",
+      "description": "Migration from legacy system",
+      "quantity": 1,
+      "unit_price": 2500.00
+    },
+    {
+      "name": "Security Audit Add-on",
+      "description": "Quarterly security assessment and report",
+      "quantity": 4,
+      "unit_price": 350.00
+    },
+    {
+      "name": "Backup Solution",
+      "description": "Daily automated backup with 30-day retention",
+      "quantity": 12,
+      "unit_price": 49.99
+    },
+    {
+      "name": "SSO Integration",
+      "description": "Single Sign-On with SAML/OAuth support",
+      "quantity": 1,
+      "unit_price": 450.00
+    }
+  ],
+  "subtotal": 17896.83,
+  "discount_percent": 10,
+  "discount_amount": 1789.68,
+  "tax_rate": 8.25,
+  "tax_amount": 1328.84,
+  "shipping": 0,
+  "total": 17435.99,
+  "payment_terms": "Net 30. A 2% late fee will be applied to invoices not paid within 30 days of the due date.",
+  "payment_methods": [
+    "Bank Transfer (ACH)",
+    "Wire Transfer",
+    "Credit Card",
+    "Check"
+  ],
+  "bank_details": {
+    "bank_name": "First National Bank",
+    "account_name": "TechFlow Solutions Inc.",
+    "account_number": "****4521",
+    "routing_number": "021000021"
+  },
+  "notes": "Thank you for choosing TechFlow Solutions. This invoice includes your annual subscription renewal and requested add-on services. Please contact your account manager with any questions."
+}

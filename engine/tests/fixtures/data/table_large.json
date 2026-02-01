@@ -1,0 +1,129 @@
+{
+  "wide_table_data": [
+    {"id": 1, "col1": 145, "col2": 892, "col3": 234, "col4": 567, "col5": 890, "col6": 123, "col7": 456, "col8": 789, "col9": 321, "col10": 654},
+    {"id": 2, "col1": 278, "col2": 445, "col3": 667, "col4": 112, "col5": 334, "col6": 556, "col7": 778, "col8": 990, "col9": 213, "col10": 435},
+    {"id": 3, "col1": 912, "col2": 134, "col3": 356, "col4": 578, "col5": 790, "col6": 912, "col7": 134, "col8": 356, "col9": 578, "col10": 790},
+    {"id": 4, "col1": 654, "col2": 321, "col3": 987, "col4": 654, "col5": 321, "col6": 987, "col7": 654, "col8": 321, "col9": 987, "col10": 654},
+    {"id": 5, "col1": 111, "col2": 222, "col3": 333, "col4": 444, "col5": 555, "col6": 666, "col7": 777, "col8": 888, "col9": 999, "col10": 100}
+  ],
+  "long_table_data": [
+    {"name": "Wireless Bluetooth Headphones Pro", "price": 149.99, "quantity": 234, "status": "active"},
+    {"name": "USB-C Hub 7-in-1 Adapter", "price": 49.99, "quantity": 567, "status": "active"},
+    {"name": "Mechanical Keyboard RGB", "price": 129.99, "quantity": 189, "status": "active"},
+    {"name": "4K Webcam with Microphone", "price": 89.99, "quantity": 345, "status": "pending"},
+    {"name": "Ergonomic Mouse Wireless", "price": 59.99, "quantity": 456, "status": "active"},
+    {"name": "Monitor Stand with USB Ports", "price": 79.99, "quantity": 123, "status": "active"},
+    {"name": "Laptop Cooling Pad 17 inch", "price": 39.99, "quantity": 678, "status": "pending"},
+    {"name": "External SSD 1TB USB 3.2", "price": 119.99, "quantity": 234, "status": "active"},
+    {"name": "Desk Lamp LED Adjustable", "price": 44.99, "quantity": 890, "status": "active"},
+    {"name": "Cable Management Kit", "price": 24.99, "quantity": 1234, "status": "active"},
+    {"name": "Wireless Charging Pad Fast", "price": 34.99, "quantity": 567, "status": "inactive"},
+    {"name": "Noise Cancelling Earbuds", "price": 199.99, "quantity": 145, "status": "active"},
+    {"name": "Smart Power Strip WiFi", "price": 54.99, "quantity": 289, "status": "active"},
+    {"name": "Document Scanner Portable", "price": 179.99, "quantity": 78, "status": "pending"},
+    {"name": "Bluetooth Speaker Waterproof", "price": 69.99, "quantity": 423, "status": "active"},
+    {"name": "Graphics Tablet 10 inch", "price": 249.99, "quantity": 56, "status": "active"},
+    {"name": "USB Microphone Condenser", "price": 99.99, "quantity": 312, "status": "active"},
+    {"name": "Webcam Cover Slide 3-Pack", "price": 9.99, "quantity": 2345, "status": "active"},
+    {"name": "HDMI Cable 4K 6ft", "price": 14.99, "quantity": 1567, "status": "active"},
+    {"name": "Portable Monitor 15.6 inch", "price": 299.99, "quantity": 89, "status": "pending"},
+    {"name": "Keyboard Wrist Rest Gel", "price": 19.99, "quantity": 678, "status": "active"},
+    {"name": "Mouse Pad Extended XXL", "price": 29.99, "quantity": 456, "status": "active"},
+    {"name": "USB Flash Drive 128GB", "price": 18.99, "quantity": 890, "status": "active"},
+    {"name": "Ethernet Cable Cat8 25ft", "price": 24.99, "quantity": 345, "status": "active"},
+    {"name": "Screen Cleaning Kit", "price": 12.99, "quantity": 1123, "status": "inactive"}
+  ],
+  "varying_width_data": [
+    {"id": 1, "short": "ABC", "long_description": "This is a very long description that contains multiple words and should wrap to multiple lines in the table cell to test how the layout handles varying content lengths.", "amount": 1234.56},
+    {"id": 2, "short": "XYZ", "long_description": "Short desc.", "amount": 78.90},
+    {"id": 3, "short": "123", "long_description": "Medium length description with some details about the item in question and its various properties.", "amount": 456.78},
+    {"id": 4, "short": "QRS", "long_description": "Another lengthy description that goes on and on, providing extensive details about every aspect of this particular item including specifications, features, and usage guidelines.", "amount": 9012.34},
+    {"id": 5, "short": "TUV", "long_description": "Brief.", "amount": 5.67}
+  ],
+  "nested_data": [
+    {
+      "name": "Hardware",
+      "description": "Computer hardware components and peripherals",
+      "items": [
+        {"label": "CPU", "value": 45},
+        {"label": "Memory", "value": 128},
+        {"label": "Storage", "value": 512},
+        {"label": "GPU", "value": 12}
+      ]
+    },
+    {
+      "name": "Software",
+      "description": "Operating systems and applications",
+      "items": [
+        {"label": "OS Licenses", "value": 250},
+        {"label": "Office Suite", "value": 180},
+        {"label": "Dev Tools", "value": 75},
+        {"label": "Security", "value": 40}
+      ]
+    },
+    {
+      "name": "Services",
+      "description": "Professional and managed services",
+      "items": [
+        {"label": "Support", "value": 24},
+        {"label": "Consulting", "value": 160},
+        {"label": "Training", "value": 40}
+      ]
+    }
+  ],
+  "complex_cells": [
+    {
+      "type": "Premium",
+      "title": "Enterprise Cloud Platform",
+      "description": "Full-featured cloud infrastructure with advanced security, compliance, and enterprise support.",
+      "tags": ["Cloud", "Enterprise", "Security", "24/7 Support"],
+      "rating": 5
+    },
+    {
+      "type": "Standard",
+      "title": "Professional Development Suite",
+      "description": "Comprehensive development tools for modern software engineering teams.",
+      "tags": ["DevOps", "CI/CD", "Testing"],
+      "rating": 4
+    },
+    {
+      "type": "Basic",
+      "title": "Starter Analytics Package",
+      "description": "Essential analytics and reporting tools for small teams.",
+      "tags": ["Analytics", "Reporting"],
+      "rating": 3
+    },
+    {
+      "type": "Premium",
+      "title": "AI/ML Platform",
+      "description": "End-to-end machine learning platform with automated model training and deployment.",
+      "tags": ["AI", "ML", "AutoML", "GPU", "Enterprise"],
+      "rating": 5
+    },
+    {
+      "type": "Standard",
+      "title": "Data Integration Hub",
+      "description": "Connect and synchronize data across multiple sources and destinations.",
+      "tags": ["ETL", "Integration"],
+      "rating": 4
+    }
+  ],
+  "form_data": {
+    "title": "Customer Information Form",
+    "name": "John Smith",
+    "date": "January 15, 2024",
+    "field1": "Value A",
+    "field2": "Value B",
+    "address": "123 Main Street, Suite 456, Anytown, ST 12345",
+    "notes": "This customer has been with us since 2019. Preferred communication method is email. VIP status approved by regional manager on 2023-06-15."
+  },
+  "empty_table_data": [],
+  "numeric_data": [
+    {"description": "Software License - Annual", "quantity": 25, "unit_price": 199.99},
+    {"description": "Support Package - Premium", "quantity": 1, "unit_price": 4999.00},
+    {"description": "Training Sessions - On-site", "quantity": 3, "unit_price": 1500.00},
+    {"description": "Custom Development - Hours", "quantity": 40, "unit_price": 175.00},
+    {"description": "Cloud Storage - 100GB/month", "quantity": 12, "unit_price": 9.99},
+    {"description": "API Calls - 1M bundle", "quantity": 5, "unit_price": 49.99}
+  ]
+}

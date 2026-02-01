@@ -1,0 +1,53 @@
+{
+  "document": {
+    "id": "DOC-2024-00847",
+    "title": "Complex Layout Test Document",
+    "subtitle": "Demonstrating Advanced Typst Layout Capabilities",
+    "company": "DocuForge Inc.",
+    "author": "Layout Test Suite",
+    "department": "Quality Assurance",
+    "date": "January 15, 2024",
+    "version": "1.0",
+    "confidential": false,
+    "draft": false,
+    "contact_email": "support@docuforge.io"
+  },
+  "columns": {
+    "left_content": "This is the content for the left column in a two-column layout. It demonstrates how text flows in a narrow column and how word wrapping works with justified text alignment.",
+    "left_items": [
+      "First item in left column",
+      "Second item with more text",
+      "Third item",
+      "Fourth item in list"
+    ],
+    "right_content": "This is the content for the right column. It should appear side by side with the left column content, creating a newspaper-style layout that is commonly used in reports and brochures.",
+    "right_items": [
+      "Right column item 1",
+      "Right column item 2",
+      "Right column item 3"
+    ]
+  },
+  "three_columns": [
+    "First column: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "Second column: Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "Third column: Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+  ],
+  "grid_items": [
+    {"title": "Item 1", "description": "Description for the first grid item."},
+    {"title": "Item 2", "description": "Description for the second grid item with slightly more text."},
+    {"title": "Item 3", "description": "Third item description."},
+    {"title": "Item 4", "description": "Fourth item in our grid layout."},
+    {"title": "Item 5", "description": "Fifth item description."},
+    {"title": "Item 6", "description": "Sixth and final grid item."}
+  ],
+  "asymmetric": {
+    "main_content": "This is the main content area which takes up two-thirds of the available width. It contains the primary content that readers should focus on. The larger space allows for more detailed explanations and longer paragraphs.",
+    "sidebar_items": [
+      "Quick Link 1",
+      "Quick Link 2",
+      "Quick Link 3",
+      "Related Topic",
+      "See Also"
+    ]
+  }
+}

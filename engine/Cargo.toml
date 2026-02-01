@@ -18,6 +18,10 @@ typst = "0.12"
 typst-pdf = "0.12"
 comemo = "0.4"
 
+# OpenAPI documentation
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "8", features = ["axum"] }
+
 # Supporting
 base64 = "0.22"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }

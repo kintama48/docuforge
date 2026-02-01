@@ -11,7 +11,8 @@ use typst::World;
 use crate::cache::asset_cache::AssetCache;
 use crate::engine::fonts::FontLoader;
 use crate::engine::world::DocuForgeWorld;
-use crate::error::{EngineError, ErrorSpan};
+use crate::error::EngineError;
+use crate::models::response::ErrorSpan;
 use crate::models::request::RenderRequest;
 
 /// Compilation orchestrator.

@@ -3,15 +3,8 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use serde::Serialize;
 use thiserror::Error;
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ErrorSpan {
-    pub file: String,
-    pub line: u32,
-    pub column: u32,
-}
+use crate::models::response::{ErrorResponse, ErrorSpan};
 
 #[derive(Debug, Error)]
 pub enum EngineError {
@@ -33,16 +26,6 @@ pub enum EngineError {
 
     #[error("Internal error: {0}")]
     Internal(String),
-}
-
-#[derive(Debug, Serialize)]
-struct ErrorResponse {
-    error: String,
-    message: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    span: Option<ErrorSpan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    hint: Option<String>,
 }
 
 impl IntoResponse for EngineError {

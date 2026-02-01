@@ -1,0 +1,175 @@
+{
+  "name": "Alexandra Chen",
+  "title": "Senior Software Architect",
+  "contact": {
+    "email": "alexandra.chen@email.com",
+    "phone": "(555) 123-4567",
+    "location": "San Francisco, CA",
+    "linkedin": "linkedin.com/in/alexandrachen",
+    "github": "github.com/achen-dev",
+    "website": "alexchen.dev"
+  },
+  "summary": "Results-driven software architect with 12+ years of experience designing and implementing scalable distributed systems. Proven track record of leading cross-functional teams to deliver mission-critical applications serving millions of users. Expert in cloud-native architectures, microservices, and modern DevOps practices. Passionate about mentoring engineers and fostering a culture of technical excellence.",
+  "experience": [
+    {
+      "title": "Senior Software Architect",
+      "company": "TechCorp Innovation Labs",
+      "location": "San Francisco, CA",
+      "dates": "2021 - Present",
+      "achievements": [
+        "Designed and led implementation of event-driven architecture serving 50M+ daily transactions with 99.99% uptime",
+        "Reduced infrastructure costs by 40% through strategic cloud optimization and serverless migration",
+        "Established architectural review process adopted across 8 engineering teams (120+ engineers)",
+        "Mentored 15 senior engineers, with 5 promoted to staff/principal roles",
+        "Authored company-wide technical standards and best practices documentation"
+      ]
+    },
+    {
+      "title": "Staff Software Engineer",
+      "company": "DataScale Systems",
+      "location": "Seattle, WA",
+      "dates": "2017 - 2021",
+      "achievements": [
+        "Led rewrite of core data pipeline, improving throughput by 300% and reducing latency by 65%",
+        "Designed real-time analytics platform processing 10TB+ daily using Kafka and Spark",
+        "Built and managed team of 8 engineers across 3 time zones",
+        "Implemented CI/CD pipeline reducing deployment time from days to hours",
+        "Received \"Technical Excellence Award\" for innovative caching solution"
+      ]
+    },
+    {
+      "title": "Senior Software Engineer",
+      "company": "CloudFirst Inc.",
+      "location": "Portland, OR",
+      "dates": "2014 - 2017",
+      "achievements": [
+        "Developed microservices architecture replacing monolithic application, enabling 10x faster feature delivery",
+        "Created automated testing framework increasing code coverage from 45% to 92%",
+        "Led database optimization initiative reducing query times by 75%",
+        "Collaborated with product team to define technical roadmap aligned with business goals"
+      ]
+    },
+    {
+      "title": "Software Engineer",
+      "company": "StartupHub Technologies",
+      "location": "San Francisco, CA",
+      "dates": "2012 - 2014",
+      "achievements": [
+        "Full-stack development of customer-facing web application using Python/Django and React",
+        "Implemented RESTful APIs consumed by mobile applications",
+        "Participated in on-call rotation and incident response procedures"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Master of Science in Computer Science",
+      "institution": "Stanford University",
+      "location": "Stanford, CA",
+      "dates": "2010 - 2012",
+      "details": "Specialization in Distributed Systems. Thesis: \"Adaptive Load Balancing in Heterogeneous Cloud Environments\""
+    },
+    {
+      "degree": "Bachelor of Science in Computer Engineering",
+      "institution": "University of California, Berkeley",
+      "location": "Berkeley, CA",
+      "dates": "2006 - 2010",
+      "details": "Magna Cum Laude. Dean's List all semesters. ACM Programming Competition finalist."
+    }
+  ],
+  "skills": {
+    "technical": [
+      {
+        "category": "Languages",
+        "items": ["Python", "Go", "Java", "TypeScript", "Rust", "SQL"]
+      },
+      {
+        "category": "Cloud & Infrastructure",
+        "items": ["AWS", "GCP", "Kubernetes", "Terraform", "Docker"]
+      },
+      {
+        "category": "Data Systems",
+        "items": ["PostgreSQL", "Redis", "Kafka", "Elasticsearch", "Spark"]
+      },
+      {
+        "category": "Architecture",
+        "items": ["Microservices", "Event-Driven", "Domain-Driven Design", "CQRS"]
+      }
+    ],
+    "soft": [
+      "Technical Leadership",
+      "System Design",
+      "Cross-functional Collaboration",
+      "Mentoring & Coaching",
+      "Strategic Planning",
+      "Stakeholder Communication"
+    ],
+    "languages": [
+      {
+        "language": "English",
+        "proficiency": "Native"
+      },
+      {
+        "language": "Mandarin Chinese",
+        "proficiency": "Native"
+      },
+      {
+        "language": "Spanish",
+        "proficiency": "Conversational"
+      }
+    ]
+  },
+  "certifications": [
+    {
+      "name": "AWS Solutions Architect Professional",
+      "issuer": "Amazon Web Services",
+      "date": "2023"
+    },
+    {
+      "name": "Google Cloud Professional Architect",
+      "issuer": "Google Cloud",
+      "date": "2022"
+    },
+    {
+      "name": "Certified Kubernetes Administrator",
+      "issuer": "CNCF",
+      "date": "2021"
+    },
+    {
+      "name": "MongoDB Certified DBA",
+      "issuer": "MongoDB Inc.",
+      "date": "2020"
+    }
+  ],
+  "projects": [
+    {
+      "name": "OpenTrace",
+      "url": "github.com/opentrace",
+      "description": "Open-source distributed tracing library for Go applications. 2.5k+ GitHub stars and adopted by multiple Fortune 500 companies.",
+      "technologies": ["Go", "OpenTelemetry", "gRPC", "Protocol Buffers"]
+    },
+    {
+      "name": "DataFlow Visualizer",
+      "url": "dataflow-viz.io",
+      "description": "Real-time visualization tool for Kafka data pipelines. Featured in Confluent blog and Hacker News front page.",
+      "technologies": ["TypeScript", "React", "D3.js", "Kafka"]
+    }
+  ],
+  "awards": [
+    {
+      "name": "Technical Excellence Award",
+      "issuer": "DataScale Systems",
+      "year": "2020"
+    },
+    {
+      "name": "Patent Holder - US Patent #10,XXX,XXX",
+      "issuer": "USPTO",
+      "year": "2019"
+    },
+    {
+      "name": "Speaker, KubeCon North America",
+      "issuer": "CNCF",
+      "year": "2022"
+    }
+  ]
+}

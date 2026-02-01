@@ -250,3 +250,103 @@ async fn test_malformed_json() {
     // Axum returns 400 for JSON parse errors
     response.assert_status_bad_request();
 }
+
+// =============================================================================
+// Comprehensive data substitution tests
+// =============================================================================
+
+#[tokio::test]
+async fn test_render_with_nested_data() {
+    let server = setup_test_app();
+
+    let response = server
+        .post("/render")
+        .json(&json!({
+            "template": {
+                "main": "main.typ",
+                "files": {
+                    "main.typ": "#let d = sys.inputs\n= #d.customer.name\nAddress: #d.customer.address"
+                }
+            },
+            "data": {
+                "customer": {
+                    "name": "John Doe",
+                    "address": "123 Main St"
+                }
+            }
+        }))
+        .await;
+
+    response.assert_status_ok();
+    let bytes = response.as_bytes();
+    assert!(bytes.starts_with(b"%PDF-"));
+    // Should produce a reasonable PDF (more than just headers)
+    assert!(bytes.len() > 1000, "PDF seems too small: {} bytes", bytes.len());
+}
+
+#[tokio::test]
+async fn test_render_with_array_data() {
+    let server = setup_test_app();
+
+    let response = server
+        .post("/render")
+        .json(&json!({
+            "template": {
+                "main": "main.typ",
+                "files": {
+                    "main.typ": "#let items = sys.inputs.items\n#for item in items [\n  - #item\n]"
+                }
+            },
+            "data": {
+                "items": ["Apple", "Banana", "Cherry"]
+            }
+        }))
+        .await;
+
+    response.assert_status_ok();
+    assert!(response.as_bytes().starts_with(b"%PDF-"));
+}
+
+#[tokio::test]
+async fn test_render_multifile() {
+    let server = setup_test_app();
+
+    let response = server
+        .post("/render")
+        .json(&json!({
+            "template": {
+                "main": "main.typ",
+                "files": {
+                    "main.typ": "#import \"utils.typ\": greet\n#greet(\"World\")",
+                    "utils.typ": "#let greet(name) = [Hello, #name!]"
+                }
+            }
+        }))
+        .await;
+
+    response.assert_status_ok();
+    assert!(response.as_bytes().starts_with(b"%PDF-"));
+}
+
+#[tokio::test]
+async fn test_render_formatted_document() {
+    let server = setup_test_app();
+
+    let response = server
+        .post("/render")
+        .json(&json!({
+            "template": {
+                "main": "main.typ",
+                "files": {
+                    "main.typ": "= Document Title\n\n== Section 1\n\nThis is *bold* and _italic_ text.\n\n- Item 1\n- Item 2\n\n#table(\n  columns: 2,\n  [A], [B],\n  [1], [2]\n)"
+                }
+            }
+        }))
+        .await;
+
+    response.assert_status_ok();
+    let bytes = response.as_bytes();
+    assert!(bytes.starts_with(b"%PDF-"));
+    // A formatted document with table should be substantial
+    assert!(bytes.len() > 2000, "PDF seems too small for formatted document");
+}

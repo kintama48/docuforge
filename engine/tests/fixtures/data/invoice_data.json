@@ -1,0 +1,14 @@
+{
+  "invoice_id": "INV-2024-001",
+  "date": "2024-01-15",
+  "customer": {
+    "name": "Acme Corporation",
+    "address": "123 Business Ave, Suite 100, New York, NY 10001"
+  },
+  "items": [
+    { "description": "Widget A - Premium", "price": 29.99 },
+    { "description": "Widget B - Standard", "price": 19.99 },
+    { "description": "Service Fee", "price": 10.00 }
+  ],
+  "total": 59.98
+}

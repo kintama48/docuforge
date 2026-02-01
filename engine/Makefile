@@ -6,7 +6,8 @@ help:
 	@echo ""
 	@echo "  make build       - Build release binary"
 	@echo "  make run         - Run the server (release mode)"
-	@echo "  make dev         - Run the server (debug mode, auto-reload with cargo-watch)"
+	@echo "  make dev         - Run the server (debug mode)"
+	@echo "  make watch       - Run with auto-reload (installs cargo-watch if needed)"
 	@echo "  make test        - Run all tests"
 	@echo "  make check       - Run cargo check"
 	@echo "  make fmt         - Format code"
@@ -29,8 +30,12 @@ build:
 run: build
 	./target/release/docuforge-engine
 
-# Development mode with auto-reload (requires cargo-watch)
+# Development mode - simple debug build and run
 dev:
+	cargo run
+
+# Development mode with auto-reload (requires cargo-watch)
+watch:
 	@command -v cargo-watch >/dev/null 2>&1 || { echo "Installing cargo-watch..."; cargo install cargo-watch; }
 	cargo watch -x run
 
@@ -58,22 +63,17 @@ clean:
 FONT_DIR := assets/fonts
 fonts:
 	@mkdir -p $(FONT_DIR)
+	@rm -rf /tmp/docuforge-fonts && mkdir -p /tmp/docuforge-fonts
 	@echo "Downloading Inter..."
-	@curl -sL "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/inter.zip
-	@unzip -q -o /tmp/inter.zip -d /tmp/inter
-	@cp /tmp/inter/Inter-4.0/InterVariable.ttf $(FONT_DIR)/
-	@cp /tmp/inter/Inter-4.0/InterVariable-Italic.ttf $(FONT_DIR)/
-	@rm -rf /tmp/inter /tmp/inter.zip
+	@curl -sL "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/docuforge-fonts/inter.zip
+	@cd /tmp/docuforge-fonts && unzip -q -o inter.zip && cp InterVariable.ttf InterVariable-Italic.ttf $(CURDIR)/$(FONT_DIR)/
 	@echo "Downloading Roboto..."
-	@curl -sL "https://github.com/googlefonts/roboto/releases/download/v2.138/roboto-unhinted.zip" -o /tmp/roboto.zip
-	@unzip -q -o /tmp/roboto.zip -d /tmp/roboto
-	@cp /tmp/roboto/*.ttf $(FONT_DIR)/
-	@rm -rf /tmp/roboto /tmp/roboto.zip
+	@curl -sL "https://github.com/googlefonts/roboto/releases/download/v2.138/roboto-unhinted.zip" -o /tmp/docuforge-fonts/roboto.zip
+	@cd /tmp/docuforge-fonts && unzip -q -o roboto.zip && cp Roboto*.ttf $(CURDIR)/$(FONT_DIR)/
 	@echo "Downloading JetBrains Mono..."
-	@curl -sL "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip" -o /tmp/jbmono.zip
-	@unzip -q -o /tmp/jbmono.zip -d /tmp/jbmono
-	@cp /tmp/jbmono/fonts/ttf/*.ttf $(FONT_DIR)/
-	@rm -rf /tmp/jbmono /tmp/jbmono.zip
+	@curl -sL "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip" -o /tmp/docuforge-fonts/jbmono.zip
+	@cd /tmp/docuforge-fonts && unzip -q -o jbmono.zip && cp fonts/ttf/JetBrainsMono-*.ttf $(CURDIR)/$(FONT_DIR)/
+	@rm -rf /tmp/docuforge-fonts
 	@echo "Fonts installed to $(FONT_DIR):"
 	@ls -la $(FONT_DIR)
 
@@ -91,7 +91,16 @@ curl-health:
 curl-render:
 	@curl -s -X POST http://localhost:3001/render \
 		-H "Content-Type: application/json" \
-		-d '{"template":{"main":"m.typ","files":{"m.typ":"Hello, World!"}}}' \
+		-d '{"template":{"main":"main.typ","files":{"main.typ":"= Hello World\n\nThis is a test document."}}}' \
 		--output /tmp/test.pdf && \
 	echo "PDF saved to /tmp/test.pdf" && \
-	file /tmp/test.pdf
+	file /tmp/test.pdf && \
+	ls -la /tmp/test.pdf
+
+curl-invoice:
+	@curl -s -X POST http://localhost:3001/render \
+		-H "Content-Type: application/json" \
+		-d '{"template":{"main":"main.typ","files":{"main.typ":"#let d = sys.inputs\n= Invoice #d.id\nCustomer: #d.customer\nTotal: $$#d.total"}},"data":{"id":"INV-001","customer":"John Doe","total":199.99}}' \
+		--output /tmp/invoice.pdf && \
+	echo "Invoice saved to /tmp/invoice.pdf" && \
+	file /tmp/invoice.pdf

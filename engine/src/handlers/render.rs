@@ -7,8 +7,23 @@ use axum::{
 
 use crate::error::EngineError;
 use crate::models::request::RenderRequest;
+use crate::models::response::ErrorResponse;
 use crate::server::AppState;
 
+/// Render a Typst template to PDF
+#[utoipa::path(
+    post,
+    path = "/render",
+    request_body = RenderRequest,
+    responses(
+        (status = 200, description = "PDF generated successfully", content_type = "application/pdf"),
+        (status = 400, description = "Template compilation failed", body = ErrorResponse),
+        (status = 422, description = "Invalid request (e.g., missing main file)", body = ErrorResponse),
+        (status = 408, description = "Render timeout exceeded", body = ErrorResponse),
+        (status = 502, description = "Failed to fetch external asset", body = ErrorResponse)
+    ),
+    tag = "Render"
+)]
 pub async fn render(
     State(state): State<AppState>,
     Json(request): Json<RenderRequest>,

@@ -1,0 +1,1 @@
+{"error":"compilation_failed","message":"the character `#` is not valid in code","span":{"file":"main.typ","line":16,"column":17}}

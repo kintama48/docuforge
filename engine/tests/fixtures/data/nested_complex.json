@@ -1,0 +1,205 @@
+{
+  "report": {
+    "id": "RPT-2024-Q4-00142",
+    "title": "Comprehensive Business Intelligence Report",
+    "version": "3.2.1",
+    "generated_date": "2024-12-31",
+    "confidential": true,
+    "period": {
+      "start": "2024-10-01",
+      "end": "2024-12-31"
+    }
+  },
+  "financial": {
+    "revenue": 12547832.45,
+    "expenses": 8923456.78
+  },
+  "departments": [
+    {
+      "name": "Engineering",
+      "status": "active",
+      "employees": {
+        "count": 145,
+        "locations": ["San Francisco", "Seattle", "Austin"]
+      },
+      "budget": {
+        "allocated": 8500000,
+        "spent": 7234567.89
+      },
+      "metrics": {
+        "revenue": 0,
+        "target": 0,
+        "yoy_growth": 0.15
+      },
+      "projects": [
+        {"name": "Platform Modernization", "budget": 2500000, "progress": 0.75, "status": "active"},
+        {"name": "API Gateway 2.0", "budget": 1200000, "progress": 0.90, "status": "active"},
+        {"name": "Mobile App Redesign", "budget": 800000, "progress": 0.45, "status": "pending"}
+      ]
+    },
+    {
+      "name": "Sales",
+      "status": "active",
+      "employees": {
+        "count": 89,
+        "locations": ["New York", "Chicago", "Los Angeles", "Miami"]
+      },
+      "budget": {
+        "allocated": 4200000,
+        "spent": 3890123.45
+      },
+      "metrics": {
+        "revenue": 12547832.45,
+        "target": 11000000,
+        "yoy_growth": 0.23
+      },
+      "projects": [
+        {"name": "Enterprise Expansion", "budget": 500000, "progress": 0.60, "status": "active"},
+        {"name": "CRM Integration", "budget": 350000, "progress": 1.0, "status": "completed"}
+      ]
+    },
+    {
+      "name": "Marketing",
+      "status": "active",
+      "employees": {
+        "count": 42,
+        "locations": ["New York", "San Francisco"]
+      },
+      "budget": {
+        "allocated": 2800000,
+        "spent": 2654321.00
+      },
+      "metrics": {
+        "revenue": 0,
+        "target": 0,
+        "yoy_growth": 0.08
+      },
+      "projects": [
+        {"name": "Brand Refresh", "budget": 450000, "progress": 0.95, "status": "active"},
+        {"name": "Content Strategy 2025", "budget": 200000, "progress": 0.30, "status": "pending"}
+      ]
+    }
+  ],
+  "employees": [
+    {"first_name": "Sarah", "last_name": "Johnson", "department": "Engineering", "title": "VP of Engineering", "salary": 285000, "status": "active"},
+    {"first_name": "Michael", "last_name": "Chen", "department": "Engineering", "title": "Staff Engineer", "salary": 195000, "status": "active"},
+    {"first_name": "Emily", "last_name": "Rodriguez", "department": "Sales", "title": "Director of Sales", "salary": 175000, "status": "active"},
+    {"first_name": "James", "last_name": "Williams", "department": "Sales", "title": "Account Executive", "salary": 95000, "status": "active"},
+    {"first_name": "Amanda", "last_name": "Thompson", "department": "Marketing", "title": "CMO", "salary": 265000, "status": "active"},
+    {"first_name": "David", "last_name": "Kim", "department": "Engineering", "title": "Senior Engineer", "salary": 165000, "status": "pending"},
+    {"first_name": "Jennifer", "last_name": "Lee", "department": "Sales", "title": "Sales Manager", "salary": 125000, "status": "active"},
+    {"first_name": "Robert", "last_name": "Brown", "department": "Engineering", "title": "DevOps Lead", "salary": 175000, "status": "active"},
+    {"first_name": "Lisa", "last_name": "Garcia", "department": "Marketing", "title": "Content Manager", "salary": 95000, "status": "active"},
+    {"first_name": "Kevin", "last_name": "Martinez", "department": "Engineering", "title": "Junior Engineer", "salary": 85000, "status": "inactive"}
+  ],
+  "statistics": {
+    "sales": {
+      "total": 15234,
+      "average_order": 823.45,
+      "largest_order": 125000.00,
+      "smallest_order": 49.99,
+      "median_order": 567.89,
+      "std_deviation": 1234.56
+    },
+    "customers": {
+      "total": 4521,
+      "new": 892,
+      "returning": 3629,
+      "churn_rate": 0.034,
+      "nps_score": 72,
+      "satisfaction": 0.89
+    }
+  },
+  "monthly_data": [
+    {"month": "October", "year": 2024, "revenue": 3845123.45, "expenses": 2734567.89, "transactions": 4521, "notes": "Strong start to Q4"},
+    {"month": "November", "year": 2024, "revenue": 4123456.78, "expenses": 2945678.90, "transactions": 4892, "notes": "Black Friday boost"},
+    {"month": "December", "year": 2024, "revenue": 4579252.22, "expenses": 3243209.99, "transactions": 5234, "notes": null}
+  ],
+  "products": {
+    "categories": [
+      {
+        "name": "Software",
+        "description": "Enterprise software solutions",
+        "subcategories": [
+          {
+            "name": "Cloud Services",
+            "products": [
+              {"sku": "SW-CLD-001", "name": "Cloud Platform Basic", "price": 99.99, "original_price": 99.99, "stock": 9999, "status": "active", "on_sale": false},
+              {"sku": "SW-CLD-002", "name": "Cloud Platform Pro", "price": 299.99, "original_price": 349.99, "stock": 9999, "status": "active", "on_sale": true},
+              {"sku": "SW-CLD-003", "name": "Cloud Platform Enterprise", "price": 999.99, "original_price": 999.99, "stock": 9999, "status": "active", "on_sale": false}
+            ]
+          },
+          {
+            "name": "Security Tools",
+            "products": [
+              {"sku": "SW-SEC-001", "name": "Firewall Suite", "price": 199.99, "original_price": 249.99, "stock": 5, "status": "active", "on_sale": true},
+              {"sku": "SW-SEC-002", "name": "Identity Manager", "price": 149.99, "original_price": 149.99, "stock": 9999, "status": "active", "on_sale": false},
+              {"sku": "SW-SEC-003", "name": "Vulnerability Scanner", "price": 399.99, "original_price": 399.99, "stock": 0, "status": "inactive", "on_sale": false}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Hardware",
+        "description": "Network and computing hardware",
+        "subcategories": [
+          {
+            "name": "Servers",
+            "products": [
+              {"sku": "HW-SRV-001", "name": "Rack Server 1U", "price": 2499.99, "original_price": 2499.99, "stock": 23, "status": "active", "on_sale": false},
+              {"sku": "HW-SRV-002", "name": "Rack Server 2U", "price": 4999.99, "original_price": 5499.99, "stock": 8, "status": "active", "on_sale": true},
+              {"sku": "HW-SRV-003", "name": "Blade Server Chassis", "price": 12999.99, "original_price": 12999.99, "stock": 3, "status": "pending", "on_sale": false}
+            ]
+          },
+          {
+            "name": "Networking",
+            "products": [
+              {"sku": "HW-NET-001", "name": "48-Port Switch", "price": 899.99, "original_price": 899.99, "stock": 45, "status": "active", "on_sale": false},
+              {"sku": "HW-NET-002", "name": "Enterprise Router", "price": 1499.99, "original_price": 1799.99, "stock": 12, "status": "active", "on_sale": true}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Services",
+        "description": "Professional and managed services",
+        "subcategories": [
+          {
+            "name": "Consulting",
+            "products": [
+              {"sku": "SV-CON-001", "name": "Architecture Review", "price": 5000.00, "original_price": 5000.00, "stock": 9999, "status": "active", "on_sale": false},
+              {"sku": "SV-CON-002", "name": "Security Audit", "price": 7500.00, "original_price": 7500.00, "stock": 9999, "status": "active", "on_sale": false},
+              {"sku": "SV-CON-003", "name": "Performance Optimization", "price": 3500.00, "original_price": 4000.00, "stock": 9999, "status": "active", "on_sale": true}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "special_characters": [
+    {"type": "Currency", "content": "$1,234.56 | EUR 999.99 | GBP 750.00 | JPY 150,000"},
+    {"type": "Quotes", "content": "He said, \"Hello, World!\" and she replied, 'That's nice.'"},
+    {"type": "Ampersand", "content": "Johnson & Johnson, AT&T, Dolce & Gabbana"},
+    {"type": "Angle Brackets", "content": "Use <tag> for HTML elements, value > 100, price < 50"},
+    {"type": "Percent", "content": "Growth: 15.5%, Discount: 20%, Tax: 8.25%"},
+    {"type": "Unicode", "content": "Cafe, Resume, Naive, Expose, Cliche"},
+    {"type": "Math Symbols", "content": "+ - * / = != < > <= >= +/- x"},
+    {"type": "Punctuation", "content": "Hello... How are you? Great! Yes/No; A, B, C: Done."},
+    {"type": "Mixed", "content": "@user #hashtag $variable %placeholder &reference *star _underscore"}
+  ],
+  "include_appendix": true,
+  "appendices": [
+    {
+      "title": "Glossary of Terms",
+      "content": "YoY: Year over Year comparison. NPS: Net Promoter Score, a metric for customer loyalty. Churn Rate: Percentage of customers who stop using the service over a given period. ARR: Annual Recurring Revenue."
+    },
+    {
+      "title": "Data Collection Methodology",
+      "content": "All financial data is collected from our ERP system and reconciled monthly with bank statements. Customer metrics are derived from our CRM platform with daily automated updates. Employee data is synchronized with our HRIS system."
+    },
+    {
+      "title": "Contact Information",
+      "content": "For questions about this report, contact the Business Intelligence team at bi-team@company.com or extension 4521. Report generation is automated via the DocuForge platform."
+    }
+  ]
+}

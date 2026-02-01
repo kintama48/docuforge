@@ -1,0 +1,394 @@
+openapi: 3.1.0
+info:
+  title: DocuForge Engine API
+  description: |
+    A high-performance PDF rendering engine powered by Typst.
+
+    DocuForge Engine accepts Typst templates with JSON data and produces PDF documents.
+    It's designed as a "dumb pipe" - no state, no storage, just compilation.
+
+    ## Quick Start
+
+    ```bash
+    curl -X POST http://localhost:3001/render \
+      -H "Content-Type: application/json" \
+      -d '{
+        "template": {
+          "main": "main.typ",
+          "files": {"main.typ": "Hello, World!"}
+        }
+      }' --output document.pdf
+    ```
+
+    ## Template Language
+
+    Templates use [Typst](https://typst.app/docs), a modern typesetting language.
+    Data is injected via `sys.inputs`:
+
+    ```typst
+    #let data = sys.inputs
+    Hello, #data.name!
+    ```
+  version: 0.1.0
+  license:
+    name: MIT
+  contact:
+    name: DocuForge Team
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Returns server health status, version, and metrics.
+      operationId: getHealth
+      tags:
+        - System
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: healthy
+                version: "0.1.0"
+                fonts_loaded: 38
+                uptime_seconds: 3600
+
+  /render:
+    post:
+      summary: Render PDF
+      description: |
+        Compiles a Typst template with optional data and assets into a PDF document.
+
+        ## Template Structure
+
+        The `template` object contains:
+        - `main`: The entry point file name
+        - `files`: A map of filename → Typst source code
+
+        ## Data Injection
+
+        JSON data is available in templates via `sys.inputs`:
+
+        ```typst
+        #let d = sys.inputs
+        Name: #d.user.name
+        Items: #for item in d.items [- #item]
+        ```
+
+        ## Assets
+
+        Images and fonts can be provided as:
+        - Base64-encoded content
+        - URLs to fetch (with optional hash for caching)
+
+        ## Timeouts
+
+        Default timeout is 5000ms. Override with `options.timeout_ms`.
+      operationId: renderPdf
+      tags:
+        - Rendering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+            examples:
+              simple:
+                summary: Simple Hello World
+                value:
+                  template:
+                    main: main.typ
+                    files:
+                      main.typ: "Hello, World!"
+
+              withData:
+                summary: With Data Substitution
+                value:
+                  template:
+                    main: main.typ
+                    files:
+                      main.typ: |
+                        #let d = sys.inputs
+                        = Invoice #d.invoice_id
+                        Customer: #d.customer
+                        Total: $#d.total
+                  data:
+                    invoice_id: "INV-001"
+                    customer: "John Doe"
+                    total: 199.99
+
+              multiFile:
+                summary: Multi-file Template
+                value:
+                  template:
+                    main: main.typ
+                    files:
+                      main.typ: |
+                        #import "utils.typ": format_currency
+                        Total: #format_currency(99.99)
+                      utils.typ: |
+                        #let format_currency(amount) = [$#amount]
+
+              withImage:
+                summary: With Base64 Image
+                value:
+                  template:
+                    main: main.typ
+                    files:
+                      main.typ: "#image(\"logo.png\", width: 50%)"
+                  assets:
+                    - name: logo.png
+                      content: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk..."
+
+              withRemoteAsset:
+                summary: With Remote Image URL
+                value:
+                  template:
+                    main: main.typ
+                    files:
+                      main.typ: "#image(\"logo.png\", width: 50%)"
+                  assets:
+                    - name: logo.png
+                      url: "https://example.com/logo.png"
+                      hash: "sha256-abc123..."
+
+              customTimeout:
+                summary: With Custom Timeout
+                value:
+                  template:
+                    main: main.typ
+                    files:
+                      main.typ: "Quick document"
+                  options:
+                    timeout_ms: 2000
+
+      responses:
+        '200':
+          description: PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'inline; filename="document.pdf"'
+
+        '400':
+          description: Compilation failed (syntax error, undefined variable, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: compilation_failed
+                message: "Unknown variable 'nmae'"
+                span:
+                  file: main.typ
+                  line: 5
+                  column: 12
+                hint: "Did you mean 'name'?"
+
+        '408':
+          description: Render timeout exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: timeout
+                message: "Render exceeded 5000ms limit"
+
+        '422':
+          description: Invalid request (malformed JSON, missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: invalid_request
+                message: "Missing required field: template.main"
+
+        '502':
+          description: Failed to fetch remote asset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: asset_fetch_failed
+                message: "HTTP 404 from https://example.com/missing.png"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - fonts_loaded
+        - uptime_seconds
+      properties:
+        status:
+          type: string
+          description: Server health status
+          example: healthy
+        version:
+          type: string
+          description: Server version
+          example: "0.1.0"
+        fonts_loaded:
+          type: integer
+          description: Number of fonts loaded at startup
+          example: 38
+        uptime_seconds:
+          type: integer
+          description: Server uptime in seconds
+          example: 3600
+
+    RenderRequest:
+      type: object
+      required:
+        - template
+      properties:
+        template:
+          $ref: '#/components/schemas/Template'
+        data:
+          type: object
+          description: |
+            JSON data injected as `sys.inputs` in the template.
+            Can be any valid JSON object with nested values.
+          additionalProperties: true
+          example:
+            name: John Doe
+            items:
+              - Widget A
+              - Widget B
+        assets:
+          type: array
+          description: External assets (images, fonts) to include
+          items:
+            $ref: '#/components/schemas/Asset'
+        options:
+          $ref: '#/components/schemas/RenderOptions'
+
+    Template:
+      type: object
+      required:
+        - main
+        - files
+      properties:
+        main:
+          type: string
+          description: Entry point filename (must exist in files)
+          example: main.typ
+        files:
+          type: object
+          description: Map of filename → Typst source code
+          additionalProperties:
+            type: string
+          example:
+            main.typ: "Hello, World!"
+
+    Asset:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Filename as referenced in template (e.g., `#image("logo.png")`)
+          example: logo.png
+        content:
+          type: string
+          description: Base64-encoded file content
+          example: "iVBORw0KGgoAAAANSUhEUg..."
+        url:
+          type: string
+          format: uri
+          description: URL to fetch the asset from
+          example: "https://example.com/logo.png"
+        hash:
+          type: string
+          description: SHA-256 hash for cache lookup (optional)
+          example: "sha256-abc123..."
+
+    RenderOptions:
+      type: object
+      properties:
+        timeout_ms:
+          type: integer
+          description: Maximum render time in milliseconds
+          default: 5000
+          minimum: 100
+          maximum: 60000
+          example: 3000
+        pdf_standard:
+          type: string
+          description: PDF version standard
+          enum:
+            - "1.4"
+            - "1.5"
+            - "1.6"
+            - "1.7"
+            - "2.0"
+          default: "1.7"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - invalid_request
+            - compilation_failed
+            - asset_fetch_failed
+            - timeout
+            - internal_error
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Unknown variable 'nmae'"
+        span:
+          $ref: '#/components/schemas/ErrorSpan'
+        hint:
+          type: string
+          description: Suggestion for fixing the error
+          example: "Did you mean 'name'?"
+
+    ErrorSpan:
+      type: object
+      description: Source location of the error
+      properties:
+        file:
+          type: string
+          description: Filename where error occurred
+          example: main.typ
+        line:
+          type: integer
+          description: Line number (1-indexed)
+          example: 5
+        column:
+          type: integer
+          description: Column number (1-indexed)
+          example: 12
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Rendering
+    description: PDF rendering operations
