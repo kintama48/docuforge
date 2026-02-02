@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ENGINE_URL=http://engine:3001
+      - DATABASE_URL=file:/data/docuforge.db
+      - JWT_SECRET=${JWT_SECRET:-change-this-in-production-32chars}
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET=${R2_BUCKET:-docuforge-assets}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_STARTER_PRICE_ID=${STRIPE_STARTER_PRICE_ID}
+      - STRIPE_PRO_PRICE_ID=${STRIPE_PRO_PRICE_ID}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - db-data:/data
+    depends_on:
+      engine:
+        condition: service_healthy
+    restart: unless-stopped
+
+  engine:
+    build:
+      context: ../engine
+      dockerfile: docker/Dockerfile
+    expose:
+      - "3001"
+    environment:
+      - RUST_LOG=info
+      - HOST=0.0.0.0
+      - PORT=3001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  db-data:

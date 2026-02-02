@@ -1,0 +1,17 @@
+{
+  "store_name": "Coffee Corner",
+  "store_address": "456 Brew Street, Seattle, WA 98101",
+  "store_phone": "(206) 555-0123",
+  "receipt_id": "RC-2024-001234",
+  "date": "01/15/2024 2:34 PM",
+  "cashier": "Sarah M.",
+  "items": [
+    {"name": "Cappuccino (Large)", "qty": 2, "price": 5.50},
+    {"name": "Blueberry Muffin", "qty": 1, "price": 3.95},
+    {"name": "Bottled Water", "qty": 1, "price": 2.00}
+  ],
+  "tax_rate": 10.25,
+  "payment_method": "Cash",
+  "cash_tendered": 20.00,
+  "footer_message": "WiFi: CoffeeGuest | Password: brewtime"
+}
