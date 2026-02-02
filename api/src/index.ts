@@ -1,9 +1,16 @@
-import { Hono } from 'hono'
+import { createApp } from './app';
+import { runMigrations } from './db/migrate';
 
-const app = new Hono()
+const app = createApp();
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+// Run migrations on startup
+await runMigrations();
 
-export default app
+const port = parseInt(process.env.PORT || '3000', 10);
+
+console.log(`Starting DocuForge API on port ${port}...`);
+
+export default {
+  port,
+  fetch: app.fetch,
+};

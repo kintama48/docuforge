@@ -1,0 +1,156 @@
+import { z } from 'zod';
+import { zValidator as honoZValidator } from '@hono/zod-validator';
+import type { Context } from 'hono';
+
+/**
+ * Custom zValidator that returns 422 for validation errors (per spec section 6.3)
+ */
+export const zValidator = <T extends z.ZodType>(target: 'json' | 'query' | 'param', schema: T) => {
+  return honoZValidator(target, schema, (result, c: Context) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: 'validation_error',
+          message: 'Validation failed',
+          details: {
+            issues: result.error.issues.map((i) => ({
+              path: i.path.join('.'),
+              message: i.message,
+            })),
+          },
+        },
+        422
+      );
+    }
+  });
+};
+
+// Auth schemas
+export const registerSchema = z.object({
+  email: z.string().email('Invalid email format').max(255),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export const createApiKeySchema = z.object({
+  name: z.string().min(1).max(100),
+});
+
+// Render schemas
+export const renderSchema = z.object({
+  template_id: z.string().min(1, 'template_id is required'),
+  data: z.record(z.unknown()).optional().default({}),
+});
+
+export const renderPreviewSchema = z.object({
+  source: z.string().min(1).max(102400, 'Source must be under 100KB'),
+  files: z.record(z.string().max(102400)).optional(),
+  data: z.record(z.unknown()).optional().default({}),
+});
+
+// Template schemas
+export const createTemplateSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
+  files: z.record(z.string().max(102400)).optional(),
+  defaults: z.record(z.unknown()).optional(),
+  commit_message: z.string().max(200).optional(),
+});
+
+export const publishVersionSchema = z.object({
+  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
+  files: z.record(z.string().max(102400)).optional(),
+  defaults: z.record(z.unknown()).optional(),
+  commit_message: z.string().max(200).optional(),
+});
+
+export const forkTemplateSchema = z.object({
+  name: z.string().min(1).max(100),
+});
+
+export const listTemplatesQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  include_official: z.coerce.boolean().default(true),
+});
+
+// Asset schemas
+const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.svg', '.ttf', '.otf', '.woff2'];
+const ALLOWED_MIME_TYPES: Record<string, string[]> = {
+  '.png': ['image/png'],
+  '.jpg': ['image/jpeg'],
+  '.jpeg': ['image/jpeg'],
+  '.svg': ['image/svg+xml'],
+  '.ttf': ['font/ttf', 'application/x-font-ttf'],
+  '.otf': ['font/otf', 'application/x-font-opentype'],
+  '.woff2': ['font/woff2'],
+};
+
+export const requestUploadUrlSchema = z
+  .object({
+    filename: z.string().min(1).max(255),
+    content_type: z.string().min(1),
+    size_bytes: z.number().int().positive(),
+  })
+  .refine(
+    (data) => {
+      const ext = data.filename.slice(data.filename.lastIndexOf('.')).toLowerCase();
+      return ALLOWED_EXTENSIONS.includes(ext);
+    },
+    { message: `File type not allowed. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }
+  )
+  .refine(
+    (data) => {
+      const ext = data.filename.slice(data.filename.lastIndexOf('.')).toLowerCase();
+      const allowedMimes = ALLOWED_MIME_TYPES[ext] || [];
+      return allowedMimes.includes(data.content_type);
+    },
+    { message: 'Content type does not match file extension' }
+  )
+  .refine(
+    (data) => {
+      const ext = data.filename.slice(data.filename.lastIndexOf('.')).toLowerCase();
+      const isFont = ['.ttf', '.otf', '.woff2'].includes(ext);
+      const maxSize = isFont ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+      return data.size_bytes <= maxSize;
+    },
+    { message: 'File size exceeds limit (5MB for images, 10MB for fonts)' }
+  );
+
+export const confirmUploadSchema = z.object({
+  asset_id: z.string().min(1),
+  name: z.string().min(1).max(255),
+  hash: z.string().min(1),
+});
+
+// Billing schemas
+export const createCheckoutSchema = z.object({
+  plan: z.enum(['starter', 'pro']),
+});
+
+// AI schemas
+export const aiEditSchema = z.object({
+  prompt: z.string().min(1).max(2000),
+  current_code: z.string().min(1).max(102400),
+  asset_names: z.array(z.string()).optional().default([]),
+});
+
+// Type exports
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
+export type RenderInput = z.infer<typeof renderSchema>;
+export type RenderPreviewInput = z.infer<typeof renderPreviewSchema>;
+export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
+export type PublishVersionInput = z.infer<typeof publishVersionSchema>;
+export type ForkTemplateInput = z.infer<typeof forkTemplateSchema>;
+export type ListTemplatesQuery = z.infer<typeof listTemplatesQuerySchema>;
+export type RequestUploadUrlInput = z.infer<typeof requestUploadUrlSchema>;
+export type ConfirmUploadInput = z.infer<typeof confirmUploadSchema>;
+export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>;
+export type AiEditInput = z.infer<typeof aiEditSchema>;
