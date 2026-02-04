@@ -23,6 +23,13 @@ export interface PublishVersionParams {
   commitMessage?: string;
 }
 
+export interface UpdateTemplateParams {
+  templateId: string;
+  userId: string;
+  name?: string;
+  description?: string | null;
+}
+
 export async function createTemplate(params: CreateTemplateParams): Promise<{
   template: TemplateSelect;
   version: TemplateVersionSelect;
@@ -187,6 +194,56 @@ export async function deleteTemplate(templateId: string, userId: string): Promis
   await db.delete(schema.templates).where(eq(schema.templates.id, templateId));
 }
 
+export async function updateTemplate(
+  params: UpdateTemplateParams
+): Promise<TemplateSelect> {
+  const db = getDb();
+  const now = Date.now();
+
+  const [template] = await db
+    .select()
+    .from(schema.templates)
+    .where(eq(schema.templates.id, params.templateId));
+
+  if (!template) {
+    throw new NotFoundError('Template not found');
+  }
+
+  if (template.userId === null) {
+    throw new ForbiddenError('Cannot update official templates');
+  }
+
+  if (template.userId !== params.userId) {
+    throw new ForbiddenError('Cannot update this template');
+  }
+
+  if (params.name && params.name !== template.name) {
+    const [existing] = await db
+      .select()
+      .from(schema.templates)
+      .where(and(eq(schema.templates.userId, params.userId), eq(schema.templates.name, params.name)));
+    if (existing) {
+      throw new ConflictError(`Template with name "${params.name}" already exists`);
+    }
+  }
+
+  const nextName = params.name ?? template.name;
+  const nextDescription =
+    params.description === undefined ? template.description : params.description;
+
+  await db
+    .update(schema.templates)
+    .set({ name: nextName, description: nextDescription, updatedAt: now })
+    .where(eq(schema.templates.id, params.templateId));
+
+  const [updated] = await db
+    .select()
+    .from(schema.templates)
+    .where(eq(schema.templates.id, params.templateId));
+
+  return updated!;
+}
+
 export async function listTemplates(
   userId: string,
   options: { page: number; limit: number; includeOfficial: boolean }
@@ -241,4 +298,33 @@ export async function getTemplate(
     .orderBy(sql`version_number DESC`);
 
   return { template, versions };
+}
+
+export async function getTemplateVersion(
+  templateId: string,
+  versionId: string,
+  userId: string
+): Promise<TemplateVersionSelect> {
+  const db = getDb();
+
+  const [template] = await db.select().from(schema.templates).where(eq(schema.templates.id, templateId));
+
+  if (!template) {
+    throw new NotFoundError('Template not found');
+  }
+
+  if (template.userId !== null && template.userId !== userId && !template.isPublic) {
+    throw new NotFoundError('Template not found');
+  }
+
+  const [version] = await db
+    .select()
+    .from(schema.templateVersions)
+    .where(and(eq(schema.templateVersions.id, versionId), eq(schema.templateVersions.templateId, templateId)));
+
+  if (!version) {
+    throw new NotFoundError('Template version not found');
+  }
+
+  return version;
 }

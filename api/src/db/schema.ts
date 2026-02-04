@@ -106,6 +106,24 @@ export const renderLogs = sqliteTable(
   (table) => [index('idx_render_logs_usage').on(table.userId, table.createdAt)]
 );
 
+export const oauthAccounts = sqliteTable(
+  'oauth_accounts',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull(),
+    providerUserId: text('provider_user_id').notNull(),
+    email: text('email'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_oauth_user').on(table.userId),
+    uniqueIndex('idx_oauth_provider_user').on(table.provider, table.providerUserId),
+  ]
+);
+
 export type UserInsert = typeof users.$inferInsert;
 export type UserSelect = typeof users.$inferSelect;
 export type ApiKeyInsert = typeof apiKeys.$inferInsert;
@@ -118,3 +136,5 @@ export type AssetInsert = typeof assets.$inferInsert;
 export type AssetSelect = typeof assets.$inferSelect;
 export type RenderLogInsert = typeof renderLogs.$inferInsert;
 export type RenderLogSelect = typeof renderLogs.$inferSelect;
+export type OAuthAccountInsert = typeof oauthAccounts.$inferInsert;
+export type OAuthAccountSelect = typeof oauthAccounts.$inferSelect;

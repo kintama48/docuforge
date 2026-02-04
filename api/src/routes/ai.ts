@@ -2,8 +2,8 @@ import { Hono } from 'hono';
 
 import { jwtAuth } from '../middleware/auth';
 import { aiRateLimit } from '../middleware/rate-limit';
-import { zValidator, aiEditSchema } from '../lib/validation';
-import { aiEditCode } from '../services/ai';
+import { zValidator, aiEditSchema, aiGenerateSchema } from '../lib/validation';
+import { aiEditCode, aiGenerateFromImage } from '../services/ai';
 
 const ai = new Hono();
 
@@ -15,6 +15,20 @@ ai.post('/edit', jwtAuth, aiRateLimit, zValidator('json', aiEditSchema), async (
     prompt: data.prompt,
     currentCode: data.current_code,
     assetNames: data.asset_names,
+  });
+
+  return c.json({
+    code: result.code,
+    tokens_used: result.tokensUsed,
+  });
+});
+
+// POST /v1/ai/generate - AI-powered template generation from image
+ai.post('/generate', jwtAuth, aiRateLimit, zValidator('json', aiGenerateSchema), async (c) => {
+  const data = c.req.valid('json');
+
+  const result = await aiGenerateFromImage({
+    imageBase64: data.image_base64,
   });
 
   return c.json({

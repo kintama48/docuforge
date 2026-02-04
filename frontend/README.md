@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, run the development server (frontend runs on port 5173; API should run on 3000):
 
 ```bash
 npm run dev
@@ -14,7 +14,13 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
+
+## Tests
+
+- Unit/integration: `bun run test:run`
+- E2E (Playwright): `bun run test:e2e`
+- `bun test` only runs a Bun smoke test (use the two commands above for full coverage).
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

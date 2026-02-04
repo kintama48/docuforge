@@ -1,7 +1,10 @@
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { eq, isNull } from 'drizzle-orm';
 import { getDb, schema } from '../src/db/client';
-import { generateTemplateId, generateVersionId } from '../src/lib/id';
+import { generateTemplateId, generateVersionId, generateUserId, generateApiKeyId } from '../src/lib/id';
+import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../src/lib/api-key';
+import { getPlanLimit } from '../src/config/env';
 import { runMigrations } from '../src/db/migrate';
 
 const TEMPLATES_DIR = join(import.meta.dir, '..', 'templates');
@@ -45,7 +48,7 @@ async function seedTemplates() {
   const existingTemplates = await db
     .select({ name: schema.templates.name })
     .from(schema.templates)
-    .where(({ isNull }, { userId }) => isNull(userId));
+    .where(isNull(schema.templates.userId));
 
   const existingNames = new Set(existingTemplates.map((t) => t.name));
 
@@ -116,7 +119,52 @@ async function seedTemplates() {
   console.log('Seeding complete!');
 }
 
+async function seedTestUser() {
+  const db = getDb();
+  const now = Date.now();
+  const email = 'abdullah.baig416@gmail.com';
+  const password = '123123123';
+
+  const [existing] = await db.select().from(schema.users).where(eq(schema.users.email, email));
+  if (existing) {
+    console.log(`✓ Test user already exists: ${email}`);
+    return;
+  }
+
+  const passwordHash = await Bun.password.hash(password);
+  const userId = generateUserId();
+
+  await db.insert(schema.users).values({
+    id: userId,
+    email,
+    passwordHash,
+    planTier: 'free',
+    planRenders: getPlanLimit('free'),
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  const rawKey = generateRawApiKey();
+  const keyHash = hashApiKey(rawKey);
+  const keyPrefix = extractKeyPrefix(rawKey);
+  const keyId = generateApiKeyId();
+
+  await db.insert(schema.apiKeys).values({
+    id: keyId,
+    userId,
+    keyHash,
+    keyPrefix,
+    name: 'Default',
+    createdAt: now,
+    isRevoked: false,
+  });
+
+  console.log(`✓ Seeded test user: ${email}`);
+  console.log(`✓ Test API key prefix: ${keyPrefix}`);
+}
+
 seedTemplates()
+  .then(seedTestUser)
   .then(() => process.exit(0))
   .catch((err) => {
     console.error('Seeding failed:', err);
