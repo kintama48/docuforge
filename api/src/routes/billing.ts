@@ -90,7 +90,7 @@ billing.post('/billing/webhook', async (c) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
   } catch {
     throw new ValidationError('Invalid webhook signature');
   }

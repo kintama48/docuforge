@@ -1,0 +1,9 @@
+node_modules
+.next
+test-results
+bun-tests
+e2e
+tests
+.git
+.env
+.env.local

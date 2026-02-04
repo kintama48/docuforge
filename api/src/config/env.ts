@@ -4,6 +4,8 @@ const envSchema = z.object({
   // Server
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  APP_URL: z.string().url().default('http://localhost:5173'),
+  API_URL: z.string().url().default('http://localhost:3000'),
 
   // Database
   DATABASE_URL: z.string().min(1),
@@ -33,6 +35,14 @@ const envSchema = z.object({
   // Auth
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRY: z.string().default('7d'),
+
+  // OAuth
+  OAUTH_GOOGLE_CLIENT_ID: z.string().optional(),
+  OAUTH_GOOGLE_CLIENT_SECRET: z.string().optional(),
+  OAUTH_MICROSOFT_CLIENT_ID: z.string().optional(),
+  OAUTH_MICROSOFT_CLIENT_SECRET: z.string().optional(),
+  OAUTH_GITHUB_CLIENT_ID: z.string().optional(),
+  OAUTH_GITHUB_CLIENT_SECRET: z.string().optional(),
 
   // Limits
   FREE_MONTHLY_LIMIT: z.coerce.number().default(500),

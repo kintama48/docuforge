@@ -1,15 +1,29 @@
 import { Hono } from 'hono';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
-import { generateUserId, generateApiKeyId } from '../lib/id';
+import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
 import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../lib/api-key';
 import { evictCachedKey } from '../services/key-cache';
 import { createJwt, jwtAuth } from '../middleware/auth';
 import { zValidator, registerSchema, loginSchema, createApiKeySchema } from '../lib/validation';
 import { ConflictError, UnauthorizedError, NotFoundError, ForbiddenError } from '../lib/errors';
-import { getPlanLimit } from '../config/env';
+import { env, getPlanLimit } from '../config/env';
+import {
+  buildAuthUrl,
+  consumeOAuthState,
+  createOAuthState,
+  exchangeOAuthCode,
+  fetchOAuthProfile,
+  type OAuthProvider,
+} from '../services/oauth';
 
 const auth = new Hono();
+
+const oauthProviders: OAuthProvider[] = ['google', 'microsoft', 'github'];
+
+function isValidProvider(provider: string): provider is OAuthProvider {
+  return oauthProviders.includes(provider as OAuthProvider);
+}
 
 // POST /v1/auth/register
 auth.post('/register', zValidator('json', registerSchema), async (c) => {
@@ -106,6 +120,137 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
       plan: user.planTier,
     },
   });
+});
+
+// GET /v1/auth/oauth/:provider - Start OAuth flow
+auth.get('/oauth/:provider', async (c) => {
+  const provider = c.req.param('provider');
+  if (!isValidProvider(provider)) {
+    throw new NotFoundError('OAuth provider not supported');
+  }
+
+  const redirect = c.req.query('redirect');
+  const state = createOAuthState(provider, redirect);
+  const url = buildAuthUrl(provider, state);
+  return c.redirect(url);
+});
+
+// GET /v1/auth/oauth/:provider/callback - OAuth callback
+auth.get('/oauth/:provider/callback', async (c) => {
+  const provider = c.req.param('provider');
+  if (!isValidProvider(provider)) {
+    throw new NotFoundError('OAuth provider not supported');
+  }
+
+  const code = c.req.query('code');
+  const state = c.req.query('state');
+  if (!code || !state) {
+    return c.redirect(`${env.APP_URL}/login?error=oauth_failed`);
+  }
+
+  const stateRecord = consumeOAuthState(state);
+  if (!stateRecord || stateRecord.provider !== provider) {
+    return c.redirect(`${env.APP_URL}/login?error=oauth_invalid_state`);
+  }
+
+  try {
+    const accessToken = await exchangeOAuthCode(provider, code);
+    const profile = await fetchOAuthProfile(provider, accessToken);
+    const db = getDb();
+    const now = Date.now();
+
+    // Find user by OAuth account
+    const [oauthAccount] = await db
+      .select()
+      .from(schema.oauthAccounts)
+      .where(
+        and(
+          eq(schema.oauthAccounts.provider, provider),
+          eq(schema.oauthAccounts.providerUserId, profile.providerUserId)
+        )
+      );
+
+    let user = null;
+    let rawKey: string | null = null;
+
+    if (oauthAccount) {
+      const [existingUser] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, oauthAccount.userId));
+      user = existingUser || null;
+    }
+
+    if (!user) {
+      // Fallback by email
+      const [existingUser] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, profile.email));
+      user = existingUser || null;
+    }
+
+    if (!user) {
+      const passwordHash = await Bun.password.hash(crypto.randomUUID());
+      const userId = generateUserId();
+      user = {
+        id: userId,
+        email: profile.email,
+        passwordHash,
+        stripeCustomerId: null,
+        planTier: 'free',
+        planRenders: getPlanLimit('free'),
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      await db.insert(schema.users).values(user);
+
+      rawKey = generateRawApiKey();
+      const keyHash = hashApiKey(rawKey);
+      const keyPrefix = extractKeyPrefix(rawKey);
+      const keyId = generateApiKeyId();
+      await db.insert(schema.apiKeys).values({
+        id: keyId,
+        userId: user.id,
+        keyHash,
+        keyPrefix,
+        name: 'Default',
+        createdAt: now,
+        isRevoked: false,
+      });
+    }
+
+    if (!oauthAccount) {
+      await db.insert(schema.oauthAccounts).values({
+        id: generateOauthId(),
+        userId: user.id,
+        provider,
+        providerUserId: profile.providerUserId,
+        email: profile.email,
+        createdAt: now,
+      });
+    }
+
+    const token = await createJwt(user.id, user.email);
+
+    const redirectUrl = new URL(`${env.APP_URL}/oauth/callback`);
+    redirectUrl.searchParams.set('token', token);
+    redirectUrl.searchParams.set('user_id', user.id);
+    redirectUrl.searchParams.set('email', user.email);
+    redirectUrl.searchParams.set('plan', user.planTier);
+    if (stateRecord.redirect) {
+      redirectUrl.searchParams.set('redirect', stateRecord.redirect);
+    }
+    if (rawKey) {
+      redirectUrl.searchParams.set('api_key', rawKey);
+    }
+
+    return c.redirect(redirectUrl.toString());
+  } catch (err) {
+    console.error('OAuth error', err);
+    return c.redirect(`${env.APP_URL}/login?error=oauth_failed`);
+  }
 });
 
 // POST /v1/auth/keys - Create new API key

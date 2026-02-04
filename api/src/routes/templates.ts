@@ -7,16 +7,19 @@ import {
   zValidator,
   createTemplateSchema,
   publishVersionSchema,
+  updateTemplateSchema,
   forkTemplateSchema,
   listTemplatesQuerySchema,
 } from '../lib/validation';
 import {
   createTemplate,
   publishVersion,
+  updateTemplate,
   forkTemplate,
   deleteTemplate,
   listTemplates,
   getTemplate,
+  getTemplateVersion,
 } from '../services/template';
 
 const templates = new Hono();
@@ -71,6 +74,27 @@ templates.get('/', jwtAuth, zValidator('query', listTemplatesQuerySchema), async
       page: query.page,
       limit: query.limit,
       total: result.total,
+    },
+  });
+});
+
+// GET /v1/templates/:id/versions/:versionId - Get template version detail
+templates.get('/:id/versions/:versionId', jwtAuth, async (c) => {
+  const templateId = c.req.param('id');
+  const versionId = c.req.param('versionId');
+  const { userId } = c.get('auth');
+
+  const version = await getTemplateVersion(templateId, versionId, userId);
+
+  return c.json({
+    version: {
+      id: version.id,
+      version_number: version.versionNumber,
+      source: version.source,
+      files: version.files,
+      defaults: version.defaults,
+      commit_message: version.commitMessage,
+      created_at: version.createdAt,
     },
   });
 });
@@ -172,6 +196,42 @@ templates.post('/:id/publish', jwtAuth, zValidator('json', publishVersionSchema)
       version_number: version.versionNumber,
       commit_message: version.commitMessage,
       created_at: version.createdAt,
+    },
+  });
+});
+
+// PATCH /v1/templates/:id - Update template metadata
+templates.patch('/:id', jwtAuth, zValidator('json', updateTemplateSchema), async (c) => {
+  const templateId = c.req.param('id');
+  const data = c.req.valid('json');
+  const { userId } = c.get('auth');
+
+  await updateTemplate({
+    templateId,
+    userId,
+    name: data.name,
+    description: data.description,
+  });
+
+  const { template, versions } = await getTemplate(templateId, userId);
+  const liveVersion = versions.find((v) => v.id === template.liveVersionId);
+
+  return c.json({
+    template: {
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      is_official: template.userId === null,
+      live_version: liveVersion
+        ? {
+            id: liveVersion.id,
+            version_number: liveVersion.versionNumber,
+            commit_message: liveVersion.commitMessage,
+            created_at: liveVersion.createdAt,
+          }
+        : null,
+      created_at: template.createdAt,
+      updated_at: template.updatedAt,
     },
   });
 });

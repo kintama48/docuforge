@@ -133,6 +133,22 @@ export async function initTestDb() {
 
   await db.run(sql`CREATE INDEX IF NOT EXISTS idx_render_logs_usage ON render_logs(user_id, created_at)`);
 
+  await db.run(sql`
+    CREATE TABLE IF NOT EXISTS oauth_accounts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      provider TEXT NOT NULL,
+      provider_user_id TEXT NOT NULL,
+      email TEXT,
+      created_at INTEGER NOT NULL
+    )
+  `);
+
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_oauth_user ON oauth_accounts(user_id)`);
+  await db.run(
+    sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_oauth_provider_user ON oauth_accounts(provider, provider_user_id)`
+  );
+
   return db;
 }
 

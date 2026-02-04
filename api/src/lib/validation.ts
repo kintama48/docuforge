@@ -69,6 +69,15 @@ export const publishVersionSchema = z.object({
   commit_message: z.string().max(200).optional(),
 });
 
+export const updateTemplateSchema = z
+  .object({
+    name: z.string().min(1).max(100).optional(),
+    description: z.string().max(500).nullable().optional(),
+  })
+  .refine((data) => data.name !== undefined || data.description !== undefined, {
+    message: 'At least one field must be provided',
+  });
+
 export const forkTemplateSchema = z.object({
   name: z.string().min(1).max(100),
 });
@@ -140,6 +149,10 @@ export const aiEditSchema = z.object({
   asset_names: z.array(z.string()).optional().default([]),
 });
 
+export const aiGenerateSchema = z.object({
+  image_base64: z.string().min(1),
+});
+
 // Type exports
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -148,9 +161,11 @@ export type RenderInput = z.infer<typeof renderSchema>;
 export type RenderPreviewInput = z.infer<typeof renderPreviewSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
 export type PublishVersionInput = z.infer<typeof publishVersionSchema>;
+export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>;
 export type ForkTemplateInput = z.infer<typeof forkTemplateSchema>;
 export type ListTemplatesQuery = z.infer<typeof listTemplatesQuerySchema>;
 export type RequestUploadUrlInput = z.infer<typeof requestUploadUrlSchema>;
 export type ConfirmUploadInput = z.infer<typeof confirmUploadSchema>;
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>;
 export type AiEditInput = z.infer<typeof aiEditSchema>;
+export type AiGenerateInput = z.infer<typeof aiGenerateSchema>;
