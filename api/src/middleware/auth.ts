@@ -5,6 +5,7 @@ import { getDb, schema } from '../db/client';
 import { hashApiKey, isValidApiKeyFormat } from '../lib/api-key';
 import { getCachedKey, setCachedKey } from '../services/key-cache';
 import { UnauthorizedError } from '../lib/errors';
+import { env } from '../config/env';
 import type { AuthContext, PlanTier, JwtPayload } from '../types';
 
 declare module 'hono' {
@@ -13,8 +14,15 @@ declare module 'hono' {
   }
 }
 
+// JWT secret is validated at startup via env.ts (min 32 chars required)
+// No fallback - if JWT_SECRET is missing, the app won't start
+let jwtSecretCache: Uint8Array | null = null;
+
 function getJwtSecret(): Uint8Array {
-  return new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret');
+  if (!jwtSecretCache) {
+    jwtSecretCache = new TextEncoder().encode(env.JWT_SECRET);
+  }
+  return jwtSecretCache;
 }
 
 export async function createJwt(userId: string, email: string): Promise<string> {
@@ -82,7 +90,9 @@ async function validateApiKey(rawKey: string): Promise<AuthContext> {
     .set({ lastUsedAt: Date.now() })
     .where(eq(schema.apiKeys.keyHash, keyHash))
     .execute()
-    .catch(() => {});
+    .catch((err) => {
+      console.error('Failed to update API key last_used_at:', err);
+    });
 
   return { userId: keyRecord.userId, planTier: keyRecord.planTier as PlanTier };
 }

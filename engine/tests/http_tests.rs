@@ -33,7 +33,7 @@ fn setup_test_app_with_fonts() -> TestServer {
     let fonts = Arc::new(fonts);
     let cache = AssetCache::new(10 * 1024 * 1024);
     let compiler = Compiler::new(fonts.clone(), cache);
-    let config = Config::default();
+    let config = Config::from_env();
     let state = AppState::new(compiler, config, font_count);
     let router = create_router(state);
     TestServer::new(router).expect("Failed to create test server")

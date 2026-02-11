@@ -9,6 +9,7 @@ import { renderPdf } from '../services/engine';
 import { checkCredits, logRender, formatUsageResponse } from '../services/usage';
 import { resolveUserAssets } from '../services/asset';
 import { NotFoundError, LimitExceededError } from '../lib/errors';
+import { env } from '../config/env';
 import type { EnginePayload } from '../types';
 
 const render = new Hono();
@@ -77,7 +78,7 @@ render.post('/', apiKeyAuth, renderRateLimit, zValidator('json', renderSchema), 
     data: data || {},
     assets,
     options: {
-      timeout_ms: parseInt(process.env.ENGINE_TIMEOUT_MS || '5000', 10),
+      timeout_ms: env.ENGINE_TIMEOUT_MS,
     },
   };
 
@@ -135,7 +136,7 @@ render.post('/preview', jwtAuth, previewRateLimit, zValidator('json', renderPrev
     data: data || {},
     assets,
     options: {
-      timeout_ms: parseInt(process.env.ENGINE_TIMEOUT_MS || '5000', 10),
+      timeout_ms: env.ENGINE_TIMEOUT_MS,
     },
   };
 

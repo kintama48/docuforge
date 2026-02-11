@@ -207,4 +207,56 @@ mod tests {
         assert!(!FontLoader::is_font_file(Path::new("test.txt")));
         assert!(!FontLoader::is_font_file(Path::new("test")));
     }
+
+    #[test]
+    fn test_load_from_assets_directory() {
+        let fonts_dir = Path::new("./assets/fonts");
+        if !fonts_dir.exists() {
+            return;
+        }
+        let loader = FontLoader::load_from_directory(fonts_dir).unwrap();
+        assert!(!loader.is_empty());
+        assert!(loader.len() > 0);
+        assert!(loader.font(0).is_some());
+    }
+
+    #[test]
+    fn test_scan_directory_and_load_font_file_with_dummy_font() {
+        let temp_dir = TempDir::new().unwrap();
+        let fake_font = temp_dir.path().join("fake.ttf");
+        std::fs::write(&fake_font, b"not-a-real-font").unwrap();
+
+        let mut fonts = Vec::new();
+        let mut infos = Vec::new();
+        let result = FontLoader::scan_directory(temp_dir.path(), &mut fonts, &mut infos);
+
+        assert!(result.is_ok());
+        assert!(fonts.is_empty());
+        assert!(infos.is_empty());
+    }
+
+    #[test]
+    fn test_scan_directory_returns_error_for_file_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let not_a_dir = temp_dir.path().join("not-a-dir.ttf");
+        std::fs::write(&not_a_dir, b"not-a-dir").unwrap();
+
+        let mut fonts = Vec::new();
+        let mut infos = Vec::new();
+        let result = FontLoader::scan_directory(&not_a_dir, &mut fonts, &mut infos);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_load_font_file_returns_error_for_missing_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let missing = temp_dir.path().join("missing-font.ttf");
+
+        let mut fonts = Vec::new();
+        let mut infos = Vec::new();
+        let result = FontLoader::load_font_file(&missing, &mut fonts, &mut infos);
+
+        assert!(result.is_err());
+    }
 }

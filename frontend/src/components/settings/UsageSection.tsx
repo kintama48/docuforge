@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { UsageResponse } from "@/src/lib/api-types";
 import { planLimits } from "@/src/lib/constants";
+import { formatBytes } from "@/src/lib/utils";
 import { useI18n } from "@/src/lib/i18n";
 
 function buildDailySeries(usage?: UsageResponse) {
@@ -69,17 +70,22 @@ export function UsageSection({ usage }: { usage?: UsageResponse }) {
                 [messages.settings.monthlyRenders, "renders"],
                 [messages.settings.aiCredits, "aiCredits"],
                 [messages.settings.templates, "templates"],
-                [messages.settings.assets, "assets"],
-              ].map(([label, key]) => (
-                <tr key={label} className="border-t border-[#27272a]">
-                  <td className="py-2 text-white">{label}</td>
-                  <td className="py-2">{planLimits.free[key as keyof typeof planLimits.free]}</td>
-                  <td className="py-2">
-                    {planLimits.starter[key as keyof typeof planLimits.starter]}
-                  </td>
-                  <td className="py-2">{planLimits.pro[key as keyof typeof planLimits.pro]}</td>
-                </tr>
-              ))}
+                [messages.settings.assets, "assetsBytes"],
+              ].map(([label, key]) => {
+                const fmt = (v: number | null) => {
+                  if (v === null) return "Unlimited";
+                  if (key === "assetsBytes") return formatBytes(v);
+                  return v.toLocaleString();
+                };
+                return (
+                  <tr key={label} className="border-t border-[#27272a]">
+                    <td className="py-2 text-white">{label}</td>
+                    <td className="py-2">{fmt(planLimits.free[key as keyof typeof planLimits.free])}</td>
+                    <td className="py-2">{fmt(planLimits.starter[key as keyof typeof planLimits.starter])}</td>
+                    <td className="py-2">{fmt(planLimits.pro[key as keyof typeof planLimits.pro])}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

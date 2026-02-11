@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
 import {
@@ -37,36 +37,39 @@ templates.get('/', jwtAuth, zValidator('query', listTemplatesQuerySchema), async
 
   const db = getDb();
 
-  // Fetch live versions for each template
-  const templatesWithVersions = await Promise.all(
-    result.templates.map(async (template) => {
-      let liveVersion = null;
-      if (template.liveVersionId) {
-        const [version] = await db
-          .select()
-          .from(schema.templateVersions)
-          .where(eq(schema.templateVersions.id, template.liveVersionId));
-        if (version) {
-          liveVersion = {
+  // API-m2 fix: Batch fetch all live versions instead of N+1 queries
+  const versionIds = result.templates
+    .map((t) => t.liveVersionId)
+    .filter((id): id is string => id !== null);
+
+  const versions = versionIds.length > 0
+    ? await db
+        .select()
+        .from(schema.templateVersions)
+        .where(inArray(schema.templateVersions.id, versionIds))
+    : [];
+
+  const versionMap = new Map(versions.map((v) => [v.id, v]));
+
+  const templatesWithVersions = result.templates.map((template) => {
+    const version = template.liveVersionId ? versionMap.get(template.liveVersionId) : null;
+    return {
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      is_official: template.userId === null,
+      live_version: version
+        ? {
             id: version.id,
             version_number: version.versionNumber,
             commit_message: version.commitMessage,
             created_at: version.createdAt,
-          };
-        }
-      }
-
-      return {
-        id: template.id,
-        name: template.name,
-        description: template.description,
-        is_official: template.userId === null,
-        live_version: liveVersion,
-        created_at: template.createdAt,
-        updated_at: template.updatedAt,
-      };
-    })
-  );
+          }
+        : null,
+      created_at: template.createdAt,
+      updated_at: template.updatedAt,
+    };
+  });
 
   return c.json({
     templates: templatesWithVersions,

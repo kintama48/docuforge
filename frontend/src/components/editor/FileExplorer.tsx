@@ -16,6 +16,8 @@ export function FileExplorer() {
 
   const [showAdd, setShowAdd] = useState(false);
   const [showRename, setShowRename] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState("");
   const [renameValue, setRenameValue] = useState("");
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -74,16 +76,8 @@ export function FileExplorer() {
                 </button>
                 <button
                   onClick={() => {
-                    if (
-                      confirm(
-                        messages.editor.fileDeleteConfirm.replace(
-                          "{name}",
-                          file
-                        )
-                      )
-                    ) {
-                      removeFile(file);
-                    }
+                    setDeleteTarget(file);
+                    setShowDeleteConfirm(true);
                   }}
                   className="text-[#ef4444] hover:text-[#f87171]"
                 >
@@ -174,6 +168,37 @@ export function FileExplorer() {
             className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb] disabled:opacity-60"
           >
             {messages.editor.rename}
+          </button>
+        </div>
+      </Modal>
+
+      {/* FE-m4 fix: Use Modal instead of native confirm() */}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title={messages.editor.delete}
+      >
+        <p className="text-sm text-[#a1a1aa]">
+          {deleteTarget
+            ? messages.editor.fileDeleteConfirm.replace("{name}", deleteTarget)
+            : ""}
+        </p>
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            onClick={() => setShowDeleteConfirm(false)}
+            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white"
+          >
+            {messages.templateDialog.cancel}
+          </button>
+          <button
+            onClick={() => {
+              if (deleteTarget) removeFile(deleteTarget);
+              setShowDeleteConfirm(false);
+              setDeleteTarget(null);
+            }}
+            className="rounded-md bg-[#ef4444] px-3 py-2 text-xs font-semibold text-white hover:bg-[#dc2626]"
+          >
+            {messages.editor.delete}
           </button>
         </div>
       </Modal>

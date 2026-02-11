@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/stores/auth";
+import { toast } from "sonner";
 
 vi.mock("sonner", () => ({
   toast: {
@@ -68,5 +69,86 @@ describe("api client", () => {
 
     expect(fetchSpy).toHaveBeenCalled();
     expect(response).toBeInstanceOf(Response);
+  });
+
+  it("handles 204 responses", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: vi.fn(),
+    } as any);
+    const result = await api.delete("/v1/templates/1");
+    expect(result).toBeNull();
+  });
+
+  it("handles invalid JSON errors", async () => {
+    const response = new Response("not-json", { status: 400 });
+    const jsonSpy = vi.spyOn(response, "json").mockRejectedValue(new Error("bad"));
+    vi.spyOn(global, "fetch").mockResolvedValue(response);
+
+    await expect(api.get("/v1/usage")).rejects.toBeDefined();
+    expect(jsonSpy).toHaveBeenCalled();
+  });
+
+  it("handles status based toasts", async () => {
+    const toastSpy = vi.mocked(toast.error);
+
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "payment", message: "402" }), {
+        status: 402,
+      })
+    );
+    await expect(api.get("/v1/usage")).rejects.toBeDefined();
+    expect(toastSpy).toHaveBeenCalledWith("Upgrade required to continue.");
+
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "rate_limited", message: "429", details: { retryAfter: 3 } }), {
+        status: 429,
+      })
+    );
+    await expect(api.get("/v1/usage")).rejects.toBeDefined();
+    expect(toastSpy).toHaveBeenCalledWith("Rate limited — try again in 3 seconds.");
+
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "rate_limited", message: "429" }), {
+        status: 429,
+      })
+    );
+    await expect(api.get("/v1/usage")).rejects.toBeDefined();
+    expect(toastSpy).toHaveBeenCalledWith("Rate limited — try again shortly.");
+
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "server_error", message: "500" }), {
+        status: 500,
+      })
+    );
+    await expect(api.get("/v1/usage")).rejects.toBeDefined();
+    expect(toastSpy).toHaveBeenCalledWith("Something went wrong. Please retry.");
+  });
+
+  it("does not set content-type for FormData", async () => {
+    const formData = new FormData();
+    formData.append("file", new Blob(["data"]), "file.txt");
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    );
+
+    await api.post("/v1/assets", formData);
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "http://localhost:3000/v1/assets",
+      expect.objectContaining({
+        headers: expect.not.objectContaining({ "Content-Type": "application/json" }),
+      })
+    );
+  });
+
+  it("handles postRaw errors", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "bad_request", message: "400" }), {
+        status: 400,
+      })
+    );
+
+    await expect(api.postRaw("/v1/render/preview", { source: "" })).rejects.toBeDefined();
   });
 });

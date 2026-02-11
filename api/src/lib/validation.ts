@@ -82,10 +82,19 @@ export const forkTemplateSchema = z.object({
   name: z.string().min(1).max(100),
 });
 
+const queryBoolean = z.preprocess((value) => {
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'y'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'n', ''].includes(normalized)) return false;
+  }
+  return value;
+}, z.boolean());
+
 export const listTemplatesQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
-  include_official: z.coerce.boolean().default(true),
+  include_official: queryBoolean.default(true),
 });
 
 // Asset schemas
@@ -149,8 +158,12 @@ export const aiEditSchema = z.object({
   asset_names: z.array(z.string()).optional().default([]),
 });
 
+// API-M6 fix: Limit base64 image size to prevent DoS via memory exhaustion
+// ~13.7M chars base64 ≈ 10MB binary
+const MAX_BASE64_IMAGE_CHARS = 13_700_000;
+
 export const aiGenerateSchema = z.object({
-  image_base64: z.string().min(1),
+  image_base64: z.string().min(1).max(MAX_BASE64_IMAGE_CHARS, 'Image exceeds 10MB limit'),
 });
 
 // Type exports

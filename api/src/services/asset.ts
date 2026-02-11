@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { S3Client, PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getDb, schema } from '../db/client';
 import type { EngineAsset } from '../types';
@@ -41,7 +41,8 @@ export async function resolveUserAssets(userId: string): Promise<EngineAsset[]> 
 
   const resolvedAssets: EngineAsset[] = await Promise.all(
     assets.map(async (asset) => {
-      const command = new PutObjectCommand({
+      // Use GetObjectCommand for read URLs (not PutObjectCommand)
+      const command = new GetObjectCommand({
         Bucket: bucket,
         Key: asset.r2Key,
       });

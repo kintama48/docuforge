@@ -1,7 +1,12 @@
 "use client";
 
 import { create } from "zustand";
+import type { editor, Monaco } from "monaco-editor";
 import type { TemplateDetail, TemplateVersion } from "@/src/lib/api-types";
+
+// FE-C3 fix: Use proper Monaco types instead of 'any'
+type MonacoEditor = editor.IStandaloneCodeEditor;
+type MonacoInstance = typeof Monaco;
 
 type RenderError = { message: string; file: string; line: number; column: number };
 
@@ -20,14 +25,15 @@ type EditorState = {
   renderStatus: "idle" | "rendering" | "success" | "error";
   renderError: RenderError | null;
   renderDuration: number | null;
+  rateLimitUntil: number | null;
   pdfBlob: Blob | null;
   pdfUrl: string | null;
   readOnly: boolean;
   viewingVersion: number | null;
   dataError: string | null;
   pdfScrollTop: number;
-  editorInstance: any | null;
-  monacoInstance: any | null;
+  editorInstance: MonacoEditor | null;
+  monacoInstance: MonacoInstance | null;
   cursorPosition: { line: number; column: number } | null;
   loadTemplate: (template: TemplateDetail) => void;
   loadVersion: (version: TemplateVersion) => void;
@@ -43,12 +49,13 @@ type EditorState = {
   setDataError: (error: string | null) => void;
   setPdfResult: (blob: Blob, duration: number) => void;
   setRenderError: (error: RenderError | null) => void;
+  setRateLimitUntil: (value: number | null) => void;
   markClean: () => void;
   setReadOnly: (value: boolean) => void;
   setViewingVersion: (version: number | null) => void;
   setPublishedVersion: (version: number | null) => void;
   setPdfScrollTop: (value: number) => void;
-  setEditorInstance: (editor: any | null, monaco: any | null) => void;
+  setEditorInstance: (editor: MonacoEditor | null, monaco: MonacoInstance | null) => void;
   setCursorPosition: (line: number, column: number) => void;
   insertSnippet: (snippet: string) => void;
   revealError: (line: number, column: number) => void;
@@ -70,6 +77,7 @@ const initialState = {
   renderStatus: "idle" as const,
   renderError: null,
   renderDuration: null,
+  rateLimitUntil: null,
   pdfBlob: null,
   pdfUrl: null,
   readOnly: false,
@@ -190,6 +198,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       renderStatus: error ? "error" : "idle",
     });
   },
+  setRateLimitUntil: (value) => set({ rateLimitUntil: value }),
   markClean: () => set({ isDirty: false, lastSavedSource: get().source }),
   setReadOnly: (value) => set({ readOnly: value }),
   setViewingVersion: (version) => set({ viewingVersion: version }),

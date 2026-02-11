@@ -1,4 +1,6 @@
+use std::future::Future;
 use std::net::IpAddr;
+use std::pin::Pin;
 use std::sync::Arc;
 
 use base64::Engine as _;
@@ -12,14 +14,60 @@ use crate::error::EngineError;
 use crate::models::request::Asset;
 
 /// Maximum size for a single fetched asset (50MB)
+#[cfg(not(test))]
 const MAX_ASSET_SIZE: u64 = 50 * 1024 * 1024;
+#[cfg(test)]
+const MAX_ASSET_SIZE: u64 = 1024;
+
+type FetchFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<FetchResponse, EngineError>> + Send + 'a>>;
+
+struct FetchResponse {
+    status: reqwest::StatusCode,
+    bytes: Bytes,
+    content_length: Option<u64>,
+}
+
+trait HttpFetcher: Send + Sync {
+    fn fetch<'a>(&'a self, url: &'a str) -> FetchFuture<'a>;
+}
+
+struct ReqwestFetcher {
+    client: reqwest::Client,
+}
+
+impl HttpFetcher for ReqwestFetcher {
+    fn fetch<'a>(&'a self, url: &'a str) -> FetchFuture<'a> {
+        Box::pin(async move {
+            let response = self
+                .client
+                .get(url)
+                .send()
+                .await
+                .map_err(|e| EngineError::AssetFetchFailed(format!("Request failed: {}", e)))?;
+
+            let status = response.status();
+            let content_length = response.content_length();
+            let bytes = response
+                .bytes()
+                .await
+                .map_err(|e| EngineError::AssetFetchFailed(format!("Failed to read body: {}", e)))?;
+
+            Ok(FetchResponse {
+                status,
+                bytes,
+                content_length,
+            })
+        })
+    }
+}
 
 /// Thread-safe LRU cache for assets (images, fonts).
 /// Uses moka for concurrent access with configurable max size.
 #[derive(Clone)]
 pub struct AssetCache {
     cache: Arc<Cache<String, Bytes>>,
-    client: reqwest::Client,
+    fetcher: Arc<dyn HttpFetcher>,
 }
 
 impl AssetCache {
@@ -40,7 +88,22 @@ impl AssetCache {
 
         Self {
             cache: Arc::new(cache),
-            client,
+            fetcher: Arc::new(ReqwestFetcher { client }),
+        }
+    }
+
+    #[cfg(test)]
+    fn new_with_fetcher(max_size_bytes: u64, fetcher: Arc<dyn HttpFetcher>) -> Self {
+        let cache = Cache::builder()
+            .max_capacity(max_size_bytes)
+            .weigher(|_key: &String, value: &Bytes| -> u32 {
+                value.len().min(u32::MAX as usize) as u32
+            })
+            .build();
+
+        Self {
+            cache: Arc::new(cache),
+            fetcher,
         }
     }
 
@@ -107,23 +170,18 @@ impl AssetCache {
 
         info!(url = url, "Fetching remote asset");
 
-        let response = self
-            .client
-            .get(url)
-            .send()
-            .await
-            .map_err(|e| EngineError::AssetFetchFailed(format!("Request failed: {}", e)))?;
+        let response = self.fetcher.fetch(url).await?;
 
-        if !response.status().is_success() {
+        if !response.status.is_success() {
             return Err(EngineError::AssetFetchFailed(format!(
                 "HTTP {} from {}",
-                response.status(),
+                response.status,
                 url
             )));
         }
 
         // Check content-length header to reject oversized responses early
-        if let Some(content_length) = response.content_length() {
+        if let Some(content_length) = response.content_length {
             if content_length > MAX_ASSET_SIZE {
                 return Err(EngineError::InvalidRequest(format!(
                     "Asset too large: {} bytes (max {} bytes)",
@@ -132,10 +190,7 @@ impl AssetCache {
             }
         }
 
-        let bytes = response
-            .bytes()
-            .await
-            .map_err(|e| EngineError::AssetFetchFailed(format!("Failed to read body: {}", e)))?;
+        let bytes = response.bytes;
 
         // Double-check actual size (in case content-length was missing or wrong)
         if bytes.len() as u64 > MAX_ASSET_SIZE {
@@ -152,6 +207,15 @@ impl AssetCache {
     /// Validate URL to prevent SSRF attacks.
     /// Blocks internal IPs, localhost, and non-HTTP(S) schemes.
     fn validate_url(url: &str) -> Result<(), EngineError> {
+        if cfg!(test)
+            && std::env::var("DOCUFORGE_ALLOW_LOCAL_ASSET_FETCH")
+                .ok()
+                .as_deref()
+                == Some("1")
+        {
+            return Ok(());
+        }
+
         let parsed = Url::parse(url)
             .map_err(|_| EngineError::InvalidRequest(format!("Invalid URL: {}", url)))?;
 
@@ -232,6 +296,28 @@ impl AssetCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Arc, Mutex};
+
+    struct TestFetcher {
+        handler: Arc<dyn Fn(&str) -> Result<FetchResponse, EngineError> + Send + Sync>,
+    }
+
+    impl HttpFetcher for TestFetcher {
+        fn fetch<'a>(&'a self, url: &'a str) -> FetchFuture<'a> {
+            let handler = self.handler.clone();
+            Box::pin(async move { (handler)(url) })
+        }
+    }
+
+    fn fetcher_for(
+        handler: impl Fn(&str) -> Result<FetchResponse, EngineError> + Send + Sync + 'static,
+    ) -> Arc<dyn HttpFetcher> {
+        Arc::new(TestFetcher {
+            handler: Arc::new(handler),
+        })
+    }
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn test_new_cache() {
@@ -333,5 +419,113 @@ mod tests {
 
         let result = cache.get_or_fetch(&asset).await;
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_url_rejects_localhost() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("DOCUFORGE_ALLOW_LOCAL_ASSET_FETCH");
+        let result = AssetCache::validate_url("http://localhost/test");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_url_rejects_private_ip() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("DOCUFORGE_ALLOW_LOCAL_ASSET_FETCH");
+        let result = AssetCache::validate_url("http://192.168.1.10/test");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_url_rejects_non_http() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("DOCUFORGE_ALLOW_LOCAL_ASSET_FETCH");
+        let result = AssetCache::validate_url("ftp://example.com/file");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_url_rejects_invalid_url() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("DOCUFORGE_ALLOW_LOCAL_ASSET_FETCH");
+        let result = AssetCache::validate_url("http://[::1");
+        assert!(result.is_err());
+    }
+
+
+    #[tokio::test]
+    async fn test_get_or_fetch_from_url_success() {
+        let cache = AssetCache::new_with_fetcher(
+            100 * 1024 * 1024,
+            fetcher_for(|_url| {
+                Ok(FetchResponse {
+                    status: reqwest::StatusCode::OK,
+                    bytes: Bytes::from("asset-bytes"),
+                    content_length: Some("asset-bytes".len() as u64),
+                })
+            }),
+        );
+        let asset = Asset {
+            name: "remote.png".to_string(),
+            content: None,
+            url: Some("http://example.com/asset".to_string()),
+            hash: None,
+        };
+
+        let result = cache.get_or_fetch(&asset).await;
+        assert!(result.is_ok());
+        let bytes = result.unwrap();
+        assert_eq!(bytes.as_ref(), b"asset-bytes");
+
+        let hash = AssetCache::compute_hash(bytes.as_ref());
+        assert!(cache.get(&hash).is_some());
+
+    }
+
+    #[tokio::test]
+    async fn test_get_or_fetch_from_url_non_200() {
+        let cache = AssetCache::new_with_fetcher(
+            100 * 1024 * 1024,
+            fetcher_for(|_url| {
+                Ok(FetchResponse {
+                    status: reqwest::StatusCode::NOT_FOUND,
+                    bytes: Bytes::new(),
+                    content_length: Some(0),
+                })
+            }),
+        );
+        let asset = Asset {
+            name: "missing.png".to_string(),
+            content: None,
+            url: Some("http://example.com/missing".to_string()),
+            hash: None,
+        };
+
+        let result = cache.get_or_fetch(&asset).await;
+        assert!(matches!(result, Err(EngineError::AssetFetchFailed(_))));
+    }
+
+    #[tokio::test]
+    async fn test_get_or_fetch_from_url_too_large_header() {
+        let cache = AssetCache::new_with_fetcher(
+            100 * 1024 * 1024,
+            fetcher_for(|_url| {
+                Ok(FetchResponse {
+                    status: reqwest::StatusCode::OK,
+                    bytes: Bytes::from(vec![0u8; (MAX_ASSET_SIZE + 1) as usize]),
+                    content_length: Some(MAX_ASSET_SIZE + 1),
+                })
+            }),
+        );
+        let asset = Asset {
+            name: "large.png".to_string(),
+            content: None,
+            url: Some("http://example.com/large".to_string()),
+            hash: None,
+        };
+
+        let result = cache.get_or_fetch(&asset).await;
+        assert!(matches!(result, Err(EngineError::InvalidRequest(_))));
     }
 }

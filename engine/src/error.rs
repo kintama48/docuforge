@@ -30,6 +30,11 @@ pub enum EngineError {
 
 impl IntoResponse for EngineError {
     fn into_response(self) -> Response {
+        // Report server-side errors to Sentry (no-op if Sentry is not initialized)
+        if matches!(self, EngineError::Internal(_) | EngineError::AssetFetchFailed(_)) {
+            sentry::capture_error(&self);
+        }
+
         let (status, error_code, message, span, hint) = match &self {
             EngineError::InvalidRequest(msg) => (
                 StatusCode::UNPROCESSABLE_ENTITY,
@@ -80,5 +85,49 @@ impl IntoResponse for EngineError {
         };
 
         (status, Json(body)).into_response()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_invalid_request_response() {
+        let response = EngineError::InvalidRequest("bad".to_string()).into_response();
+        assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
+    #[test]
+    fn test_compilation_failed_response() {
+        let response = EngineError::CompilationFailed {
+            message: "syntax".to_string(),
+            span: Some(ErrorSpan {
+                file: "main.typ".to_string(),
+                line: 1,
+                column: 2,
+            }),
+            hint: Some("check syntax".to_string()),
+        }
+        .into_response();
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[test]
+    fn test_asset_fetch_failed_response() {
+        let response = EngineError::AssetFetchFailed("404".to_string()).into_response();
+        assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
+    }
+
+    #[test]
+    fn test_timeout_response() {
+        let response = EngineError::Timeout(123).into_response();
+        assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+    }
+
+    #[test]
+    fn test_internal_response() {
+        let response = EngineError::Internal("boom".to_string()).into_response();
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     }
 }

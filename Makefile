@@ -1,4 +1,4 @@
-.PHONY: help env install dev build test test-api test-frontend test-engine test-e2e docker-up docker-up-bg docker-down docker-build docker-logs
+.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs
 
 help:
 	@echo "DocuForge commands:"
@@ -9,8 +9,13 @@ help:
 	@echo "  make build          - Build engine + frontend"
 	@echo "  make test           - Run engine + api + frontend tests"
 	@echo "  make test-api       - Run API tests"
+	@echo "  make test-api-pipeline - Run API->engine pipeline tests (engine must be running)"
 	@echo "  make test-frontend  - Run frontend unit/integration tests"
 	@echo "  make test-e2e       - Run frontend Playwright tests"
+	@echo ""
+	@echo "  make clean          - Clean all build artifacts (engine + frontend)"
+	@echo "  make clean-engine   - Clean only Rust build artifacts"
+	@echo "  make clean-check    - Show disk usage of build artifacts"
 	@echo ""
 	@echo "  make docker-up      - Build and run full stack (foreground)"
 	@echo "  make docker-up-bg   - Build and run full stack (detached)"
@@ -44,6 +49,9 @@ test:
 test-api:
 	cd api && bun test
 
+test-api-pipeline:
+	cd api && bun run test:pipeline
+
 test-frontend:
 	cd frontend && bun run test:run
 
@@ -67,3 +75,20 @@ docker-build:
 
 docker-logs:
 	docker compose logs -f
+
+clean:
+	cd engine && cargo clean
+	cd frontend && rm -rf .next node_modules/.cache
+
+clean-engine:
+	cd engine && cargo clean
+
+clean-check:
+	@echo "=== Engine (Rust) ==="
+	@du -sh engine/target 2>/dev/null || echo "  No engine/target/"
+	@echo ""
+	@echo "=== Frontend (Next.js) ==="
+	@du -sh frontend/.next frontend/node_modules/.cache 2>/dev/null || echo "  No frontend build cache"
+	@echo ""
+	@echo "=== API (Bun) ==="
+	@du -sh api/node_modules 2>/dev/null || echo "  No api/node_modules/"

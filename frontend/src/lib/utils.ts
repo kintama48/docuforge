@@ -6,9 +6,16 @@ export function cn(...inputs: Array<string | undefined | null | false>) {
   return twMerge(clsx(inputs));
 }
 
+// FE-m2 fix: Explicit epoch-milliseconds detection.
+// Timestamps from the API are always in milliseconds (Date.now()).
+// This handles the edge case of seconds-based timestamps (10 digits) vs
+// milliseconds (13 digits) without a magic cutoff year.
 export function formatDate(timestamp: number) {
   if (!timestamp) return "—";
-  const value = timestamp > 1_000_000_000_000 ? timestamp : timestamp * 1000;
+  // 10-digit numbers are seconds, 13-digit numbers are milliseconds
+  const value = String(Math.floor(timestamp)).length <= 10
+    ? timestamp * 1000
+    : timestamp;
   return format(new Date(value), "MMM d, yyyy");
 }
 

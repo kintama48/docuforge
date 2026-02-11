@@ -64,17 +64,27 @@ impl AppState {
     }
 }
 
-pub fn create_router(state: AppState) -> Router {
-    // Request timeout (separate from render timeout - this is for the whole HTTP request)
-    let request_timeout = Duration::from_secs(120);
+/// Maximum time for an entire HTTP request (separate from per-render timeout).
+const HTTP_REQUEST_TIMEOUT_SECS: u64 = 120;
 
-    Router::new()
+pub fn create_router(state: AppState) -> Router {
+    let request_timeout = Duration::from_secs(HTTP_REQUEST_TIMEOUT_SECS);
+    let sentry_enabled = state.config.sentry_dsn.is_some();
+
+    let router = Router::new()
         .merge(SwaggerUi::new("/docs").url("/openapi.json", ApiDoc::openapi()))
         .route("/health", get(health))
         .route("/render", post(render))
         .layer(TimeoutLayer::new(request_timeout))
         .layer(RequestBodyLimitLayer::new(
             state.config.max_body_size_bytes(),
-        ))
-        .with_state(state)
+        ));
+
+    let router = if sentry_enabled {
+        router.layer(sentry_tower::SentryLayer::new_from_top())
+    } else {
+        router
+    };
+
+    router.with_state(state)
 }

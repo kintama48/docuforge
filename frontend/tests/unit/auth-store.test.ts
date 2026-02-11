@@ -36,4 +36,29 @@ describe("auth store", () => {
     });
     expect(localStorage.getItem("docuforge-auth")).toContain("token");
   });
+
+  it("updates user and authentication status", () => {
+    useAuthStore.getState().login("token", {
+      id: "usr",
+      email: "test@docuforge.dev",
+      plan: "free",
+    });
+    useAuthStore.getState().updateUser({
+      id: "usr",
+      email: "new@docuforge.dev",
+      plan: "pro",
+    });
+    expect(useAuthStore.getState().user?.email).toBe("new@docuforge.dev");
+    expect(useAuthStore.getState().isAuthenticated()).toBe(true);
+
+    useAuthStore.getState().logout();
+    expect(useAuthStore.getState().isAuthenticated()).toBe(false);
+  });
+
+  it("sets hydration flag", () => {
+    useAuthStore.getState().setHasHydrated(false);
+    expect(useAuthStore.getState().hasHydrated).toBe(false);
+    useAuthStore.getState().setHasHydrated(true);
+    expect(useAuthStore.getState().hasHydrated).toBe(true);
+  });
 });

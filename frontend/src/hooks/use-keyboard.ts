@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type Shortcut = {
   key: string;
@@ -11,11 +11,16 @@ type Shortcut = {
   handler: () => void;
 };
 
+// FE-M3 fix: Use ref to store shortcuts so the event listener isn't
+// re-attached on every render when the caller passes an inline array.
 export function useKeyboard(shortcuts: Shortcut[], enabled = true) {
+  const shortcutsRef = useRef(shortcuts);
+  shortcutsRef.current = shortcuts;
+
   useEffect(() => {
     if (!enabled) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      for (const shortcut of shortcuts) {
+      for (const shortcut of shortcutsRef.current) {
         if (
           event.key.toLowerCase() === shortcut.key.toLowerCase() &&
           (shortcut.ctrl ? event.ctrlKey : true) &&
@@ -31,5 +36,5 @@ export function useKeyboard(shortcuts: Shortcut[], enabled = true) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [shortcuts, enabled]);
+  }, [enabled]);
 }

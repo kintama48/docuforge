@@ -2,6 +2,10 @@ import { env } from '../config/env';
 
 export type OAuthProvider = 'google' | 'microsoft' | 'github';
 
+// SCALING NOTE (API-M3): OAuth state is stored in-memory. This means:
+// 1. State is lost on server restart (user must restart OAuth flow)
+// 2. State is not shared across multiple instances (sticky sessions required)
+// For multi-instance deployments, replace with Redis or database-backed storage.
 const STATE_TTL_MS = 10 * 60 * 1000;
 const stateStore = new Map<
   string,

@@ -1,4 +1,4 @@
-.PHONY: build run dev test check fmt lint clean docker-build docker-run fonts help
+.PHONY: build run dev test check fmt lint clean clean-tests clean-check docker-build docker-run fonts help
 
 # Default target
 help:
@@ -12,7 +12,9 @@ help:
 	@echo "  make check       - Run cargo check"
 	@echo "  make fmt         - Format code"
 	@echo "  make lint        - Run clippy"
-	@echo "  make clean       - Clean build artifacts"
+	@echo "  make clean       - Clean all build artifacts"
+	@echo "  make clean-tests - Clean only test binaries (keeps builds)"
+	@echo "  make clean-check - Show target/ directory disk usage"
 	@echo ""
 	@echo "  make fonts       - Download required fonts (Inter, Roboto, JetBrains Mono)"
 	@echo ""
@@ -58,6 +60,17 @@ lint:
 # Clean build artifacts
 clean:
 	cargo clean
+
+# Clean only test artifacts (keeps release/debug builds)
+clean-tests:
+	rm -rf target/debug/deps/*test* target/debug/.fingerprint/*test*
+
+# Show disk usage of target directory
+clean-check:
+	@echo "Target directory size:"
+	@du -sh target/ 2>/dev/null || echo "target/ doesn't exist"
+	@echo "\nDeps directory size:"
+	@du -sh target/debug/deps/ 2>/dev/null || echo "target/debug/deps/ doesn't exist"
 
 # Download fonts to assets/fonts/
 FONT_DIR := assets/fonts

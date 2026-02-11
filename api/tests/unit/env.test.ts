@@ -37,8 +37,8 @@ const envSchema = z.object({
   STRIPE_PRO_PRICE_ID: z.string().min(1),
 
   // AI
-  OPENAI_API_KEY: z.string().min(1),
-  AI_MODEL: z.string().default('gpt-4o'),
+  GEMINI_API_KEY: z.string().min(1),
+  AI_MODEL: z.string().default('gemini-2.5-flash'),
 
   // Auth
   JWT_SECRET: z.string().min(32),
@@ -65,7 +65,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -85,7 +85,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -98,7 +98,7 @@ describe('env', () => {
         expect(result.data.NODE_ENV).toBe('development');
         expect(result.data.ENGINE_URL).toBe('http://127.0.0.1:3001');
         expect(result.data.ENGINE_TIMEOUT_MS).toBe(5000);
-        expect(result.data.AI_MODEL).toBe('gpt-4o');
+        expect(result.data.AI_MODEL).toBe('gemini-2.5-flash');
         expect(result.data.JWT_EXPIRY).toBe('7d');
         expect(result.data.FREE_MONTHLY_LIMIT).toBe(500);
         expect(result.data.STARTER_MONTHLY_LIMIT).toBe(10000);
@@ -118,7 +118,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -143,7 +143,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
       };
 
       const result = envSchema.safeParse(missingJwtSecret);
@@ -167,7 +167,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'too-short', // Less than 32 chars
       };
 
@@ -191,7 +191,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -206,7 +206,7 @@ describe('env', () => {
     test('throws on missing multiple required vars', () => {
       const manyMissing = {
         DATABASE_URL: 'file:./test.db',
-        // Missing all R2, Stripe, OpenAI, JWT
+        // Missing all R2, Stripe, Gemini, JWT
       };
 
       const result = envSchema.safeParse(manyMissing);
@@ -216,7 +216,7 @@ describe('env', () => {
         const paths = result.error.issues.map((i) => i.path.join('.'));
         expect(paths).toContain('R2_ENDPOINT');
         expect(paths).toContain('STRIPE_SECRET_KEY');
-        expect(paths).toContain('OPENAI_API_KEY');
+        expect(paths).toContain('GEMINI_API_KEY');
         expect(paths).toContain('JWT_SECRET');
       }
     });
@@ -234,7 +234,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -262,7 +262,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -288,7 +288,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -315,7 +315,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -339,7 +339,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
@@ -364,7 +364,7 @@ describe('env', () => {
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
-        OPENAI_API_KEY: 'sk-openai-abc',
+        GEMINI_API_KEY: 'test-gemini-abc',
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 

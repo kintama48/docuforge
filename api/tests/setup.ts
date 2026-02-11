@@ -21,10 +21,12 @@ import { hashApiKey, generateRawApiKey, extractKeyPrefix } from '../src/lib/api-
 import type { PlanTier } from '../src/types';
 import { resetDb, initTestDb, getDb, schema as dbSchema } from '../src/db/client';
 import { createApp } from '../src/app';
+import { reloadEnv } from '../src/config/env';
 
 // Re-export helpers for convenience
 export { createTestDatabase, closeTestDatabase, type TestDb, schema } from './helpers/db';
 export { createMockEngine, type MockEngine, type MockEngineConfig, MINIMAL_PDF } from './helpers/mock-engine';
+export { createTestServer, type TestServer } from './helpers/test-server';
 export { createAuthHeaders, createApiKeyHeaders, createTestJwt, createExpiredJwt, createInvalidSignatureJwt, TEST_JWT_SECRET } from './helpers/auth';
 export * from './helpers/fixtures';
 export * from './helpers/mock-stripe';
@@ -62,12 +64,14 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.R2_SECRET_ACCESS_KEY = 'fake_secret_key';
   process.env.R2_BUCKET = 'test-bucket';
   process.env.R2_PUBLIC_URL = 'https://assets.test.local';
-  process.env.OPENAI_API_KEY = 'sk-test-fake';
-  process.env.AI_MODEL = 'gpt-4o';
+  process.env.GEMINI_API_KEY = 'test-gemini-key';
+  process.env.AI_MODEL = 'gemini-2.5-flash';
 
   if (engineUrl) {
     process.env.ENGINE_URL = engineUrl;
   }
+
+  reloadEnv();
 }
 
 /**

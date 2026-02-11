@@ -16,6 +16,7 @@ import {
   fetchOAuthProfile,
   type OAuthProvider,
 } from '../services/oauth';
+import { createExchangeCode, consumeExchangeCode } from '../services/oauth-exchange';
 
 const auth = new Hono();
 
@@ -181,14 +182,10 @@ auth.get('/oauth/:provider/callback', async (c) => {
       user = existingUser || null;
     }
 
-    if (!user) {
-      // Fallback by email
-      const [existingUser] = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, profile.email));
-      user = existingUser || null;
-    }
+    // API-M1 fix: Do NOT fall back to email matching alone.
+    // Auto-linking by email allows account takeover if an attacker controls
+    // the OAuth provider email. Only match by providerUserId (above).
+    // If no OAuth account is found, create a new user instead.
 
     if (!user) {
       const passwordHash = await Bun.password.hash(crypto.randomUUID());
@@ -234,23 +231,59 @@ auth.get('/oauth/:provider/callback', async (c) => {
 
     const token = await createJwt(user.id, user.email);
 
+    // Create a short-lived exchange code instead of passing sensitive data in URL
+    // This prevents tokens from being logged in browser history, server logs, referrer headers
+    const exchangeCode = createExchangeCode({
+      token,
+      userId: user.id,
+      email: user.email,
+      plan: user.planTier,
+      apiKey: rawKey,
+      redirect: stateRecord.redirect,
+    });
+
     const redirectUrl = new URL(`${env.APP_URL}/oauth/callback`);
-    redirectUrl.searchParams.set('token', token);
-    redirectUrl.searchParams.set('user_id', user.id);
-    redirectUrl.searchParams.set('email', user.email);
-    redirectUrl.searchParams.set('plan', user.planTier);
-    if (stateRecord.redirect) {
-      redirectUrl.searchParams.set('redirect', stateRecord.redirect);
-    }
-    if (rawKey) {
-      redirectUrl.searchParams.set('api_key', rawKey);
-    }
+    redirectUrl.searchParams.set('code', exchangeCode);
 
     return c.redirect(redirectUrl.toString());
   } catch (err) {
     console.error('OAuth error', err);
     return c.redirect(`${env.APP_URL}/login?error=oauth_failed`);
   }
+});
+
+// POST /v1/auth/oauth/exchange - Exchange OAuth code for credentials
+auth.post('/oauth/exchange', async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const code = body.code;
+
+  if (!code || typeof code !== 'string') {
+    throw new UnauthorizedError('Exchange code required');
+  }
+
+  const data = consumeExchangeCode(code);
+  if (!data) {
+    throw new UnauthorizedError('Invalid or expired exchange code');
+  }
+
+  const response: Record<string, unknown> = {
+    token: data.token,
+    user: {
+      id: data.userId,
+      email: data.email,
+      plan: data.plan,
+    },
+  };
+
+  if (data.apiKey) {
+    response.api_key = data.apiKey;
+  }
+
+  if (data.redirect) {
+    response.redirect = data.redirect;
+  }
+
+  return c.json(response);
 });
 
 // POST /v1/auth/keys - Create new API key

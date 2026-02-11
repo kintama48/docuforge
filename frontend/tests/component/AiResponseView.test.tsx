@@ -3,10 +3,19 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithProviders } from "../helpers/render";
 import { AiResponseView } from "@/src/components/ai/AiResponseView";
 
-vi.mock("@monaco-editor/react", () => ({
-  DiffEditor: (props: { modified: string }) => (
-    <div data-testid="diff-editor">{props.modified}</div>
-  ),
+const registerTypstLanguage = vi.fn();
+
+vi.mock("@/src/lib/typst", () => ({
+  registerTypstLanguage: (...args: any[]) => registerTypstLanguage(...args),
+}));
+
+vi.mock("next/dynamic", () => ({
+  default: () => {
+    return (props: { modified: string; beforeMount?: (monaco: any) => void }) => {
+      props.beforeMount?.({ languages: {} });
+      return <div data-testid="diff-editor">{props.modified}</div>;
+    };
+  },
 }));
 
 describe("AiResponseView", () => {
@@ -30,5 +39,6 @@ describe("AiResponseView", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /discard/i }));
     expect(onDiscard).toHaveBeenCalled();
+    expect(registerTypstLanguage).toHaveBeenCalled();
   });
 });
