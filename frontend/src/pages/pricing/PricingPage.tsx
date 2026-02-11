@@ -5,7 +5,13 @@ import { SiteFooter } from "@/src/app/components/site-footer";
 import { SiteHeader } from "@/src/app/components/site-header";
 import { useI18n } from "@/src/lib/i18n";
 import { planLimits } from "@/src/lib/constants";
+import { formatBytes } from "@/src/lib/utils";
 import { useLocalePath } from "@/src/lib/use-locale-path";
+
+function fmtLimit(v: number | null): string {
+  if (v === null) return "Unlimited";
+  return v.toLocaleString();
+}
 
 type PlanKey = "free" | "starter" | "pro" | "enterprise";
 
@@ -71,15 +77,15 @@ export default function PricingPage() {
                     </p>
                     <ul className="mt-6 space-y-2 text-sm text-[var(--muted)]">
                       <li>
-                        {limits.renders} {messages.pricing.rendersPerMonth}
+                        {fmtLimit(limits.renders)} {messages.pricing.rendersPerMonth}
                       </li>
                       <li>
-                        {limits.aiCredits} {messages.pricing.aiCreditsPerMonth}
+                        {fmtLimit(limits.aiCredits)} {messages.pricing.aiCreditsPerMonth}
                       </li>
                       <li>
-                        {limits.templates} {messages.pricing.templatesLabel}
+                        {fmtLimit(limits.templates)} {messages.pricing.templatesLabel}
                       </li>
-                      <li>{limits.assets} {messages.pricing.assetsLabel}</li>
+                      <li>{limits.assetsBytes !== null ? formatBytes(limits.assetsBytes) : "Unlimited"} {messages.pricing.assetsLabel}</li>
                     </ul>
                     <Link
                       href={

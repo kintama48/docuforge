@@ -1,0 +1,31 @@
+# Cargo configuration for docuforge-engine
+# Reduces build artifact sizes and improves build times
+
+[build]
+# Use all available CPU cores
+jobs = -1
+
+[profile.dev]
+# Reduce debug info to save disk space (line tables only)
+debug = 1
+# Keep incremental compilation for faster rebuilds
+incremental = true
+
+[profile.test]
+# Significantly reduce test binary sizes
+debug = 0  # No debug info for tests
+opt-level = 0  # Fast compilation
+incremental = true
+
+[profile.release]
+# Production optimizations
+lto = "thin"  # Link-time optimization
+codegen-units = 1  # Better optimization, slower build
+opt-level = 3
+strip = true  # Strip symbols from binary
+
+[target.x86_64-unknown-linux-gnu]
+# Use faster linker if available (install with: cargo install mold)
+# Uncomment if you have mold installed:
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=mold"]

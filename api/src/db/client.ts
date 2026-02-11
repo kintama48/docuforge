@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/libsql';
+import { sql } from 'drizzle-orm';
 import { createClient } from '@libsql/client';
 import * as schema from './schema';
 
@@ -151,7 +152,5 @@ export async function initTestDb() {
 
   return db;
 }
-
-import { sql } from 'drizzle-orm';
 
 export { schema };

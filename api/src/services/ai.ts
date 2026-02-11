@@ -1,14 +1,36 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
 
-let openaiClient: OpenAI | null = null;
+let geminiClient: GoogleGenerativeAI | null = null;
 
-function getOpenAI(): OpenAI {
-  if (!openaiClient) {
-    openaiClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+function getGeminiClient(): GoogleGenerativeAI {
+  if (!geminiClient) {
+    geminiClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   }
-  return openaiClient;
+  return geminiClient;
+}
+
+function getGeminiModel(modelName?: string): GenerativeModel {
+  const client = getGeminiClient();
+  const model = modelName || process.env.AI_MODEL || 'gemini-2.5-flash';
+  return client.getGenerativeModel({ model });
+}
+
+export function setGeminiClient(client: GoogleGenerativeAI | null) {
+  geminiClient = client;
+}
+
+/** Strip markdown code fences from AI response */
+function stripCodeFences(content: string): string {
+  let code = content.trim();
+  if (code.startsWith('```typst')) {
+    code = code.slice(8);
+  } else if (code.startsWith('```')) {
+    code = code.slice(3);
+  }
+  if (code.endsWith('```')) {
+    code = code.slice(0, -3);
+  }
+  return code.trim();
 }
 
 const SYSTEM_PROMPT = `You are a Typst expert. Typst is a modern typesetting language for creating beautiful documents.
@@ -44,93 +66,80 @@ export interface AiGenerateResult {
 }
 
 export async function aiEditCode(params: AiEditParams): Promise<AiEditResult> {
-  const openai = getOpenAI();
-  const model = process.env.AI_MODEL || 'gpt-4o';
+  const model = getGeminiModel();
 
   const assetContext =
     params.assetNames.length > 0
       ? `\n\nThe user has these assets available: ${params.assetNames.join(', ')}. You can reference them in Typst using #image("asset-name.png") for images or #set text(font: "FontName") for fonts.`
       : '';
 
-  const response = await openai.chat.completions.create({
-    model,
-    messages: [
-      {
-        role: 'system',
-        content: SYSTEM_PROMPT + assetContext,
-      },
+  const response = await model.generateContent({
+    contents: [
       {
         role: 'user',
-        content: `Current Typst code:\n\`\`\`typst\n${params.currentCode}\n\`\`\`\n\nUser request: ${params.prompt}`,
+        parts: [
+          {
+            text: `Current Typst code:\n\`\`\`typst\n${params.currentCode}\n\`\`\`\n\nUser request: ${params.prompt}`,
+          },
+        ],
       },
     ],
-    max_tokens: 4096,
-    temperature: 0.3,
+    systemInstruction: SYSTEM_PROMPT + assetContext,
+    generationConfig: {
+      maxOutputTokens: 4096,
+      temperature: 0.3,
+    },
   });
 
-  const content = response.choices[0]?.message?.content || params.currentCode;
-  const tokensUsed = response.usage?.total_tokens || 0;
-
-  // Clean up response (remove markdown code blocks if present)
-  let code = content.trim();
-  if (code.startsWith('```typst')) {
-    code = code.slice(8);
-  } else if (code.startsWith('```')) {
-    code = code.slice(3);
-  }
-  if (code.endsWith('```')) {
-    code = code.slice(0, -3);
-  }
-  code = code.trim();
+  const content = response.response.text() || params.currentCode;
+  const tokensUsed = response.response.usageMetadata?.totalTokenCount || 0;
 
   return {
-    code,
+    code: stripCodeFences(content),
     tokensUsed,
   };
 }
 
 export async function aiGenerateFromImage(params: AiGenerateParams): Promise<AiGenerateResult> {
-  const openai = getOpenAI();
-  const model = process.env.AI_VISION_MODEL || process.env.AI_MODEL || 'gpt-4o';
+  const model = getGeminiModel();
 
-  const imageUrl = params.imageBase64.startsWith('data:')
-    ? params.imageBase64
-    : `data:image/png;base64,${params.imageBase64}`;
+  // Extract raw base64 data (strip data URI prefix if present)
+  let mimeType = 'image/png';
+  let base64Data = params.imageBase64;
+  if (base64Data.startsWith('data:')) {
+    const match = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+    if (match) {
+      mimeType = match[1];
+      base64Data = match[2];
+    }
+  }
 
-  const response = await openai.chat.completions.create({
-    model,
-    messages: [
-      {
-        role: 'system',
-        content:
-          SYSTEM_PROMPT +
-          '\nYou will be given a screenshot of a document. Recreate the layout in Typst as faithfully as possible. Return ONLY Typst code.',
-      },
+  const response = await model.generateContent({
+    contents: [
       {
         role: 'user',
-        content: [
-          { type: 'text', text: 'Generate Typst code that matches this screenshot.' },
-          { type: 'image_url', image_url: { url: imageUrl } },
+        parts: [
+          { text: 'Generate Typst code that matches this screenshot.' },
+          {
+            inlineData: {
+              mimeType,
+              data: base64Data,
+            },
+          },
         ],
       },
     ],
-    max_tokens: 4096,
-    temperature: 0.3,
+    systemInstruction:
+      SYSTEM_PROMPT +
+      '\nYou will be given a screenshot of a document. Recreate the layout in Typst as faithfully as possible. Return ONLY Typst code.',
+    generationConfig: {
+      maxOutputTokens: 4096,
+      temperature: 0.3,
+    },
   });
 
-  const content = response.choices[0]?.message?.content || '';
-  const tokensUsed = response.usage?.total_tokens || 0;
+  const content = response.response.text() || '';
+  const tokensUsed = response.response.usageMetadata?.totalTokenCount || 0;
 
-  let code = content.trim();
-  if (code.startsWith('```typst')) {
-    code = code.slice(8);
-  } else if (code.startsWith('```')) {
-    code = code.slice(3);
-  }
-  if (code.endsWith('```')) {
-    code = code.slice(0, -3);
-  }
-  code = code.trim();
-
-  return { code, tokensUsed };
+  return { code: stripCodeFences(content), tokensUsed };
 }

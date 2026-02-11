@@ -8,6 +8,7 @@
     "test": "bun test",
     "test:unit": "bun test tests/unit/",
     "test:integration": "bun test tests/integration/",
+    "test:pipeline": "ENGINE_URL=http://127.0.0.1:3001 bun test tests/integration/render-engine-pipeline.test.ts",
     "test:e2e": "bun test tests/e2e/",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run scripts/migrate.ts",
@@ -25,7 +26,8 @@
     "nanoid": "^5.0.9",
     "jose": "^5.9.6",
     "lru-cache": "^11.0.2",
-    "openai": "^4.77.0"
+    "@google/generative-ai": "^0.24.0",
+    "@sentry/bun": "^9.5.0"
   },
   "devDependencies": {
     "@types/bun": "latest",

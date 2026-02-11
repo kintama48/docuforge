@@ -24,4 +24,46 @@ describe("useKeyboard", () => {
     fireEvent.keyDown(window, { key: "k", ctrlKey: true });
     expect(screen.getByText("hit")).toBeInTheDocument();
   });
+
+  it("does not trigger when disabled", () => {
+    function DisabledTester() {
+      const [status, setStatus] = useState("idle");
+      useKeyboard(
+        [
+          {
+            key: "k",
+            ctrl: true,
+            handler: () => setStatus("hit"),
+          },
+        ],
+        false
+      );
+      return <div>{status}</div>;
+    }
+    render(<DisabledTester />);
+    fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+    expect(screen.getByText("idle")).toBeInTheDocument();
+  });
+
+  it("respects modifier keys", () => {
+    function ModifierTester() {
+      const [status, setStatus] = useState("idle");
+      useKeyboard(
+        [
+          {
+            key: "p",
+            meta: true,
+            shift: true,
+            alt: true,
+            handler: () => setStatus("hit"),
+          },
+        ],
+        true
+      );
+      return <div>{status}</div>;
+    }
+    render(<ModifierTester />);
+    fireEvent.keyDown(window, { key: "p", metaKey: true, shiftKey: true, altKey: true });
+    expect(screen.getByText("hit")).toBeInTheDocument();
+  });
 });

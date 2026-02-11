@@ -12,6 +12,7 @@ import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { createApp } from '../../src/app';
 import {
   createMockEngine,
+  createTestServer,
   setupTestEnv,
   type MockEngine,
 } from '../setup';
@@ -25,7 +26,7 @@ describe('E2E: Full Render Flow', () => {
   let engine: MockEngine;
   let app: ReturnType<typeof createApp>;
   let baseUrl: string;
-  let server: ReturnType<typeof Bun.serve>;
+  let server: ReturnType<typeof createTestServer>;
 
   beforeAll(async () => {
     // Set up mock engine
@@ -108,15 +109,12 @@ describe('E2E: Full Render Flow', () => {
 
     // Create app and start server
     app = createApp();
-    server = Bun.serve({
-      port: 0,
-      fetch: app.fetch,
-    });
-    baseUrl = `http://127.0.0.1:${server.port}`;
+    server = createTestServer(app);
+    baseUrl = server.url;
   });
 
   afterAll(async () => {
-    server.stop(true);
+    server.stop();
     await engine.stop();
     try {
       unlinkSync(TEST_DB_PATH);

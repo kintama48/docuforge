@@ -2,8 +2,23 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Heading1,
+  Heading2,
+  List,
+  ListOrdered,
+  Link2,
+  Image,
+  Code2,
+  Table,
+} from "lucide-react";
 import { useEditorStore } from "@/src/stores/editor";
 import { useI18n } from "@/src/lib/i18n";
+import { useMonacoFormatting, type FormatAction } from "@/src/hooks/use-monaco-formatting";
 
 type EditorToolbarProps = {
   onPublish: () => void;
@@ -137,5 +152,55 @@ export function EditorToolbar({
         </div>
       </div>
     </header>
+  );
+}
+
+const toolbarGroups: { id: FormatAction; icon: typeof Bold; label: string }[][] = [
+  [
+    { id: "bold", icon: Bold, label: "Bold" },
+    { id: "italic", icon: Italic, label: "Italic" },
+    { id: "underline", icon: Underline, label: "Underline" },
+    { id: "strike", icon: Strikethrough, label: "Strikethrough" },
+  ],
+  [
+    { id: "h1", icon: Heading1, label: "Heading 1" },
+    { id: "h2", icon: Heading2, label: "Heading 2" },
+    { id: "bullet", icon: List, label: "Bullet list" },
+    { id: "number", icon: ListOrdered, label: "Numbered list" },
+  ],
+  [
+    { id: "link", icon: Link2, label: "Link" },
+    { id: "image", icon: Image, label: "Image" },
+    { id: "code", icon: Code2, label: "Code block" },
+    { id: "table", icon: Table, label: "Table" },
+  ],
+];
+
+export function EditorPowerBar() {
+  const { applyAction, ready } = useMonacoFormatting();
+
+  return (
+    <div className="border-b border-[#27272a] bg-[#0f1117] px-2 py-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {toolbarGroups.map((group, groupIndex) => (
+          <div key={`group-${groupIndex}`} className="flex items-center gap-1">
+            {group.map(({ id, icon: Icon, label }) => (
+              <button
+                key={id}
+                onClick={() => applyAction(id)}
+                disabled={!ready}
+                title={label}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#27272a] text-[#a1a1aa] transition hover:border-[#3f3f46] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Icon className="h-4 w-4" />
+              </button>
+            ))}
+            {groupIndex < toolbarGroups.length - 1 && (
+              <span className="mx-1 h-4 w-px bg-[#27272a]" />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

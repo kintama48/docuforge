@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/src/components/auth/ProtectedRoute";
 import { AiDrawer } from "@/src/components/editor/AiDrawer";
@@ -42,6 +42,8 @@ export default function EditorPage() {
   const files = useEditorStore((state) => state.files);
   const dataString = useEditorStore((state) => state.dataString);
   const dataObject = useEditorStore((state) => state.data);
+  const rateLimitUntil = useEditorStore((state) => state.rateLimitUntil);
+  const setRateLimitUntil = useEditorStore((state) => state.setRateLimitUntil);
   const setReadOnly = useEditorStore((state) => state.setReadOnly);
   const setViewingVersion = useEditorStore((state) => state.setViewingVersion);
   const readOnly = useEditorStore((state) => state.readOnly);
@@ -50,6 +52,14 @@ export default function EditorPage() {
   const debouncedSource = useDebounce(source, 800);
   const debouncedData = useDebounce(dataString, 500);
   const previewRender = usePreviewRender();
+
+  // Store mutate in a ref to avoid recreating the useEffect dependency
+  // FE-C1 fix: useMutation returns a new object each render, causing infinite loops
+  const previewRenderRef = useRef(previewRender.mutate);
+  useEffect(() => {
+    previewRenderRef.current = previewRender.mutate;
+  }, [previewRender.mutate]);
+
   const [activeTab, setActiveTab] = useState<"preview" | "data" | "diag">(
     "preview"
   );
@@ -71,19 +81,34 @@ export default function EditorPage() {
   }, [data, loadTemplate]);
 
   useEffect(() => {
+    if (!rateLimitUntil) return;
+    const remaining = rateLimitUntil - Date.now();
+    if (remaining <= 0) {
+      setRateLimitUntil(null);
+      return;
+    }
+    const handle = setTimeout(() => {
+      setRateLimitUntil(null);
+    }, remaining);
+    return () => clearTimeout(handle);
+  }, [rateLimitUntil, setRateLimitUntil]);
+
+  useEffect(() => {
     if (!autoRender) return;
+    if (rateLimitUntil && Date.now() < rateLimitUntil) return;
     if (!debouncedSource) return;
     try {
       JSON.parse(debouncedData || "{}");
     } catch {
       return;
     }
-    previewRender.mutate({
+    // Use ref to call mutate - avoids infinite loop from previewRender in deps
+    previewRenderRef.current({
       source: debouncedSource,
       files,
       data: dataObject,
     });
-  }, [debouncedSource, debouncedData, files, dataObject, previewRender]);
+  }, [debouncedSource, debouncedData, files, dataObject, autoRender, rateLimitUntil]);
 
   useKeyboard(
     [

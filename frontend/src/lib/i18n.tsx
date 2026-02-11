@@ -3355,37 +3355,30 @@ export function I18nProvider({
   const [locale, setLocale] = useState<Locale>(initialLocale ?? "en");
 
   useEffect(() => {
-    const pathLocale =
-      typeof window !== "undefined"
-        ? stripLocalePath(window.location?.pathname ?? "/").locale
-        : null;
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("docuforge-locale")
-        : null;
-    const queryLocale =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("lang")
-        : null;
+    if (typeof window === "undefined") return;
+    const { locale: pathLocale } = stripLocalePath(
+      window.location?.pathname ?? "/"
+    );
+    const stored = localStorage.getItem("docuforge-locale");
+    const queryLocale = new URLSearchParams(window.location.search).get("lang");
+
+    let nextLocale: Locale | null = null;
     if (pathLocale) {
-      if (pathLocale !== locale) setLocale(pathLocale);
-      return;
+      nextLocale = pathLocale;
+    } else if (queryLocale) {
+      nextLocale = normalizeLocale(queryLocale);
+    } else if (stored) {
+      nextLocale = normalizeLocale(stored);
+    } else if (!initialLocale && typeof navigator !== "undefined") {
+      nextLocale = normalizeLocale(navigator.language);
+    } else if (initialLocale) {
+      nextLocale = initialLocale;
     }
-    if (queryLocale) {
-      const nextLocale = normalizeLocale(queryLocale);
-      if (nextLocale !== locale) setLocale(nextLocale);
-      return;
+
+    if (nextLocale && nextLocale !== locale) {
+      setLocale(nextLocale);
     }
-    if (stored) {
-      const nextLocale = normalizeLocale(stored);
-      if (nextLocale !== locale) setLocale(nextLocale);
-      return;
-    }
-    if (!initialLocale && typeof navigator !== "undefined") {
-      const nextLocale = normalizeLocale(navigator.language);
-      if (nextLocale !== locale) setLocale(nextLocale);
-    }
-  }, [initialLocale, locale]);
+  }, [initialLocale]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

@@ -13,6 +13,7 @@
   --ink: #0f1115;
   --muted: #5d5b57;
   --line: #d8d3cc;
+  --line-hover: #c2bdb5;
   --accent: #0b5fff;
   --accent-strong: #0849c1;
   --accent-soft: #e7efff;
@@ -26,17 +27,44 @@
   --bg: #0a0a0b;
   --surface: #111113;
   --surface-2: #0f1117;
+  --surface-hover: #14161d;
+  --surface-active: #1a1a1f;
   --ink: #f4f4f5;
   --muted: #a1a1aa;
+  --muted-dim: #71717a;
   --line: #27272a;
+  --line-hover: #3f3f46;
   --accent: #3b82f6;
   --accent-strong: #2563eb;
   --accent-soft: #1f2937;
   --good: #22c55e;
   --warn: #f59e0b;
   --bad: #ef4444;
+  --bad-hover: #f87171;
+  --bad-strong: #dc2626;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
 }
+
+/*
+ * FE-m1 NOTE: Editor components should use CSS variables (var(--bg), var(--surface),
+ * var(--muted), etc.) instead of hardcoded hex colors. The mappings are:
+ *   #0a0a0b  -> var(--bg)
+ *   #0f1117  -> var(--surface-2)
+ *   #111113  -> var(--surface)
+ *   #14161d  -> var(--surface-hover)
+ *   #1a1a1f  -> var(--surface-active)
+ *   #1f2937  -> var(--accent-soft)
+ *   #27272a  -> var(--line)
+ *   #3f3f46  -> var(--line-hover)
+ *   #71717a  -> var(--muted-dim)
+ *   #a1a1aa  -> var(--muted)
+ *   #f4f4f5  -> var(--ink)
+ *   #3b82f6  -> var(--accent)
+ *   #2563eb  -> var(--accent-strong)
+ *   #ef4444  -> var(--bad)
+ *   #f87171  -> var(--bad-hover)
+ *   #dc2626  -> var(--bad-strong)
+ */
 
 @theme inline {
   --color-background: var(--bg);
@@ -201,4 +229,24 @@ a {
     background-size: 200% 200%;
     animation: shimmer 12s linear infinite;
   }
+}
+
+.monaco-editor .monaco-typst-bold {
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.monaco-editor .monaco-typst-italic {
+  font-style: italic;
+  color: #a8a29e;
+}
+
+.monaco-editor .monaco-typst-heading {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.monaco-editor .monaco-typst-function {
+  color: #f472b6;
 }

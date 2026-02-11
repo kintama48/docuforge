@@ -1,7 +1,13 @@
 "use client";
 
 import { planLimits } from "@/src/lib/constants";
+import { formatBytes } from "@/src/lib/utils";
 import { useI18n } from "@/src/lib/i18n";
+
+function fmtLimit(v: number | null): string {
+  if (v === null) return "Unlimited";
+  return v.toLocaleString();
+}
 
 type PlanTier = "free" | "starter" | "pro";
 
@@ -86,16 +92,16 @@ export function PlanSection({ plan, onUpgrade, onManage }: PlanSectionProps) {
               <p className="mt-2 text-xs text-[#a1a1aa]">{details.blurb}</p>
               <ul className="mt-3 space-y-1 text-xs text-[#a1a1aa]">
                 <li>
-                  {limit.renders} {messages.settings.monthlyRenders}
+                  {fmtLimit(limit.renders)} {messages.settings.monthlyRenders}
                 </li>
                 <li>
-                  {limit.aiCredits} {messages.settings.aiCredits}
+                  {fmtLimit(limit.aiCredits)} {messages.settings.aiCredits}
                 </li>
                 <li>
-                  {limit.templates} {messages.settings.templates}
+                  {fmtLimit(limit.templates)} {messages.settings.templates}
                 </li>
                 <li>
-                  {limit.assets} {messages.settings.assets}
+                  {limit.assetsBytes !== null ? formatBytes(limit.assetsBytes) : "Unlimited"} {messages.settings.assets}
                 </li>
               </ul>
               {tier !== "free" && !isCurrent && (

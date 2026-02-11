@@ -16,5 +16,26 @@ export default defineConfig({
     css: true,
     include: ["tests/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["node_modules/**", "e2e/**", "playwright.config.ts"],
+    // Limit parallelism to prevent memory exhaustion
+    maxWorkers: 2,
+    minWorkers: 1,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "json-summary"],
+      // CRITICAL: Set to false to only analyze files actually imported by tests
+      all: false,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/components/ui/**",
+        "src/**/*.d.ts",
+        "src/app/**",
+        "src/pages/**",
+        "src/lib/api-types.ts",
+      ],
+      lines: 90,
+      functions: 90,
+      statements: 90,
+      branches: 90,
+    },
   },
 });

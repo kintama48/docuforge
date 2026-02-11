@@ -1,6 +1,7 @@
 import { ErrorHandler } from 'hono';
 import { AppError } from '../lib/errors';
 import { ZodError } from 'zod';
+import { captureException } from '../lib/sentry';
 
 export const errorHandler: ErrorHandler = (err, c) => {
   // Handle our custom errors
@@ -25,8 +26,9 @@ export const errorHandler: ErrorHandler = (err, c) => {
     );
   }
 
-  // Log unexpected errors
+  // Log unexpected errors and report to Sentry
   console.error('Unhandled error:', err);
+  captureException(err);
 
   // Don't leak internal errors in production
   const message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;

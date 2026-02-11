@@ -49,6 +49,4 @@ pub struct RenderOptions {
     /// Compilation timeout in milliseconds (default: 30000)
     #[schema(example = 30000)]
     pub timeout_ms: Option<u64>,
-    /// PDF standard (e.g., "PDF/A-2b")
-    pub pdf_standard: Option<String>,
 }

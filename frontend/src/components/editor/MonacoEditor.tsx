@@ -1,10 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import type { editor, Monaco as MonacoType } from "monaco-editor";
 import { useEditorStore } from "@/src/stores/editor";
 import { registerTypstCompletions, registerTypstLanguage } from "@/src/lib/typst";
 import { useAssets } from "@/src/hooks/use-assets";
+import { buildTypstDecorations } from "@/src/lib/typst-decorations";
+
+// FE-C3 fix: Use proper Monaco types instead of 'any'
+type MonacoEditor = editor.IStandaloneCodeEditor;
 
 const Monaco = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
@@ -17,9 +22,12 @@ export function MonacoEditor() {
   const renderError = useEditorStore((state) => state.renderError);
   const setEditorInstance = useEditorStore((state) => state.setEditorInstance);
   const setCursorPosition = useEditorStore((state) => state.setCursorPosition);
-  const editorRef = useRef<any>(null);
-  const monacoRef = useRef<any>(null);
+  const editorRef = useRef<MonacoEditor | null>(null);
+  const monacoRef = useRef<typeof MonacoType | null>(null);
   const cursorListenerRef = useRef<{ dispose: () => void } | null>(null);
+  const decorationListenerRef = useRef<{ dispose: () => void } | null>(null);
+  const completionProviderRef = useRef<{ dispose: () => void } | null>(null);
+  const decorationIdsRef = useRef<string[]>([]);
   const setSource = useEditorStore((state) => state.setSource);
   const setFileContent = useEditorStore((state) => state.setFileContent);
   const { data: assets } = useAssets();
@@ -55,8 +63,27 @@ export function MonacoEditor() {
   useEffect(() => {
     return () => {
       cursorListenerRef.current?.dispose();
+      decorationListenerRef.current?.dispose();
+      completionProviderRef.current?.dispose();
     };
   }, []);
+
+  const updateDecorations = useCallback(() => {
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) return;
+    const model = editor.getModel();
+    if (!model) return;
+    const decorations = buildTypstDecorations(model, monaco);
+    decorationIdsRef.current = editor.deltaDecorations(
+      decorationIdsRef.current,
+      decorations
+    );
+  }, []);
+
+  useEffect(() => {
+    updateDecorations();
+  }, [value, updateDecorations]);
 
   return (
     <Monaco
@@ -66,7 +93,9 @@ export function MonacoEditor() {
       value={value}
       beforeMount={(monaco) => {
         registerTypstLanguage(monaco);
-        registerTypstCompletions(monaco, {
+        // FE-M6 fix: Dispose previous provider before re-registering
+        completionProviderRef.current?.dispose();
+        completionProviderRef.current = registerTypstCompletions(monaco, {
           assets: assetNames,
           dataKeys,
         });
@@ -79,6 +108,11 @@ export function MonacoEditor() {
         cursorListenerRef.current = editor.onDidChangeCursorPosition((event) => {
           setCursorPosition(event.position.lineNumber, event.position.column);
         });
+        decorationListenerRef.current?.dispose();
+        decorationListenerRef.current = editor.onDidChangeModelContent(() => {
+          updateDecorations();
+        });
+        updateDecorations();
       }}
       onChange={(val) => {
         if (readOnly) return;

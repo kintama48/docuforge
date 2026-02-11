@@ -13,6 +13,7 @@ import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { createApp } from '../../src/app';
 import {
   createMockEngine,
+  createTestServer,
   setupTestEnv,
   fillRenderLogs,
   createSignedWebhook,
@@ -28,7 +29,7 @@ describe('E2E: Billing Flow', () => {
   let engine: MockEngine;
   let app: ReturnType<typeof createApp>;
   let baseUrl: string;
-  let server: ReturnType<typeof Bun.serve>;
+  let server: ReturnType<typeof createTestServer>;
 
   beforeAll(async () => {
     engine = createMockEngine();
@@ -39,15 +40,12 @@ describe('E2E: Billing Flow', () => {
     db = getDb();
 
     app = createApp();
-    server = Bun.serve({
-      port: 0,
-      fetch: app.fetch,
-    });
-    baseUrl = `http://127.0.0.1:${server.port}`;
+    server = createTestServer(app);
+    baseUrl = server.url;
   });
 
   afterAll(async () => {
-    server.stop(true);
+    server.stop();
     await engine.stop();
     resetDb();
   });

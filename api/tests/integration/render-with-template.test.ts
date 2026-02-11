@@ -7,6 +7,7 @@ import {
   createTestContext,
   createTestUser,
   createTestTemplate,
+  createTestAsset,
   getAuthHeaders,
   type TestContext,
   type TestUser,
@@ -119,6 +120,33 @@ describe('POST /v1/render - Template Data', () => {
     expect(lastRequest!.body!.template.files['main.typ']).toBeDefined();
     expect(lastRequest!.body!.template.files['utils.typ']).toBeDefined();
     expect(lastRequest!.body!.template.files['utils.typ']).toBe(sampleTemplates.invoice.files!['utils.typ']);
+  });
+
+  it('includes user assets in engine payload', async () => {
+    await createTestAsset(ctx.db, user.id, {
+      name: 'logo.png',
+      mimeType: 'image/png',
+      sizeBytes: 2048,
+      hash: 'sha256-logo',
+    });
+
+    const response = await app.request('/v1/render', {
+      method: 'POST',
+      headers: getAuthHeaders(user, true),
+      body: JSON.stringify({
+        template_id: template.id,
+        data: {},
+      }),
+    });
+
+    expect(response.status).toBe(200);
+
+    const lastRequest = ctx.engine.getLastRequest();
+    expect(lastRequest).toBeDefined();
+    expect(lastRequest!.body!.assets).toBeDefined();
+    expect(lastRequest!.body!.assets.length).toBe(1);
+    expect(lastRequest!.body!.assets[0].name).toBe('logo.png');
+    expect(lastRequest!.body!.assets[0].url).toContain('X-Amz');
   });
 
   it('handles empty data object', async () => {

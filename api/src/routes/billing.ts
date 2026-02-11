@@ -7,7 +7,7 @@ import { flexibleAuth, jwtAuth } from '../middleware/auth';
 import { zValidator, createCheckoutSchema } from '../lib/validation';
 import { checkCredits, formatUsageResponse } from '../services/usage';
 import { ValidationError, InternalError } from '../lib/errors';
-import { getPlanLimit } from '../config/env';
+import { env, getPlanLimit } from '../config/env';
 
 const billing = new Hono();
 
@@ -15,11 +15,15 @@ let stripeClient: Stripe | null = null;
 
 function getStripe(): Stripe {
   if (!stripeClient) {
-    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-01-27.acacia',
     });
   }
   return stripeClient;
+}
+
+export function setStripeClient(client: Stripe | null) {
+  stripeClient = client;
 }
 
 // GET /v1/usage - Get usage stats
@@ -57,7 +61,7 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
 
   // Get price ID
   const priceId =
-    plan === 'pro' ? process.env.STRIPE_PRO_PRICE_ID : process.env.STRIPE_STARTER_PRICE_ID;
+    plan === 'pro' ? env.STRIPE_PRO_PRICE_ID : env.STRIPE_STARTER_PRICE_ID;
 
   if (!priceId) {
     throw new InternalError('Price not configured');
@@ -68,8 +72,8 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.APP_URL || 'http://localhost:3000'}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/billing/cancel`,
+    success_url: `${env.APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${env.APP_URL}/billing/cancel`,
     metadata: { userId: user.id, plan },
   });
 
@@ -80,7 +84,7 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
 billing.post('/billing/webhook', async (c) => {
   const stripe = getStripe();
   const signature = c.req.header('stripe-signature');
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
   if (!signature || !webhookSecret) {
     throw new ValidationError('Missing webhook signature');
@@ -125,9 +129,9 @@ billing.post('/billing/webhook', async (c) => {
       const priceId = subscription.items.data[0]?.price?.id;
       let plan: string = 'free';
 
-      if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
+      if (priceId === env.STRIPE_PRO_PRICE_ID) {
         plan = 'pro';
-      } else if (priceId === process.env.STRIPE_STARTER_PRICE_ID) {
+      } else if (priceId === env.STRIPE_STARTER_PRICE_ID) {
         plan = 'starter';
       }
 

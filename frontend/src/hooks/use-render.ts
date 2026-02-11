@@ -37,6 +37,17 @@ export function usePreviewRender() {
       useEditorStore.getState().setPdfResult(blob, duration);
     },
     onError: (error: any) => {
+      if (error?.error === "rate_limited") {
+        const retryAfter = Number(
+          (error?.details as { retryAfter?: number } | undefined)?.retryAfter ??
+            5
+        );
+        useEditorStore.getState().setRenderError(null);
+        useEditorStore
+          .getState()
+          .setRateLimitUntil(Date.now() + retryAfter * 1000);
+        return;
+      }
       const details = error?.details as
         | { file?: string; line?: number; column?: number }
         | undefined;

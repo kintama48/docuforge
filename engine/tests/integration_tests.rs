@@ -19,7 +19,7 @@ fn setup_test_app() -> TestServer {
     let fonts = Arc::new(FontLoader::empty());
     let cache = AssetCache::new(10 * 1024 * 1024); // 10MB
     let compiler = Compiler::new(fonts.clone(), cache);
-    let config = Config::default();
+    let config = Config::from_env();
     let state = AppState::new(compiler, config, fonts.len());
     let router = create_router(state);
     TestServer::new(router).expect("Failed to create test server")

@@ -155,5 +155,22 @@ describe('API Key Management', () => {
       const body = await response.json();
       expect(body.error).toBe('unauthorized');
     });
+
+    it('rejects revoking an already revoked key', async () => {
+      const revokeResponse = await app.request(`/v1/auth/keys/${user.apiKeyId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(user, false),
+      });
+      expect(revokeResponse.status).toBe(200);
+
+      const secondResponse = await app.request(`/v1/auth/keys/${user.apiKeyId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(user, false),
+      });
+      expect(secondResponse.status).toBe(403);
+
+      const body = await secondResponse.json();
+      expect(body.error).toBe('forbidden');
+    });
   });
 });

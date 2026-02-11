@@ -3,6 +3,7 @@
  * Minimal HTTP server that mimics the docuforge-engine behavior.
  */
 import type { EnginePayload, EngineErrorResponse } from '../../src/types';
+import { createTestOrigin, registerFetchHandler } from './fetch-router';
 
 // Minimal valid PDF (starts with %PDF header, contains basic structure)
 // This is a real minimal PDF that can be parsed by PDF readers
@@ -69,10 +70,6 @@ export interface MockEngineConfig {
 }
 
 export interface MockEngine {
-  /** The running server */
-  server: ReturnType<typeof Bun.serve>;
-  /** Port the server is listening on */
-  port: number;
   /** Full URL to the mock engine */
   url: string;
   /** All recorded requests */
@@ -90,91 +87,84 @@ export interface MockEngine {
 }
 
 /**
- * Creates a mock engine server on a random available port.
+ * Creates a mock engine handler and registers it with the fetch router.
  */
 export function createMockEngine(initialConfig: MockEngineConfig = {}): MockEngine {
   const requests: RecordedRequest[] = [];
   let config: MockEngineConfig = { ...initialConfig };
 
-  const server = Bun.serve({
-    port: 0, // Random available port
-    fetch: async (req) => {
-      const url = new URL(req.url);
-      const path = url.pathname;
-      const method = req.method;
+  const engineUrl = createTestOrigin('engine');
+  const unregister = registerFetchHandler(engineUrl, async (req) => {
+    const url = new URL(req.url);
+    const path = url.pathname;
+    const method = req.method;
 
-      // Health check endpoint
-      if (method === 'GET' && path === '/health') {
-        if (config.forceError === 'unavailable') {
-          return new Response('Service Unavailable', { status: 503 });
-        }
-        return Response.json({ status: 'ok' });
+    // Health check endpoint
+    if (method === 'GET' && path === '/health') {
+      if (config.forceError === 'unavailable') {
+        return new Response('Service Unavailable', { status: 503 });
+      }
+      return Response.json({ status: 'ok' });
+    }
+
+    // Render endpoint
+    if (method === 'POST' && path === '/render') {
+      let body: EnginePayload | null = null;
+
+      try {
+        body = await req.json();
+      } catch {
+        return Response.json(
+          { error: 'invalid_json', message: 'Invalid JSON body' },
+          { status: 400 }
+        );
       }
 
-      // Render endpoint
-      if (method === 'POST' && path === '/render') {
-        let body: EnginePayload | null = null;
+      // Record the request
+      requests.push({
+        method,
+        path,
+        body,
+        timestamp: Date.now(),
+      });
 
-        try {
-          body = await req.json();
-        } catch {
-          return Response.json(
-            { error: 'invalid_json', message: 'Invalid JSON body' },
-            { status: 400 }
-          );
-        }
-
-        // Record the request
-        requests.push({
-          method,
-          path,
-          body,
-          timestamp: Date.now(),
-        });
-
-        // Apply delay if configured
-        if (config.delayMs && config.delayMs > 0) {
-          await Bun.sleep(config.delayMs);
-        }
-
-        // Handle forced errors
-        if (config.forceError === 'compilation') {
-          const errorResponse: EngineErrorResponse = {
-            error: 'compilation_failed',
-            message: config.errorMessage || 'Unknown identifier: sys',
-            span: { file: 'main.typ', line: 1, column: 10 },
-          };
-          return Response.json(errorResponse, { status: 400 });
-        }
-
-        if (config.forceError === 'timeout') {
-          return Response.json({ error: 'timeout' }, { status: 408 });
-        }
-
-        if (config.forceError === 'unavailable') {
-          return new Response('Service Unavailable', { status: 503 });
-        }
-
-        // Return PDF
-        const pdfBytes = config.customPdf || MINIMAL_PDF_BYTES;
-        return new Response(new Uint8Array(pdfBytes), {
-          headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Length': pdfBytes.length.toString(),
-          },
-        });
+      // Apply delay if configured
+      if (config.delayMs && config.delayMs > 0) {
+        await Bun.sleep(config.delayMs);
       }
 
-      return new Response('Not Found', { status: 404 });
-    },
+      // Handle forced errors
+      if (config.forceError === 'compilation') {
+        const errorResponse: EngineErrorResponse = {
+          error: 'compilation_failed',
+          message: config.errorMessage || 'Unknown identifier: sys',
+          span: { file: 'main.typ', line: 1, column: 10 },
+        };
+        return Response.json(errorResponse, { status: 400 });
+      }
+
+      if (config.forceError === 'timeout') {
+        return Response.json({ error: 'timeout' }, { status: 408 });
+      }
+
+      if (config.forceError === 'unavailable') {
+        return new Response('Service Unavailable', { status: 503 });
+      }
+
+      // Return PDF
+      const pdfBytes = config.customPdf || MINIMAL_PDF_BYTES;
+      return new Response(new Uint8Array(pdfBytes), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Length': pdfBytes.length.toString(),
+        },
+      });
+    }
+
+    return new Response('Not Found', { status: 404 });
   });
 
-  const port = server.port!;
-  const engineUrl = `http://127.0.0.1:${port}`;
-
   return {
-    server,
-    port,
     url: engineUrl,
     requests,
     getLastRequest(): RecordedRequest | undefined {
@@ -191,7 +181,7 @@ export function createMockEngine(initialConfig: MockEngineConfig = {}): MockEngi
       requests.length = 0;
     },
     async stop(): Promise<void> {
-      server.stop(true);
+      unregister();
     },
   };
 }

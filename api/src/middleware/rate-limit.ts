@@ -1,3 +1,10 @@
+/**
+ * In-memory rate limiter.
+ *
+ * SCALING NOTE (API-M2): This uses a per-process Map, so rate limits are
+ * NOT shared across multiple server instances. For multi-instance deployments,
+ * replace with a distributed rate limiter backed by Redis or similar.
+ */
 import { createMiddleware } from 'hono/factory';
 import { RateLimitedError } from '../lib/errors';
 import type { PlanTier } from '../types';

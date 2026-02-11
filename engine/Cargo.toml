@@ -35,6 +35,8 @@ thiserror = "1"
 parking_lot = "0.12"
 moka = { version = "0.12", features = ["sync"] }
 bytes = "1"
+sentry = { version = "0.35", default-features = false, features = ["reqwest", "rustls"] }
+sentry-tower = { version = "0.35", features = ["http"] }
 
 [dev-dependencies]
 tokio-test = "0.4"

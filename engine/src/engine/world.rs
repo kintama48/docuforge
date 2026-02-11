@@ -72,10 +72,10 @@ impl DocuForgeWorld {
             )));
         }
 
-        // Convert assets to use Typst Bytes
+        // Convert bytes::Bytes into Typst Bytes for the virtual filesystem.
         let assets = assets
             .into_iter()
-            .map(|(k, v)| (k, Bytes::from(v.as_ref().to_vec())))
+            .map(|(k, v)| (k, Bytes::from(v.to_vec())))
             .collect();
 
         Ok(Self {

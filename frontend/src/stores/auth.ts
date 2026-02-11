@@ -1,5 +1,30 @@
 "use client";
 
+/**
+ * Auth Store - Authentication state management
+ *
+ * SECURITY NOTE (FE-C2):
+ * JWT tokens are stored in localStorage for simplicity and to enable
+ * API calls from service workers. This has trade-offs:
+ *
+ * Pros:
+ * - Simple implementation
+ * - Works with SSR/hydration
+ * - Accessible for API requests
+ *
+ * Cons:
+ * - Vulnerable to XSS attacks (any JS on page can read the token)
+ * - Tokens persist until explicitly cleared
+ *
+ * Mitigations in place:
+ * - Content Security Policy (CSP) headers should be configured
+ * - No third-party scripts with write access
+ * - Token expiry enforced server-side
+ *
+ * For higher security requirements, consider httpOnly cookies with
+ * CSRF protection, but this requires API changes.
+ */
+
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { User } from "@/src/lib/api-types";

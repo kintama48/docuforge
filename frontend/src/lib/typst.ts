@@ -152,7 +152,8 @@ export function registerTypstCompletions(
       insertText: `sys.inputs.${key}`,
     })) || [];
 
-  monaco.languages.registerCompletionItemProvider("typst", {
+  // FE-M6 fix: Return the disposable so callers can clean up
+  return monaco.languages.registerCompletionItemProvider("typst", {
     provideCompletionItems: () => ({
       suggestions: [...completions, ...assetItems, ...dataItems],
     }),

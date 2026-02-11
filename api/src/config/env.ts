@@ -29,8 +29,13 @@ const envSchema = z.object({
   STRIPE_PRO_PRICE_ID: z.string().min(1),
 
   // AI
-  OPENAI_API_KEY: z.string().min(1),
-  AI_MODEL: z.string().default('gpt-4o'),
+  GEMINI_API_KEY: z.string().min(1),
+  AI_MODEL: z.string().default('gemini-2.5-flash'),
+
+  // Sentry (optional)
+  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ENVIRONMENT: z.string().optional(),
+  SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional().default(0.1),
 
   // Auth
   JWT_SECRET: z.string().min(32),
@@ -79,6 +84,12 @@ function loadEnv(): Env {
 }
 
 export const env = loadEnv();
+
+export function reloadEnv(): Env {
+  const next = loadEnv();
+  Object.assign(env, next);
+  return env;
+}
 
 export function getPlanLimit(planTier: string): number {
   switch (planTier) {
