@@ -5,3 +5,4 @@ export { default as billing } from './billing';
 export { default as templates } from './templates';
 export { default as assets } from './assets';
 export { default as ai } from './ai';
+export { default as webhooks } from './webhooks';

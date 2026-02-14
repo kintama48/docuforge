@@ -1,0 +1,42 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "docuforge/render",
+	"version": "1.0.0",
+	"title": "DocuForge PDF",
+	"category": "embed",
+	"icon": "pdf",
+	"description": "Render and embed a PDF from a DocuForge template.",
+	"keywords": [ "pdf", "document", "docuforge", "template", "typst" ],
+	"textdomain": "docuforge",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ]
+	},
+	"attributes": {
+		"templateId": {
+			"type": "string",
+			"default": ""
+		},
+		"output": {
+			"type": "string",
+			"default": "embed",
+			"enum": [ "embed", "download" ]
+		},
+		"data": {
+			"type": "object",
+			"default": {}
+		},
+		"width": {
+			"type": "string",
+			"default": "100%"
+		},
+		"height": {
+			"type": "string",
+			"default": "600px"
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"render": "file:./render.php"
+}

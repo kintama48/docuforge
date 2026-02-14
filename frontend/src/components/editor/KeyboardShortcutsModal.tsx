@@ -26,11 +26,11 @@ export function KeyboardShortcutsModal({
 
   return (
     <Modal open={open} onClose={onClose} title={messages.editor.keyboardShortcuts}>
-      <div className="space-y-3 text-xs text-[#a1a1aa]">
+      <div className="space-y-3 text-xs text-[--muted]">
         {shortcuts.map(([combo, action]) => (
           <div
             key={combo}
-            className="flex items-center justify-between rounded-md border border-[#27272a] bg-[#0f1117] px-3 py-2"
+            className="flex items-center justify-between rounded-md border border-[--line] bg-[--surface-2] px-3 py-2"
           >
             <span className="text-white">{combo}</span>
             <span>{action}</span>

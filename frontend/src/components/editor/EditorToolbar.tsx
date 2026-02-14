@@ -47,11 +47,11 @@ export function EditorToolbar({
   const pdfBlob = useEditorStore((state) => state.pdfBlob);
 
   return (
-    <header className="flex items-center justify-between border-b border-[#27272a] bg-[#0f1117] px-4 py-3">
+    <header className="flex items-center justify-between border-b border-[--line] bg-[--surface-2] px-4 py-3">
       <div className="flex items-center gap-4">
         <Link
           href="/dashboard"
-          className="text-sm text-[#a1a1aa] hover:text-white"
+          className="text-sm text-[--muted] hover:text-white"
         >
           {messages.editor.backToDashboard}
         </Link>
@@ -59,7 +59,7 @@ export function EditorToolbar({
           <p className="text-sm font-semibold text-white">
             {templateName || messages.editor.untitledTemplate}
           </p>
-          <p className="text-xs text-[#71717a]">
+          <p className="text-xs text-[--muted-dim]">
             {isDirty
               ? messages.editor.statusDraftUnsaved
               : publishedVersion
@@ -80,13 +80,13 @@ export function EditorToolbar({
             URL.revokeObjectURL(url);
           }}
           disabled={!pdfBlob}
-          className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46] disabled:opacity-60"
+          className="rounded-md border border-[--line] px-3 py-2 text-xs text-white hover:border-[--line-hover] disabled:opacity-60"
         >
           {messages.editor.downloadPdf}
         </button>
         <button
           onClick={onPublish}
-          className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
+          className="rounded-md bg-[--accent] px-3 py-2 text-xs font-semibold text-white hover:bg-[--accent-strong]"
         >
           {messages.editor.publish}
         </button>
@@ -94,18 +94,18 @@ export function EditorToolbar({
           <button
             onClick={() => setOpenMenu((prev) => !prev)}
             data-testid="editor-more-menu"
-            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
+            className="rounded-md border border-[--line] px-3 py-2 text-xs text-white hover:border-[--line-hover]"
           >
             {messages.editor.more}
           </button>
           {openMenu && (
-            <div className="absolute right-0 z-50 mt-2 w-48 rounded-md border border-[#27272a] bg-[#111113] p-2 text-xs text-white shadow-lg">
+            <div className="absolute right-0 z-50 mt-2 w-48 rounded-md border border-[--line] bg-[--surface] p-2 text-xs text-white shadow-lg">
               <button
                 onClick={() => {
                   onFork();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[#1a1a1f]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
               >
                 {messages.editor.forkTemplate}
               </button>
@@ -115,7 +115,7 @@ export function EditorToolbar({
                   setOpenMenu(false);
                 }}
                 data-testid="editor-open-history"
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[#1a1a1f]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
               >
                 {messages.editor.versionHistory}
               </button>
@@ -124,7 +124,7 @@ export function EditorToolbar({
                   onOpenSettings();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[#1a1a1f]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
               >
                 {messages.editor.templateSettings}
               </button>
@@ -133,7 +133,7 @@ export function EditorToolbar({
                   onOpenShortcuts();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[#1a1a1f]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
               >
                 {messages.editor.keyboardShortcuts}
               </button>
@@ -142,7 +142,7 @@ export function EditorToolbar({
                   onToggleAutoRender();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[#1a1a1f]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
               >
                 {messages.editor.autoRender}:{" "}
                 {autoRender ? messages.editor.autoRenderOn : messages.editor.autoRenderOff}
@@ -180,7 +180,7 @@ export function EditorPowerBar() {
   const { applyAction, ready } = useMonacoFormatting();
 
   return (
-    <div className="border-b border-[#27272a] bg-[#0f1117] px-2 py-2">
+    <div className="border-b border-[--line] bg-[--surface-2] px-2 py-2">
       <div className="flex flex-wrap items-center gap-2">
         {toolbarGroups.map((group, groupIndex) => (
           <div key={`group-${groupIndex}`} className="flex items-center gap-1">
@@ -190,13 +190,13 @@ export function EditorPowerBar() {
                 onClick={() => applyAction(id)}
                 disabled={!ready}
                 title={label}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#27272a] text-[#a1a1aa] transition hover:border-[#3f3f46] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[--line] text-[--muted] transition hover:border-[--line-hover] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Icon className="h-4 w-4" />
               </button>
             ))}
             {groupIndex < toolbarGroups.length - 1 && (
-              <span className="mx-1 h-4 w-px bg-[#27272a]" />
+              <span className="mx-1 h-4 w-px bg-[--line]" />
             )}
           </div>
         ))}

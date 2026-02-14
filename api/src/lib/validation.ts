@@ -166,6 +166,24 @@ export const aiGenerateSchema = z.object({
   image_base64: z.string().min(1).max(MAX_BASE64_IMAGE_CHARS, 'Image exceeds 10MB limit'),
 });
 
+// Webhook schemas
+export const webhookEvents = ['render.completed', 'render.failed'] as const;
+
+export const createWebhookSchema = z.object({
+  url: z.string().url('Must be a valid URL'),
+  events: z.array(z.enum(webhookEvents)).min(1, 'At least one event required'),
+});
+
+export const updateWebhookSchema = z
+  .object({
+    url: z.string().url('Must be a valid URL').optional(),
+    events: z.array(z.enum(webhookEvents)).min(1).optional(),
+    is_active: z.boolean().optional(),
+  })
+  .refine((d) => d.url !== undefined || d.events !== undefined || d.is_active !== undefined, {
+    message: 'At least one field must be provided',
+  });
+
 // Type exports
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -182,3 +200,5 @@ export type ConfirmUploadInput = z.infer<typeof confirmUploadSchema>;
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>;
 export type AiEditInput = z.infer<typeof aiEditSchema>;
 export type AiGenerateInput = z.infer<typeof aiGenerateSchema>;
+export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
+export type UpdateWebhookInput = z.infer<typeof updateWebhookSchema>;

@@ -1,0 +1,61 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Session {
+  id          String    @id
+  shop        String
+  state       String
+  isOnline    Boolean   @default(false)
+  scope       String?
+  expires     DateTime?
+  accessToken String?
+  userId      BigInt?
+
+  @@index([shop])
+}
+
+model ShopConfig {
+  id              String   @id @default(cuid())
+  shop            String   @unique
+  docuforgeApiKey String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model RenderMapping {
+  id           String   @id @default(cuid())
+  shop         String
+  name         String
+  templateId   String
+  triggerEvent String
+  fieldMapping Json
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([shop, name])
+  @@index([shop, triggerEvent])
+}
+
+model RenderLog {
+  id           String   @id @default(cuid())
+  shop         String
+  orderId      String?
+  templateId   String
+  status       String
+  renderId     String?
+  errorMessage String?
+  pdfUrl       String?
+  createdAt    DateTime @default(now())
+
+  @@index([shop])
+  @@index([createdAt])
+}

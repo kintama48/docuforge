@@ -11,6 +11,7 @@ import billing from './routes/billing';
 import templates from './routes/templates';
 import assets from './routes/assets';
 import ai from './routes/ai';
+import webhooksRoute from './routes/webhooks';
 
 let sentryInitialized = false;
 
@@ -53,6 +54,7 @@ export function createApp() {
   app.route('/v1/templates', templates);
   app.route('/v1/assets', assets);
   app.route('/v1/ai', ai);
+  app.route('/v1/webhooks', webhooksRoute);
 
   return app;
 }

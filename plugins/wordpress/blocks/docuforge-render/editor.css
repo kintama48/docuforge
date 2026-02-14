@@ -1,0 +1,87 @@
+/**
+ * DocuForge Render Block - Editor Styles
+ *
+ * @package DocuForge
+ * @since   1.0.0
+ */
+
+.docuforge-block-preview {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #fff;
+	overflow: hidden;
+}
+
+.docuforge-block-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	background: #f0f0f1;
+	border-bottom: 1px solid #ddd;
+	font-size: 13px;
+}
+
+.docuforge-block-icon {
+	display: flex;
+	align-items: center;
+	color: #1e1e1e;
+}
+
+.docuforge-block-title {
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.docuforge-block-template-id {
+	margin-left: auto;
+	padding: 2px 8px;
+	background: #e0e0e0;
+	border-radius: 3px;
+	font-family: monospace;
+	font-size: 12px;
+	color: #50575e;
+}
+
+.docuforge-block-details {
+	padding: 12px 16px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.docuforge-block-details p {
+	margin: 0 0 4px;
+	font-size: 13px;
+	color: #50575e;
+}
+
+.docuforge-block-details p:last-child {
+	margin-bottom: 0;
+}
+
+.docuforge-block-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+}
+
+.docuforge-block-output-mode {
+	padding: 2px 8px;
+	background: #e7f5e8;
+	border-radius: 3px;
+	font-size: 12px;
+	color: #1e4620;
+}
+
+.docuforge-block-iframe-wrap {
+	padding: 16px;
+	border-top: 1px solid #f0f0f1;
+	background: #fafafa;
+}
+
+.docuforge-block-iframe-wrap iframe {
+	display: block;
+	max-width: 100%;
+	border-radius: 2px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

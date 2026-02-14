@@ -106,3 +106,28 @@ export interface AuthContext {
   email?: string;
   planTier?: PlanTier;
 }
+
+export type WebhookEvent = 'render.completed' | 'render.failed';
+
+export interface Webhook {
+  id: string;
+  userId: string;
+  url: string;
+  events: WebhookEvent[];
+  secret: string;
+  isActive: boolean;
+  createdAt: number;
+}
+
+export interface WebhookDelivery {
+  id: string;
+  webhookId: string;
+  event: WebhookEvent;
+  payload: Record<string, unknown>;
+  status: 'pending' | 'success' | 'failed';
+  attempts: number;
+  lastAttemptAt: number | null;
+  nextRetryAt: number | null;
+  responseCode: number | null;
+  createdAt: number;
+}

@@ -138,3 +138,48 @@ export type RenderLogInsert = typeof renderLogs.$inferInsert;
 export type RenderLogSelect = typeof renderLogs.$inferSelect;
 export type OAuthAccountInsert = typeof oauthAccounts.$inferInsert;
 export type OAuthAccountSelect = typeof oauthAccounts.$inferSelect;
+
+export const webhooks = sqliteTable(
+  'webhooks',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    url: text('url').notNull(),
+    events: text('events', { mode: 'json' }).$type<string[]>().notNull(),
+    secret: text('secret').notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_webhooks_user').on(table.userId),
+  ]
+);
+
+export const webhookDeliveries = sqliteTable(
+  'webhook_deliveries',
+  {
+    id: text('id').primaryKey(),
+    webhookId: text('webhook_id')
+      .notNull()
+      .references(() => webhooks.id, { onDelete: 'cascade' }),
+    event: text('event').notNull(),
+    payload: text('payload', { mode: 'json' }).$type<Record<string, unknown>>().notNull(),
+    status: text('status').notNull(), // pending | success | failed
+    attempts: integer('attempts').notNull().default(0),
+    lastAttemptAt: integer('last_attempt_at'),
+    nextRetryAt: integer('next_retry_at'),
+    responseCode: integer('response_code'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_webhook_deliveries_webhook').on(table.webhookId),
+    index('idx_webhook_deliveries_status').on(table.status, table.nextRetryAt),
+  ]
+);
+
+export type WebhookInsert = typeof webhooks.$inferInsert;
+export type WebhookSelect = typeof webhooks.$inferSelect;
+export type WebhookDeliveryInsert = typeof webhookDeliveries.$inferInsert;
+export type WebhookDeliverySelect = typeof webhookDeliveries.$inferSelect;

@@ -49,6 +49,10 @@ const envSchema = z.object({
   OAUTH_GITHUB_CLIENT_ID: z.string().optional(),
   OAUTH_GITHUB_CLIENT_SECRET: z.string().optional(),
 
+  // Webhooks
+  WEBHOOK_TIMEOUT_MS: z.coerce.number().default(5000),
+  WEBHOOK_MAX_PER_USER: z.coerce.number().default(10),
+
   // Limits
   FREE_MONTHLY_LIMIT: z.coerce.number().default(500),
   STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),

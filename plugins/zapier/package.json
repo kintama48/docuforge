@@ -1,0 +1,27 @@
+{
+  "name": "docuforge-zapier",
+  "version": "1.0.0",
+  "description": "DocuForge integration for Zapier - Generate PDFs from Typst templates",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --testTimeout 10000",
+    "validate": "zapier validate",
+    "push": "zapier push"
+  },
+  "dependencies": {
+    "zapier-platform-core": "15.*"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nock": "^13.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "zapier": {
+    "id": 0,
+    "key": "docuforge"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
