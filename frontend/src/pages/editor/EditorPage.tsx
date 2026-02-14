@@ -13,6 +13,7 @@ import { PublishDialog } from "@/src/components/editor/PublishDialog";
 import { TemplateSettingsDialog } from "@/src/components/editor/TemplateSettingsDialog";
 import { VersionHistoryPanel } from "@/src/components/editor/VersionHistoryPanel";
 import { useDebounce } from "@/src/hooks/use-debounce";
+import { useEditorCommands } from "@/src/hooks/use-editor-commands";
 import { useKeyboard } from "@/src/hooks/use-keyboard";
 import { usePreviewRender } from "@/src/hooks/use-render";
 import {
@@ -174,139 +175,27 @@ export default function EditorPage() {
     true
   );
 
-  const commandItems = useMemo(() => {
-    const items = [
-      {
-        id: "dashboard",
-        label: messages.editor.commandDashboard,
-        group: messages.editor.commandNavigation,
-        onSelect: () => router.push("/dashboard"),
-      },
-      {
-        id: "settings",
-        label: messages.editor.commandSettings,
-        group: messages.editor.commandNavigation,
-        onSelect: () => router.push("/settings"),
-      },
-      {
-        id: "publish",
-        label: messages.editor.commandPublish,
-        group: messages.editor.commandEditor,
-        onSelect: () => setShowPublish(true),
-      },
-      {
-        id: "download",
-        label: messages.editor.downloadPdf,
-        group: messages.editor.commandEditor,
-        onSelect: () => {
-          const pdfBlob = useEditorStore.getState().pdfBlob;
-          const templateName = useEditorStore.getState().templateName;
-          if (!pdfBlob) return;
-          const url = URL.createObjectURL(pdfBlob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `${templateName || "template"}.pdf`;
-          link.click();
-          URL.revokeObjectURL(url);
-        },
-      },
-      {
-        id: "ai",
-        label: messages.editor.commandAi,
-        group: messages.editor.commandEditor,
-        onSelect: () => setShowAi(true),
-      },
-      {
-        id: "toggle-preview",
-        label: showRightPane
-          ? messages.editor.commandHidePreview
-          : messages.editor.commandShowPreview,
-        group: messages.editor.commandEditor,
-        onSelect: () => setShowRightPane((prev) => !prev),
-      },
-      {
-        id: "toggle-history",
-        label: messages.editor.commandToggleHistory,
-        group: messages.editor.commandEditor,
-        onSelect: () => setShowHistory((prev) => !prev),
-      },
-      {
-        id: "toggle-sidebar",
-        label: showSidebar
-          ? messages.editor.commandHideSidebar
-          : messages.editor.commandShowSidebar,
-        group: messages.editor.commandEditor,
-        onSelect: () => setShowSidebar((prev) => !prev),
-      },
-      {
-        id: "data-tab",
-        label: messages.editor.commandToggleData,
-        group: messages.editor.commandEditor,
-        onSelect: () =>
-          setActiveTab((prev) => (prev === "data" ? "preview" : "data")),
-      },
-      {
-        id: "diag-tab",
-        label: messages.editor.commandToggleDiagnostics,
-        group: messages.editor.commandEditor,
-        onSelect: () =>
-          setActiveTab((prev) => (prev === "diag" ? "preview" : "diag")),
-      },
-      {
-        id: "auto-render",
-        label: autoRender
-          ? messages.editor.commandDisableAutoRender
-          : messages.editor.commandEnableAutoRender,
-        group: messages.editor.commandEditor,
-        onSelect: () => setAutoRender((prev) => !prev),
-      },
-      {
-        id: "shortcuts",
-        label: messages.editor.commandShortcuts,
-        group: messages.editor.commandEditor,
-        onSelect: () => setShowShortcuts(true),
-      },
-    ];
-
-    if (readOnly) {
-      items.push({
-        id: "edit-current",
-        label: messages.editor.commandEditCurrent,
-        group: messages.editor.commandEditor,
-        onSelect: () => {
-          setReadOnly(false);
-          setViewingVersion(null);
-          setViewingVersionId(null);
-        },
-      });
-    }
-
-    if (templatesQuery.data?.templates?.length) {
-      templatesQuery.data.templates.forEach((template) => {
-        items.push({
-          id: `template-${template.id}`,
-          label: messages.editor.commandOpenTemplate.replace(
-            "{name}",
-            template.name
-          ),
-          group: messages.editor.commandTemplates,
-          onSelect: () => router.push(`/editor/${template.id}`),
-        });
-      });
-    }
-
-    return items;
-  }, [
-    router,
+  const commandItems = useEditorCommands({
     showRightPane,
     showSidebar,
     autoRender,
-    templatesQuery.data?.templates,
     readOnly,
-    messages,
-    setReadOnly,
-    setViewingVersion,
-  ]);
+    onToggleRightPane: () => setShowRightPane((prev) => !prev),
+    onToggleSidebar: () => setShowSidebar((prev) => !prev),
+    onToggleAutoRender: () => setAutoRender((prev) => !prev),
+    onToggleActiveTab: (newTab) => {
+      setActiveTab((prev) => (prev === newTab ? "preview" : newTab));
+    },
+    onOpenPublish: () => setShowPublish(true),
+    onOpenAi: () => setShowAi(true),
+    onOpenHistory: () => setShowHistory(true),
+    onOpenShortcuts: () => setShowShortcuts(true),
+    onEditCurrent: () => {
+      setReadOnly(false);
+      setViewingVersion(null);
+      setViewingVersionId(null);
+    },
+  });
 
   const handleOpenVersion = (version: TemplateVersionSummary) => {
     setViewingVersionId(version.id);
@@ -323,7 +212,7 @@ export default function EditorPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0b] text-sm text-[#a1a1aa]">
+      <div className="flex min-h-screen items-center justify-center bg-[--bg] text-sm text-[--muted]">
         {messages.editor.loading}
       </div>
     );
@@ -331,7 +220,7 @@ export default function EditorPage() {
 
   if (!data?.template) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0b] text-sm text-[#a1a1aa]">
+      <div className="flex min-h-screen items-center justify-center bg-[--bg] text-sm text-[--muted]">
         {messages.editor.notFound}
       </div>
     );
@@ -339,7 +228,7 @@ export default function EditorPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen flex-col bg-[#0a0a0b] text-white">
+      <div className="flex min-h-screen flex-col bg-[--bg] text-white">
         <EditorToolbar
           onPublish={() => setShowPublish(true)}
           onOpenHistory={() => setShowHistory(true)}

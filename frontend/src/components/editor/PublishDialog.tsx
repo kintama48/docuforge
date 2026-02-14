@@ -30,19 +30,19 @@ export function PublishDialog({ open, templateId, onClose }: PublishDialogProps)
       onClose={onClose}
       title={messages.editor.publishDialogTitle}
     >
-      <label className="text-xs text-[#a1a1aa]">
+      <label className="text-xs text-[--muted]">
         {messages.editor.commitMessageLabel}
       </label>
       <input
         value={message}
         onChange={(event) => setMessage(event.target.value)}
-        className="mt-2 w-full rounded-md border border-[#27272a] bg-[#0f1117] px-3 py-2 text-xs text-white"
+        className="mt-2 w-full rounded-md border border-[--line] bg-[--surface-2] px-3 py-2 text-xs text-white"
         placeholder={messages.editor.commitMessagePlaceholder}
       />
       <div className="mt-6 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white"
+          className="rounded-md border border-[--line] px-3 py-2 text-xs text-white"
         >
           {messages.templateDialog.cancel}
         </button>
@@ -66,7 +66,7 @@ export function PublishDialog({ open, templateId, onClose }: PublishDialogProps)
             );
           }}
           disabled={publish.isPending}
-          className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb] disabled:opacity-60"
+          className="rounded-md bg-[--accent] px-3 py-2 text-xs font-semibold text-white hover:bg-[--accent-strong] disabled:opacity-60"
         >
           {publish.isPending ? messages.editor.publishing : messages.editor.publish}
         </button>

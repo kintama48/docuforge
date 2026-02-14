@@ -39,17 +39,17 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-24">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <Command
-        className="relative w-full max-w-xl rounded-2xl border border-[#27272a] bg-[#111113] p-4 text-white shadow-2xl"
+        className="relative w-full max-w-xl rounded-2xl border border-[--line] bg-[--surface] p-4 text-white shadow-2xl"
         shouldFilter
       >
         <Command.Input
           value={search}
           onValueChange={setSearch}
           placeholder={messages.editor.commandSearchPlaceholder}
-          className="w-full rounded-md border border-[#27272a] bg-[#0f1117] px-3 py-2 text-sm outline-none"
+          className="w-full rounded-md border border-[--line] bg-[--surface-2] px-3 py-2 text-sm outline-none"
         />
         <Command.List className="mt-3 max-h-72 overflow-y-auto">
-          <Command.Empty className="p-3 text-xs text-[#71717a]">
+          <Command.Empty className="p-3 text-xs text-[--muted-dim]">
             {messages.editor.commandNoResults}
           </Command.Empty>
           {Object.entries(grouped).map(([group, groupItems]) => (
@@ -62,7 +62,7 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
                     item.onSelect();
                     onClose();
                   }}
-                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm aria-selected:bg-[#1a1a1f]"
+                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm aria-selected:bg-[--surface-active]"
                 >
                   <span>{item.label}</span>
                 </Command.Item>

@@ -1,0 +1,46 @@
+import { vitePlugin as remix } from "@remix-run/dev";
+import { defineConfig } from "vite";
+
+declare module "@remix-run/node" {
+  interface Future {
+    v3_singleFetch: true;
+  }
+}
+
+// Related: https://github.com/nicolo-ribaudo/vite-plugin-commonjs
+if (
+  process.env.HOST &&
+  (!process.env.SHOPIFY_APP_URL ||
+    process.env.SHOPIFY_APP_URL === process.env.HOST)
+) {
+  process.env.SHOPIFY_APP_URL = process.env.HOST;
+}
+
+export default defineConfig({
+  server: {
+    port: Number(process.env.PORT || 3000),
+    hmr: {
+      protocol: "ws",
+      host: "localhost",
+      port: 64999,
+    },
+    fs: {
+      allow: ["app", "node_modules"],
+    },
+  },
+  plugins: [
+    remix({
+      ignoredRouteFiles: ["**/.*"],
+      future: {
+        v3_fetcherPersist: true,
+        v3_relativeSplatPath: true,
+        v3_throwAbortReason: true,
+        v3_lazyRouteDiscovery: true,
+        v3_singleFetch: true,
+      },
+    }),
+  ],
+  build: {
+    assetsInlineLimit: 0,
+  },
+});

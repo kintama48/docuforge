@@ -1,0 +1,23 @@
+api_version = "2025-01"
+
+[[extensions]]
+name = "Render DocuForge PDF"
+handle = "render-docuforge-pdf"
+type = "flow_action"
+runtime_url = "https://extensions.shopify.dev/flow-action"
+
+[extensions.settings]
+
+  [[extensions.settings.fields]]
+  key = "template_id"
+  name = "Template ID"
+  description = "The DocuForge template ID to use for rendering"
+  type = "single_line_text"
+  required = true
+
+  [[extensions.settings.fields]]
+  key = "data"
+  name = "Template Data (JSON)"
+  description = "JSON object of template variables to fill in the PDF"
+  type = "multi_line_text"
+  required = false

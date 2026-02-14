@@ -60,12 +60,12 @@ export function AiDrawer({ open, onClose }: AiDrawerProps) {
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
-      <aside className="relative h-full w-full max-w-md border-l border-[#27272a] bg-[#0f1117] p-5 text-white">
+      <aside className="relative h-full w-full max-w-md border-l border-[--line] bg-[--surface-2] p-5 text-white">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">{messages.ai.title}</h2>
           <button
             onClick={onClose}
-            className="text-xs text-[#71717a] hover:text-white"
+            className="text-xs text-[--muted-dim] hover:text-white"
           >
             {messages.ai.close}
           </button>
@@ -172,19 +172,19 @@ export function AiDrawer({ open, onClose }: AiDrawerProps) {
         />
 
         <div className="mt-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#71717a]">
+          <p className="text-xs uppercase tracking-[0.2em] text-[--muted-dim]">
             {messages.ai.historyTitle}
           </p>
           <div className="mt-3 space-y-2">
             {history.length === 0 && (
-              <p className="text-xs text-[#71717a]">
+              <p className="text-xs text-[--muted-dim]">
                 {messages.ai.historyEmpty}
               </p>
             )}
             {history.map((item, index) => (
               <div
                 key={`${item.prompt}-${index}`}
-                className="rounded-lg border border-[#27272a] bg-[#111113] p-3 text-xs text-[#a1a1aa]"
+                className="rounded-lg border border-[--line] bg-[--surface] p-3 text-xs text-[--muted]"
               >
                 <p className="text-white">{item.prompt}</p>
                 <p className="mt-1 line-clamp-2">{item.response}</p>
@@ -193,7 +193,7 @@ export function AiDrawer({ open, onClose }: AiDrawerProps) {
           </div>
         </div>
 
-        <p className="mt-6 text-xs text-[#71717a]">
+        <p className="mt-6 text-xs text-[--muted-dim]">
           {includeSelection
             ? messages.ai.selectionEnabled
             : messages.ai.selectionDisabled}

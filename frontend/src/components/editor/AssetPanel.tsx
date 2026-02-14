@@ -60,15 +60,15 @@ export function AssetPanel() {
 
   return (
     <div className="mt-6">
-      <p className="text-xs uppercase tracking-[0.2em] text-[#71717a]">
+      <p className="text-xs uppercase tracking-[0.2em] text-[--muted-dim]">
         {messages.editor.assetsTitle}
       </p>
       <div
         {...getRootProps()}
         className={`mt-3 rounded-lg border border-dashed px-3 py-4 text-center text-xs ${
           isDragActive
-            ? "border-[#3b82f6] text-white"
-            : "border-[#27272a] text-[#71717a]"
+            ? "border-[--accent] text-white"
+            : "border-[--line] text-[--muted-dim]"
         }`}
       >
         <input {...getInputProps()} />
@@ -81,7 +81,7 @@ export function AssetPanel() {
           data.assets.map((asset) => (
             <div
               key={asset.id}
-              className="flex items-center justify-between rounded-md border border-[#27272a] px-3 py-2 text-xs text-[#a1a1aa]"
+              className="flex items-center justify-between rounded-md border border-[--line] px-3 py-2 text-xs text-[--muted]"
             >
               <button
                 onClick={() => insertSnippet(assetSnippet(asset.name, asset.mime_type))}
@@ -89,7 +89,7 @@ export function AssetPanel() {
               >
                 <span>{assetIcon(asset.mime_type, asset.name)}</span>
                 <span>{asset.name}</span>
-                <span className="text-[10px] text-[#71717a]">
+                <span className="text-[10px] text-[--muted-dim]">
                   {formatBytes(asset.size_bytes)}
                 </span>
               </button>
@@ -106,14 +106,14 @@ export function AssetPanel() {
                       deleteAsset.mutate(asset.id);
                     }
                   }}
-                className="text-[10px] text-[#ef4444]"
+                className="text-[10px] text-[--bad]"
               >
                 {messages.editor.delete}
               </button>
             </div>
           ))
         ) : (
-          <p className="text-xs text-[#71717a]">
+          <p className="text-xs text-[--muted-dim]">
             {messages.editor.noAssets}
           </p>
         )}

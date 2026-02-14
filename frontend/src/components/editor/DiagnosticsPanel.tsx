@@ -10,28 +10,28 @@ export function DiagnosticsPanel() {
   const revealError = useEditorStore((state) => state.revealError);
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-[#27272a] bg-[#111113]">
-      <div className="border-b border-[#27272a] px-3 py-2 text-xs text-[#a1a1aa]">
+    <div className="flex h-full flex-col rounded-lg border border-[--line] bg-[--surface]">
+      <div className="border-b border-[--line] px-3 py-2 text-xs text-[--muted]">
         {messages.editor.diagnosticsTitle}
       </div>
-      <div className="flex-1 p-3 text-xs text-[#a1a1aa]">
+      <div className="flex-1 p-3 text-xs text-[--muted]">
         {renderError ? (
           <button
             onClick={() =>
               revealError(renderError.line, renderError.column)
             }
-            className="text-left text-[#ef4444] hover:underline"
+            className="text-left text-[--bad] hover:underline"
           >
             ✕ {renderError.file}:{renderError.line}:{renderError.column} —{" "}
             {renderError.message}
           </button>
         ) : (
-          <div className="text-[#22c55e]">
+          <div className="text-[--good]">
             {messages.editor.diagnosticsNoErrors}
           </div>
         )}
         {renderDuration && (
-          <p className="mt-2 text-[#71717a]">
+          <p className="mt-2 text-[--muted-dim]">
             {messages.editor.diagnosticsLastRender.replace(
               "{duration}",
               String(renderDuration)

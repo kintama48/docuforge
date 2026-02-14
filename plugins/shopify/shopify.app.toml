@@ -1,0 +1,40 @@
+name = "DocuForge PDF Generator"
+client_id = ""
+
+[access_scopes]
+scopes = "read_orders,read_products,read_customers"
+
+[auth]
+redirect_urls = [
+  "https://admin.shopify.com/apps/docuforge-pdf/auth/callback"
+]
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/create"]
+  uri = "/webhooks"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/paid"]
+  uri = "/webhooks"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/fulfilled"]
+  uri = "/webhooks"
+
+[app_proxy]
+subpath = "docuforge"
+prefix = "apps"
+url = ""
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = ""
+
+[app]
+embedded = true

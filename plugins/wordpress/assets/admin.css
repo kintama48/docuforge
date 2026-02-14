@@ -1,0 +1,88 @@
+/**
+ * DocuForge Admin Styles
+ *
+ * @package DocuForge
+ * @since   1.0.0
+ */
+
+/* Settings page */
+.docuforge-settings .form-table th {
+	width: 200px;
+}
+
+.docuforge-settings .regular-text {
+	width: 400px;
+}
+
+/* Connection test */
+#docuforge-connection-result .notice {
+	margin: 0;
+}
+
+#docuforge-usage-display table {
+	margin-top: 8px;
+}
+
+#docuforge-usage-display td {
+	padding: 8px 12px;
+}
+
+#docuforge-usage-display td:first-child {
+	width: 40%;
+}
+
+/* Template browser */
+.column-shortcode code {
+	padding: 4px 8px;
+	background: #f0f0f1;
+	border-radius: 3px;
+	font-size: 12px;
+	word-break: break-all;
+}
+
+.docuforge-copy-shortcode {
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+/* Front-end embed styles */
+.docuforge-embed {
+	margin: 1em 0;
+	line-height: 0;
+}
+
+.docuforge-embed iframe {
+	max-width: 100%;
+}
+
+.docuforge-download {
+	margin: 1em 0;
+}
+
+.docuforge-download-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 16px;
+	background: #2271b1;
+	color: #fff;
+	text-decoration: none;
+	border-radius: 4px;
+	font-size: 14px;
+	transition: background 0.2s;
+}
+
+.docuforge-download-link:hover,
+.docuforge-download-link:focus {
+	background: #135e96;
+	color: #fff;
+}
+
+.docuforge-error {
+	padding: 12px;
+	border: 1px solid #d63638;
+	border-radius: 4px;
+	background: #fcf0f1;
+	color: #d63638;
+	margin: 1em 0;
+}

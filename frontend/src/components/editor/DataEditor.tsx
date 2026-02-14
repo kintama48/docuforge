@@ -18,11 +18,11 @@ export function DataEditor() {
 
   return (
     <div
-      className={`flex h-full flex-col rounded-lg border bg-[#111113] ${
-        dataError ? "border-[#ef4444]" : "border-[#27272a]"
+      className={`flex h-full flex-col rounded-lg border bg-[--surface] ${
+        dataError ? "border-[--bad]" : "border-[--line]"
       }`}
     >
-      <div className="border-b border-[#27272a] px-3 py-2 text-xs text-[#a1a1aa]">
+      <div className="border-b border-[--line] px-3 py-2 text-xs text-[--muted]">
         {messages.editor.dataTitle}
       </div>
       <div className="flex-1">
@@ -43,7 +43,7 @@ export function DataEditor() {
         />
       </div>
       {dataError && (
-        <div className="border-t border-[#27272a] px-3 py-2 text-xs text-[#ef4444]">
+        <div className="border-t border-[--line] px-3 py-2 text-xs text-[--bad]">
           {dataError}
         </div>
       )}

@@ -10,6 +10,7 @@ import { checkCredits, logRender, formatUsageResponse } from '../services/usage'
 import { resolveUserAssets } from '../services/asset';
 import { NotFoundError, LimitExceededError } from '../lib/errors';
 import { env } from '../config/env';
+import { dispatchWebhookEvent } from '../services/webhook';
 import type { EnginePayload } from '../types';
 
 const render = new Hono();
@@ -95,8 +96,17 @@ render.post('/', apiKeyAuth, renderRateLimit, zValidator('json', renderSchema), 
       status: 'success',
       durationMs: result.durationMs,
     });
+
+    // Fire webhook asynchronously (don't block the response)
+    dispatchWebhookEvent(userId, 'render.completed', {
+      render_id: logId,
+      template_id: template.id,
+      template_version_id: version.id,
+      status: 'success',
+      duration_ms: result.durationMs,
+    }).catch((e) => console.error('Webhook dispatch error:', e));
   } catch (err) {
-    await logRender({
+    const errorLogId = await logRender({
       userId,
       templateId: template.id,
       templateVersionId: version.id,
@@ -104,6 +114,14 @@ render.post('/', apiKeyAuth, renderRateLimit, zValidator('json', renderSchema), 
       durationMs: 0,
       errorMessage: err instanceof Error ? err.message : 'Unknown error',
     });
+
+    // Fire webhook for failure
+    dispatchWebhookEvent(userId, 'render.failed', {
+      render_id: errorLogId,
+      template_id: template.id,
+      error: err instanceof Error ? err.message : 'Unknown error',
+    }).catch((e) => console.error('Webhook dispatch error:', e));
+
     throw err;
   }
 

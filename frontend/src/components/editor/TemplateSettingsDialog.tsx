@@ -43,34 +43,34 @@ export function TemplateSettingsDialog({
       onClose={onClose}
       title={messages.editor.templateSettingsTitle}
     >
-      <label className="text-xs text-[#a1a1aa]">
+      <label className="text-xs text-[--muted]">
         {messages.templateDialog.nameLabel}
       </label>
       <input
         value={name}
         onChange={(event) => setName(event.target.value)}
-        className="mt-2 w-full rounded-md border border-[#27272a] bg-[#0f1117] px-3 py-2 text-xs text-white"
+        className="mt-2 w-full rounded-md border border-[--line] bg-[--surface-2] px-3 py-2 text-xs text-white"
       />
-      <label className="mt-4 text-xs text-[#a1a1aa]">
+      <label className="mt-4 text-xs text-[--muted]">
         {messages.templateDialog.descriptionLabel}
       </label>
       <textarea
         value={description}
         onChange={(event) => setDescription(event.target.value)}
-        className="mt-2 h-20 w-full resize-none rounded-md border border-[#27272a] bg-[#0f1117] p-3 text-xs text-white"
+        className="mt-2 h-20 w-full resize-none rounded-md border border-[--line] bg-[--surface-2] p-3 text-xs text-white"
         placeholder={messages.templateDialog.descriptionPlaceholder}
       />
       <div className="mt-6 flex items-center justify-between">
         <button
           onClick={() => deleteTemplate.mutate()}
-          className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-[#ef4444]"
+          className="rounded-md border border-[--line] px-3 py-2 text-xs text-[--bad]"
         >
           {messages.editor.deleteTemplate}
         </button>
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white"
+            className="rounded-md border border-[--line] px-3 py-2 text-xs text-white"
           >
             {messages.templateDialog.cancel}
           </button>
@@ -90,7 +90,7 @@ export function TemplateSettingsDialog({
                 }
               );
             }}
-            className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
+            className="rounded-md bg-[--accent] px-3 py-2 text-xs font-semibold text-white hover:bg-[--accent-strong]"
           >
             {messages.editor.save}
           </button>

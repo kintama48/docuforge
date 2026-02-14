@@ -37,8 +37,8 @@ export function PdfPreview() {
   }, [pdfUrl, pdfScrollTop, setPdfScrollTop]);
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-[#27272a] bg-[#111113]">
-      <div className="flex items-center justify-between border-b border-[#27272a] px-3 py-2 text-xs text-[#a1a1aa]">
+    <div className="flex h-full flex-col rounded-lg border border-[--line] bg-[--surface]">
+      <div className="flex items-center justify-between border-b border-[--line] px-3 py-2 text-xs text-[--muted]">
         <span>{messages.editor.previewTitle}</span>
         <span>
           {renderStatus === "rendering"
@@ -55,7 +55,7 @@ export function PdfPreview() {
             className="h-full w-full"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-[#71717a]">
+          <div className="flex h-full items-center justify-center text-xs text-[--muted-dim]">
             {messages.editor.previewPlaceholder}
           </div>
         )}
