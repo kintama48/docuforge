@@ -3,6 +3,9 @@ import {
   EngineTimeoutError,
   EngineUnavailableError,
 } from '../lib/errors';
+import { env } from '../config/env';
+import { searchDocs, isInitialized } from './vector-store';
+import { generateErrorSuggestion } from './ai';
 import type { EnginePayload, EngineErrorResponse } from '../types';
 
 export interface RenderResult {
@@ -11,8 +14,8 @@ export interface RenderResult {
 }
 
 export async function renderPdf(payload: EnginePayload): Promise<RenderResult> {
-  const engineUrl = process.env.ENGINE_URL || 'http://127.0.0.1:3001';
-  const timeoutMs = parseInt(process.env.ENGINE_TIMEOUT_MS || '5000', 10);
+  const engineUrl = env.ENGINE_URL;
+  const timeoutMs = env.ENGINE_TIMEOUT_MS;
 
   const startTime = Date.now();
 
@@ -43,9 +46,32 @@ export async function renderPdf(payload: EnginePayload): Promise<RenderResult> {
 
     if (response.status === 400) {
       const errorBody = (await response.json()) as EngineErrorResponse;
+
+      // Enrich compilation errors with RAG docs and AI suggestion
+      let relevantDocs: Array<{ function?: string; content: string; relevance: number }> | undefined;
+      let suggestion: string | null = null;
+
+      if (isInitialized()) {
+        try {
+          const ragResults = await searchDocs(errorBody.message || errorBody.error, 3);
+          if (ragResults.length > 0) {
+            relevantDocs = ragResults.map((r) => ({
+              function: r.chunk.functionName,
+              content: r.chunk.content,
+              relevance: r.score,
+            }));
+            suggestion = await generateErrorSuggestion(errorBody, ragResults);
+          }
+        } catch {
+          // RAG enrichment is best-effort, don't fail the error response
+        }
+      }
+
       throw new CompilationError(errorBody.message || 'Compilation failed', {
         error: errorBody.error,
         span: errorBody.span,
+        ...(relevantDocs && { relevant_docs: relevantDocs }),
+        ...(suggestion && { suggestion }),
       });
     }
 
@@ -76,7 +102,7 @@ export async function renderPdf(payload: EnginePayload): Promise<RenderResult> {
 }
 
 export async function checkEngineHealth(): Promise<boolean> {
-  const engineUrl = process.env.ENGINE_URL || 'http://127.0.0.1:3001';
+  const engineUrl = env.ENGINE_URL;
 
   try {
     const response = await fetch(`${engineUrl}/health`, {

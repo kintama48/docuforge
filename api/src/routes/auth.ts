@@ -5,6 +5,7 @@ import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
 import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../lib/api-key';
 import { evictCachedKey } from '../services/key-cache';
 import { createJwt, jwtAuth } from '../middleware/auth';
+import { noCache } from '../middleware/cache';
 import { zValidator, registerSchema, loginSchema, createApiKeySchema } from '../lib/validation';
 import { ConflictError, UnauthorizedError, NotFoundError, ForbiddenError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
@@ -19,6 +20,9 @@ import {
 import { createExchangeCode, consumeExchangeCode } from '../services/oauth-exchange';
 
 const auth = new Hono();
+
+// All auth endpoints are mutations — never cache
+auth.use('*', noCache);
 
 const oauthProviders: OAuthProvider[] = ['google', 'microsoft', 'github'];
 

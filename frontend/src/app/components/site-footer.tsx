@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useI18n } from "@/src/lib/i18n";
+import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 
 export function SiteFooter() {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
   const localePath = useLocalePath();
+  const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   return (
     <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
@@ -39,7 +41,7 @@ export function SiteFooter() {
               <Link href={localePath("/pricing")} className="hover:text-[var(--ink)]">
                 {messages.footer.links.pricing}
               </Link>
-              <Link href={localePath("/dashboard")} className="hover:text-[var(--ink)]">
+              <Link href={consoleUrl} className="hover:text-[var(--ink)]">
                 {messages.footer.links.console}
               </Link>
             </div>
@@ -80,9 +82,26 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 text-xs text-[var(--muted)] md:flex-row md:items-center md:justify-between">
-          <span>{messages.footer.rights}</span>
-          <span>{messages.footer.tagline}</span>
+        <div className="mt-10 flex flex-col gap-4 text-xs text-[var(--muted)]">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+              {messages.footer.legal}
+            </span>
+            <Link href={localePath("/terms")} className="hover:text-[var(--ink)]">
+              {messages.footer.links.terms}
+            </Link>
+            <Link href={localePath("/privacy")} className="hover:text-[var(--ink)]">
+              {messages.footer.links.privacy}
+            </Link>
+            <Link href={localePath("/content-policy")} className="hover:text-[var(--ink)]">
+              {messages.footer.links.contentPolicy}
+            </Link>
+          </div>
+
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <span>{messages.footer.rights}</span>
+            <span>{messages.footer.tagline}</span>
+          </div>
         </div>
       </div>
     </footer>

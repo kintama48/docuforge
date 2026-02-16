@@ -29,6 +29,7 @@ const envSchema = z.object({
   STRIPE_PRO_PRICE_ID: z.string().min(1),
 
   // AI
+  AI_ENABLED: z.coerce.boolean().default(true),
   GEMINI_API_KEY: z.string().min(1),
   AI_MODEL: z.string().default('gemini-2.5-flash'),
 
@@ -52,6 +53,11 @@ const envSchema = z.object({
   // Webhooks
   WEBHOOK_TIMEOUT_MS: z.coerce.number().default(5000),
   WEBHOOK_MAX_PER_USER: z.coerce.number().default(10),
+
+  // RAG
+  RAG_ENABLED: z.coerce.boolean().default(true),
+  RAG_TOP_K: z.coerce.number().default(5),
+  RAG_EMBEDDING_MODEL: z.string().default('text-embedding-004'),
 
   // Limits
   FREE_MONTHLY_LIMIT: z.coerce.number().default(500),

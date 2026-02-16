@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useI18n } from "@/src/lib/i18n";
+import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 
 export function SiteHeader() {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
   const localePath = useLocalePath();
+  const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   return (
     <header className="border-b border-[var(--line)] bg-[var(--bg)]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
@@ -50,7 +52,7 @@ export function SiteHeader() {
               {messages.nav.readDocs}
             </Link>
             <Link
-              href={localePath("/dashboard")}
+              href={consoleUrl}
               className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
             >
               {messages.nav.openConsole}

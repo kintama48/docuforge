@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
+import { shortCache, noCache } from '../middleware/cache';
+import { etag } from '../middleware/etag';
 import { zValidator, requestUploadUrlSchema, confirmUploadSchema } from '../lib/validation';
 import { generateAssetId } from '../lib/id';
 import { generateUploadUrl, verifyAssetExists, deleteAssetFromR2 } from '../services/asset';
@@ -11,7 +13,7 @@ import { NotFoundError, ValidationError } from '../lib/errors';
 const assets = new Hono();
 
 // POST /v1/assets/upload-url - Request presigned upload URL
-assets.post('/upload-url', jwtAuth, zValidator('json', requestUploadUrlSchema), async (c) => {
+assets.post('/upload-url', jwtAuth, noCache, zValidator('json', requestUploadUrlSchema), async (c) => {
   const data = c.req.valid('json');
   const { userId } = c.get('auth');
 
@@ -32,7 +34,7 @@ assets.post('/upload-url', jwtAuth, zValidator('json', requestUploadUrlSchema), 
 });
 
 // POST /v1/assets - Confirm upload and register asset
-assets.post('/', jwtAuth, zValidator('json', confirmUploadSchema), async (c) => {
+assets.post('/', jwtAuth, noCache, zValidator('json', confirmUploadSchema), async (c) => {
   const data = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
@@ -125,7 +127,7 @@ assets.post('/', jwtAuth, zValidator('json', confirmUploadSchema), async (c) => 
 });
 
 // GET /v1/assets - List user assets
-assets.get('/', jwtAuth, async (c) => {
+assets.get('/', jwtAuth, shortCache, etag, async (c) => {
   const { userId } = c.get('auth');
   const db = getDb();
 
@@ -143,7 +145,7 @@ assets.get('/', jwtAuth, async (c) => {
 });
 
 // DELETE /v1/assets/:id - Delete asset
-assets.delete('/:id', jwtAuth, async (c) => {
+assets.delete('/:id', jwtAuth, noCache, async (c) => {
   const assetId = c.req.param('id');
   const { userId } = c.get('auth');
   const db = getDb();

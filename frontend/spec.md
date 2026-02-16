@@ -21,7 +21,7 @@ Primary: SaaS founders and backend engineers who need PDF generation in their ap
 ### API Base URL
 
 Development: `http://localhost:3000`
-Production: `https://api.docuforge.dev` (configured via environment variable)
+Production: `https://api.docuforge.app` (configured via environment variable)
 
 ### API Authentication
 

@@ -125,7 +125,7 @@ describe('E2E: Billing Flow', () => {
     expect(blockedData.usage.used).toBe(500);
     expect(blockedData.usage.limit).toBe(500);
     expect(blockedData.usage.plan).toBe('free');
-    expect(blockedData.upgrade_url).toBe('https://docuforge.dev/pricing');
+    expect(blockedData.upgrade_url).toBe('https://www.docuforge.app/pricing');
 
     // Step 4: Simulate Stripe webhook for upgrade to starter
     const stripeCustomerId = `cus_billing_${Date.now()}`;

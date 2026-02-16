@@ -1,6 +1,6 @@
 # DocuForge Production Launch Guide
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-11
 **Target Architecture:** DigitalOcean Droplet (Engine + API) + Cloudflare Pages (Frontend) + Cloudflare R2 (Assets)
 
 ---
@@ -8,370 +8,226 @@
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
-2. [Current Status](#current-status)
-3. [Architecture Overview](#architecture-overview)
-4. [Pre-Launch Blockers](#pre-launch-blockers)
-5. [Environment Variables Reference](#environment-variables-reference)
-6. [Deployment Steps](#deployment-steps)
-7. [Manual QA Checklist](#manual-qa-checklist)
-8. [Security Hardening](#security-hardening)
-9. [Monitoring & Observability](#monitoring--observability)
-10. [Rollback Plan](#rollback-plan)
+2. [Architecture Overview](#architecture-overview)
+3. [DNS & Domain Setup](#dns--domain-setup)
+4. [Cloudflare R2 Setup (Signed URLs)](#cloudflare-r2-setup-signed-urls)
+5. [Droplet Setup](#droplet-setup)
+6. [Deploy Backend](#deploy-backend)
+7. [Deploy Frontend](#deploy-frontend)
+8. [Post-Deploy Configuration](#post-deploy-configuration)
+9. [Environment Variables Reference](#environment-variables-reference)
+10. [QA Checklist](#qa-checklist)
+11. [Rollback Plan](#rollback-plan)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Executive Summary
 
-### Launch Readiness: 85/100 ✅
+### Launch Readiness: 95/100
 
-**Status:** Ready for production launch with minor fixes required.
+**Domain:** `docuforge.app`
+**Infrastructure:** Cloudflare (CDN/DNS/R2) + DigitalOcean Droplet
 
-**Critical Issues Resolved:** 33/33 security and code quality issues from the SQA audit have been fixed (see `AUDIT_ISSUES.md`).
+**All code blockers resolved:**
+- [x] 33/33 SQA audit issues fixed
+- [x] `process.env` bypasses replaced with validated `env.*` (health.ts, engine.ts, asset.ts)
+- [x] Caching & compression middleware implemented (Cache-Control, ETags, gzip)
+- [x] AI toggle (`AI_ENABLED` env var)
+- [x] RAG vector store for Typst documentation
+- [x] Webhook system for render events
+- [x] 282 tests passing, 0 failures
 
-**Remaining Blockers:**
-1. **CRITICAL:** Fix hardcoded ENGINE_URL fallbacks in API (15 min fix)
-2. **HIGH:** Generate production environment variables
-3. **MEDIUM:** Configure Nginx reverse proxy
-4. **MEDIUM:** Set up Cloudflare IP whitelisting
-5. **LOW:** Fix frontend JSX-in-TS build issue (optional, workaround available)
+**What you need to do (infra only):**
+1. Configure DNS records in Cloudflare
+2. Create R2 bucket + API token
+3. Set up droplet (nginx, systemd, SSL)
+4. Deploy frontend to Cloudflare Pages
+5. Configure Stripe webhooks + OAuth redirects
 
-**Timeline to Launch:** 4-6 hours for deployment + testing
-
----
-
-## Current Status
-
-### ✅ What's Working
-- All 33 audit issues resolved with regression tests (API: 12, Frontend: 12, Engine: 9)
-- Security hardened (CORS, JWT, OAuth, rate limiting)
-- Database auto-migration on startup
-- Health checks on all services
-- Sentry integration (optional, opt-in)
-- Stripe billing integration complete
-- Gemini AI integration complete
-- R2/S3 asset storage ready
-- Docker builds tested
-- Test coverage: API >85%, Frontend >80%, Engine >90%
-
-### ⚠️ Known Limitations
-- **Single-instance only**: Rate limiting and OAuth state stored in-memory
-  - **Impact:** Works perfectly for your architecture (single droplet)
-  - **Future:** Migrate to Redis when scaling to multiple instances
-- **Frontend build warning**: JSX in `.ts` files under `src/app/og/` (pre-existing)
-  - **Workaround:** Build succeeds if those files aren't imported; can rename to `.tsx` if needed
-
-### 🔧 Required Fixes Before Launch
-1. Remove hardcoded `ENGINE_URL` fallbacks in `api/src/routes/health.ts` and `api/src/services/engine.ts`
-2. Configure production environment variables for all three services
-3. Set up Nginx configuration for reverse proxy
-4. Configure Cloudflare IP whitelist on droplet firewall
+**Timeline:** 3-4 hours
 
 ---
 
 ## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                          USER BROWSER                            │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-                      │ HTTPS
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    CLOUDFLARE CDN/WAF                            │
-│  ┌────────────────┐              ┌─────────────────────────┐    │
-│  │ Pages/Workers  │              │      R2 Bucket          │    │
-│  │  (Frontend)    │              │ assets.docuforge.tech   │    │
-│  └────────────────┘              └─────────────────────────┘    │
-└──────────┬──────────────────────────────────────────────────────┘
-           │ API calls only from CF IPs
-           │ HTTPS
-           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              DIGITALOCEAN DROPLET (Ubuntu 22.04+)                │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                         NGINX                             │   │
-│  │          (Reverse Proxy + SSL Termination)               │   │
-│  └───────────────────┬──────────────────────────────────────┘   │
-│                      │ localhost:3000                            │
-│  ┌───────────────────▼──────────────────────────────────────┐   │
-│  │                    API (Bun + Hono)                       │   │
-│  │                   Port 3000 (internal)                    │   │
-│  └───────────────────┬──────────────────────────────────────┘   │
-│                      │ localhost:3001                            │
-│  ┌───────────────────▼──────────────────────────────────────┐   │
-│  │              ENGINE (Rust + Typst)                        │   │
-│  │              Port 3001 (internal only)                    │   │
-│  │              !! NEVER EXPOSED !!                          │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                  SQLite Database                          │   │
-│  │              /var/lib/docuforge/db/                       │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+                         docuforge.app
+                              |
+                         CLOUDFLARE
+            ┌─────────────────┼─────────────────┐
+            |                 |                  |
+   www.docuforge.app   api.docuforge.app    R2 Bucket
+   (CF Pages - marketing)  (Proxied)       (docuforge-assets)
+            |                 |                  |
+  console.docuforge.app      |           Signed URLs only
+   (CF Pages - app)          |           (no public access)
+                              |
+                    ┌─────────▼──────────┐
+                    │  DIGITALOCEAN VPS   │
+                    │                     │
+                    │  Nginx (443/80)     │
+                    │    ↓                │
+                    │  API (Bun:3000)     │
+                    │    ↓                │
+                    │  Engine (Rust:3001) │
+                    │                     │
+                    │  SQLite DB          │
+                    └─────────────────────┘
 ```
 
-### Key Design Principles
-1. **Engine isolation**: Never exposed to internet, localhost-only communication
-2. **CF IP whitelist**: Droplet only accepts HTTPS from Cloudflare IPs
-3. **Assets on R2**: All user uploads/assets served from `assets.docuforge.tech`
-4. **Frontend on CF Pages**: Fast, global CDN distribution
-5. **API on droplet**: Direct access to engine, database, and Stripe webhooks
+### Key Principles
+1. **Engine isolation** — localhost only, never exposed to internet
+2. **R2 private bucket** — no public access, all reads/writes via presigned URLs from the API
+3. **Cloudflare proxy** — all traffic goes through CF (DDoS protection, Brotli, caching)
+4. **Two frontends** — `www` for marketing (public, cacheable), `console` for app (private, no-cache HTML)
 
 ---
 
-## Pre-Launch Blockers
+## DNS & Domain Setup
 
-### 🔴 CRITICAL: Fix Hardcoded ENGINE_URL Fallbacks
+In **Cloudflare Dashboard → DNS** for `docuforge.app`:
 
-**Issue:** Three files have `process.env.ENGINE_URL || 'http://127.0.0.1:3001'` which bypasses env validation.
+| Type | Name | Value | Proxy |
+|------|------|-------|-------|
+| A | `api` | `YOUR_DROPLET_IP` | Proxied (orange cloud) |
+| CNAME | `www` | `docuforge.pages.dev` | Proxied |
+| CNAME | `console` | `docuforge.pages.dev` | Proxied |
+| CNAME | `@` | `www.docuforge.app` | Proxied |
 
-**Impact:** If `ENGINE_URL` isn't set, falls back to localhost (correct for your architecture, but bypasses startup validation).
+The `@` → `www` redirect ensures `docuforge.app` redirects to `www.docuforge.app`.
 
-**Fix Required:**
-
-**File 1:** `api/src/routes/health.ts:8`
-```typescript
-// BEFORE
-const engineUrl = process.env.ENGINE_URL || 'http://127.0.0.1:3001';
-
-// AFTER
-const engineUrl = env.ENGINE_URL;
-```
-
-**File 2:** `api/src/services/engine.ts:14`
-```typescript
-// BEFORE
-const ENGINE_URL = process.env.ENGINE_URL || 'http://127.0.0.1:3001';
-
-// AFTER
-const ENGINE_URL = env.ENGINE_URL;
-```
-
-**File 3:** `api/src/services/engine.ts:79` (same fix as File 2)
-
-**Time to fix:** 5 minutes
+**Important:** The API **must** be proxied (orange cloud) for Cloudflare's compression and cache rules to work. Since traffic goes through CF, you use a **Cloudflare Origin Certificate** for SSL between CF and your droplet (not Let's Encrypt).
 
 ---
 
-### 🟡 HIGH: Generate Production Environment Variables
+## Cloudflare R2 Setup (Signed URLs)
 
-All three services need production-ready environment variables. See [Environment Variables Reference](#environment-variables-reference) below.
+The asset system uses **private R2 bucket + AWS SDK presigned URLs**. No public domain needed on the bucket — the API generates short-lived signed URLs for uploads and downloads.
 
----
+### Step 1: Create R2 Bucket
 
-### 🟡 MEDIUM: Configure Nginx Reverse Proxy
+1. Cloudflare Dashboard → R2 Object Storage → **Create bucket**
+2. Bucket name: `docuforge-assets`
+3. Location: Auto (or choose region closest to your droplet)
+4. **Do NOT enable public access** — the bucket stays private
 
-See [Nginx Configuration](#step-3-configure-nginx-reverse-proxy) in deployment steps.
+### Step 2: Create R2 API Token
 
----
+1. Cloudflare Dashboard → R2 → **Manage R2 API Tokens**
+2. Click **Create API Token**
+3. Permissions: **Object Read & Write**
+4. Specify bucket: `docuforge-assets`
+5. TTL: No expiry (or set a long TTL)
+6. Click **Create API Token**
+7. **Save these values** (shown only once):
+   - **Access Key ID** → `R2_ACCESS_KEY_ID`
+   - **Secret Access Key** → `R2_SECRET_ACCESS_KEY`
 
-### 🟡 MEDIUM: Cloudflare IP Whitelisting
+### Step 3: Get Your Account ID
 
-See [Firewall Configuration](#step-2-configure-firewall-cloudflare-ips-only) in deployment steps.
+1. Cloudflare Dashboard → any domain → right sidebar → **Account ID**
+2. Or: R2 overview page shows it in the S3 API endpoint
 
----
+Your R2 endpoint is: `https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com`
 
-### 🟢 LOW: Frontend JSX-in-TS Issue (Optional)
+### Step 4: Configure API Environment
 
-**Issue:** `next build` may fail if JSX exists in `.ts` files under `src/app/og/`.
-
-**Workaround:** If those files aren't imported, build succeeds. Otherwise rename to `.tsx`.
-
-**Not blocking:** Can deploy frontend without fixing this if it doesn't affect your build.
-
----
-
-## Environment Variables Reference
-
-### Production Domain Setup
-
-For this guide, assuming:
-- **API Domain:** `api.docuforge.tech`
-- **Frontend Domain:** `docuforge.tech` or `app.docuforge.tech`
-- **Assets Domain:** `assets.docuforge.tech` (R2 custom domain)
-
-Adjust these to your actual domains.
-
----
-
-### API Environment Variables
-
-**File:** `/var/www/docuforge/api/.env`
+Add to `api/.env`:
 
 ```bash
-# ============================================
-# SERVER CONFIGURATION
-# ============================================
-NODE_ENV=production
-PORT=3000
-APP_URL=https://docuforge.tech
-API_URL=https://api.docuforge.tech
-
-# ============================================
-# DATABASE (Turso or Local SQLite)
-# ============================================
-# Option 1: Local SQLite (simple, single-server)
-DATABASE_URL=file:/var/lib/docuforge/db/docuforge.db
-
-# Option 2: Turso (managed, replicated)
-# DATABASE_URL=libsql://your-db-name.turso.io
-# DATABASE_AUTH_TOKEN=your-turso-auth-token
-
-# ============================================
-# RUST ENGINE (localhost only)
-# ============================================
-ENGINE_URL=http://127.0.0.1:3001
-ENGINE_TIMEOUT_MS=5000
-
-# ============================================
-# CLOUDFLARE R2 (Asset Storage)
-# ============================================
 R2_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
-R2_ACCESS_KEY_ID=YOUR_R2_ACCESS_KEY
-R2_SECRET_ACCESS_KEY=YOUR_R2_SECRET_KEY
+R2_ACCESS_KEY_ID=your_access_key_id_from_step_2
+R2_SECRET_ACCESS_KEY=your_secret_access_key_from_step_2
 R2_BUCKET=docuforge-assets
-R2_PUBLIC_URL=https://assets.docuforge.tech
-
-# ============================================
-# STRIPE (Billing)
-# ============================================
-STRIPE_SECRET_KEY=sk_live_YOUR_SECRET_KEY
-STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET
-STRIPE_STARTER_PRICE_ID=price_YOUR_STARTER_PRICE
-STRIPE_PRO_PRICE_ID=price_YOUR_PRO_PRICE
-
-# ============================================
-# GOOGLE GEMINI (AI Features)
-# ============================================
-GEMINI_API_KEY=YOUR_GEMINI_API_KEY
-AI_MODEL=gemini-2.5-flash
-
-# ============================================
-# AUTHENTICATION
-# ============================================
-# CRITICAL: Generate a secure 32+ character secret
-# Command: openssl rand -base64 48
-JWT_SECRET=YOUR_SECURE_256_BIT_SECRET_CHANGE_THIS
-JWT_EXPIRY=7d
-
-# ============================================
-# OAUTH PROVIDERS (Optional)
-# ============================================
-OAUTH_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
-OAUTH_GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
-
-OAUTH_MICROSOFT_CLIENT_ID=YOUR_MICROSOFT_CLIENT_ID
-OAUTH_MICROSOFT_CLIENT_SECRET=YOUR_MICROSOFT_CLIENT_SECRET
-
-OAUTH_GITHUB_CLIENT_ID=YOUR_GITHUB_CLIENT_ID
-OAUTH_GITHUB_CLIENT_SECRET=YOUR_GITHUB_CLIENT_SECRET
-
-# ============================================
-# USAGE LIMITS
-# ============================================
-FREE_MONTHLY_LIMIT=500
-STARTER_MONTHLY_LIMIT=10000
-PRO_MONTHLY_LIMIT=50000
-MAX_UPLOAD_SIZE_MB=10
-
-# ============================================
-# SENTRY (Error Tracking - Optional but Recommended)
-# ============================================
-SENTRY_DSN=https://YOUR_KEY@o123456.ingest.sentry.io/YOUR_PROJECT
-SENTRY_ENVIRONMENT=production
-SENTRY_TRACES_SAMPLE_RATE=0.1
+R2_PUBLIC_URL=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
 ```
 
----
+`R2_PUBLIC_URL` is used as a fallback reference only. All actual access goes through presigned URLs generated by the API using `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`.
 
-### Engine Environment Variables
+### How Signed URLs Work
 
-**File:** `/var/www/docuforge/engine/.env`
+```
+Upload flow:
+  Frontend → POST /v1/assets/upload-url → API generates PutObject presigned URL (10 min)
+  Frontend → PUT directly to R2 signed URL (bypasses API)
+  Frontend → POST /v1/assets (confirm) → API verifies via HeadObject, saves to DB
+
+Download/Render flow:
+  API → resolveUserAssets() → generates GetObject presigned URLs (5 min each)
+  Engine → fetches assets via signed URLs during render
+```
+
+The API uses the AWS SDK S3-compatible client:
+
+```typescript
+// Already implemented in api/src/services/asset.ts
+const client = new S3Client({
+  region: 'auto',
+  endpoint: env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+  },
+});
+```
+
+### Verify R2 Works
+
+After deploying the API, test with:
 
 ```bash
-# ============================================
-# SERVER CONFIGURATION
-# ============================================
-HOST=127.0.0.1
-PORT=3001
+# Request upload URL
+curl -X POST https://api.docuforge.app/v1/assets/upload-url \
+  -H "Authorization: Bearer YOUR_JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"filename":"test.png","content_type":"image/png"}'
 
-# ============================================
-# RENDERING LIMITS
-# ============================================
-MAX_BODY_SIZE_MB=50
-RENDER_TIMEOUT_MS=5000
-CACHE_SIZE_MB=1024
-
-# ============================================
-# LOGGING
-# ============================================
-RUST_LOG=info
-LOG_FORMAT=json
-
-# ============================================
-# SENTRY (Optional - must match API Sentry project)
-# ============================================
-SENTRY_DSN=https://YOUR_KEY@o123456.ingest.sentry.io/YOUR_PROJECT
-SENTRY_ENVIRONMENT=production
-SENTRY_TRACES_SAMPLE_RATE=0.1
+# Response includes:
+# { "upload_url": "https://ACCOUNT.r2.cloudflarestorage.com/docuforge-assets/...?X-Amz-Signature=..." }
 ```
+
+### R2 CORS Configuration
+
+If the frontend uploads directly to R2 (browser → R2), configure CORS on the bucket:
+
+1. Cloudflare Dashboard → R2 → `docuforge-assets` → **Settings**
+2. Add CORS policy:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://console.docuforge.app"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+This allows the browser to PUT files directly to R2 using the presigned URL.
 
 ---
 
-### Frontend Environment Variables
+## Droplet Setup
 
-**Cloudflare Pages Environment Variables** (set in CF dashboard):
+### Step 1: Provision
 
-```bash
-# ============================================
-# PUBLIC VARIABLES (exposed to browser)
-# ============================================
-NEXT_PUBLIC_API_URL=https://api.docuforge.tech
-NEXT_PUBLIC_APP_URL=https://docuforge.tech
+- **Size:** Basic ($24/mo) — 2 vCPUs, 4GB RAM, 80GB SSD
+- **OS:** Ubuntu 22.04 LTS
+- **Region:** Closest to target users
+- Enable monitoring (free)
 
-# ============================================
-# SENTRY (Optional)
-# ============================================
-SENTRY_DSN=https://YOUR_KEY@o123456.ingest.sentry.io/YOUR_FRONTEND_PROJECT
-SENTRY_ENVIRONMENT=production
-```
+### Step 2: Initial Setup
 
-**Build Commands for Cloudflare Pages:**
-- **Build command:** `bun run build`
-- **Build output directory:** `.next`
-- **Root directory:** `frontend`
-- **Node version:** 20.x
-
----
-
-## Deployment Steps
-
-### Phase 1: Pre-Deployment Setup
-
-#### Step 1: Provision DigitalOcean Droplet
-
-**Recommended Specs:**
-- **Size:** Basic Droplet (2 vCPUs, 4GB RAM, 80GB SSD) - $24/month
-- **OS:** Ubuntu 22.04 LTS x64
-- **Region:** Closest to your target users
-- **Add-ons:**
-  - ✅ Monitoring (free)
-  - ❌ Backups ($4.80/month) - optional but recommended
-
-**SSH Access:**
 ```bash
 ssh root@YOUR_DROPLET_IP
-```
 
-**Initial Setup:**
-```bash
 # Update system
 apt update && apt upgrade -y
 
 # Install dependencies
-apt install -y curl git build-essential nginx certbot python3-certbot-nginx
+apt install -y curl git build-essential nginx
 
 # Install Bun
 curl -fsSL https://bun.sh/install | bash
@@ -381,62 +237,61 @@ source ~/.bashrc
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source ~/.cargo/env
 
-# Create application user
+# Create app user
 useradd -m -s /bin/bash docuforge
-mkdir -p /var/www/docuforge /var/lib/docuforge/db
-chown -R docuforge:docuforge /var/www/docuforge /var/lib/docuforge
+mkdir -p /var/www/docuforge /var/lib/docuforge/db /var/backups/docuforge
+chown -R docuforge:docuforge /var/www/docuforge /var/lib/docuforge /var/backups/docuforge
 ```
 
----
+### Step 3: Firewall
 
-#### Step 2: Configure Firewall (Cloudflare IPs Only)
-
-**Install UFW:**
 ```bash
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow ssh
-ufw allow 80/tcp
-ufw allow 443/tcp
-```
 
-**Whitelist Cloudflare IPs Only:**
-```bash
-# Download Cloudflare IP ranges
-curl https://www.cloudflare.com/ips-v4 -o /tmp/cf-ips-v4.txt
-curl https://www.cloudflare.com/ips-v6 -o /tmp/cf-ips-v6.txt
+# Allow HTTP/HTTPS from Cloudflare IPs only
+curl -s https://www.cloudflare.com/ips-v4 | while read ip; do
+  ufw allow from $ip to any port 443 proto tcp
+  ufw allow from $ip to any port 80 proto tcp
+done
 
-# Allow HTTPS only from Cloudflare IPs
-while read ip; do ufw allow from $ip to any port 443 proto tcp; done < /tmp/cf-ips-v4.txt
-while read ip; do ufw allow from $ip to any port 443 proto tcp; done < /tmp/cf-ips-v6.txt
-
-# Allow HTTP for Let's Encrypt challenges (temporary)
-ufw allow 80/tcp
-
-# Enable firewall
 ufw enable
 ```
 
-**Verify:**
+### Step 4: SSL with Cloudflare Origin Certificate
+
+Since Cloudflare proxies all traffic, use a **Cloudflare Origin Certificate** (free, 15-year validity) instead of Let's Encrypt:
+
+1. Cloudflare Dashboard → SSL/TLS → **Origin Server**
+2. Click **Create Certificate**
+3. Hostnames: `*.docuforge.app, docuforge.app`
+4. Validity: 15 years
+5. Key format: PEM
+6. Copy the **Origin Certificate** and **Private Key**
+
+Install on droplet:
+
 ```bash
-ufw status numbered
+# Save certificate
+mkdir -p /etc/ssl/cloudflare
+nano /etc/ssl/cloudflare/origin.pem     # paste Origin Certificate
+nano /etc/ssl/cloudflare/origin-key.pem  # paste Private Key
+chmod 600 /etc/ssl/cloudflare/origin-key.pem
 ```
 
----
+Set SSL mode in Cloudflare:
+- **SSL/TLS → Overview → Full (strict)**
 
-#### Step 3: Configure Nginx Reverse Proxy
+### Step 5: Nginx Configuration
 
-**Create Nginx config:**
 ```bash
 nano /etc/nginx/sites-available/docuforge
 ```
 
-**Nginx Configuration:**
 ```nginx
-# Rate limiting zone
 limit_req_zone $binary_remote_addr zone=api_limit:10m rate=100r/s;
 
-# Upstream API server
 upstream docuforge_api {
     server 127.0.0.1:3000 fail_timeout=5s max_fails=3;
     keepalive 32;
@@ -444,34 +299,21 @@ upstream docuforge_api {
 
 server {
     listen 80;
-    server_name api.docuforge.tech;
-
-    # Let's Encrypt challenge
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    # Redirect to HTTPS
-    location / {
-        return 301 https://$host$request_uri;
-    }
+    server_name api.docuforge.app;
+    return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name api.docuforge.tech;
+    server_name api.docuforge.app;
 
-    # SSL certificates (set up via certbot later)
-    ssl_certificate /etc/letsencrypt/live/api.docuforge.tech/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.docuforge.tech/privkey.pem;
+    ssl_certificate /etc/ssl/cloudflare/origin.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/origin-key.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384';
-    ssl_prefer_server_ciphers off;
 
     # Security headers
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     # Cloudflare real IP
@@ -492,42 +334,34 @@ server {
     set_real_ip_from 131.0.72.0/22;
     real_ip_header CF-Connecting-IP;
 
-    # Logging
     access_log /var/log/nginx/docuforge-access.log;
     error_log /var/log/nginx/docuforge-error.log warn;
 
-    # Proxy settings
+    # Default: rate limited proxy
     location / {
         limit_req zone=api_limit burst=20 nodelay;
-
         proxy_pass http://docuforge_api;
         proxy_http_version 1.1;
-
-        # Headers
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Connection "";
-
-        # Timeouts
         proxy_connect_timeout 5s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
-
-        # Buffering
         proxy_buffering off;
         proxy_request_buffering off;
     }
 
-    # Health check (bypass rate limit)
+    # Health check (no rate limit, no access log)
     location /health {
         limit_req off;
         proxy_pass http://docuforge_api;
         access_log off;
     }
 
-    # Stripe webhooks (bypass rate limit)
+    # Stripe webhook (no rate limit)
     location /v1/billing/webhook {
         limit_req off;
         proxy_pass http://docuforge_api;
@@ -539,128 +373,110 @@ server {
 }
 ```
 
-**Enable site:**
+Enable:
+
 ```bash
 ln -s /etc/nginx/sites-available/docuforge /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
+rm /etc/nginx/sites-enabled/default
+nginx -t && systemctl restart nginx
 ```
 
 ---
 
-#### Step 4: Set Up SSL with Let's Encrypt
+## Deploy Backend
 
-**Before running certbot, ensure:**
-1. DNS A record for `api.docuforge.tech` points to droplet IP
-2. Nginx is running with HTTP (port 80) enabled
-
-```bash
-# Run certbot
-certbot --nginx -d api.docuforge.tech
-
-# Auto-renewal
-certbot renew --dry-run
-```
-
----
-
-### Phase 2: Deploy Application
-
-#### Step 5: Clone Repository
+### Step 1: Clone & Build
 
 ```bash
 su - docuforge
 cd /var/www/docuforge
 git clone https://github.com/YOUR_ORG/docuforge.git .
 
-# Or use rsync if not using git
-# rsync -avz --exclude node_modules --exclude target /local/path/ docuforge@droplet:/var/www/docuforge/
-```
-
----
-
-#### Step 6: Fix ENGINE_URL Hardcoded Fallbacks
-
-**Apply fixes from [Pre-Launch Blockers](#pre-launch-blockers) section.**
-
-```bash
-cd /var/www/docuforge/api
-
-# Edit files
-nano src/routes/health.ts
-nano src/services/engine.ts
-
-# Replace all instances of:
-#   process.env.ENGINE_URL || 'http://127.0.0.1:3001'
-# With:
-#   env.ENGINE_URL
-```
-
----
-
-#### Step 7: Configure Environment Variables
-
-**API:**
-```bash
-cd /var/www/docuforge/api
-cp .env.example .env
-nano .env
-# Fill in all production values from [API Environment Variables](#api-environment-variables)
-```
-
-**Engine:**
-```bash
-cd /var/www/docuforge/engine
-nano .env
-# Fill in values from [Engine Environment Variables](#engine-environment-variables)
-```
-
-**Generate secure JWT secret:**
-```bash
-openssl rand -base64 48
-# Copy output to JWT_SECRET in api/.env
-```
-
----
-
-#### Step 8: Install Dependencies
-
-**API:**
-```bash
-cd /var/www/docuforge/api
+# API
+cd api
 bun install --frozen-lockfile --production
-```
 
-**Engine:**
-```bash
-cd /var/www/docuforge/engine
-
-# Download fonts (required for Typst)
+# Engine
+cd ../engine
 make fonts
-
-# Build release binary
 cargo build --release
 ```
 
-**Verify builds:**
-```bash
-# API
-cd /var/www/docuforge/api
-bun run src/index.ts --help
+### Step 2: Environment Files
 
-# Engine
-cd /var/www/docuforge/engine
-./target/release/docuforge-engine --version
+**API** (`/var/www/docuforge/api/.env`):
+
+```bash
+NODE_ENV=production
+PORT=3000
+APP_URL=https://console.docuforge.app
+API_URL=https://api.docuforge.app
+
+DATABASE_URL=file:/var/lib/docuforge/db/docuforge.db
+
+ENGINE_URL=http://127.0.0.1:3001
+ENGINE_TIMEOUT_MS=5000
+
+# Generate with: openssl rand -base64 48
+JWT_SECRET=PASTE_YOUR_GENERATED_SECRET_HERE
+JWT_EXPIRY=7d
+
+# R2 (from R2 setup above)
+R2_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your_key
+R2_SECRET_ACCESS_KEY=your_secret
+R2_BUCKET=docuforge-assets
+R2_PUBLIC_URL=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
+
+# Stripe
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_STARTER_PRICE_ID=price_...
+STRIPE_PRO_PRICE_ID=price_...
+
+# Gemini AI
+GEMINI_API_KEY=your_gemini_key
+AI_MODEL=gemini-2.5-flash
+AI_ENABLED=true
+
+# RAG (loads Typst docs into memory for smarter AI)
+RAG_ENABLED=true
+RAG_TOP_K=5
+
+# OAuth (optional — set up later)
+# OAUTH_GOOGLE_CLIENT_ID=
+# OAUTH_GOOGLE_CLIENT_SECRET=
+# OAUTH_GITHUB_CLIENT_ID=
+# OAUTH_GITHUB_CLIENT_SECRET=
+
+# Sentry (optional)
+# SENTRY_DSN=https://...@sentry.io/...
+# SENTRY_ENVIRONMENT=production
+
+# Limits
+FREE_MONTHLY_LIMIT=500
+STARTER_MONTHLY_LIMIT=10000
+PRO_MONTHLY_LIMIT=50000
+MAX_UPLOAD_SIZE_MB=10
+WEBHOOK_MAX_PER_USER=10
 ```
 
----
+**Engine** (`/var/www/docuforge/engine/.env`):
 
-#### Step 9: Set Up systemd Services
-
-**Engine Service:**
 ```bash
-sudo nano /etc/systemd/system/docuforge-engine.service
+HOST=127.0.0.1
+PORT=3001
+MAX_BODY_SIZE_MB=50
+RENDER_TIMEOUT_MS=5000
+ASSET_CACHE_SIZE_MB=100
+LOG_LEVEL=info
+LOG_FORMAT=json
+# SENTRY_DSN=https://...@sentry.io/...
 ```
+
+### Step 3: systemd Services
+
+**Engine** (`/etc/systemd/system/docuforge-engine.service`):
 
 ```ini
 [Unit]
@@ -678,8 +494,6 @@ Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
-
-# Security hardening
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
@@ -690,10 +504,7 @@ ReadWritePaths=/var/lib/docuforge
 WantedBy=multi-user.target
 ```
 
-**API Service:**
-```bash
-sudo nano /etc/systemd/system/docuforge-api.service
-```
+**API** (`/etc/systemd/system/docuforge-api.service`):
 
 ```ini
 [Unit]
@@ -712,8 +523,6 @@ Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
-
-# Security hardening
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
@@ -723,7 +532,8 @@ ReadWritePaths=/var/lib/docuforge
 WantedBy=multi-user.target
 ```
 
-**Enable and start services:**
+Start:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable docuforge-engine docuforge-api
@@ -732,1070 +542,312 @@ sleep 5
 sudo systemctl start docuforge-api
 ```
 
-**Check status:**
-```bash
-sudo systemctl status docuforge-engine
-sudo systemctl status docuforge-api
-journalctl -u docuforge-engine -f
-journalctl -u docuforge-api -f
-```
-
----
-
-#### Step 10: Verify Backend Health
+### Step 4: Verify
 
 ```bash
-# Test engine (internal)
+# Engine (internal)
 curl http://127.0.0.1:3001/health
 
-# Test API (internal)
+# API (internal)
 curl http://127.0.0.1:3000/health
 
-# Test API (via Nginx)
-curl https://api.docuforge.tech/health
+# API (via nginx + cloudflare)
+curl https://api.docuforge.app/health
 ```
 
-**Expected response:**
+Expected:
+
 ```json
-{
-  "status": "ok",
-  "version": "0.1.0",
-  "uptime": 123,
-  "engine": {
-    "status": "ok",
-    "latency_ms": 2
-  }
-}
+{"status":"ok","engine":"healthy","version":"1.0.0","uptime":12}
 ```
 
 ---
 
-### Phase 3: Deploy Frontend
+## Deploy Frontend
 
-#### Step 11: Configure Cloudflare R2
+### Cloudflare Pages Setup
 
-**Create R2 Bucket:**
-1. Log in to Cloudflare Dashboard
-2. Go to R2 Object Storage
-3. Create bucket: `docuforge-assets`
-4. Create API Token:
-   - Permissions: Object Read & Write
-   - Copy `Access Key ID` and `Secret Access Key`
-5. Set up custom domain:
-   - Add `assets.docuforge.tech` as custom domain
-   - Configure DNS CNAME: `assets.docuforge.tech` → `docuforge-assets.YOUR_ACCOUNT_ID.r2.cloudflarestorage.com`
-
-**Update API .env:**
-```bash
-R2_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
-R2_ACCESS_KEY_ID=YOUR_ACCESS_KEY
-R2_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
-R2_BUCKET=docuforge-assets
-R2_PUBLIC_URL=https://assets.docuforge.tech
-```
-
-**Restart API:**
-```bash
-sudo systemctl restart docuforge-api
-```
-
----
-
-#### Step 12: Deploy Frontend to Cloudflare Pages
-
-**Option A: Via Cloudflare Dashboard (Recommended)**
-
-1. Go to Cloudflare Dashboard → Pages
-2. Create new project
-3. Connect to your Git repository
-4. Configure build:
+1. Cloudflare Dashboard → **Pages** → Create project
+2. Connect your Git repository
+3. Configure build:
    - **Build command:** `bun run build`
    - **Build output directory:** `.next`
    - **Root directory:** `frontend`
-   - **Node version:** 20.x
-5. Add environment variables:
+4. Environment variables:
    ```
-   NEXT_PUBLIC_API_URL=https://api.docuforge.tech
-   NEXT_PUBLIC_APP_URL=https://docuforge.tech
-   SENTRY_DSN=YOUR_SENTRY_DSN (optional)
-   SENTRY_ENVIRONMENT=production
+   NEXT_PUBLIC_API_URL=https://api.docuforge.app
+   NEXT_PUBLIC_APP_URL=https://console.docuforge.app
    ```
-6. Deploy
+5. Deploy
 
-**Option B: Via Wrangler CLI**
+### Custom Domains
 
-```bash
-cd /var/www/docuforge/frontend
+After first deploy, add custom domains:
 
-# Install Wrangler
-bun install -g wrangler
+1. Pages → your project → **Custom domains**
+2. Add `console.docuforge.app` (main app)
+3. Add `www.docuforge.app` (marketing — same deploy, different cache rules)
 
-# Login
-wrangler login
+### Cloudflare Cache Rules
 
-# Build
-NODE_ENV=production bun run build
+Already documented in `docs/caching-compression-strategy.md`. Create these 7 rules:
 
-# Deploy
-wrangler pages deploy .next --project-name=docuforge --branch=main
-```
+1. **API bypass** — `api.docuforge.app` → bypass cache
+2. **API health** — `api.docuforge.app` + `/health` → cache 10s
+3. **www HTML** — `www.docuforge.app` (not `/_next/*`) → edge cache 7 days
+4. **www static** — `www.docuforge.app` + `/_next/static/*` → cache 1 year
+5. **www OG** — `www.docuforge.app` + `/og/*` → cache 1 hour
+6. **console HTML** — `console.docuforge.app` (not `/_next/*`) → bypass cache
+7. **console static** — `console.docuforge.app` + `/_next/static/*` → cache 1 year
 
-**Set custom domain:**
-1. In Cloudflare Pages → Custom domains
-2. Add `docuforge.tech` (or `app.docuforge.tech`)
-3. Cloudflare will auto-configure DNS
+Also in **Caching → Configuration**:
+- Browser Cache TTL: **Respect Existing Headers**
+- Enable **Smart Tiered Cache**
+
+And in **Speed → Optimization**:
+- Verify **Brotli** is enabled
 
 ---
 
-### Phase 4: Post-Deployment Configuration
+## Post-Deploy Configuration
 
-#### Step 13: Configure Stripe Webhooks
+### Stripe Webhooks
 
-**Create webhook endpoint:**
-1. Go to Stripe Dashboard → Developers → Webhooks
-2. Add endpoint: `https://api.docuforge.tech/v1/billing/webhook`
-3. Select events:
+1. Stripe Dashboard → Developers → Webhooks
+2. Add endpoint: `https://api.docuforge.app/v1/billing/webhook`
+3. Events:
    - `checkout.session.completed`
-   - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
-   - `invoice.payment_succeeded`
-   - `invoice.payment_failed`
-4. Copy webhook signing secret
-5. Update `STRIPE_WEBHOOK_SECRET` in `api/.env`
-6. Restart API: `sudo systemctl restart docuforge-api`
+4. Copy signing secret → `STRIPE_WEBHOOK_SECRET` in API `.env`
+5. `sudo systemctl restart docuforge-api`
 
-**Test webhook:**
-```bash
-stripe listen --forward-to https://api.docuforge.tech/v1/billing/webhook
-stripe trigger checkout.session.completed
-```
+### OAuth Redirect URIs
 
----
+Set callback URLs in each provider's dashboard:
 
-#### Step 14: Configure OAuth Redirect URIs
+- **Google:** `https://api.docuforge.app/v1/auth/oauth/google/callback`
+- **Microsoft:** `https://api.docuforge.app/v1/auth/oauth/microsoft/callback`
+- **GitHub:** `https://api.docuforge.app/v1/auth/oauth/github/callback`
 
-**Google:**
-- Redirect URI: `https://api.docuforge.tech/v1/auth/oauth/google/callback`
+### Sentry (Optional)
 
-**Microsoft:**
-- Redirect URI: `https://api.docuforge.tech/v1/auth/oauth/microsoft/callback`
-
-**GitHub:**
-- Authorization callback URL: `https://api.docuforge.tech/v1/auth/oauth/github/callback`
-
-**Update OAuth client settings in respective provider dashboards.**
-
----
-
-#### Step 15: Set Up Monitoring
-
-**Sentry:**
-1. Create project in Sentry for each service:
-   - `docuforge-api`
-   - `docuforge-engine`
-   - `docuforge-frontend`
+1. Create Sentry projects: `docuforge-api`, `docuforge-engine`, `docuforge-frontend`
 2. Copy DSNs to respective `.env` files
 3. Restart services
 
-**Uptime Monitoring:**
-- Use Uptime Robot or similar
-- Monitor: `https://api.docuforge.tech/health`
-- Alert on: Status code != 200, Response time > 1000ms
+### Automated Backups
 
-**Log Monitoring:**
 ```bash
-# View logs in real-time
-journalctl -u docuforge-api -u docuforge-engine -f
-
-# Filter errors only
-journalctl -u docuforge-api -p err -f
-```
-
----
-
-## Manual QA Checklist
-
-### Pre-Launch Testing (Production Environment)
-
-#### 1. Authentication & Authorization ✓
-
-- [ ] **Register new account**
-  - Navigate to `https://docuforge.tech/register`
-  - Enter email + password
-  - Verify email validation
-  - Check account created in database
-  - Verify JWT token issued (check localStorage in browser DevTools)
-
-- [ ] **Login with credentials**
-  - Go to `https://docuforge.tech/login`
-  - Login with registered account
-  - Verify redirect to dashboard
-  - Check JWT stored in localStorage
-
-- [ ] **OAuth login (Google)**
-  - Click "Sign in with Google"
-  - Complete OAuth flow
-  - Verify redirect to `https://api.docuforge.tech/v1/auth/oauth/google/callback`
-  - Verify account linked (check `oauth_accounts` table)
-  - Verify token issued
-
-- [ ] **OAuth login (Microsoft)** - Same flow as Google
-
-- [ ] **OAuth login (GitHub)** - Same flow as Google
-
-- [ ] **API Key creation**
-  - Login to dashboard
-  - Navigate to Settings → API Keys
-  - Create new API key
-  - Verify key prefix displayed (starts with `dfk_`)
-  - Copy full key (only shown once)
-  - Test API key in `curl`:
-    ```bash
-    curl -H "X-API-Key: YOUR_KEY" https://api.docuforge.tech/v1/templates
-    ```
-
-- [ ] **API Key revocation**
-  - Revoke created API key
-  - Verify requests with revoked key return 401
-
-- [ ] **JWT expiry**
-  - Wait for JWT to expire (or set short expiry in dev)
-  - Verify redirect to login
-
-- [ ] **Logout**
-  - Click logout
-  - Verify token cleared from localStorage
-  - Verify redirect to login page
-
----
-
-#### 2. Template Management ✓
-
-- [ ] **Create template**
-  - Dashboard → New Template
-  - Enter name, description
-  - Verify template appears in list
-  - Check `templates` table
-
-- [ ] **Edit template**
-  - Open template in editor
-  - Modify Typst code
-  - Save (Ctrl+S or Cmd+S)
-  - Verify version created in `template_versions` table
-  - Verify `versionNumber` incremented
-
-- [ ] **Template versioning**
-  - Make 3 changes to template (3 versions)
-  - Open version history
-  - Verify 3 versions listed with timestamps
-  - Click on old version
-  - Verify code loaded from that version
-  - Restore old version
-  - Verify new version created as copy
-
-- [ ] **Publish template**
-  - Mark template as public
-  - Copy public URL
-  - Open in incognito window (logged out)
-  - Verify template accessible
-  - Verify can render with data
-
-- [ ] **Delete template**
-  - Delete a test template
-  - Verify removed from list
-  - Verify cascade delete of versions (check `template_versions` table)
-
----
-
-#### 3. PDF Rendering ✓
-
-- [ ] **Simple render (no data)**
-  - Create template: `= Hello World\n\nTest document.`
-  - Click "Render" or press Ctrl+R
-  - Verify PDF preview loads in right panel
-  - Verify PDF contains "Hello World"
-  - Download PDF, verify it opens in PDF reader
-
-- [ ] **Render with data**
-  - Create template:
-    ```typst
-    #let d = sys.inputs
-    = Invoice #d.id
-
-    Customer: #d.customer
-    Total: $#d.total
-    ```
-  - Add data in Data panel (JSON):
-    ```json
-    {
-      "id": "INV-001",
-      "customer": "John Doe",
-      "total": 199.99
-    }
-    ```
-  - Render
-  - Verify PDF shows correct values
-
-- [ ] **Render with multi-file template**
-  - Create main file `main.typ`:
-    ```typst
-    #import "header.typ": make_header
-    #make_header("My Report")
-
-    Content here.
-    ```
-  - Create `header.typ`:
-    ```typst
-    #let make_header(title) = {
-      align(center)[= #title]
-    }
-    ```
-  - Render
-  - Verify PDF generated with header
-
-- [ ] **Render with asset (image)**
-  - Upload image via Assets panel
-  - Reference in template: `#image("logo.png")`
-  - Render
-  - Verify image appears in PDF
-
-- [ ] **Render timeout**
-  - Create infinite loop template:
-    ```typst
-    #while true {
-      [Never ends]
-    }
-    ```
-  - Click render
-  - Verify timeout after 5 seconds (ENGINE_TIMEOUT_MS)
-  - Verify error message displayed
-
-- [ ] **Invalid Typst syntax**
-  - Create template with syntax error: `#let x =` (incomplete)
-  - Click render
-  - Verify error message with line number
-  - Verify no crash
-
-- [ ] **Rate limiting (render endpoint)**
-  - Send 15 render requests rapidly (as free user)
-  - Verify 11th+ requests return 429 (free tier: 10 req/min)
-  - Verify `X-RateLimit-*` headers present
-  - Wait 1 minute
-  - Verify requests succeed again
-
----
-
-#### 4. Asset Storage (R2) ✓
-
-- [ ] **Upload image**
-  - Click "Upload Asset"
-  - Select PNG/JPG (< 10MB)
-  - Verify upload progress
-  - Verify asset appears in list
-  - Verify `assets` table entry created
-  - Check R2 bucket via Cloudflare dashboard
-  - Verify file exists at `r2Key` path
-
-- [ ] **Upload oversized file**
-  - Try to upload file > 10MB
-  - Verify error: "File too large"
-
-- [ ] **Download asset**
-  - Click asset in list
-  - Verify download starts
-  - Verify file matches uploaded file (hash check)
-
-- [ ] **Asset deduplication (by hash)**
-  - Upload same image twice
-  - Verify both entries in UI
-  - Check R2 bucket
-  - Verify only 1 file stored (deduplication by SHA-256 hash)
-
-- [ ] **Delete asset**
-  - Delete an asset
-  - Verify removed from list
-  - Verify cascade: templates using this asset show error (or remove reference)
-
-- [ ] **Asset URL expiry**
-  - Get presigned download URL from API
-  - Wait 6 minutes (URLs expire in 5 min)
-  - Try to access URL
-  - Verify 403 Forbidden (expired)
-
----
-
-#### 5. Billing & Plans ✓
-
-- [ ] **Free plan limits**
-  - Create new free account
-  - Check usage: 500 renders/month
-  - Make 500 render requests (via API key + script)
-  - Verify 501st request returns:
-    ```json
-    {"error": "Monthly render limit exceeded. Upgrade your plan."}
-    ```
-
-- [ ] **Stripe checkout (Starter plan)**
-  - Click "Upgrade to Starter"
-  - Verify redirect to Stripe Checkout
-  - **Use Stripe test card:** `4242 4242 4242 4242`, exp: any future date, CVC: any 3 digits
-  - Complete checkout
-  - Verify redirect to `https://docuforge.tech/settings?success=true`
-  - Check database: `users.plan_tier` = `'starter'`, `plan_renders` = `10000`
-  - Verify `stripe_customer_id` populated
-
-- [ ] **Stripe checkout (Pro plan)** - Same as Starter
-
-- [ ] **Subscription update**
-  - Upgrade from Starter to Pro
-  - Verify new limits: 50,000 renders/month
-  - Check Stripe dashboard for subscription update event
-
-- [ ] **Subscription cancellation**
-  - Cancel subscription via Stripe Customer Portal
-  - Verify webhook received: `customer.subscription.deleted`
-  - Check database: `plan_tier` reverted to `'free'`, `plan_renders` = `500`
-
-- [ ] **Invoice payment failure**
-  - Trigger failed payment in Stripe
-  - Verify webhook received: `invoice.payment_failed`
-  - Verify account locked or downgraded (depends on your logic)
-  - Verify email sent to user (if implemented)
-
-- [ ] **Webhook signature verification**
-  - Send fake webhook (no signature):
-    ```bash
-    curl -X POST https://api.docuforge.tech/v1/billing/webhook \
-      -H "Content-Type: application/json" \
-      -d '{"type":"customer.subscription.deleted"}'
-    ```
-  - Verify 400 Bad Request (invalid signature)
-
----
-
-#### 6. AI Features (Gemini) ✓
-
-- [ ] **Generate template from prompt**
-  - Open AI drawer
-  - Enter prompt: "Create an invoice template with company name, items table, and total"
-  - Click "Generate"
-  - Verify Typst code generated
-  - Verify code inserted into editor
-  - Render to verify it works
-
-- [ ] **Generate from image**
-  - Upload image (screenshot of a form)
-  - Click "Generate from Image"
-  - Verify Typst code generated matching image layout
-  - Verify base64 image size validated (max 10MB)
-
-- [ ] **AI rate limiting**
-  - Make 10 AI requests rapidly
-  - Verify rate limit applied
-  - Verify error message
-
-- [ ] **AI API key invalid**
-  - Temporarily set `GEMINI_API_KEY` to invalid value
-  - Restart API
-  - Try to generate template
-  - Verify error: "AI service unavailable"
-  - Verify logged to Sentry
-
----
-
-#### 7. Security & CORS ✓
-
-- [ ] **CORS protection**
-  - Open browser console on `https://evil.com`
-  - Try to fetch API:
-    ```javascript
-    fetch('https://api.docuforge.tech/v1/templates', {
-      headers: { 'Authorization': 'Bearer YOUR_JWT' }
-    }).then(r => r.json()).then(console.log)
-    ```
-  - Verify CORS error: Origin not allowed
-
-- [ ] **SQL injection protection**
-  - Try to inject SQL in template name:
-    - Name: `'; DROP TABLE users; --`
-  - Verify template created with literal string (no SQL executed)
-  - Verify `users` table still exists
-
-- [ ] **XSS protection**
-  - Create template with name: `<script>alert('XSS')</script>`
-  - View template list
-  - Verify script not executed (HTML escaped)
-
-- [ ] **CSRF token (if implemented)**
-  - Check for CSRF token in forms
-  - Try to submit form without token
-  - Verify rejected
-
-- [ ] **Clickjacking protection**
-  - Try to embed `https://api.docuforge.tech` in iframe:
-    ```html
-    <iframe src="https://api.docuforge.tech"></iframe>
-    ```
-  - Open in browser
-  - Verify `X-Frame-Options: DENY` prevents embedding
-
----
-
-#### 8. Performance & Load ✓
-
-- [ ] **Cold start performance**
-  - Restart services:
-    ```bash
-    sudo systemctl restart docuforge-engine docuforge-api
-    ```
-  - Wait 10 seconds
-  - Make first render request
-  - Verify responds in < 2 seconds (including engine warmup)
-
-- [ ] **Concurrent renders**
-  - Use `ab` (Apache Bench):
-    ```bash
-    ab -n 100 -c 10 -H "X-API-Key: YOUR_KEY" \
-      -p render-payload.json -T application/json \
-      https://api.docuforge.tech/v1/render
-    ```
-  - Verify 0% failed requests
-  - Verify p95 latency < 500ms (for simple docs)
-
-- [ ] **Large template rendering**
-  - Create template with 50 pages of content (lorem ipsum)
-  - Render
-  - Verify completes in < 10 seconds
-  - Verify PDF size reasonable (< 5MB)
-
-- [ ] **Memory leak check**
-  - Make 1000 consecutive render requests
-  - Monitor memory:
-    ```bash
-    watch -n 1 'ps aux | grep docuforge'
-    ```
-  - Verify memory stable (no continuous growth)
-
----
-
-#### 9. Error Handling & Observability ✓
-
-- [ ] **Sentry error capture**
-  - Force an error (e.g., invalid template ID)
-  - Check Sentry dashboard
-  - Verify error captured with:
-    - Stack trace
-    - User context
-    - Request context
-    - Breadcrumbs
-
-- [ ] **Health endpoint degraded state**
-  - Stop engine: `sudo systemctl stop docuforge-engine`
-  - Check health: `curl https://api.docuforge.tech/health`
-  - Verify response:
-    ```json
-    {
-      "status": "degraded",
-      "engine": {"status": "error", "error": "..."}
-    }
-    ```
-  - Start engine: `sudo systemctl start docuforge-engine`
-  - Verify health returns to "ok"
-
-- [ ] **Database connection loss**
-  - Simulate DB failure (rename DB file temporarily)
-  - Make API request
-  - Verify 503 Service Unavailable
-  - Verify error logged to Sentry
-  - Restore DB
-  - Verify service recovers
-
-- [ ] **Nginx timeout**
-  - Create template with 65-second delay (> proxy_read_timeout)
-  - Click render
-  - Verify timeout error from Nginx
-  - Verify graceful error message (not raw 504)
-
----
-
-#### 10. Frontend E2E Flows ✓
-
-- [ ] **Complete onboarding flow**
-  1. Visit `https://docuforge.tech`
-  2. Click "Sign Up"
-  3. Register account
-  4. Verify redirect to dashboard
-  5. See quick start guide / tutorial
-  6. Create first template
-  7. Render first PDF
-  8. Download PDF
-  9. Create API key
-  10. Test API key with `curl`
-
-- [ ] **Mobile responsiveness**
-  - Open `https://docuforge.tech` on mobile device (or Chrome DevTools mobile view)
-  - Verify:
-    - Login page responsive
-    - Dashboard responsive
-    - Editor responsive (Monaco editor usable)
-    - Templates list responsive
-    - Settings page responsive
-
-- [ ] **Keyboard shortcuts**
-  - Open editor
-  - Test shortcuts:
-    - `Ctrl+S` / `Cmd+S`: Save template
-    - `Ctrl+R` / `Cmd+R`: Render PDF
-    - `Ctrl+B` / `Cmd+B`: Toggle sidebar
-    - `Ctrl+K`: Open command palette (if implemented)
-  - Verify all shortcuts work
-
-- [ ] **Accessibility (a11y)**
-  - Run Lighthouse audit in Chrome DevTools
-  - Verify accessibility score > 90
-  - Test keyboard navigation (Tab, Enter, Esc)
-  - Verify screen reader compatibility (if possible)
-
----
-
-#### 11. API Integration Testing ✓
-
-**Test via `curl` with API key:**
-
-- [ ] **List templates**
-  ```bash
-  curl -H "X-API-Key: dfk_YOUR_KEY" \
-    https://api.docuforge.tech/v1/templates
-  ```
-  - Verify returns array of templates
-
-- [ ] **Get specific template**
-  ```bash
-  curl -H "X-API-Key: dfk_YOUR_KEY" \
-    https://api.docuforge.tech/v1/templates/TEMPLATE_ID
-  ```
-  - Verify returns template details with versions
-
-- [ ] **Create template via API**
-  ```bash
-  curl -X POST -H "X-API-Key: dfk_YOUR_KEY" \
-    -H "Content-Type: application/json" \
-    -d '{"name":"API Test","source":"= Test"}' \
-    https://api.docuforge.tech/v1/templates
-  ```
-  - Verify template created
-
-- [ ] **Render via API**
-  ```bash
-  curl -X POST -H "X-API-Key: dfk_YOUR_KEY" \
-    -H "Content-Type: application/json" \
-    -d '{"template":{"main":"main.typ","files":{"main.typ":"= Hello API"}},"data":{}}' \
-    https://api.docuforge.tech/v1/render \
-    --output test.pdf
-  ```
-  - Verify `test.pdf` created and opens correctly
-
-- [ ] **Render with template ID**
-  ```bash
-  curl -X POST -H "X-API-Key: dfk_YOUR_KEY" \
-    -H "Content-Type: application/json" \
-    -d '{"templateId":"TEMPLATE_ID","data":{"key":"value"}}' \
-    https://api.docuforge.tech/v1/render \
-    --output test2.pdf
-  ```
-  - Verify PDF rendered with template
-
----
-
-### Post-Launch Monitoring
-
-- [ ] **Set up alerts**
-  - Uptime monitor: Alert if health check fails for > 2 minutes
-  - Sentry: Alert on new error types or >10 errors/hour
-  - Disk space: Alert if > 80% full
-  - Memory: Alert if > 90% used
-
-- [ ] **Daily checks (first week)**
-  - Check Sentry for errors
-  - Check server logs: `journalctl -u docuforge-api --since today`
-  - Check render success rate
-  - Check Stripe webhook delivery rate
-  - Check R2 storage usage
-
----
-
-## Security Hardening
-
-### Additional Security Measures (Post-Launch)
-
-#### 1. Enable HTTP/2 & HTTP/3 (QUIC)
-
-**Nginx HTTP/3 (optional but recommended):**
-```bash
-# Check if nginx compiled with QUIC support
-nginx -V 2>&1 | grep quic
-
-# If yes, add to server block:
-listen 443 quic reuseport;
-listen 443 ssl http2;
-add_header Alt-Svc 'h3=":443"; ma=86400';
-```
-
----
-
-#### 2. Implement Content Security Policy (CSP)
-
-**Add to Nginx for API:**
-```nginx
-add_header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'" always;
-```
-
-**Add to Next.js for Frontend:**
-```typescript
-// frontend/next.config.ts
-const securityHeaders = [
-  {
-    key: 'Content-Security-Policy',
-    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.docuforge.tech;"
-  }
-];
-
-export default {
-  async headers() {
-    return [{ source: '/(.*)', headers: securityHeaders }];
-  }
-};
-```
-
----
-
-#### 3. Database Encryption at Rest
-
-**For local SQLite:**
-```bash
-# Use SQLCipher (encrypted SQLite)
-apt install sqlcipher
-
-# Or encrypt the volume
-cryptsetup luksFormat /dev/vdb
-cryptsetup open /dev/vdb docuforge_data
-mkfs.ext4 /dev/mapper/docuforge_data
-mount /dev/mapper/docuforge_data /var/lib/docuforge
-```
-
-**For Turso:**
-- Encryption at rest enabled by default
-
----
-
-#### 4. Secrets Management
-
-**Use HashiCorp Vault or similar:**
-```bash
-# Example: Store secrets in Vault
-vault kv put secret/docuforge/api \
-  jwt_secret=YOUR_SECRET \
-  stripe_key=YOUR_KEY \
-  gemini_key=YOUR_KEY
-
-# Fetch in systemd service
-ExecStartPre=/usr/local/bin/fetch-secrets.sh
-```
-
-**Or use systemd credentials:**
-```bash
-# Store secrets in systemd
-systemd-creds encrypt - /etc/systemd/system/docuforge-api.service.d/jwt-secret.cred <<< "YOUR_SECRET"
-
-# Reference in service file
-LoadCredential=jwt_secret:/etc/systemd/system/docuforge-api.service.d/jwt-secret.cred
-Environment=JWT_SECRET=%d/jwt_secret
-```
-
----
-
-#### 5. DDoS Protection
-
-**Cloudflare (recommended, already in use):**
-- Enable "Under Attack Mode" if needed
-- Configure rate limiting rules in CF dashboard
-- Enable Bot Fight Mode
-
-**Nginx rate limiting (additional layer):**
-```nginx
-# In http block
-limit_req_zone $binary_remote_addr zone=global_limit:10m rate=100r/s;
-limit_conn_zone $binary_remote_addr zone=conn_limit:10m;
-
-# In server block
-limit_req zone=global_limit burst=50 nodelay;
-limit_conn conn_limit 10;
-```
-
----
-
-#### 6. Automated Backups
-
-**Database backups:**
-```bash
+# /usr/local/bin/backup-docuforge.sh
 #!/bin/bash
-# /usr/local/bin/backup-db.sh
-
 BACKUP_DIR="/var/backups/docuforge"
 DATE=$(date +%Y%m%d_%H%M%S)
-
-# Backup SQLite
 cp /var/lib/docuforge/db/docuforge.db "$BACKUP_DIR/db_$DATE.db"
-
-# Upload to S3/R2 (optional)
-aws s3 cp "$BACKUP_DIR/db_$DATE.db" s3://docuforge-backups/
-
-# Keep only last 30 days
 find "$BACKUP_DIR" -name "db_*.db" -mtime +30 -delete
 ```
 
-**Cron job:**
 ```bash
+chmod +x /usr/local/bin/backup-docuforge.sh
 crontab -e
-# Add:
-0 2 * * * /usr/local/bin/backup-db.sh
+# Add: 0 2 * * * /usr/local/bin/backup-docuforge.sh
 ```
 
----
+### Uptime Monitoring
 
-#### 7. Penetration Testing
-
-**Tools to run:**
-- OWASP ZAP: `zap-cli quick-scan https://api.docuforge.tech`
-- Nikto: `nikto -h https://api.docuforge.tech`
-- Nmap: `nmap -sV YOUR_DROPLET_IP`
-- SQLMap: Test all inputs for SQL injection
-
-**Address any findings before going live.**
+Set up Uptime Robot (free) to monitor `https://api.docuforge.app/health` every 5 minutes.
 
 ---
 
-## Monitoring & Observability
+## Environment Variables Reference
 
-### Metrics to Track
+### API — All Variables
 
-#### Application Metrics
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `NODE_ENV` | No | `development` | `production` in prod |
+| `PORT` | No | `3000` | API port |
+| `APP_URL` | No | `http://localhost:5173` | Frontend URL (for CORS, redirects) |
+| `API_URL` | No | `http://localhost:3000` | API public URL |
+| `DATABASE_URL` | **Yes** | — | SQLite path or Turso URL |
+| `DATABASE_AUTH_TOKEN` | No | — | Turso auth token (if using Turso) |
+| `ENGINE_URL` | No | `http://127.0.0.1:3001` | Rust engine URL |
+| `ENGINE_TIMEOUT_MS` | No | `5000` | Render timeout |
+| `JWT_SECRET` | **Yes** | — | Min 32 chars. `openssl rand -base64 48` |
+| `JWT_EXPIRY` | No | `7d` | Token lifetime |
+| `R2_ENDPOINT` | **Yes** | — | `https://ACCT.r2.cloudflarestorage.com` |
+| `R2_ACCESS_KEY_ID` | **Yes** | — | R2 API token access key |
+| `R2_SECRET_ACCESS_KEY` | **Yes** | — | R2 API token secret |
+| `R2_BUCKET` | **Yes** | — | `docuforge-assets` |
+| `R2_PUBLIC_URL` | **Yes** | — | Same as R2_ENDPOINT (private bucket) |
+| `STRIPE_SECRET_KEY` | **Yes** | — | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | **Yes** | — | Stripe webhook signing secret |
+| `STRIPE_STARTER_PRICE_ID` | **Yes** | — | Stripe price ID |
+| `STRIPE_PRO_PRICE_ID` | **Yes** | — | Stripe price ID |
+| `GEMINI_API_KEY` | **Yes** | — | Google AI API key |
+| `AI_MODEL` | No | `gemini-2.5-flash` | Gemini model |
+| `AI_ENABLED` | No | `true` | Toggle AI on/off |
+| `RAG_ENABLED` | No | `true` | Toggle RAG vector store |
+| `RAG_TOP_K` | No | `5` | Number of doc chunks to inject |
+| `RAG_EMBEDDING_MODEL` | No | `text-embedding-004` | Embedding model |
+| `SENTRY_DSN` | No | — | Sentry DSN (opt-in) |
+| `SENTRY_ENVIRONMENT` | No | — | Environment tag |
+| `SENTRY_TRACES_SAMPLE_RATE` | No | `0.1` | Trace sampling |
+| `OAUTH_GOOGLE_CLIENT_ID` | No | — | Google OAuth |
+| `OAUTH_GOOGLE_CLIENT_SECRET` | No | — | Google OAuth |
+| `OAUTH_MICROSOFT_CLIENT_ID` | No | — | Microsoft OAuth |
+| `OAUTH_MICROSOFT_CLIENT_SECRET` | No | — | Microsoft OAuth |
+| `OAUTH_GITHUB_CLIENT_ID` | No | — | GitHub OAuth |
+| `OAUTH_GITHUB_CLIENT_SECRET` | No | — | GitHub OAuth |
+| `FREE_MONTHLY_LIMIT` | No | `500` | Free tier renders/month |
+| `STARTER_MONTHLY_LIMIT` | No | `10000` | Starter tier |
+| `PRO_MONTHLY_LIMIT` | No | `50000` | Pro tier |
+| `MAX_UPLOAD_SIZE_MB` | No | `10` | Asset upload limit |
+| `WEBHOOK_TIMEOUT_MS` | No | `5000` | Webhook delivery timeout |
+| `WEBHOOK_MAX_PER_USER` | No | `10` | Max webhooks per user |
 
-- **Render throughput**: Renders/minute
-- **Render latency**: p50, p95, p99
-- **Error rate**: Errors/minute by type
-- **Active users**: DAU, MAU
-- **API key usage**: Requests by user/key
-- **Plan distribution**: Free vs Starter vs Pro users
+### Engine — All Variables
 
-#### Infrastructure Metrics
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `HOST` | No | `127.0.0.1` | Bind address |
+| `PORT` | No | `3001` | Engine port |
+| `FONT_DIR` | No | `./assets/fonts` | Font directory |
+| `RENDER_TIMEOUT_MS` | No | `5000` | Typst compilation timeout |
+| `MAX_BODY_SIZE_MB` | No | `50` | Max request body |
+| `ASSET_CACHE_SIZE_MB` | No | `100` | LRU cache for fetched assets |
+| `LOG_LEVEL` | No | `info` | Tracing level |
+| `LOG_FORMAT` | No | `pretty` | `json` for production |
+| `SENTRY_DSN` | No | — | Sentry DSN (opt-in) |
 
-- **CPU usage**: Average and peak
-- **Memory usage**: RSS, heap
-- **Disk I/O**: Read/write ops
-- **Network I/O**: Bandwidth
-- **Disk usage**: Free space on `/` and `/var/lib/docuforge`
+### Frontend — CF Pages Variables
 
-#### Business Metrics
-
-- **Signups**: New users/day
-- **Conversions**: Free → Paid conversion rate
-- **MRR**: Monthly recurring revenue
-- **Churn rate**: Subscription cancellations
-- **Render volume**: Total renders by plan tier
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | **Yes** | `https://api.docuforge.app` |
+| `NEXT_PUBLIC_APP_URL` | **Yes** | `https://console.docuforge.app` |
+| `SENTRY_DSN` | No | Frontend Sentry DSN |
+| `SENTRY_ENVIRONMENT` | No | `production` |
 
 ---
 
-### Recommended Tools
+## QA Checklist
 
-1. **Sentry** - Error tracking (already integrated)
-2. **Grafana Cloud** - Metrics + logs (free tier available)
-   - Scrape Prometheus metrics from API/Engine
-   - Visualize in Grafana dashboards
-3. **Uptime Robot** - Uptime monitoring (free tier: 50 monitors)
-4. **Stripe Dashboard** - Revenue and subscription metrics
-5. **Cloudflare Analytics** - Traffic and performance
+### Smoke Tests (do these first, 15 min)
+
+```bash
+# 1. Health check
+curl https://api.docuforge.app/health
+# → {"status":"ok","engine":"healthy",...}
+
+# 2. Register
+curl -X POST https://api.docuforge.app/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"testpass123456"}'
+# → {"user":{...},"token":"...","api_key":{...}}
+
+# 3. Render with API key
+curl -X POST https://api.docuforge.app/v1/render \
+  -H "X-API-Key: dfk_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"template_id":"...","data":{}}' \
+  --output test.pdf
+
+# 4. Upload asset
+curl -X POST https://api.docuforge.app/v1/assets/upload-url \
+  -H "Authorization: Bearer YOUR_JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"filename":"test.png","content_type":"image/png"}'
+# → {"upload_url":"https://...r2.cloudflarestorage.com/...?X-Amz-Signature=..."}
+```
+
+### Full QA (do before going public)
+
+- [ ] Register + login (email/password)
+- [ ] OAuth login (Google/GitHub/Microsoft)
+- [ ] Create template in editor
+- [ ] Render PDF + download
+- [ ] Render with data (sys.inputs)
+- [ ] Upload asset + use in template (`#image("logo.png")`)
+- [ ] Publish template (create version)
+- [ ] Version history + restore
+- [ ] API key create/revoke
+- [ ] Rate limiting (send 15+ requests quickly → 429)
+- [ ] Stripe checkout (test card: `4242 4242 4242 4242`)
+- [ ] Plan upgrade/downgrade
+- [ ] AI generate from prompt
+- [ ] AI generate from image
+- [ ] AI toggle off (`AI_ENABLED=false`) → 503
+- [ ] Compilation error → shows relevant docs + suggestion (RAG)
+- [ ] Webhook create → render → delivery logged
+- [ ] Invalid Typst syntax → error with line number
+- [ ] CORS blocked from unauthorized origin
+- [ ] Presigned URL expires after 5 min (assets) / 10 min (uploads)
 
 ---
 
 ## Rollback Plan
 
-### If Issues Found Post-Launch
+### API/Engine (10 min)
 
-#### Level 1: Quick Rollback (API/Engine)
-
-**Rollback to previous version:**
 ```bash
 cd /var/www/docuforge
 git log --oneline -10
-git checkout PREVIOUS_COMMIT_HASH
-
-# Rebuild and restart
+git checkout PREVIOUS_COMMIT
 cd api && bun install
 cd ../engine && cargo build --release
-
 sudo systemctl restart docuforge-engine docuforge-api
 ```
 
-**Time:** 10-15 minutes
+### Frontend (2 min)
 
----
+Cloudflare Pages → your project → Deployments → previous deploy → **Rollback**
 
-#### Level 2: Full Rollback (Including Frontend)
+### Database (5 min)
 
-**Frontend rollback in Cloudflare Pages:**
-1. Go to Cloudflare Dashboard → Pages → docuforge
-2. Click "View build" on previous deployment
-3. Click "Rollback to this deployment"
-
-**Time:** 2-3 minutes
-
----
-
-#### Level 3: Emergency Database Restore
-
-**Restore from backup:**
 ```bash
 sudo systemctl stop docuforge-api
-cp /var/backups/docuforge/db_20260208_020000.db /var/lib/docuforge/db/docuforge.db
+cp /var/backups/docuforge/db_YYYYMMDD_HHMMSS.db /var/lib/docuforge/db/docuforge.db
 sudo systemctl start docuforge-api
 ```
 
-**Time:** 5 minutes
-
 ---
 
-## Final Pre-Launch Checklist
+## Troubleshooting
 
-### Infrastructure ✓
+**502 Bad Gateway** → Engine not running
+```bash
+sudo systemctl status docuforge-engine
+sudo systemctl restart docuforge-engine docuforge-api
+```
 
-- [ ] Droplet provisioned and accessible
-- [ ] Firewall configured (only CF IPs + SSH)
-- [ ] Nginx installed and configured
-- [ ] SSL certificates issued (Let's Encrypt)
-- [ ] systemd services created and enabled
-- [ ] Backups configured (daily cron job)
-- [ ] Monitoring set up (Uptime Robot, Sentry)
+**Render timeout** → Increase timeout
+```bash
+# In api/.env
+ENGINE_TIMEOUT_MS=10000
+sudo systemctl restart docuforge-api
+```
 
-### Configuration ✓
+**R2 access denied** → Check credentials
+```bash
+# Verify endpoint format (no trailing slash)
+R2_ENDPOINT=https://ACCOUNT_ID.r2.cloudflarestorage.com
+# Verify token has Object Read & Write on the correct bucket
+```
 
-- [ ] All environment variables set (API, Engine, Frontend)
-- [ ] JWT secret generated (32+ chars)
-- [ ] R2 bucket created with custom domain
-- [ ] Stripe webhooks configured
-- [ ] OAuth redirect URIs updated
-- [ ] CORS origins configured for production
-- [ ] Cloudflare IPs added to Nginx config
+**CORS error on asset upload** → Add R2 CORS rule (see R2 setup above)
 
-### Code Changes ✓
+**OAuth callback fails** → Redirect URI mismatch in provider dashboard
 
-- [ ] ENGINE_URL hardcoded fallbacks removed
-- [ ] All tests passing (`make test`)
-- [ ] Frontend builds successfully (`bun run build`)
-- [ ] Engine builds successfully (`cargo build --release`)
-- [ ] Git tagged with release version (`git tag v1.0.0`)
+**Stripe webhooks not received** → Verify `STRIPE_WEBHOOK_SECRET` matches, endpoint URL is correct
 
-### Deployment ✓
+**RAG not loading** → Check `GEMINI_API_KEY` is valid, look for "RAG vector store initialization failed" in logs
+```bash
+journalctl -u docuforge-api | grep -i rag
+```
 
-- [ ] Engine deployed and running on droplet
-- [ ] API deployed and running on droplet
-- [ ] Frontend deployed to Cloudflare Pages
-- [ ] Health checks returning "ok"
-- [ ] Smoke test completed (register, render, download)
-
-### Post-Deployment ✓
-
-- [ ] Manual QA checklist completed (see above)
-- [ ] Load testing completed (100 concurrent users)
-- [ ] Security scan completed (OWASP ZAP)
-- [ ] Documentation updated (API docs, user guides)
-- [ ] Marketing site updated (if separate)
-- [ ] Status page created (e.g., status.docuforge.tech)
-
----
-
-## Success Criteria
-
-**You're ready to launch when:**
-
-1. ✅ All pre-launch blockers resolved
-2. ✅ Manual QA checklist 100% passed
-3. ✅ Health checks green on all services
-4. ✅ Monitoring and alerts configured
-5. ✅ Rollback plan tested
-6. ✅ Team briefed on launch plan
-7. ✅ Support channel ready (email, Discord, etc.)
-
----
-
-## Post-Launch
-
-### Week 1: Monitor Daily
-
-- Check Sentry for errors every morning
-- Review server logs for anomalies
-- Monitor Stripe webhook delivery success rate
-- Track signup and conversion metrics
-- Respond to user feedback quickly
-
-### Week 2-4: Stabilize & Optimize
-
-- Analyze performance bottlenecks
-- Optimize slow queries
-- Tune rate limits based on real usage
-- Add missing features based on user requests
-- Plan for Redis migration (when multi-instance needed)
-
-### Month 2+: Scale
-
-- Add Redis for rate limiting and OAuth state
-- Set up auto-scaling (if needed)
-- Implement caching layers (Redis/CDN)
-- Add advanced monitoring (APM)
-- Plan for database migration (if SQLite becomes bottleneck)
-
----
-
-## Support & Troubleshooting
-
-### Common Issues
-
-**Issue:** API returns 502 Bad Gateway
-**Cause:** Engine not running
-**Fix:** `sudo systemctl restart docuforge-engine`
-
-**Issue:** Renders failing with timeout
-**Cause:** Complex templates or slow engine
-**Fix:** Increase `ENGINE_TIMEOUT_MS` in `.env`
-
-**Issue:** Rate limit too aggressive
-**Cause:** Default limits too low
-**Fix:** Adjust in `api/src/middleware/rate-limit.ts`
-
-**Issue:** OAuth callback fails
-**Cause:** Redirect URI mismatch
-**Fix:** Update in provider dashboard
-
-**Issue:** Stripe webhooks not received
-**Cause:** Webhook secret mismatch
-**Fix:** Update `STRIPE_WEBHOOK_SECRET` in `.env`
-
----
-
-## Conclusion
-
-You're now ready to launch DocuForge to production! Follow this guide step-by-step, complete the QA checklist, and you'll have a secure, performant, and scalable system.
-
-**Remember:**
-- Launch is just the beginning
-- Monitor closely in the first week
-- Iterate based on user feedback
-- Scale when needed (Redis, multi-instance)
-
-**Good luck with your launch! 🚀**
-
----
-
-**Questions or Issues?**
-File an issue in the repository or contact the team.
+**Logs:**
+```bash
+journalctl -u docuforge-api -f     # API logs
+journalctl -u docuforge-engine -f  # Engine logs
+```

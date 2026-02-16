@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { compress } from 'hono/compress';
 import { errorHandler } from './middleware/error-handler';
 import { requestLogger } from './middleware/logger';
 import { env } from './config/env';
 import { initSentry } from './lib/sentry';
+import { initVectorStore } from './services/vector-store';
 import health from './routes/health';
 import auth from './routes/auth';
 import render from './routes/render';
@@ -41,7 +43,14 @@ export function createApp() {
       maxAge: 86400,
     })
   );
+  app.use('*', compress());
   app.use('*', requestLogger);
+
+  // Vary header for correct caching of authenticated + compressed responses
+  app.use('*', async (c, next) => {
+    await next();
+    c.header('Vary', 'Authorization, X-API-Key, Accept-Encoding');
+  });
 
   // Error handler
   app.onError(errorHandler);
@@ -55,6 +64,14 @@ export function createApp() {
   app.route('/v1/assets', assets);
   app.route('/v1/ai', ai);
   app.route('/v1/webhooks', webhooksRoute);
+
+  // Initialize RAG vector store (non-blocking, logs warning on failure)
+  if (env.RAG_ENABLED) {
+    initVectorStore().catch((err) => {
+      console.warn('RAG vector store initialization failed:', err.message);
+      console.warn('AI features will work without documentation context');
+    });
+  }
 
   return app;
 }

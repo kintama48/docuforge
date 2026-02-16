@@ -234,7 +234,7 @@ R2_ENDPOINT=https://your-account.r2.cloudflarestorage.com
 R2_ACCESS_KEY_ID=your-key
 R2_SECRET_ACCESS_KEY=your-secret
 R2_BUCKET=docuforge-assets
-R2_PUBLIC_URL=https://assets.docuforge.dev
+R2_PUBLIC_URL=https://assets.docuforge.app
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_...
@@ -609,7 +609,7 @@ X-Render-Id: log_xyz789
     "plan": "free",
     "resets_at": "2024-02-01T00:00:00Z"
   },
-  "upgrade_url": "https://docuforge.dev/pricing"
+  "upgrade_url": "https://www.docuforge.app/pricing"
 }
 ```
 

@@ -84,7 +84,7 @@ const docsContent: Record<Locale, DocsContent> = {
     nav: baseNav,
     baseUrlsTitle: "Base URLs",
     baseUrlsDev: "Dev: http://localhost:3000",
-    baseUrlsProd: "Prod: https://api.docuforge.dev",
+    baseUrlsProd: "Prod: https://api.docuforge.app",
     overview: {
       title: "Overview",
       body:
@@ -246,7 +246,7 @@ const docsContent: Record<Locale, DocsContent> = {
     ],
     baseUrlsTitle: "URLs de base",
     baseUrlsDev: "Dev : http://localhost:3000",
-    baseUrlsProd: "Prod : https://api.docuforge.dev",
+    baseUrlsProd: "Prod : https://api.docuforge.app",
     overview: {
       title: "Vue d’ensemble",
       body:
@@ -410,7 +410,7 @@ const docsContent: Record<Locale, DocsContent> = {
     ],
     baseUrlsTitle: "Basis-URLs",
     baseUrlsDev: "Dev: http://localhost:3000",
-    baseUrlsProd: "Prod: https://api.docuforge.dev",
+    baseUrlsProd: "Prod: https://api.docuforge.app",
     overview: {
       title: "Überblick",
       body:
@@ -574,7 +574,7 @@ const docsContent: Record<Locale, DocsContent> = {
     ],
     baseUrlsTitle: "URL base",
     baseUrlsDev: "Dev: http://localhost:3000",
-    baseUrlsProd: "Prod: https://api.docuforge.dev",
+    baseUrlsProd: "Prod: https://api.docuforge.app",
     overview: {
       title: "Panoramica",
       body:
@@ -738,7 +738,7 @@ const docsContent: Record<Locale, DocsContent> = {
     ],
     baseUrlsTitle: "URLs base",
     baseUrlsDev: "Dev: http://localhost:3000",
-    baseUrlsProd: "Prod: https://api.docuforge.dev",
+    baseUrlsProd: "Prod: https://api.docuforge.app",
     overview: {
       title: "Resumen",
       body:
@@ -902,7 +902,7 @@ const docsContent: Record<Locale, DocsContent> = {
     ],
     baseUrlsTitle: "عناوين الأساس",
     baseUrlsDev: "Dev: http://localhost:3000",
-    baseUrlsProd: "Prod: https://api.docuforge.dev",
+    baseUrlsProd: "Prod: https://api.docuforge.app",
     overview: {
       title: "نظرة عامة",
       body:
@@ -1066,7 +1066,7 @@ const docsContent: Record<Locale, DocsContent> = {
     ],
     baseUrlsTitle: "基础 URL",
     baseUrlsDev: "Dev: http://localhost:3000",
-    baseUrlsProd: "Prod: https://api.docuforge.dev",
+    baseUrlsProd: "Prod: https://api.docuforge.app",
     overview: {
       title: "概览",
       body:

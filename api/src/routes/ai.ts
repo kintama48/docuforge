@@ -2,10 +2,23 @@ import { Hono } from 'hono';
 
 import { jwtAuth } from '../middleware/auth';
 import { aiRateLimit } from '../middleware/rate-limit';
+import { noCache } from '../middleware/cache';
 import { zValidator, aiEditSchema, aiGenerateSchema } from '../lib/validation';
 import { aiEditCode, aiGenerateFromImage } from '../services/ai';
+import { env } from '../config/env';
 
 const ai = new Hono();
+
+// AI responses are non-deterministic — never cache
+ai.use('*', noCache);
+
+// Middleware to check if AI is enabled
+ai.use('*', async (c, next) => {
+  if (!env.AI_ENABLED) {
+    return c.json({ error: 'ai_disabled', message: 'AI features are currently disabled' }, 503);
+  }
+  await next();
+});
 
 // POST /v1/ai/edit - AI-powered code editing
 ai.post('/edit', jwtAuth, aiRateLimit, zValidator('json', aiEditSchema), async (c) => {
