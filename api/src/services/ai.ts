@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
+import { searchDocs, isInitialized, type SearchResult } from './vector-store';
+import type { EngineErrorResponse } from '../types';
 
 let geminiClient: GoogleGenerativeAI | null = null;
 
@@ -45,6 +47,12 @@ When modifying Typst code:
 
 Return ONLY the modified Typst code. No explanations, no markdown code blocks, just the raw Typst code.`;
 
+/** Build a RAG context string from search results */
+function buildRagContext(results: SearchResult[]): string {
+  if (results.length === 0) return '';
+  return `\n\nRelevant Typst documentation:\n${results.map((r) => r.chunk.content).join('\n---\n')}`;
+}
+
 export interface AiEditParams {
   prompt: string;
   currentCode: string;
@@ -73,6 +81,13 @@ export async function aiEditCode(params: AiEditParams): Promise<AiEditResult> {
       ? `\n\nThe user has these assets available: ${params.assetNames.join(', ')}. You can reference them in Typst using #image("asset-name.png") for images or #set text(font: "FontName") for fonts.`
       : '';
 
+  // RAG: search for relevant Typst documentation
+  let ragContext = '';
+  if (isInitialized()) {
+    const results = await searchDocs(params.prompt);
+    ragContext = buildRagContext(results);
+  }
+
   const response = await model.generateContent({
     contents: [
       {
@@ -84,7 +99,7 @@ export async function aiEditCode(params: AiEditParams): Promise<AiEditResult> {
         ],
       },
     ],
-    systemInstruction: SYSTEM_PROMPT + assetContext,
+    systemInstruction: SYSTEM_PROMPT + assetContext + ragContext,
     generationConfig: {
       maxOutputTokens: 4096,
       temperature: 0.3,
@@ -114,6 +129,13 @@ export async function aiGenerateFromImage(params: AiGenerateParams): Promise<AiG
     }
   }
 
+  // RAG: get broad layout/styling docs for image-to-code generation
+  let ragContext = '';
+  if (isInitialized()) {
+    const results = await searchDocs('typst page layout grid table image text styling');
+    ragContext = buildRagContext(results);
+  }
+
   const response = await model.generateContent({
     contents: [
       {
@@ -131,7 +153,8 @@ export async function aiGenerateFromImage(params: AiGenerateParams): Promise<AiG
     ],
     systemInstruction:
       SYSTEM_PROMPT +
-      '\nYou will be given a screenshot of a document. Recreate the layout in Typst as faithfully as possible. Return ONLY Typst code.',
+      '\nYou will be given a screenshot of a document. Recreate the layout in Typst as faithfully as possible. Return ONLY Typst code.' +
+      ragContext,
     generationConfig: {
       maxOutputTokens: 4096,
       temperature: 0.3,
@@ -142,4 +165,43 @@ export async function aiGenerateFromImage(params: AiGenerateParams): Promise<AiG
   const tokensUsed = response.response.usageMetadata?.totalTokenCount || 0;
 
   return { code: stripCodeFences(content), tokensUsed };
+}
+
+/**
+ * Generate a fix suggestion for a Typst compilation error using relevant docs.
+ * Has a 3-second timeout — returns null if AI is too slow.
+ */
+export async function generateErrorSuggestion(
+  error: EngineErrorResponse,
+  ragResults: SearchResult[]
+): Promise<string | null> {
+  if (ragResults.length === 0) return null;
+
+  try {
+    const model = getGeminiModel();
+    const docsContext = ragResults.map((r) => r.chunk.content).join('\n---\n');
+
+    const prompt = `Typst compilation error: ${error.message || error.error}${
+      error.span ? ` at ${error.span.file}:${error.span.line}:${error.span.column}` : ''
+    }
+
+Relevant Typst documentation:
+${docsContext}
+
+Provide a brief, actionable fix suggestion in 1-2 sentences. Focus on the specific syntax or function usage that caused the error.`;
+
+    const response = await Promise.race([
+      model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        systemInstruction: 'You are a Typst expert. Provide concise fix suggestions for compilation errors. No code blocks, just a plain text explanation.',
+        generationConfig: { maxOutputTokens: 200, temperature: 0.2 },
+      }),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+    ]);
+
+    if (!response) return null;
+    return response.response.text()?.trim() || null;
+  } catch {
+    return null;
+  }
 }

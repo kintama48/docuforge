@@ -4,12 +4,16 @@ import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { getDb, schema } from '../db/client';
 import { flexibleAuth, jwtAuth } from '../middleware/auth';
+import { noCache } from '../middleware/cache';
 import { zValidator, createCheckoutSchema } from '../lib/validation';
 import { checkCredits, formatUsageResponse } from '../services/usage';
 import { ValidationError, InternalError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
 
 const billing = new Hono();
+
+// Usage, checkout, and webhook — all must be fresh
+billing.use('*', noCache);
 
 let stripeClient: Stripe | null = null;
 

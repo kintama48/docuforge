@@ -1,11 +1,13 @@
 import { Hono } from 'hono';
+import { publicShortCache } from '../middleware/cache';
+import { env } from '../config/env';
 
 const health = new Hono();
 
 const startTime = Date.now();
 
-health.get('/health', async (c) => {
-  const engineUrl = process.env.ENGINE_URL || 'http://127.0.0.1:3001';
+health.get('/health', publicShortCache, async (c) => {
+  const engineUrl = env.ENGINE_URL;
   let engineStatus = 'healthy';
 
   try {

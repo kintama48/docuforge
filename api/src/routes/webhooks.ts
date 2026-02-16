@@ -2,12 +2,16 @@ import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { flexibleAuth } from '../middleware/auth';
+import { noCache } from '../middleware/cache';
 import { zValidator, createWebhookSchema, updateWebhookSchema } from '../lib/validation';
 import { generateWebhookId } from '../lib/id';
 import { NotFoundError, ValidationError, LimitExceededError } from '../lib/errors';
 import { env } from '../config/env';
 
 const webhooks = new Hono();
+
+// Webhook config must always be fresh
+webhooks.use('*', noCache);
 
 // POST /v1/webhooks - Register a webhook
 webhooks.post('/', flexibleAuth, zValidator('json', createWebhookSchema), async (c) => {

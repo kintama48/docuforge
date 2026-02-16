@@ -15,5 +15,15 @@ export const env = {
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.VITE_APP_URL ||
     "http://localhost:3000",
+  marketingUrl:
+    process.env.NEXT_PUBLIC_MARKETING_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.VITE_APP_URL ||
+    "http://localhost:3000",
+  consoleUrl:
+    process.env.NEXT_PUBLIC_CONSOLE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.VITE_APP_URL ||
+    "http://localhost:3000",
   isDev: process.env.NODE_ENV !== "production",
 } as const;

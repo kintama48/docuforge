@@ -4,11 +4,13 @@ import Link from "next/link";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import { useI18n } from "@/src/lib/i18n";
+import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 
 export default function Home() {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
   const localePath = useLocalePath();
+  const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
@@ -60,7 +62,7 @@ export default function Home() {
                     {messages.hero.ctaDocs}
                   </Link>
                   <Link
-                    href={localePath("/dashboard")}
+                    href={consoleUrl}
                     className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
                   >
                     {messages.hero.ctaConsole}
@@ -254,7 +256,7 @@ export default function Home() {
                     {messages.api.ctaDocs}
                   </Link>
                   <Link
-                    href={localePath("/dashboard")}
+                    href={consoleUrl}
                     className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:border-white"
                   >
                     {messages.api.ctaConsole}
@@ -358,7 +360,7 @@ export default function Home() {
                   {messages.cta.ctaDocs}
                 </Link>
                 <Link
-                  href={localePath("/dashboard")}
+                  href={consoleUrl}
                   className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
                 >
                   {messages.cta.ctaConsole}

@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { eq, inArray } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
+import { shortCache, mediumCache, noCache } from '../middleware/cache';
+import { etag } from '../middleware/etag';
 import {
   zValidator,
   createTemplateSchema,
@@ -25,7 +27,7 @@ import {
 const templates = new Hono();
 
 // GET /v1/templates - List templates
-templates.get('/', jwtAuth, zValidator('query', listTemplatesQuerySchema), async (c) => {
+templates.get('/', jwtAuth, shortCache, etag, zValidator('query', listTemplatesQuerySchema), async (c) => {
   const query = c.req.valid('query');
   const { userId } = c.get('auth');
 
@@ -82,7 +84,7 @@ templates.get('/', jwtAuth, zValidator('query', listTemplatesQuerySchema), async
 });
 
 // GET /v1/templates/:id/versions/:versionId - Get template version detail
-templates.get('/:id/versions/:versionId', jwtAuth, async (c) => {
+templates.get('/:id/versions/:versionId', jwtAuth, mediumCache, etag, async (c) => {
   const templateId = c.req.param('id');
   const versionId = c.req.param('versionId');
   const { userId } = c.get('auth');
@@ -103,7 +105,7 @@ templates.get('/:id/versions/:versionId', jwtAuth, async (c) => {
 });
 
 // GET /v1/templates/:id - Get template with versions
-templates.get('/:id', jwtAuth, async (c) => {
+templates.get('/:id', jwtAuth, mediumCache, etag, async (c) => {
   const templateId = c.req.param('id');
   const { userId } = c.get('auth');
 
@@ -141,7 +143,7 @@ templates.get('/:id', jwtAuth, async (c) => {
 });
 
 // POST /v1/templates - Create template
-templates.post('/', jwtAuth, zValidator('json', createTemplateSchema), async (c) => {
+templates.post('/', jwtAuth, noCache, zValidator('json', createTemplateSchema), async (c) => {
   const data = c.req.valid('json');
   const { userId } = c.get('auth');
 
@@ -179,7 +181,7 @@ templates.post('/', jwtAuth, zValidator('json', createTemplateSchema), async (c)
 });
 
 // POST /v1/templates/:id/publish - Publish new version
-templates.post('/:id/publish', jwtAuth, zValidator('json', publishVersionSchema), async (c) => {
+templates.post('/:id/publish', jwtAuth, noCache, zValidator('json', publishVersionSchema), async (c) => {
   const templateId = c.req.param('id');
   const data = c.req.valid('json');
   const { userId } = c.get('auth');
@@ -204,7 +206,7 @@ templates.post('/:id/publish', jwtAuth, zValidator('json', publishVersionSchema)
 });
 
 // PATCH /v1/templates/:id - Update template metadata
-templates.patch('/:id', jwtAuth, zValidator('json', updateTemplateSchema), async (c) => {
+templates.patch('/:id', jwtAuth, noCache, zValidator('json', updateTemplateSchema), async (c) => {
   const templateId = c.req.param('id');
   const data = c.req.valid('json');
   const { userId } = c.get('auth');
@@ -240,7 +242,7 @@ templates.patch('/:id', jwtAuth, zValidator('json', updateTemplateSchema), async
 });
 
 // POST /v1/templates/:id/fork - Fork template
-templates.post('/:id/fork', jwtAuth, zValidator('json', forkTemplateSchema), async (c) => {
+templates.post('/:id/fork', jwtAuth, noCache, zValidator('json', forkTemplateSchema), async (c) => {
   const sourceTemplateId = c.req.param('id');
   const { name } = c.req.valid('json');
   const { userId } = c.get('auth');
@@ -269,7 +271,7 @@ templates.post('/:id/fork', jwtAuth, zValidator('json', forkTemplateSchema), asy
 });
 
 // DELETE /v1/templates/:id - Delete template
-templates.delete('/:id', jwtAuth, async (c) => {
+templates.delete('/:id', jwtAuth, noCache, async (c) => {
   const templateId = c.req.param('id');
   const { userId } = c.get('auth');
 

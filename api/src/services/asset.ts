@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getDb, schema } from '../db/client';
+import { env } from '../config/env';
 import type { EngineAsset } from '../types';
 
 let s3Client: S3Client | null = null;
@@ -10,14 +11,18 @@ function getS3Client(): S3Client {
   if (!s3Client) {
     s3Client = new S3Client({
       region: 'auto',
-      endpoint: process.env.R2_ENDPOINT,
+      endpoint: env.R2_ENDPOINT,
       credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+        accessKeyId: env.R2_ACCESS_KEY_ID,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
       },
     });
   }
   return s3Client;
+}
+
+export function setS3Client(client: S3Client | null) {
+  s3Client = client;
 }
 
 export async function resolveUserAssets(userId: string): Promise<EngineAsset[]> {
@@ -37,7 +42,7 @@ export async function resolveUserAssets(userId: string): Promise<EngineAsset[]> 
   }
 
   const client = getS3Client();
-  const bucket = process.env.R2_BUCKET || 'docuforge-assets';
+  const bucket = env.R2_BUCKET;
 
   const resolvedAssets: EngineAsset[] = await Promise.all(
     assets.map(async (asset) => {
@@ -68,7 +73,7 @@ export async function generateUploadUrl(
   extension: string
 ): Promise<{ uploadUrl: string; r2Key: string }> {
   const client = getS3Client();
-  const bucket = process.env.R2_BUCKET || 'docuforge-assets';
+  const bucket = env.R2_BUCKET;
   const r2Key = `${userId}/assets/${assetId}${extension}`;
 
   const command = new PutObjectCommand({
@@ -84,7 +89,7 @@ export async function generateUploadUrl(
 
 export async function verifyAssetExists(r2Key: string): Promise<boolean> {
   const client = getS3Client();
-  const bucket = process.env.R2_BUCKET || 'docuforge-assets';
+  const bucket = env.R2_BUCKET;
 
   try {
     await client.send(
@@ -101,7 +106,7 @@ export async function verifyAssetExists(r2Key: string): Promise<boolean> {
 
 export async function deleteAssetFromR2(r2Key: string): Promise<void> {
   const client = getS3Client();
-  const bucket = process.env.R2_BUCKET || 'docuforge-assets';
+  const bucket = env.R2_BUCKET;
 
   await client.send(
     new DeleteObjectCommand({

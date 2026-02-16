@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { apiKeyAuth, jwtAuth } from '../middleware/auth';
 import { renderRateLimit, previewRateLimit } from '../middleware/rate-limit';
+import { noCache } from '../middleware/cache';
 import { zValidator, renderSchema, renderPreviewSchema } from '../lib/validation';
 import { renderPdf } from '../services/engine';
 import { checkCredits, logRender, formatUsageResponse } from '../services/usage';
@@ -16,7 +17,7 @@ import type { EnginePayload } from '../types';
 const render = new Hono();
 
 // POST /v1/render - Production render with API key
-render.post('/', apiKeyAuth, renderRateLimit, zValidator('json', renderSchema), async (c) => {
+render.post('/', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSchema), async (c) => {
   const { template_id, data } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
@@ -31,7 +32,7 @@ render.post('/', apiKeyAuth, renderRateLimit, zValidator('json', renderSchema), 
         plan: credits.plan,
         resets_at: credits.periodEnd.toISOString(),
       },
-      upgrade_url: 'https://docuforge.dev/pricing',
+      upgrade_url: 'https://www.docuforge.app/pricing',
     });
   }
 
@@ -135,7 +136,7 @@ render.post('/', apiKeyAuth, renderRateLimit, zValidator('json', renderSchema), 
 });
 
 // POST /v1/render/preview - Preview render with JWT
-render.post('/preview', jwtAuth, previewRateLimit, zValidator('json', renderPreviewSchema), async (c) => {
+render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', renderPreviewSchema), async (c) => {
   const { source, files, data } = c.req.valid('json');
   const { userId } = c.get('auth');
 

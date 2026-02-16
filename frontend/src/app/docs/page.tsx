@@ -7,6 +7,7 @@ import { normalizeLocale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { getDocsContent } from "./docs-content";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
+import { getConsoleLocaleUrl } from "@/src/lib/urls";
 
 function CodeBlock({ children }: { children: string }) {
   return (
@@ -49,6 +50,7 @@ export default async function DocsPage() {
   const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
   const content = getDocsContent(locale);
   const localePath = (path: string) => withLocale(path, locale);
+  const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
 
   return (
     <div className="min-h-screen page-background">
@@ -295,7 +297,7 @@ Authorization: Bearer <token>`}</CodeBlock>
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
-                    href={localePath("/dashboard")}
+                    href={consoleUrl}
                     className="inline-flex items-center justify-center rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
                   >
                     {content.cta.primary}

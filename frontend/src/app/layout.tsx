@@ -29,7 +29,23 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://docuforge.com";
+const marketingUrl =
+  process.env.NEXT_PUBLIC_MARKETING_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://www.docuforge.app";
+
+const consoleUrl =
+  process.env.NEXT_PUBLIC_CONSOLE_URL || "https://console.docuforge.app";
+
+function safeHost(value: string, fallback: string) {
+  try {
+    return new URL(value).host;
+  } catch {
+    return new URL(fallback).host;
+  }
+}
+
+const consoleHost = safeHost(consoleUrl, "https://console.docuforge.app");
 
 const ogLocaleMap: Record<Locale, string> = {
   en: "en_US",
@@ -59,9 +75,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const marketingMeta = getMarketingMeta(locale).landing;
   const ogImage = `/og/${locale}`;
   const alternates = buildAlternates(pathname);
+  const hostHeader =
+    headersList.get("x-docuforge-host") ||
+    headersList.get("x-forwarded-host") ||
+    headersList.get("host") ||
+    "";
+  const hostname = hostHeader.split(":")[0];
+  const isConsoleHost = hostname === consoleHost;
+  const siteUrl = isConsoleHost ? consoleUrl : marketingUrl;
 
   return {
-    metadataBase: new URL(appUrl),
+    metadataBase: new URL(siteUrl),
     title: {
       default: "DocuForge",
       template: "%s · DocuForge",
@@ -74,7 +98,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: marketingMeta.title,
       description: marketingMeta.description,
-      url: new URL(canonical, appUrl).toString(),
+      url: new URL(canonical, siteUrl).toString(),
       siteName: "DocuForge",
       type: "website",
       locale: ogLocaleMap[locale],
@@ -90,6 +114,7 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
+    robots: isConsoleHost ? { index: false, follow: false } : undefined,
     twitter: {
       card: "summary_large_image",
       title: marketingMeta.title,

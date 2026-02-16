@@ -4,9 +4,9 @@ import Link from "next/link";
 import { SiteFooter } from "@/src/app/components/site-footer";
 import { SiteHeader } from "@/src/app/components/site-header";
 import { useI18n } from "@/src/lib/i18n";
+import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
-import { useLocalePath } from "@/src/lib/use-locale-path";
 
 function fmtLimit(v: number | null): string {
   if (v === null) return "Unlimited";
@@ -18,8 +18,8 @@ type PlanKey = "free" | "starter" | "pro" | "enterprise";
 const planOrder: PlanKey[] = ["free", "starter", "pro", "enterprise"];
 
 export default function PricingPage() {
-  const { messages } = useI18n();
-  const localePath = useLocalePath();
+  const { messages, locale } = useI18n();
+  const consoleRegisterUrl = getConsoleLocaleUrl("/register", locale);
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
@@ -90,8 +90,8 @@ export default function PricingPage() {
                     <Link
                       href={
                         isCustom
-                          ? "mailto:hello@docuforge.dev"
-                          : localePath("/register")
+                          ? "mailto:hello@docuforge.app"
+                          : consoleRegisterUrl
                       }
                       className={`mt-6 inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-semibold ${
                         featured
