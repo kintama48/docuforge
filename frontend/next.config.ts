@@ -10,6 +10,7 @@ export default withSentryConfig(nextConfig, {
   silent: true,
 
   // Disable source map upload (no auth token configured by default)
-  disableServerWebpackPlugin: true,
-  disableClientWebpackPlugin: true,
+  sourcemaps: {
+    disable: true,
+  },
 });

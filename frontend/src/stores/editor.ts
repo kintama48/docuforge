@@ -1,11 +1,11 @@
 "use client";
 
 import { create } from "zustand";
-import type { editor, Monaco } from "monaco-editor";
+import type * as Monaco from "monaco-editor";
 import type { TemplateDetail, TemplateVersion } from "@/src/lib/api-types";
 
 // FE-C3 fix: Use proper Monaco types instead of 'any'
-type MonacoEditor = editor.IStandaloneCodeEditor;
+type MonacoEditor = Monaco.editor.IStandaloneCodeEditor;
 type MonacoInstance = typeof Monaco;
 
 type RenderError = { message: string; file: string; line: number; column: number };

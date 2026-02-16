@@ -14,11 +14,12 @@ const badgeCopy: Record<string, string> = {
   zh: "套餐与用量",
 };
 
-export function GET(
+export async function GET(
   _request: Request,
-  { params }: { params: { locale: string } }
+  { params }: { params: Promise<{ locale: string }> }
 ) {
-  const locale = normalizeLocale(params.locale);
+  const { locale: routeLocale } = await params;
+  const locale = normalizeLocale(routeLocale);
   const meta = getMarketingMeta(locale).pricing;
   const badge = badgeCopy[locale] ?? badgeCopy.en;
 

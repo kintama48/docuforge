@@ -154,8 +154,20 @@ export function registerTypstCompletions(
 
   // FE-M6 fix: Return the disposable so callers can clean up
   return monaco.languages.registerCompletionItemProvider("typst", {
-    provideCompletionItems: () => ({
-      suggestions: [...completions, ...assetItems, ...dataItems],
-    }),
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position);
+      const range: Monaco.IRange = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      return {
+        suggestions: [...completions, ...assetItems, ...dataItems].map((item) => ({
+          ...item,
+          range,
+        })),
+      };
+    },
   });
 }

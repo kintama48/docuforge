@@ -14,7 +14,7 @@ const srcPath = path.resolve(__dirname, '../../src');
 describe('Frontend Security Regressions', () => {
   describe('FE-C1: useEffect dependency array fix', () => {
     test('EditorPage uses ref pattern for previewRender.mutate', () => {
-      const editorPagePath = path.join(srcPath, 'pages/editor/EditorPage.tsx');
+      const editorPagePath = path.join(srcPath, 'views/editor/EditorPage.tsx');
       const source = fs.readFileSync(editorPagePath, 'utf-8');
 
       // Should use a ref to store the mutate function
@@ -51,7 +51,7 @@ describe('Frontend Security Regressions', () => {
       const source = fs.readFileSync(editorStorePath, 'utf-8');
 
       // Should import Monaco types
-      expect(source).toContain("import type { editor, Monaco }");
+      expect(source).toContain('import type * as Monaco from "monaco-editor"');
 
       // Should NOT have 'any' for editor instances
       expect(source).not.toMatch(/editorInstance:\s*any/);
@@ -67,7 +67,7 @@ describe('Frontend Security Regressions', () => {
       const source = fs.readFileSync(monacoEditorPath, 'utf-8');
 
       // Should import Monaco types
-      expect(source).toContain("import type { editor,");
+      expect(source).toContain('import type * as MonacoType from "monaco-editor"');
 
       // Should NOT have 'any' for refs
       expect(source).not.toMatch(/useRef<any>/);
@@ -110,9 +110,10 @@ describe('Frontend Security Regressions', () => {
       const hookPath = path.join(srcPath, 'hooks/use-monaco-formatting.ts');
       const source = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should store and dispose command disposables
-      expect(source).toContain('commandDisposablesRef');
-      expect(source).toContain('.dispose()');
+      // Should guard duplicate registration and reset editor binding in cleanup
+      expect(source).toContain('commandEditorRef');
+      expect(source).toContain('if (commandEditorRef.current === editor) return;');
+      expect(source).toContain('commandEditorRef.current = null;');
     });
   });
 

@@ -1,1 +1,1 @@
-export { default } from "@/src/pages/auth/RegisterPage";
+export { default } from "@/src/views/auth/RegisterPage";

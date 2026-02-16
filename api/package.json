@@ -8,7 +8,7 @@
     "test": "bun test",
     "test:unit": "bun test tests/unit/",
     "test:integration": "bun test tests/integration/",
-    "test:pipeline": "ENGINE_URL=http://127.0.0.1:3001 bun test tests/integration/render-engine-pipeline.test.ts",
+    "test:pipeline": "ENGINE_PIPELINE_TESTS=1 ENGINE_URL=http://127.0.0.1:3001 bun test tests/integration/render-engine-pipeline.test.ts",
     "test:e2e": "bun test tests/e2e/",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run scripts/migrate.ts",
