@@ -27,7 +27,7 @@ export function LoginForm() {
 
   const errorMessage = (() => {
     if (!login.isError) return null;
-    const error = login.error as ApiError | undefined;
+    const error = login.error as unknown as ApiError | undefined;
     if (error?.error === "unknown_error") {
       return error.message || messages.auth.errorApiUnavailable;
     }

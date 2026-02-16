@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../helpers/render";
-import OnboardingPage from "@/src/pages/onboarding/OnboardingPage";
+import OnboardingPage from "@/src/views/onboarding/OnboardingPage";
 import { useAuthStore } from "@/src/stores/auth";
 import { useOnboardingStore } from "@/src/stores/onboarding";
 

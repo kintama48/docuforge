@@ -33,7 +33,7 @@ export function RegisterForm() {
 
   const errorMessage = (() => {
     if (!registerMutation.isError) return null;
-    const error = registerMutation.error as ApiError | undefined;
+    const error = registerMutation.error as unknown as ApiError | undefined;
     if (error?.error === "conflict") {
       return messages.auth.errorEmailExists;
     }

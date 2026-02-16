@@ -32,10 +32,12 @@ export default defineConfig({
         "src/pages/**",
         "src/lib/api-types.ts",
       ],
-      lines: 90,
-      functions: 90,
-      statements: 90,
-      branches: 90,
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        statements: 90,
+        branches: 90,
+      },
     },
   },
 });

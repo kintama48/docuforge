@@ -4,6 +4,7 @@
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { renderPdf, checkEngineHealth } from '../../src/services/engine';
 import { CompilationError, EngineTimeoutError, EngineUnavailableError } from '../../src/lib/errors';
+import { reloadEnv } from '../../src/config/env';
 import { createTestOrigin, registerFetchHandler } from '../helpers/fetch-router';
 
 const engineOrigin = createTestOrigin('engine-unit');
@@ -12,6 +13,7 @@ let unregister: (() => void) | null = null;
 beforeEach(() => {
   process.env.ENGINE_URL = engineOrigin;
   process.env.ENGINE_TIMEOUT_MS = '10';
+  reloadEnv();
 });
 
 afterEach(() => {

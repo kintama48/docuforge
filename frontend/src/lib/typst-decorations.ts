@@ -1,6 +1,6 @@
 "use client";
 
-import type { editor, Monaco } from "monaco-editor";
+import type * as Monaco from "monaco-editor";
 
 // FE-M4 fix: Pre-compile regexes once (outside the function) to avoid
 // re-creation per call. Process all patterns in a single pass per line.
@@ -21,10 +21,10 @@ const INLINE_PATTERNS: InlinePattern[] = [
 ];
 
 export function buildTypstDecorations(
-  model: editor.ITextModel,
+  model: Monaco.editor.ITextModel,
   monaco: typeof Monaco
 ) {
-  const decorations: editor.IModelDeltaDecoration[] = [];
+  const decorations: Monaco.editor.IModelDeltaDecoration[] = [];
   const lineCount = model.getLineCount();
 
   for (let lineNumber = 1; lineNumber <= lineCount; lineNumber += 1) {

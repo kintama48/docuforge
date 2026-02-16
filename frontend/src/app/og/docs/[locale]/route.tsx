@@ -5,21 +5,22 @@ import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 export const runtime = "edge";
 
 const badgeCopy: Record<string, string> = {
-  en: "Rust + Typst Engine",
-  fr: "Moteur Rust + Typst",
-  de: "Rust + Typst Engine",
-  it: "Motore Rust + Typst",
-  es: "Motor Rust + Typst",
-  ar: "محرك Rust + Typst",
-  zh: "Rust + Typst 引擎",
+  en: "API Docs",
+  fr: "Docs API",
+  de: "API-Doku",
+  it: "Docs API",
+  es: "Docs API",
+  ar: "توثيق API",
+  zh: "API 文档",
 };
 
-export function GET(
+export async function GET(
   _request: Request,
-  { params }: { params: { locale: string } }
+  { params }: { params: Promise<{ locale: string }> }
 ) {
-  const locale = normalizeLocale(params.locale);
-  const meta = getMarketingMeta(locale).landing;
+  const { locale: routeLocale } = await params;
+  const locale = normalizeLocale(routeLocale);
+  const meta = getMarketingMeta(locale).docs;
   const badge = badgeCopy[locale] ?? badgeCopy.en;
 
   return new ImageResponse(
@@ -33,7 +34,7 @@ export function GET(
           justifyContent: "center",
           padding: "72px",
           background:
-            "linear-gradient(135deg, #f7f4ee 0%, #eef1fb 50%, #ffffff 100%)",
+            "linear-gradient(135deg, #f7f4ee 0%, #fff6e6 45%, #ffffff 100%)",
           color: "#0f1115",
           fontFamily: "'IBM Plex Sans', 'Inter', system-ui, sans-serif",
         }}
@@ -43,7 +44,7 @@ export function GET(
             fontSize: 18,
             letterSpacing: "0.35em",
             textTransform: "uppercase",
-            color: "#5d5b57",
+            color: "#7c6a50",
           }}
         >
           DocuForge
@@ -52,7 +53,7 @@ export function GET(
           style={{
             marginTop: 24,
             maxWidth: "900px",
-            fontSize: 60,
+            fontSize: 58,
             fontWeight: 600,
             lineHeight: 1.05,
           }}
@@ -61,11 +62,11 @@ export function GET(
         </div>
         <div
           style={{
-            marginTop: 20,
+            marginTop: 18,
             maxWidth: "880px",
             fontSize: 26,
             lineHeight: 1.35,
-            color: "#5d5b57",
+            color: "#6a5a45",
           }}
         >
           {meta.description}
@@ -78,9 +79,9 @@ export function GET(
             gap: 12,
             padding: "10px 18px",
             borderRadius: 999,
-            background: "#0b5fff",
+            background: "#0f1115",
             color: "#ffffff",
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: 600,
             width: "fit-content",
           }}

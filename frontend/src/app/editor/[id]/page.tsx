@@ -1,1 +1,1 @@
-export { default } from "@/src/pages/editor/EditorPage";
+export { default } from "@/src/views/editor/EditorPage";

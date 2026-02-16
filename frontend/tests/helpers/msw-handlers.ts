@@ -67,7 +67,7 @@ export const handlers = [
   http.delete("http://localhost:3000/v1/templates/:id", async () =>
     new HttpResponse(null, { status: 204 })
   ),
-  http.post("http://localhost:3000/v1/render/preview", async () =>
+  http.post(/.*\/v1\/render\/preview$/, async () =>
     new HttpResponse(new Blob(["%PDF-1.4 test"], { type: "application/pdf" }), {
       headers: {
         "X-Render-Duration": "42",

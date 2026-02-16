@@ -62,7 +62,7 @@ export function TemplateSettingsDialog({
       />
       <div className="mt-6 flex items-center justify-between">
         <button
-          onClick={() => deleteTemplate.mutate()}
+          onClick={() => deleteTemplate.mutate(undefined)}
           className="rounded-md border border-[--line] px-3 py-2 text-xs text-[--bad]"
         >
           {messages.editor.deleteTemplate}

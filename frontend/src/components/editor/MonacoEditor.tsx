@@ -2,14 +2,14 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { editor, Monaco as MonacoType } from "monaco-editor";
+import type * as MonacoType from "monaco-editor";
 import { useEditorStore } from "@/src/stores/editor";
 import { registerTypstCompletions, registerTypstLanguage } from "@/src/lib/typst";
 import { useAssets } from "@/src/hooks/use-assets";
 import { buildTypstDecorations } from "@/src/lib/typst-decorations";
 
 // FE-C3 fix: Use proper Monaco types instead of 'any'
-type MonacoEditor = editor.IStandaloneCodeEditor;
+type MonacoEditor = MonacoType.editor.IStandaloneCodeEditor;
 
 const Monaco = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 

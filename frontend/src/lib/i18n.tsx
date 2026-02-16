@@ -3363,7 +3363,7 @@ const translations = {
   },
 } as const;
 
-type Messages = (typeof translations)["en"];
+type Messages = (typeof translations)[Locale];
 
 type I18nContextValue = {
   locale: Locale;

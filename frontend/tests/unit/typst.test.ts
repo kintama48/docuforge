@@ -38,8 +38,21 @@ describe("typst language helpers", () => {
       dataKeys: ["title"],
     });
 
-    const suggestions = providerCalls[0].provideCompletionItems().suggestions;
+    const model = {
+      getWordUntilPosition: vi.fn().mockReturnValue({
+        startColumn: 1,
+        endColumn: 1,
+      }),
+    };
+    const position = { lineNumber: 1, column: 1 };
+    const suggestions = providerCalls[0].provideCompletionItems(model, position).suggestions;
     expect(suggestions.some((item: any) => item.label === "logo.png")).toBe(true);
     expect(suggestions.some((item: any) => item.label === "sys.inputs.title")).toBe(true);
+    expect(suggestions[0].range).toEqual({
+      startLineNumber: 1,
+      endLineNumber: 1,
+      startColumn: 1,
+      endColumn: 1,
+    });
   });
 });

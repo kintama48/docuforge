@@ -283,32 +283,25 @@ export function useMonacoFormatting() {
     [editor, insertSnippet, toggleInlineWrapper, toggleLinePrefix]
   );
 
-  // FE-M5 fix: Store and dispose command disposables to prevent duplicate handlers
-  const commandDisposablesRef = useRef<Array<{ dispose: () => void }>>([]);
-
   useEffect(() => {
     if (!editor || !monaco) return;
     if (commandEditorRef.current === editor) return;
     commandEditorRef.current = editor;
 
-    // Dispose previous commands
-    commandDisposablesRef.current.forEach((d) => d.dispose());
-    commandDisposablesRef.current = [];
-
-    const d1 = editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB, () =>
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB, () =>
       applyAction("bold")
     );
-    const d2 = editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI, () =>
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI, () =>
       applyAction("italic")
     );
-    const d3 = editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () =>
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () =>
       applyAction("link")
     );
-    commandDisposablesRef.current = [d1, d2, d3].filter(Boolean) as Array<{ dispose: () => void }>;
 
     return () => {
-      commandDisposablesRef.current.forEach((d) => d.dispose());
-      commandDisposablesRef.current = [];
+      if (commandEditorRef.current === editor) {
+        commandEditorRef.current = null;
+      }
     };
   }, [editor, monaco, applyAction]);
 
