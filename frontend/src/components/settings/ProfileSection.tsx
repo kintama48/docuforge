@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { useI18n } from "@/src/lib/i18n";
 
 type ProfileSectionProps = {
   email?: string | null;
   plan?: "free" | "starter" | "pro" | null;
+  billingEnabled?: boolean;
   onUpgrade: (plan: "starter" | "pro") => void;
   onManage?: () => void;
 };
@@ -13,54 +13,56 @@ type ProfileSectionProps = {
 export function ProfileSection({
   email,
   plan,
+  billingEnabled = true,
   onUpgrade,
   onManage,
 }: ProfileSectionProps) {
   const { messages } = useI18n();
-  const planLabels: Record<NonNullable<ProfileSectionProps["plan"]>, string> = {
-    free: messages.settings.free,
-    starter: messages.settings.starter,
-    pro: messages.settings.pro,
-  };
-  const badge = useMemo(() => {
-    if (!plan) return messages.settings.planUnknown;
-    return planLabels[plan];
-  }, [plan, planLabels, messages.settings.planUnknown]);
+  const badge =
+    !plan
+      ? messages.settings.planUnknown
+      : plan === "free"
+        ? messages.settings.free
+        : plan === "starter"
+          ? messages.settings.starter
+          : messages.settings.pro;
 
   return (
-    <section className="rounded-2xl border border-[#27272a] bg-[#111113] p-6">
-      <h2 className="text-lg font-semibold text-white">
+    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+      <h2 className="text-lg font-semibold text-[var(--ink)]">
         {messages.settings.profileTitle}
       </h2>
-      <p className="mt-2 text-sm text-[#a1a1aa]">
+      <p className="mt-2 text-sm text-[var(--muted)]">
         {email || "developer@docuforge.dev"}
       </p>
-      <span className="mt-3 inline-flex items-center rounded-full border border-[#27272a] bg-[#0f1117] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#a1a1aa]">
+      <span className="mt-3 inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">
         {badge}
       </span>
 
-      {plan === "free" ? (
+      {billingEnabled && plan === "free" ? (
         <div className="mt-4 flex flex-wrap gap-3">
           <button
             onClick={() => onUpgrade("starter")}
-            className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
+            className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)]"
           >
             {messages.settings.upgradeStarter}
           </button>
           <button
             onClick={() => onUpgrade("pro")}
-            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
+            className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
           >
             {messages.settings.upgradePro}
           </button>
         </div>
-      ) : (
+      ) : billingEnabled ? (
         <button
           onClick={() => onManage?.()}
-          className="mt-4 rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
+          className="mt-4 rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
         >
           {messages.settings.manageSubscription}
         </button>
+      ) : (
+        <p className="mt-4 text-xs text-[var(--muted-dim)]">Billing disabled</p>
       )}
     </section>
   );

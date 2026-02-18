@@ -24,17 +24,17 @@ export function AiPromptInput({
   const { messages } = useI18n();
   return (
     <div>
-      <label className="text-xs text-[#a1a1aa]">
+      <label className="text-xs text-[var(--muted)]">
         {messages.ai.promptLabel}
       </label>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        className="mt-2 h-24 w-full resize-none rounded-md border border-[#27272a] bg-[#111113] p-3 text-xs text-white outline-none"
+        className="mt-2 h-24 w-full resize-none rounded-md border border-[var(--line)] bg-[var(--surface)] p-3 text-xs text-[var(--ink)] outline-none"
         placeholder={messages.ai.promptPlaceholder}
       />
-      <label className="mt-3 flex items-center gap-2 text-xs text-[#a1a1aa]">
+      <label className="mt-3 flex items-center gap-2 text-xs text-[var(--muted)]">
         <input
           type="checkbox"
           checked={includeSelection}
@@ -45,7 +45,7 @@ export function AiPromptInput({
       <button
         onClick={onSend}
         disabled={disabled}
-        className="mt-3 w-full rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb] disabled:opacity-60"
+        className="mt-3 w-full rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
       >
         {disabled
           ? messages.ai.creditsExhausted

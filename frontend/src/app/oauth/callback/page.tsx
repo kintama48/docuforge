@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { env } from "@/src/config/env";
 import { useAuthStore } from "@/src/stores/auth";
 import { useOnboardingStore } from "@/src/stores/onboarding";
 
@@ -10,31 +11,58 @@ export default function OAuthCallbackPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams?.get("token");
-    const userId = searchParams?.get("user_id");
-    const email = searchParams?.get("email");
-    const plan = (searchParams?.get("plan") as
-      | "free"
-      | "starter"
-      | "pro"
-      | null) ?? "free";
-    const apiKey = searchParams?.get("api_key");
-    const redirect = searchParams?.get("redirect") || "/dashboard";
-
-    if (!token || !userId || !email) {
+    const code = searchParams?.get("code");
+    if (!code) {
       router.replace("/login?error=oauth_failed");
       return;
     }
 
-    useAuthStore.getState().login(token, { id: userId, email, plan });
+    let cancelled = false;
 
-    if (apiKey) {
-      useOnboardingStore.getState().setApiKey(apiKey);
-      router.replace("/onboarding");
-      return;
-    }
+    (async () => {
+      try {
+        const response = await fetch(`${env.apiUrl}/v1/auth/oauth/exchange`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code }),
+        });
 
-    router.replace(redirect);
+        if (!response.ok) {
+          throw new Error("OAuth exchange failed");
+        }
+
+        const data = (await response.json()) as {
+          token: string;
+          user: { id: string; email: string; plan: "free" | "starter" | "pro" };
+          api_key?: string;
+          redirect?: string;
+        };
+
+        if (cancelled || !data?.token || !data?.user) {
+          return;
+        }
+
+        useAuthStore.getState().login(data.token, data.user);
+
+        if (data.api_key) {
+          useOnboardingStore.getState().setApiKey(data.api_key);
+          router.replace("/onboarding");
+          return;
+        }
+
+        router.replace(data.redirect || "/dashboard");
+      } catch {
+        if (!cancelled) {
+          router.replace("/login?error=oauth_failed");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, searchParams]);
 
   return (

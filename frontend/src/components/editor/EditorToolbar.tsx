@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ArrowLeft,
   Bold,
   Italic,
   Underline,
@@ -16,6 +17,7 @@ import {
   Code2,
   Table,
 } from "lucide-react";
+import { ThemeToggle } from "@/src/app/components/theme-toggle";
 import { useEditorStore } from "@/src/stores/editor";
 import { useI18n } from "@/src/lib/i18n";
 import { useMonacoFormatting, type FormatAction } from "@/src/hooks/use-monaco-formatting";
@@ -28,6 +30,10 @@ type EditorToolbarProps = {
   onFork: () => void;
   onToggleAutoRender: () => void;
   autoRender: boolean;
+  isLowCodeMode: boolean;
+  advancedTypstEnabled: boolean;
+  onToggleAdvancedTypst: () => void;
+  onOpenBlocks: () => void;
 };
 
 export function EditorToolbar({
@@ -38,28 +44,67 @@ export function EditorToolbar({
   onFork,
   onToggleAutoRender,
   autoRender,
+  isLowCodeMode,
+  advancedTypstEnabled,
+  onToggleAdvancedTypst,
+  onOpenBlocks,
 }: EditorToolbarProps) {
   const { messages } = useI18n();
+  const dashboardLabel = messages.editor.backToDashboard.replace(/^←\s*/, "");
   const [openMenu, setOpenMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const templateName = useEditorStore((state) => state.templateName);
   const isDirty = useEditorStore((state) => state.isDirty);
   const publishedVersion = useEditorStore((state) => state.publishedVersion);
   const pdfBlob = useEditorStore((state) => state.pdfBlob);
 
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        menuRef.current?.contains(target) ||
+        menuButtonRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setOpenMenu(false);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [openMenu]);
+
   return (
-    <header className="flex items-center justify-between border-b border-[--line] bg-[--surface-2] px-4 py-3">
+    <header className="relative z-30 flex items-center justify-between border-b border-[var(--line)] bg-[var(--surface-2)] px-4 py-3">
       <div className="flex items-center gap-4">
         <Link
           href="/dashboard"
-          className="text-sm text-[--muted] hover:text-white"
+          className="inline-flex items-center gap-2 text-sm text-[var(--muted)] hover:text-[var(--ink)]"
         >
-          {messages.editor.backToDashboard}
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)]">
+            <ArrowLeft className="h-3.5 w-3.5" />
+          </span>
+          <span>{dashboardLabel}</span>
         </Link>
         <div>
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-[var(--ink)]">
             {templateName || messages.editor.untitledTemplate}
           </p>
-          <p className="text-xs text-[--muted-dim]">
+          <p className="text-xs text-[var(--muted-dim)]">
             {isDirty
               ? messages.editor.statusDraftUnsaved
               : publishedVersion
@@ -69,6 +114,23 @@ export function EditorToolbar({
         </div>
       </div>
       <div className="flex items-center gap-3">
+        <ThemeToggle />
+        {isLowCodeMode && (
+          <>
+            <button
+              onClick={onOpenBlocks}
+              className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
+            >
+              Blocks
+            </button>
+            <button
+              onClick={onToggleAdvancedTypst}
+              className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
+            >
+              Advanced Typst: {advancedTypstEnabled ? "On" : "Off"}
+            </button>
+          </>
+        )}
         <button
           onClick={() => {
             if (!pdfBlob) return;
@@ -80,32 +142,36 @@ export function EditorToolbar({
             URL.revokeObjectURL(url);
           }}
           disabled={!pdfBlob}
-          className="rounded-md border border-[--line] px-3 py-2 text-xs text-white hover:border-[--line-hover] disabled:opacity-60"
+          className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)] disabled:opacity-60"
         >
           {messages.editor.downloadPdf}
         </button>
         <button
           onClick={onPublish}
-          className="rounded-md bg-[--accent] px-3 py-2 text-xs font-semibold text-white hover:bg-[--accent-strong]"
+          className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)]"
         >
           {messages.editor.publish}
         </button>
         <div className="relative">
           <button
+            ref={menuButtonRef}
             onClick={() => setOpenMenu((prev) => !prev)}
             data-testid="editor-more-menu"
-            className="rounded-md border border-[--line] px-3 py-2 text-xs text-white hover:border-[--line-hover]"
+            className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
           >
             {messages.editor.more}
           </button>
           {openMenu && (
-            <div className="absolute right-0 z-50 mt-2 w-48 rounded-md border border-[--line] bg-[--surface] p-2 text-xs text-white shadow-lg">
+            <div
+              ref={menuRef}
+              className="absolute right-0 z-[70] mt-2 w-52 rounded-md border border-[var(--line)] bg-[var(--surface)] p-2 text-xs text-[var(--ink)] shadow-[var(--shadow)]"
+            >
               <button
                 onClick={() => {
                   onFork();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[var(--surface-active)]"
               >
                 {messages.editor.forkTemplate}
               </button>
@@ -115,7 +181,7 @@ export function EditorToolbar({
                   setOpenMenu(false);
                 }}
                 data-testid="editor-open-history"
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[var(--surface-active)]"
               >
                 {messages.editor.versionHistory}
               </button>
@@ -124,7 +190,7 @@ export function EditorToolbar({
                   onOpenSettings();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[var(--surface-active)]"
               >
                 {messages.editor.templateSettings}
               </button>
@@ -133,7 +199,7 @@ export function EditorToolbar({
                   onOpenShortcuts();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[var(--surface-active)]"
               >
                 {messages.editor.keyboardShortcuts}
               </button>
@@ -142,7 +208,7 @@ export function EditorToolbar({
                   onToggleAutoRender();
                   setOpenMenu(false);
                 }}
-                className="w-full rounded-md px-2 py-2 text-left hover:bg-[--surface-active]"
+                className="w-full rounded-md px-2 py-2 text-left hover:bg-[var(--surface-active)]"
               >
                 {messages.editor.autoRender}:{" "}
                 {autoRender ? messages.editor.autoRenderOn : messages.editor.autoRenderOff}
@@ -180,7 +246,7 @@ export function EditorPowerBar() {
   const { applyAction, ready } = useMonacoFormatting();
 
   return (
-    <div className="border-b border-[--line] bg-[--surface-2] px-2 py-2">
+    <div className="border-b border-[var(--line)] bg-[var(--surface-2)] px-2 py-2">
       <div className="flex flex-wrap items-center gap-2">
         {toolbarGroups.map((group, groupIndex) => (
           <div key={`group-${groupIndex}`} className="flex items-center gap-1">
@@ -190,13 +256,13 @@ export function EditorPowerBar() {
                 onClick={() => applyAction(id)}
                 disabled={!ready}
                 title={label}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[--line] text-[--muted] transition hover:border-[--line-hover] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[var(--line)] text-[var(--muted)] transition hover:border-[var(--line-hover)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Icon className="h-4 w-4" />
               </button>
             ))}
             {groupIndex < toolbarGroups.length - 1 && (
-              <span className="mx-1 h-4 w-px bg-[--line]" />
+              <span className="mx-1 h-4 w-px bg-[var(--line)]" />
             )}
           </div>
         ))}

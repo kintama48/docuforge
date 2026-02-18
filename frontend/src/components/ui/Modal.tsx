@@ -30,14 +30,14 @@ export function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-lg rounded-2xl border border-[#27272a] bg-[#111113] p-6 text-white shadow-2xl"
+        className="relative w-full max-w-lg rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-[var(--ink)] shadow-[var(--shadow)]"
       >
         {title && <h2 className="text-lg font-semibold">{title}</h2>}
         <div className="mt-4">{children}</div>
         {dismissable && onClose && (
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 text-xs text-[#71717a] hover:text-white"
+            className="absolute right-4 top-4 text-xs text-[var(--muted)] hover:text-[var(--ink)]"
             aria-label="Close"
           >
             ✕

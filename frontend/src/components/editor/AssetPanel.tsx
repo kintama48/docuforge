@@ -60,15 +60,15 @@ export function AssetPanel() {
 
   return (
     <div className="mt-6">
-      <p className="text-xs uppercase tracking-[0.2em] text-[--muted-dim]">
+      <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted-dim)]">
         {messages.editor.assetsTitle}
       </p>
       <div
         {...getRootProps()}
         className={`mt-3 rounded-lg border border-dashed px-3 py-4 text-center text-xs ${
           isDragActive
-            ? "border-[--accent] text-white"
-            : "border-[--line] text-[--muted-dim]"
+            ? "border-[var(--accent)] text-[var(--ink)]"
+            : "border-[var(--line)] text-[var(--muted-dim)]"
         }`}
       >
         <input {...getInputProps()} />
@@ -81,15 +81,15 @@ export function AssetPanel() {
           data.assets.map((asset) => (
             <div
               key={asset.id}
-              className="flex items-center justify-between rounded-md border border-[--line] px-3 py-2 text-xs text-[--muted]"
+              className="flex items-center justify-between rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--muted)]"
             >
               <button
                 onClick={() => insertSnippet(assetSnippet(asset.name, asset.mime_type))}
-                className="flex items-center gap-2 text-left hover:text-white"
+                className="flex items-center gap-2 text-left hover:text-[var(--ink)]"
               >
                 <span>{assetIcon(asset.mime_type, asset.name)}</span>
                 <span>{asset.name}</span>
-                <span className="text-[10px] text-[--muted-dim]">
+                <span className="text-[10px] text-[var(--muted-dim)]">
                   {formatBytes(asset.size_bytes)}
                 </span>
               </button>
@@ -106,14 +106,14 @@ export function AssetPanel() {
                       deleteAsset.mutate(asset.id);
                     }
                   }}
-                className="text-[10px] text-[--bad]"
+                className="text-[10px] text-[var(--bad)]"
               >
                 {messages.editor.delete}
               </button>
             </div>
           ))
         ) : (
-          <p className="text-xs text-[--muted-dim]">
+          <p className="text-xs text-[var(--muted-dim)]">
             {messages.editor.noAssets}
           </p>
         )}

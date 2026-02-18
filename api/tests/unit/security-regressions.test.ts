@@ -159,11 +159,13 @@ describe('Security Regressions', () => {
     });
   });
 
-  describe('API-m4: Stripe key validation', () => {
-    test('billing.ts uses env.STRIPE_SECRET_KEY (no empty fallback)', async () => {
+  describe('API-m4: Billing provider validation', () => {
+    test('billing route is provider-switched and never falls back to Stripe secret defaults', async () => {
       const source = await Bun.file('src/routes/billing.ts').text();
 
-      // Should NOT have empty string fallback for Stripe key
+      expect(source).toContain('BILLING_PROVIDER');
+      expect(source).toContain("env.BILLING_PROVIDER === 'paddle'");
+      expect(source).toContain("env.BILLING_PROVIDER === 'lemonsqueezy'");
       expect(source).not.toContain("STRIPE_SECRET_KEY || ''");
       expect(source).not.toContain("STRIPE_SECRET_KEY || \"\"");
     });

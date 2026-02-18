@@ -5,7 +5,7 @@ import { stripLocalePath, withLocale } from "./src/lib/locale-path";
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "https://www.docuforge.app";
+  "https://docuforge.app";
 
 const consoleUrl =
   process.env.NEXT_PUBLIC_CONSOLE_URL || "https://console.docuforge.app";
@@ -26,9 +26,9 @@ function safeHost(value: string, fallback: string) {
   }
 }
 
-const marketingOrigin = safeOrigin(marketingUrl, "https://www.docuforge.app");
+const marketingOrigin = safeOrigin(marketingUrl, "https://docuforge.app");
 const consoleOrigin = safeOrigin(consoleUrl, "https://console.docuforge.app");
-const marketingHost = safeHost(marketingOrigin, "https://www.docuforge.app");
+const marketingHost = safeHost(marketingOrigin, "https://docuforge.app");
 const consoleHost = safeHost(consoleOrigin, "https://console.docuforge.app");
 
 const marketingExact = new Set([

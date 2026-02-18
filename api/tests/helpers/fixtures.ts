@@ -198,6 +198,28 @@ export const samplePreviewRequests = {
     source: '#set page(paper: "a4")\nHello, World!',
     data: {},
   },
+  lowCode: {
+    low_code_spec: {
+      version: 1,
+      blocks: [
+        {
+          type: 'header',
+          props: {
+            title: '{{invoice.title}}',
+          },
+        },
+        {
+          type: 'paragraph',
+          props: {
+            text: 'Hello from low-code',
+          },
+        },
+      ],
+    },
+    data: {
+      invoice: { title: 'Invoice #123' },
+    },
+  },
   withData: {
     source: '#set page(paper: "a4")\nHello, #sys.inputs.name!',
     data: { name: 'World' },

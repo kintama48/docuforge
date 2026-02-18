@@ -6,6 +6,7 @@ import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
+import { BrandLogo } from "@/src/components/brand/BrandLogo";
 
 export function SiteHeader() {
   const { messages, locale } = useI18n();
@@ -15,9 +16,7 @@ export function SiteHeader() {
     <header className="border-b border-[var(--line)] bg-[var(--bg)]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Link href={localePath("/")} className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] font-display text-xs tracking-[0.2em] text-[var(--muted)]">
-            DF
-          </span>
+          <BrandLogo className="h-9 w-9" priority />
           <span className="font-display text-lg text-[var(--ink)]">
             DocuForge
           </span>

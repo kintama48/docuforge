@@ -1,7 +1,7 @@
 "use client";
 
 import { Command } from "cmdk";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useI18n } from "@/src/lib/i18n";
 
 export type CommandItem = {
@@ -21,10 +21,10 @@ type CommandPaletteProps = {
 export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
   const { messages } = useI18n();
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    if (!open) setSearch("");
-  }, [open]);
+  const handleClose = () => {
+    setSearch("");
+    onClose();
+  };
 
   if (!open) return null;
 
@@ -37,19 +37,19 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-24">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
       <Command
-        className="relative w-full max-w-xl rounded-2xl border border-[--line] bg-[--surface] p-4 text-white shadow-2xl"
+        className="relative w-full max-w-xl rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-[var(--ink)] shadow-[var(--shadow)]"
         shouldFilter
       >
         <Command.Input
           value={search}
           onValueChange={setSearch}
           placeholder={messages.editor.commandSearchPlaceholder}
-          className="w-full rounded-md border border-[--line] bg-[--surface-2] px-3 py-2 text-sm outline-none"
+          className="w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm outline-none"
         />
         <Command.List className="mt-3 max-h-72 overflow-y-auto">
-          <Command.Empty className="p-3 text-xs text-[--muted-dim]">
+          <Command.Empty className="p-3 text-xs text-[var(--muted-dim)]">
             {messages.editor.commandNoResults}
           </Command.Empty>
           {Object.entries(grouped).map(([group, groupItems]) => (
@@ -60,9 +60,9 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps) {
                   value={`${item.label} ${item.keywords || ""}`}
                   onSelect={() => {
                     item.onSelect();
-                    onClose();
+                    handleClose();
                   }}
-                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm aria-selected:bg-[--surface-active]"
+                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm aria-selected:bg-[var(--surface-active)]"
                 >
                   <span>{item.label}</span>
                 </Command.Item>

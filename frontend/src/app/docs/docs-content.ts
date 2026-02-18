@@ -185,7 +185,7 @@ const docsContent: Record<Locale, DocsContent> = {
     usage: {
       title: "Usage and billing",
       body:
-        "Usage limits are enforced monthly. The billing API creates a Stripe checkout session for upgrades.",
+        "Usage limits are enforced monthly. The billing API creates a checkout session using the configured provider.",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -193,7 +193,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "Create a Stripe checkout session.",
+          description: "Create a checkout session with the active billing provider.",
         },
       ],
     },
@@ -348,7 +348,7 @@ const docsContent: Record<Locale, DocsContent> = {
     usage: {
       title: "Usage et facturation",
       body:
-        "Les limites d’usage sont mensuelles. L’API billing crée une session Stripe pour les upgrades.",
+        "Les limites d’usage sont mensuelles. L’API billing crée une session de paiement via le provider configuré.",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -356,7 +356,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "Crée une session Stripe de paiement.",
+          description: "Crée une session de paiement via le provider actif.",
         },
       ],
     },
@@ -512,7 +512,7 @@ const docsContent: Record<Locale, DocsContent> = {
     usage: {
       title: "Nutzung & Abrechnung",
       body:
-        "Nutzungslimits gelten monatlich. Die Billing-API erstellt eine Stripe-Checkout-Session für Upgrades.",
+        "Nutzungslimits gelten monatlich. Die Billing-API erstellt eine Checkout-Session über den konfigurierten Anbieter.",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -520,7 +520,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "Stripe-Checkout-Session erstellen.",
+          description: "Checkout-Session über den aktiven Zahlungsanbieter erstellen.",
         },
       ],
     },
@@ -676,7 +676,7 @@ const docsContent: Record<Locale, DocsContent> = {
     usage: {
       title: "Utilizzo e fatturazione",
       body:
-        "I limiti di utilizzo sono mensili. L’API billing crea una sessione di checkout Stripe per gli upgrade.",
+        "I limiti di utilizzo sono mensili. L’API billing crea una sessione di checkout tramite il provider configurato.",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -684,7 +684,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "Crea una sessione di checkout Stripe.",
+          description: "Crea una sessione di checkout con il provider attivo.",
         },
       ],
     },
@@ -840,7 +840,7 @@ const docsContent: Record<Locale, DocsContent> = {
     usage: {
       title: "Uso y facturación",
       body:
-        "Los límites de uso son mensuales. La API de billing crea una sesión de checkout de Stripe para upgrades.",
+        "Los límites de uso son mensuales. La API de billing crea una sesión de checkout con el proveedor configurado.",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -848,7 +848,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "Crear una sesión de checkout Stripe.",
+          description: "Crear una sesión de checkout con el proveedor activo.",
         },
       ],
     },
@@ -1004,7 +1004,7 @@ const docsContent: Record<Locale, DocsContent> = {
     usage: {
       title: "الاستخدام والفوترة",
       body:
-        "حدود الاستخدام شهرية. واجهة الفوترة تنشئ جلسة Stripe للترقية.",
+        "حدود الاستخدام شهرية. واجهة الفوترة تنشئ جلسة دفع عبر المزود المُفعّل.",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -1012,7 +1012,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "إنشاء جلسة Stripe للدفع.",
+          description: "إنشاء جلسة دفع عبر مزود الدفع النشط.",
         },
       ],
     },
@@ -1164,7 +1164,7 @@ const docsContent: Record<Locale, DocsContent> = {
     },
     usage: {
       title: "用量与计费",
-      body: "用量按月统计。计费 API 会创建 Stripe Checkout 会话用于升级。",
+      body: "用量按月统计。计费 API 会通过已配置的提供商创建 Checkout 会话用于升级。",
       endpoints: [
         {
           endpoint: "GET /v1/usage",
@@ -1172,7 +1172,7 @@ const docsContent: Record<Locale, DocsContent> = {
         },
         {
           endpoint: "POST /v1/billing/checkout",
-          description: "创建 Stripe Checkout 会话。",
+          description: "通过当前计费提供商创建 Checkout 会话。",
         },
       ],
     },

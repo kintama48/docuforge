@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import { ProtectedRoute } from "@/src/components/auth/ProtectedRoute";
-import { AiDrawer } from "@/src/components/editor/AiDrawer";
 import { CommandPalette } from "@/src/components/editor/CommandPalette";
+import { DocuMasterWidget } from "@/src/components/editor/DocuMasterWidget";
 import { EditorLayout } from "@/src/components/editor/EditorLayout";
 import { EditorStatusBar } from "@/src/components/editor/EditorStatusBar";
 import { EditorToolbar } from "@/src/components/editor/EditorToolbar";
@@ -30,16 +30,20 @@ import { useI18n } from "@/src/lib/i18n";
 export default function EditorPage() {
   const { messages } = useI18n();
   const params = useParams<{ id: string }>();
-  const router = useRouter();
   const templateId = params?.id;
   const { data, isLoading } = useTemplate(templateId);
-  const templatesQuery = useTemplates(true);
+  useTemplates(true);
   const forkTemplate = useForkTemplate();
   const publishVersion = usePublishVersion(templateId);
   const templateVersion = useTemplateVersion(templateId);
   const loadTemplate = useEditorStore((state) => state.loadTemplate);
   const loadVersion = useEditorStore((state) => state.loadVersion);
   const source = useEditorStore((state) => state.source);
+  const lowCodeSpec = useEditorStore((state) => state.lowCodeSpec);
+  const editorMode = useEditorStore((state) => state.editorMode);
+  const advancedTypstEnabled = useEditorStore(
+    (state) => state.advancedTypstEnabled
+  );
   const files = useEditorStore((state) => state.files);
   const dataString = useEditorStore((state) => state.dataString);
   const dataObject = useEditorStore((state) => state.data);
@@ -47,11 +51,17 @@ export default function EditorPage() {
   const setRateLimitUntil = useEditorStore((state) => state.setRateLimitUntil);
   const setReadOnly = useEditorStore((state) => state.setReadOnly);
   const setViewingVersion = useEditorStore((state) => state.setViewingVersion);
+  const setAdvancedTypstEnabled = useEditorStore(
+    (state) => state.setAdvancedTypstEnabled
+  );
   const readOnly = useEditorStore((state) => state.readOnly);
   const [viewingVersionId, setViewingVersionId] = useState<string | null>(null);
 
-  const debouncedSource = useDebounce(source, 800);
-  const debouncedData = useDebounce(dataString, 500);
+  const isLowCodeMode = editorMode === "low-code";
+  const blockMode = isLowCodeMode && !advancedTypstEnabled;
+
+  const debouncedSource = useDebounce(source, 300);
+  const debouncedData = useDebounce(dataString, 300);
   const previewRender = usePreviewRender();
 
   // Store mutate in a ref to avoid recreating the useEffect dependency
@@ -61,9 +71,9 @@ export default function EditorPage() {
     previewRenderRef.current = previewRender.mutate;
   }, [previewRender.mutate]);
 
-  const [activeTab, setActiveTab] = useState<"preview" | "data" | "diag">(
-    "preview"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "preview" | "data" | "diag" | "api" | "blocks"
+  >("preview");
   const [showSidebar, setShowSidebar] = useState(true);
   const [autoRender, setAutoRender] = useState(true);
   const [showAi, setShowAi] = useState(false);
@@ -77,7 +87,6 @@ export default function EditorPage() {
   useEffect(() => {
     if (data?.template) {
       loadTemplate(data.template);
-      setViewingVersionId(null);
     }
   }, [data, loadTemplate]);
 
@@ -95,35 +104,70 @@ export default function EditorPage() {
   }, [rateLimitUntil, setRateLimitUntil]);
 
   useEffect(() => {
+    if (blockMode) {
+      setActiveTab((prev) => (prev === "blocks" ? prev : "blocks"));
+      return;
+    }
+    setActiveTab((prev) => (prev === "blocks" ? "preview" : prev));
+  }, [blockMode]);
+
+  useEffect(() => {
     if (!autoRender) return;
     if (rateLimitUntil && Date.now() < rateLimitUntil) return;
-    if (!debouncedSource) return;
     try {
       JSON.parse(debouncedData || "{}");
     } catch {
       return;
     }
+    if (blockMode) {
+      if (!lowCodeSpec) return;
+      previewRenderRef.current({
+        low_code_spec: lowCodeSpec,
+        data: dataObject,
+      });
+      return;
+    }
+    if (!debouncedSource) return;
     // Use ref to call mutate - avoids infinite loop from previewRender in deps
     previewRenderRef.current({
       source: debouncedSource,
       files,
       data: dataObject,
     });
-  }, [debouncedSource, debouncedData, files, dataObject, autoRender, rateLimitUntil]);
+  }, [
+    debouncedSource,
+    debouncedData,
+    files,
+    dataObject,
+    autoRender,
+    rateLimitUntil,
+    blockMode,
+    lowCodeSpec,
+  ]);
+
+  const triggerRender = () => {
+    if (blockMode) {
+      if (!lowCodeSpec) return;
+      previewRender.mutate({
+        low_code_spec: lowCodeSpec,
+        data: dataObject,
+      });
+      return;
+    }
+    previewRender.mutate({ source, files, data: dataObject });
+  };
 
   useKeyboard(
     [
       {
         key: "s",
         ctrl: true,
-        handler: () =>
-          previewRender.mutate({ source, files, data: dataObject }),
+        handler: triggerRender,
       },
       {
         key: "s",
         meta: true,
-        handler: () =>
-          previewRender.mutate({ source, files, data: dataObject }),
+        handler: triggerRender,
       },
       {
         key: "p",
@@ -180,6 +224,7 @@ export default function EditorPage() {
     showSidebar,
     autoRender,
     readOnly,
+    isLowCodeMode,
     onToggleRightPane: () => setShowRightPane((prev) => !prev),
     onToggleSidebar: () => setShowSidebar((prev) => !prev),
     onToggleAutoRender: () => setAutoRender((prev) => !prev),
@@ -187,7 +232,7 @@ export default function EditorPage() {
       setActiveTab((prev) => (prev === newTab ? "preview" : newTab));
     },
     onOpenPublish: () => setShowPublish(true),
-    onOpenAi: () => setShowAi(true),
+    onOpenAi: () => setShowAi((prev) => !prev),
     onOpenHistory: () => setShowHistory(true),
     onOpenShortcuts: () => setShowShortcuts(true),
     onEditCurrent: () => {
@@ -212,7 +257,7 @@ export default function EditorPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[--bg] text-sm text-[--muted]">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--muted)]">
         {messages.editor.loading}
       </div>
     );
@@ -220,7 +265,7 @@ export default function EditorPage() {
 
   if (!data?.template) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[--bg] text-sm text-[--muted]">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--muted)]">
         {messages.editor.notFound}
       </div>
     );
@@ -228,7 +273,7 @@ export default function EditorPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen flex-col bg-[--bg] text-white">
+      <div className="relative flex h-screen min-h-screen flex-col overflow-hidden bg-[var(--bg)] text-[var(--ink)]">
         <EditorToolbar
           onPublish={() => setShowPublish(true)}
           onOpenHistory={() => setShowHistory(true)}
@@ -242,17 +287,34 @@ export default function EditorPage() {
           }
           autoRender={autoRender}
           onToggleAutoRender={() => setAutoRender((prev) => !prev)}
+          isLowCodeMode={isLowCodeMode}
+          advancedTypstEnabled={advancedTypstEnabled}
+          onToggleAdvancedTypst={() =>
+            setAdvancedTypstEnabled(!advancedTypstEnabled)
+          }
+          onOpenBlocks={() => {
+            setShowRightPane(true);
+            setActiveTab("blocks");
+          }}
         />
-        <EditorLayout
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          showSidebar={showSidebar}
-          showRightPane={showRightPane}
-          onOpenAi={() => setShowAi(true)}
-        />
+        <div className="min-h-0 flex-1">
+          <EditorLayout
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            showSidebar={showSidebar}
+            showRightPane={showRightPane}
+            onOpenAi={() => setShowAi((prev) => !prev)}
+            editorMode={editorMode}
+            advancedTypstEnabled={advancedTypstEnabled}
+          />
+        </div>
         <EditorStatusBar />
 
-        <AiDrawer open={showAi} onClose={() => setShowAi(false)} />
+        <DocuMasterWidget
+          open={showAi}
+          onToggle={() => setShowAi((prev) => !prev)}
+          onClose={() => setShowAi(false)}
+        />
         <VersionHistoryPanel
           open={showHistory}
           onClose={() => setShowHistory(false)}
@@ -272,6 +334,7 @@ export default function EditorPage() {
             if (!version || version.id !== versionId) return;
             publishVersion.mutate({
               source: version.source,
+              low_code_spec: version.low_code_spec ?? undefined,
               files: version.files ?? undefined,
               defaults: version.defaults ?? undefined,
               commit_message: `Revert to v${version.version_number}`,

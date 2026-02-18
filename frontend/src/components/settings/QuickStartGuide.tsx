@@ -6,16 +6,12 @@ import { useI18n } from "@/src/lib/i18n";
 
 const tabs = ["curl", "Node.js", "Python", "Go"] as const;
 
-type QuickStartGuideProps = {
-  apiKey: string;
-};
-
-export function QuickStartGuide({ apiKey }: QuickStartGuideProps) {
+export function QuickStartGuide() {
   const { messages } = useI18n();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("curl");
 
   const code = useMemo(() => {
-    const key = apiKey || "docu_live_...";
+    const key = "${DOCUFORGE_API_KEY:-docu_live_your_key}";
     switch (activeTab) {
       case "Node.js":
         return `import fetch from "node-fetch";
@@ -66,16 +62,16 @@ func main() {
   -d '{ "template_id": "tpl_123", "data": {} }' \\
   --output output.pdf`;
     }
-  }, [activeTab, apiKey]);
+  }, [activeTab]);
 
   return (
-    <section className="rounded-2xl border border-[#27272a] bg-[#111113] p-6">
+    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">
             {messages.settings.quickStartGuideTitle}
           </h2>
-          <p className="mt-1 text-xs text-[#71717a]">
+          <p className="mt-1 text-xs text-[var(--muted-dim)]">
             {messages.settings.quickStartGuideSubtitle}
           </p>
         </div>
@@ -84,11 +80,16 @@ func main() {
             navigator.clipboard?.writeText(code);
             toast.success(messages.settings.quickStartCopied);
           }}
-          className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
+          className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
         >
           {messages.settings.quickStartCopy}
         </button>
       </div>
+
+      <p className="mt-4 text-xs text-[var(--muted)]">
+        Use your full secret API key in <code>DOCUFORGE_API_KEY</code>. The
+        prefix shown in the table is only an identifier.
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {tabs.map((tab) => (
@@ -97,8 +98,8 @@ func main() {
             onClick={() => setActiveTab(tab)}
             className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.2em] ${
               activeTab === tab
-                ? "bg-[#3b82f6] text-white"
-                : "border border-[#27272a] text-[#a1a1aa] hover:border-[#3f3f46]"
+                ? "bg-[var(--accent)] text-white"
+                : "border border-[var(--line)] text-[var(--muted)] hover:border-[var(--line-hover)]"
             }`}
           >
             {tab}
@@ -106,7 +107,7 @@ func main() {
         ))}
       </div>
 
-      <pre className="mt-4 overflow-x-auto rounded-xl border border-[#27272a] bg-[#0f1117] p-4 text-xs text-[#a1a1aa]">
+      <pre className="mt-4 overflow-x-auto rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-xs text-[var(--muted)]">
         <code>{code}</code>
       </pre>
     </section>

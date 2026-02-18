@@ -25,6 +25,9 @@ vi.mock("@/src/components/editor/DiagnosticsPanel", () => ({
 vi.mock("@/src/components/editor/EditorToolbar", () => ({
   EditorPowerBar: () => <div data-testid="power-bar" />,
 }));
+vi.mock("@/src/components/editor/LowCodeBlocksPanel", () => ({
+  LowCodeBlocksPanel: () => <div data-testid="low-code-blocks" />,
+}));
 
 beforeEach(() => {
   useEditorStore.setState({ insertSnippet: vi.fn() as any } as any);
@@ -42,6 +45,8 @@ describe("EditorLayout", () => {
         showSidebar={true}
         showRightPane={true}
         onOpenAi={onOpenAi}
+        editorMode="code"
+        advancedTypstEnabled={false}
       />
     );
 
@@ -66,6 +71,8 @@ describe("EditorLayout", () => {
         showSidebar={true}
         showRightPane={true}
         onOpenAi={onOpenAi}
+        editorMode="code"
+        advancedTypstEnabled={false}
       />
     );
 
@@ -86,7 +93,7 @@ describe("EditorLayout", () => {
     >;
     expect(insertSnippet).toHaveBeenCalledTimes(snippetLabels.length);
 
-    fireEvent.click(screen.getByRole("button", { name: /open ai assistant/i }));
+    fireEvent.click(screen.getByRole("button", { name: /documaster ai/i }));
     expect(onOpenAi).toHaveBeenCalled();
   });
 
@@ -99,6 +106,8 @@ describe("EditorLayout", () => {
         showSidebar={false}
         showRightPane={true}
         onOpenAi={() => {}}
+        editorMode="code"
+        advancedTypstEnabled={false}
       />
     );
 
@@ -116,11 +125,32 @@ describe("EditorLayout", () => {
         showSidebar={true}
         showRightPane={false}
         onOpenAi={() => {}}
+        editorMode="code"
+        advancedTypstEnabled={false}
       />
     );
 
     expect(screen.queryByTestId("pdf-preview")).not.toBeInTheDocument();
     expect(screen.queryByTestId("data-editor")).not.toBeInTheDocument();
     expect(screen.queryByTestId("diag-panel")).not.toBeInTheDocument();
+  });
+
+  it("shows blocks panel in low-code mode", () => {
+    renderWithProviders(
+      <EditorLayout
+        activeTab="blocks"
+        onTabChange={() => {}}
+        showSidebar={true}
+        showRightPane={true}
+        onOpenAi={() => {}}
+        editorMode="low-code"
+        advancedTypstEnabled={false}
+      />
+    );
+
+    expect(screen.getByTestId("low-code-blocks")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Blocks mode is active\. Use the Blocks tab/i)
+    ).toBeInTheDocument();
   });
 });

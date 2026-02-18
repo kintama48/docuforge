@@ -141,6 +141,22 @@ describe('POST /v1/render/preview', () => {
     expect(response.headers.get('Content-Type')).toBe('application/pdf');
   });
 
+  it('renders preview from low_code_spec', async () => {
+    const response = await app.request('/v1/render/preview', {
+      method: 'POST',
+      headers: getAuthHeaders(user, false),
+      body: JSON.stringify(samplePreviewRequests.lowCode),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toBe('application/pdf');
+
+    const lastRequest = ctx.engine.getLastRequest();
+    expect(lastRequest).toBeDefined();
+    expect(lastRequest!.body?.template?.files?.['main.typ']).toContain('sys.inputs');
+    expect(lastRequest!.body?.template?.files?.['main.typ']).toContain('data.invoice.title');
+  });
+
   it('works with data parameter', async () => {
     const response = await app.request('/v1/render/preview', {
       method: 'POST',

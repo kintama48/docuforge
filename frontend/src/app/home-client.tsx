@@ -234,40 +234,40 @@ export default function Home() {
 
         <section
           id="api"
-          className="section-pad scroll-mt-24 bg-[var(--ink)] text-white"
+          className="section-pad scroll-mt-24 bg-[var(--inverse-bg)] text-[var(--inverse-ink)]"
         >
           <div className="mx-auto w-full max-w-6xl px-6">
             <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
                   {messages.api.label}
                 </p>
-                <h2 className="mt-3 font-display text-3xl text-white sm:text-4xl">
+                <h2 className="mt-3 font-display text-3xl text-[var(--inverse-ink)] sm:text-4xl">
                   {messages.api.title}
                 </h2>
-                <p className="mt-4 text-pretty text-base text-white/70">
+                <p className="mt-4 text-pretty text-base text-[var(--inverse-muted)]">
                   {messages.api.subtitle}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={localePath("/docs")}
-                    className="inline-flex items-center justify-center rounded-md bg-white px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:bg-white/90"
+                    className="inline-flex items-center justify-center rounded-md bg-white px-5 py-3 text-sm font-semibold text-[var(--ink-strong)] transition hover:bg-white/90"
                   >
                     {messages.api.ctaDocs}
                   </Link>
                   <Link
                     href={consoleUrl}
-                    className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:border-white"
+                    className="inline-flex items-center justify-center rounded-md border border-[var(--inverse-line)] bg-[var(--inverse-surface)] px-5 py-3 text-sm font-semibold text-[var(--inverse-ink)] transition hover:border-[var(--inverse-ink)]"
                   >
                     {messages.api.ctaConsole}
                   </Link>
                 </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+              <div className="rounded-2xl border border-[var(--inverse-line)] bg-[var(--inverse-surface)] p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
                   {messages.api.quickStartLabel}
                 </p>
-                <pre className="mt-4 overflow-x-auto rounded-xl bg-black/40 p-4 text-xs text-white/90">
+                <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--inverse-code-bg)] p-4 text-xs text-[var(--inverse-ink)]">
                   <code>{`curl -X POST "$DOCUFORGE_API_URL/v1/render/preview" \\
   -H "Authorization: Bearer $DOCUFORGE_API_KEY" \\
   -H "Content-Type: application/json" \\

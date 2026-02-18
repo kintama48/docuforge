@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { zValidator as honoZValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
+import { lowCodeSpecSchema } from './low-code';
 
 /**
  * Custom zValidator that returns 422 for validation errors (per spec section 6.3)
@@ -46,28 +47,50 @@ export const renderSchema = z.object({
   data: z.record(z.unknown()).optional().default({}),
 });
 
-export const renderPreviewSchema = z.object({
-  source: z.string().min(1).max(102400, 'Source must be under 100KB'),
-  files: z.record(z.string().max(102400)).optional(),
-  data: z.record(z.unknown()).optional().default({}),
+export const renderPreviewSchema = z
+  .object({
+    source: z.string().min(1).max(102400, 'Source must be under 100KB').optional(),
+    low_code_spec: lowCodeSpecSchema.optional(),
+    files: z.record(z.string().max(102400)).optional(),
+    data: z.record(z.unknown()).optional().default({}),
+  })
+  .refine((data) => Boolean(data.source) || data.low_code_spec !== undefined, {
+    message: 'Either source or low_code_spec is required',
+    path: ['source'],
+  });
+
+export const renderJobParamSchema = z.object({
+  jobId: z.string().min(1).max(128),
 });
 
 // Template schemas
-export const createTemplateSchema = z.object({
-  name: z.string().min(1).max(100),
-  description: z.string().max(500).optional(),
-  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
-  files: z.record(z.string().max(102400)).optional(),
-  defaults: z.record(z.unknown()).optional(),
-  commit_message: z.string().max(200).optional(),
-});
+export const createTemplateSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    description: z.string().max(500).nullable().optional(),
+    source: z.string().min(1).max(1048576, 'Source must be under 1MB').optional(),
+    low_code_spec: lowCodeSpecSchema.optional(),
+    files: z.record(z.string().max(102400)).optional(),
+    defaults: z.record(z.unknown()).optional(),
+    commit_message: z.string().max(200).optional(),
+  })
+  .refine((data) => Boolean(data.source) || data.low_code_spec !== undefined, {
+    message: 'Either source or low_code_spec is required',
+    path: ['source'],
+  });
 
-export const publishVersionSchema = z.object({
-  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
-  files: z.record(z.string().max(102400)).optional(),
-  defaults: z.record(z.unknown()).optional(),
-  commit_message: z.string().max(200).optional(),
-});
+export const publishVersionSchema = z
+  .object({
+    source: z.string().min(1).max(1048576, 'Source must be under 1MB').optional(),
+    low_code_spec: lowCodeSpecSchema.optional(),
+    files: z.record(z.string().max(102400)).optional(),
+    defaults: z.record(z.unknown()).optional(),
+    commit_message: z.string().max(200).optional(),
+  })
+  .refine((data) => Boolean(data.source) || data.low_code_spec !== undefined, {
+    message: 'Either source or low_code_spec is required',
+    path: ['source'],
+  });
 
 export const updateTemplateSchema = z
   .object({
@@ -190,6 +213,7 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
 export type RenderInput = z.infer<typeof renderSchema>;
 export type RenderPreviewInput = z.infer<typeof renderPreviewSchema>;
+export type RenderJobParamInput = z.infer<typeof renderJobParamSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
 export type PublishVersionInput = z.infer<typeof publishVersionSchema>;
 export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>;

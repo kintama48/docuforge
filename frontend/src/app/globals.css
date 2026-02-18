@@ -10,16 +10,28 @@
   --bg: #f6f4f0;
   --surface: #ffffff;
   --surface-2: #f1eee9;
+  --surface-hover: #ede9e2;
+  --surface-active: #e5e0d8;
   --ink: #0f1115;
+  --ink-strong: #0f1115;
   --muted: #5d5b57;
+  --muted-dim: #7a7874;
   --line: #d8d3cc;
   --line-hover: #c2bdb5;
   --accent: #0b5fff;
   --accent-strong: #0849c1;
   --accent-soft: #e7efff;
+  --inverse-bg: #0f1115;
+  --inverse-ink: #ffffff;
+  --inverse-muted: rgba(255, 255, 255, 0.72);
+  --inverse-line: rgba(255, 255, 255, 0.18);
+  --inverse-surface: rgba(255, 255, 255, 0.06);
+  --inverse-code-bg: rgba(0, 0, 0, 0.42);
   --good: #1e9e5a;
   --warn: #b45309;
   --bad: #b42318;
+  --bad-hover: #9f230f;
+  --bad-strong: #7f1d1d;
   --shadow: 0 26px 80px rgba(15, 17, 21, 0.18);
 }
 
@@ -30,6 +42,7 @@
   --surface-hover: #14161d;
   --surface-active: #1a1a1f;
   --ink: #f4f4f5;
+  --ink-strong: #0b0d12;
   --muted: #a1a1aa;
   --muted-dim: #71717a;
   --line: #27272a;
@@ -37,6 +50,12 @@
   --accent: #3b82f6;
   --accent-strong: #2563eb;
   --accent-soft: #1f2937;
+  --inverse-bg: #05070d;
+  --inverse-ink: #f8fafc;
+  --inverse-muted: rgba(248, 250, 252, 0.72);
+  --inverse-line: rgba(248, 250, 252, 0.2);
+  --inverse-surface: rgba(248, 250, 252, 0.08);
+  --inverse-code-bg: rgba(0, 0, 0, 0.5);
   --good: #22c55e;
   --warn: #f59e0b;
   --bad: #ef4444;
@@ -96,9 +115,11 @@ body {
   text-align: left;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 ::selection {
@@ -165,6 +186,30 @@ a {
 }
 
 @layer utilities {
+  /*
+   * Keep outlined controls visible by default, but only for full-border rounded controls.
+   * Use exact class token matching to avoid catching border-* utility variants.
+   */
+  button[class~="border"]:is([class~="rounded-md"], [class~="rounded-lg"], [class~="rounded-xl"], [class~="rounded-2xl"]):not([class*="bg-"]),
+  a[class~="border"]:is([class~="rounded-md"], [class~="rounded-lg"], [class~="rounded-xl"], [class~="rounded-2xl"]):not([class*="bg-"]) {
+    background-color: var(--surface);
+  }
+
+  /*
+   * Keep CTA contrast stable even when browser extensions mutate link colors.
+   */
+  a[class*="bg-[var(--accent)]"],
+  button[class*="bg-[var(--accent)]"],
+  a[class*="bg-[#3b82f6]"],
+  button[class*="bg-[#3b82f6]"] {
+    color: #fff !important;
+  }
+
+  a[class*="bg-white"],
+  button[class*="bg-white"] {
+    color: #0f1115 !important;
+  }
+
   .font-display {
     font-family: var(--font-display), var(--font-body), sans-serif;
   }

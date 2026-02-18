@@ -24,12 +24,12 @@ export default function DashboardPage() {
 
           <section>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-[var(--ink)]">
                 {messages.dashboard.myTemplates}
               </h2>
               <button
                 onClick={() => setOpenCreate(true)}
-                className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
+                className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)]"
               >
                 {messages.dashboard.createTemplate}
               </button>
@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
           <section>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-[var(--ink)]">
                 {messages.dashboard.officialTemplates}
               </h2>
             </div>

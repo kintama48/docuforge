@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
+import { BrandLogo } from "@/src/components/brand/BrandLogo";
 
 export function SiteFooter() {
   const { messages, locale } = useI18n();
@@ -15,9 +16,7 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface-2)] font-display text-xs tracking-[0.2em] text-[var(--muted)]">
-                DF
-              </span>
+              <BrandLogo className="h-9 w-9" />
               <span className="font-display text-lg text-[var(--ink)]">
                 DocuForge
               </span>
