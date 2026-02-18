@@ -1,30 +1,31 @@
 "use client";
 
-import { useTheme, type ThemeMode } from "@/src/lib/theme";
+import dynamic from "next/dynamic";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "@/src/lib/theme";
 
-const options: { value: ThemeMode; label: string }[] = [
-  { value: "system", label: "System" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-];
-
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+function ThemeToggleButton() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
-    <label className="inline-flex items-center gap-2 text-xs text-[var(--muted)]">
-      <span className="sr-only">Theme</span>
-      <select
-        value={theme}
-        onChange={(event) => setTheme(event.target.value as ThemeMode)}
-        className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--ink)]"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 text-xs font-semibold text-[var(--ink)] transition hover:border-[var(--line-hover)]"
+    >
+      {isDark ? <Sun size={14} /> : <Moon size={14} />}
+      <span>{isDark ? "Light" : "Dark"}</span>
+    </button>
   );
+}
+
+const ClientThemeToggle = dynamic(() => Promise.resolve(ThemeToggleButton), {
+  ssr: false,
+});
+
+export function ThemeToggle() {
+  return <ClientThemeToggle />;
 }

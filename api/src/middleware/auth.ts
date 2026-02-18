@@ -2,7 +2,7 @@ import { createMiddleware } from 'hono/factory';
 import { jwtVerify, SignJWT } from 'jose';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
-import { hashApiKey, isValidApiKeyFormat } from '../lib/api-key';
+import { hashApiKey, hashApiKeyLegacy, isValidApiKeyFormat } from '../lib/api-key';
 import { getCachedKey, setCachedKey } from '../services/key-cache';
 import { UnauthorizedError } from '../lib/errors';
 import { env } from '../config/env';
@@ -55,43 +55,82 @@ async function validateApiKey(rawKey: string): Promise<AuthContext> {
     throw new UnauthorizedError('Invalid API key format');
   }
 
-  const keyHash = hashApiKey(rawKey);
+  const secureHash = hashApiKey(rawKey);
 
   // Check cache first
-  const cached = getCachedKey(keyHash);
+  const cached = getCachedKey(secureHash);
   if (cached) {
     return { userId: cached.userId, planTier: cached.planTier };
   }
 
   // Query database
   const db = getDb();
-  const [keyRecord] = await db
+  let [keyRecord] = await db
     .select({
+      keyHash: schema.apiKeys.keyHash,
       userId: schema.apiKeys.userId,
       isRevoked: schema.apiKeys.isRevoked,
       planTier: schema.users.planTier,
     })
     .from(schema.apiKeys)
     .innerJoin(schema.users, eq(schema.apiKeys.userId, schema.users.id))
-    .where(and(eq(schema.apiKeys.keyHash, keyHash), eq(schema.apiKeys.isRevoked, false)));
+    .where(and(eq(schema.apiKeys.keyHash, secureHash), eq(schema.apiKeys.isRevoked, false)));
+
+  let matchedHash = secureHash;
+  if (!keyRecord) {
+    // Backward compatibility for older SHA-256-only key hashes.
+    const legacyHash = hashApiKeyLegacy(rawKey);
+
+    const cachedLegacy = getCachedKey(legacyHash);
+    if (cachedLegacy) {
+      setCachedKey(secureHash, cachedLegacy);
+      return { userId: cachedLegacy.userId, planTier: cachedLegacy.planTier };
+    }
+
+    [keyRecord] = await db
+      .select({
+        keyHash: schema.apiKeys.keyHash,
+        userId: schema.apiKeys.userId,
+        isRevoked: schema.apiKeys.isRevoked,
+        planTier: schema.users.planTier,
+      })
+      .from(schema.apiKeys)
+      .innerJoin(schema.users, eq(schema.apiKeys.userId, schema.users.id))
+      .where(and(eq(schema.apiKeys.keyHash, legacyHash), eq(schema.apiKeys.isRevoked, false)));
+
+    matchedHash = legacyHash;
+  }
 
   if (!keyRecord) {
     throw new UnauthorizedError('Invalid or revoked API key');
   }
 
   // Cache the result
-  setCachedKey(keyHash, {
+  setCachedKey(secureHash, {
     userId: keyRecord.userId,
     planTier: keyRecord.planTier as PlanTier,
   });
+  if (matchedHash !== secureHash) {
+    setCachedKey(matchedHash, {
+      userId: keyRecord.userId,
+      planTier: keyRecord.planTier as PlanTier,
+    });
+  }
 
-  // Update last_used_at asynchronously (don't await)
+  // Update last_used_at asynchronously and migrate legacy hashes in place
+  const updates: Partial<typeof schema.apiKeys.$inferInsert> = {
+    lastUsedAt: Date.now(),
+  };
+  if (matchedHash !== secureHash) {
+    updates.keyHash = secureHash;
+  }
+
   db.update(schema.apiKeys)
-    .set({ lastUsedAt: Date.now() })
-    .where(eq(schema.apiKeys.keyHash, keyHash))
+    .set(updates)
+    .where(eq(schema.apiKeys.keyHash, matchedHash))
     .execute()
     .catch((err) => {
-      console.error('Failed to update API key last_used_at:', err);
+      console.error('Failed to update API key metadata:', err);
     });
 
   return { userId: keyRecord.userId, planTier: keyRecord.planTier as PlanTier };

@@ -1,3 +1,5 @@
+import type { LowCodeSpec } from "@/src/lib/low-code";
+
 export type User = { id: string; email: string; plan: "free" | "starter" | "pro" };
 export type LoginResponse = { token: string; user: User };
 export type RegisterResponse = {
@@ -22,6 +24,7 @@ export type TemplateVersion = {
   source: string;
   files: Record<string, string> | null;
   defaults: Record<string, unknown> | null;
+  low_code_spec?: LowCodeSpec | null;
   commit_message: string | null;
   created_at: number;
 };

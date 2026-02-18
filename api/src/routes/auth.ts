@@ -198,7 +198,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
         id: userId,
         email: profile.email,
         passwordHash,
-        stripeCustomerId: null,
+        billingCustomerId: null,
         planTier: 'free',
         planRenders: getPlanLimit('free'),
         createdAt: now,

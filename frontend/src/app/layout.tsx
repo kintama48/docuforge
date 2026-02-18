@@ -32,7 +32,7 @@ const plexMono = IBM_Plex_Mono({
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "https://www.docuforge.app";
+  "https://docuforge.app";
 
 const consoleUrl =
   process.env.NEXT_PUBLIC_CONSOLE_URL || "https://console.docuforge.app";
@@ -121,6 +121,19 @@ export async function generateMetadata(): Promise<Metadata> {
       description: marketingMeta.description,
       images: [ogImage],
     },
+    icons: {
+      icon: [
+        { url: "/favicon.ico" },
+        { url: "/brand/logo-square-32.png", sizes: "32x32", type: "image/png" },
+        {
+          url: "/brand/logo-square-192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+      ],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      shortcut: "/favicon.ico",
+    },
   };
 }
 
@@ -150,6 +163,9 @@ export default async function RootLayout({
 
   return (
     <html lang={initialLocale} dir={dir} suppressHydrationWarning>
+      <head>
+        <meta name="darkreader-lock" />
+      </head>
       <body
         className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
       >

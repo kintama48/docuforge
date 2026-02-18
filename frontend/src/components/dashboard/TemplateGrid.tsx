@@ -21,7 +21,7 @@ export function TemplateGrid({ includeOfficial = false }: TemplateGridProps) {
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
-            className="h-32 rounded-2xl border border-[#27272a] bg-[#111113] animate-pulse"
+            className="h-32 rounded-2xl border border-[var(--line)] bg-[var(--surface)] animate-pulse"
           />
         ))}
       </div>
@@ -30,7 +30,7 @@ export function TemplateGrid({ includeOfficial = false }: TemplateGridProps) {
 
   if (!templates.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-[#27272a] bg-[#111113] p-8 text-center text-sm text-[#71717a]">
+      <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface)] p-8 text-center text-sm text-[var(--muted-dim)]">
         {messages.dashboard.emptyTemplates}
       </div>
     );

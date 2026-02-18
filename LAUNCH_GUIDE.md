@@ -1,6 +1,6 @@
 # DocuForge Launch Guide
 
-Last updated: February 16, 2026
+Last updated: February 17, 2026
 
 ## 1. Launch readiness status
 
@@ -30,19 +30,24 @@ If you want real-engine verification before launch:
 
 ```bash
 cd api
-ENGINE_PIPELINE_TESTS=1 ENGINE_URL=https://<engine-host> bun test tests/pipeline/engine.integration.test.ts
+ENGINE_PIPELINE_TESTS=1 ENGINE_URL=https://<engine-host> bun test tests/integration/render-engine-pipeline.test.ts
 ```
 
 ## 3. Deployment runbook
 
 1. Apply DB migrations in production.
-2. Deploy API.
-3. Deploy frontend.
+2. Start Redis on the API instance (`redis://127.0.0.1:6379`).
+3. Deploy API.
+4. If `RENDER_QUEUE_AUTO_START_WORKER=false`, run `cd api && bun run worker` as a separate process.
+5. Deploy frontend.
 4. Run smoke tests:
    - Login/Register
    - Open editor
    - Render preview
    - Publish template version
+   - Queue render job (`POST /v1/render/jobs` with `Idempotency-Key`)
+   - Poll queue job (`GET /v1/render/jobs/:jobId`)
+   - Download queue PDF (`GET /v1/render/jobs/:jobId/pdf`)
    - Billing webhook path (`/v1/billing/webhook`)
 
 ## 4. Launch-day monitoring
@@ -73,3 +78,9 @@ Go if:
 - Monitoring in first 15 minutes is stable
 
 If any fail: hold launch and fix before retry.
+
+## 7. Comprehensive QA doc
+
+Use `/Users/abdullah/WebstormProjects/docuforge/QA_CHECKLIST.md` for full test coverage:
+- Tick-box QA tables (automated + manual + security + sign-off)
+- Full environment variable setup reference for API and frontend

@@ -14,8 +14,14 @@ import templates from './routes/templates';
 import assets from './routes/assets';
 import ai from './routes/ai';
 import webhooksRoute from './routes/webhooks';
+import {
+  isRenderQueueEnabled,
+  shouldAutoStartRenderWorker,
+  startRenderQueueWorker,
+} from './services/render-queue';
 
 let sentryInitialized = false;
+let renderWorkerInitialized = false;
 
 export function createApp() {
   // Initialize Sentry once on first app creation
@@ -38,7 +44,7 @@ export function createApp() {
     cors({
       origin: allowedOrigins,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Idempotency-Key', 'X-Idempotency-Key'],
       credentials: true,
       maxAge: 86400,
     })
@@ -71,6 +77,12 @@ export function createApp() {
       console.warn('RAG vector store initialization failed:', err.message);
       console.warn('AI features will work without documentation context');
     });
+  }
+
+  if (isRenderQueueEnabled() && shouldAutoStartRenderWorker() && !renderWorkerInitialized) {
+    startRenderQueueWorker();
+    renderWorkerInitialized = true;
+    console.log('Render queue worker auto-started in API process');
   }
 
   return app;

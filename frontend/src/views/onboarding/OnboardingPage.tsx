@@ -55,7 +55,7 @@ export default function OnboardingPage() {
                     }
                   );
                 } else {
-                  setForkedTemplateId("tpl_demo");
+                  setForkedTemplateId(null);
                   setStep(2);
                 }
               }}

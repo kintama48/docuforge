@@ -3,11 +3,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { api } from "@/src/lib/api";
+import type { ApiError } from "@/src/lib/api-types";
+import type { LowCodeSpec } from "@/src/lib/low-code";
 import { useEditorStore } from "@/src/stores/editor";
 
 type RenderPayload = {
-  source: string;
-  files: Record<string, string>;
+  source?: string;
+  low_code_spec?: LowCodeSpec;
+  files?: Record<string, string>;
   data: Record<string, unknown>;
 };
 
@@ -31,15 +34,16 @@ export function usePreviewRender() {
       return { blob, duration };
     },
     onMutate: () => {
-      useEditorStore.setState({ renderStatus: "rendering" });
+      useEditorStore.setState({ renderStatus: "rendering", renderError: null });
     },
     onSuccess: ({ blob, duration }) => {
       useEditorStore.getState().setPdfResult(blob, duration);
     },
-    onError: (error: any) => {
-      if (error?.error === "rate_limited") {
+    onError: (error: unknown) => {
+      const apiError = error as ApiError | undefined;
+      if (apiError?.error === "rate_limited") {
         const retryAfter = Number(
-          (error?.details as { retryAfter?: number } | undefined)?.retryAfter ??
+          (apiError.details as { retryAfter?: number } | undefined)?.retryAfter ??
             5
         );
         useEditorStore.getState().setRenderError(null);
@@ -48,17 +52,17 @@ export function usePreviewRender() {
           .setRateLimitUntil(Date.now() + retryAfter * 1000);
         return;
       }
-      const details = error?.details as
+      const details = apiError?.details as
         | { file?: string; line?: number; column?: number }
         | undefined;
-      if (error?.error === "compile_error" && details) {
+      if (apiError?.error === "compile_error" && details) {
         useEditorStore.getState().setRenderError({
-          message: error.message || "Compilation error",
+          message: apiError.message || "Compilation error",
           file: details.file || "main.typ",
           line: details.line || 1,
           column: details.column || 1,
         });
-      } else if (error?.name !== "AbortError") {
+      } else if ((error as { name?: string } | undefined)?.name !== "AbortError") {
         useEditorStore.getState().setRenderError({
           message: "Render failed",
           file: "main.typ",

@@ -3,6 +3,7 @@ import { renderWithProviders } from "../helpers/render";
 import { screen, fireEvent } from "@testing-library/react";
 import { CreateTemplateDialog } from "@/src/components/dashboard/CreateTemplateDialog";
 import { DEFAULT_TEMPLATE_DEFAULTS, DEFAULT_TEMPLATE_SOURCE } from "@/src/lib/template-defaults";
+import { getGuidedTemplatePreset } from "@/src/lib/low-code";
 
 const createMutate = vi.fn();
 const forkMutate = vi.fn();
@@ -76,6 +77,29 @@ describe("CreateTemplateDialog", () => {
 
     expect(forkMutate).toHaveBeenCalledWith(
       { id: "tpl_official", name: "Forked" },
+      expect.any(Object)
+    );
+  });
+
+  it("creates a guided template when guided starter is selected", () => {
+    renderWithProviders(
+      <CreateTemplateDialog open={true} onClose={() => {}} />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText(/invoice template/i), {
+      target: { value: "Guided Invoice" },
+    });
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "guided-invoice" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /create/i }));
+
+    expect(createMutate).toHaveBeenCalledWith(
+      {
+        name: "Guided Invoice",
+        description: null,
+        low_code_spec: getGuidedTemplatePreset("guided-invoice")?.spec,
+      },
       expect.any(Object)
     );
   });

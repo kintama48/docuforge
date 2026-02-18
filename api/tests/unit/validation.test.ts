@@ -11,6 +11,7 @@ import {
   requestUploadUrlSchema,
   renderPreviewSchema,
   createTemplateSchema,
+  publishVersionSchema,
   createApiKeySchema,
 } from '../../src/lib/validation';
 
@@ -309,6 +310,38 @@ describe('validation', () => {
       expect(result.success).toBe(true);
     });
 
+    test('valid low-code preview request passes without source', () => {
+      const input = {
+        low_code_spec: {
+          version: 1,
+          blocks: [
+            {
+              type: 'header',
+              props: {
+                title: '{{invoice.title}}',
+              },
+            },
+          ],
+        },
+        data: {},
+      };
+
+      const result = renderPreviewSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+
+    test('preview request with neither source nor low-code spec is rejected', () => {
+      const input = {
+        data: {},
+      };
+
+      const result = renderPreviewSchema.safeParse(input);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message.includes('Either source or low_code_spec'))).toBe(true);
+      }
+    });
+
     test('source over 100KB rejected', () => {
       const input = {
         source: 'x'.repeat(103 * 1024), // Over 100KB
@@ -397,6 +430,64 @@ describe('validation', () => {
       };
 
       const result = createTemplateSchema.safeParse(input);
+      expect(result.success).toBe(false);
+    });
+
+    test('low-code spec without source passes', () => {
+      const input = {
+        name: 'Low-code invoice',
+        low_code_spec: {
+          version: 1,
+          blocks: [
+            {
+              type: 'header',
+              props: {
+                title: '{{invoice.title}}',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = createTemplateSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+
+    test('source and low-code spec both missing are rejected', () => {
+      const input = {
+        name: 'Invalid template',
+      };
+
+      const result = createTemplateSchema.safeParse(input);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message.includes('Either source or low_code_spec'))).toBe(true);
+      }
+    });
+  });
+
+  describe('publishVersionSchema', () => {
+    test('accepts low-code spec without source', () => {
+      const input = {
+        low_code_spec: {
+          version: 1,
+          blocks: [
+            {
+              type: 'paragraph',
+              props: {
+                text: '{{invoice.notes}}',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = publishVersionSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+
+    test('rejects request when source and low-code spec are missing', () => {
+      const result = publishVersionSchema.safeParse({});
       expect(result.success).toBe(false);
     });
   });

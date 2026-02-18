@@ -55,6 +55,10 @@ describe("EditorToolbar", () => {
         onFork={onFork}
         onToggleAutoRender={onToggleAutoRender}
         autoRender={true}
+        isLowCodeMode={false}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={() => {}}
+        onOpenBlocks={() => {}}
       />
     );
 
@@ -123,6 +127,10 @@ describe("EditorToolbar", () => {
         onFork={onFork}
         onToggleAutoRender={onToggleAutoRender}
         autoRender={false}
+        isLowCodeMode={false}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={() => {}}
+        onOpenBlocks={() => {}}
       />
     );
 
@@ -154,6 +162,10 @@ describe("EditorToolbar", () => {
         onFork={() => {}}
         onToggleAutoRender={() => {}}
         autoRender={false}
+        isLowCodeMode={false}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={() => {}}
+        onOpenBlocks={() => {}}
       />
     );
 
@@ -176,6 +188,10 @@ describe("EditorToolbar", () => {
         onFork={() => {}}
         onToggleAutoRender={() => {}}
         autoRender={true}
+        isLowCodeMode={false}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={() => {}}
+        onOpenBlocks={() => {}}
       />
     );
 
@@ -194,6 +210,10 @@ describe("EditorToolbar", () => {
         onFork={() => {}}
         onToggleAutoRender={() => {}}
         autoRender={false}
+        isLowCodeMode={false}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={() => {}}
+        onOpenBlocks={() => {}}
       />
     );
 
@@ -201,5 +221,51 @@ describe("EditorToolbar", () => {
     await waitFor(() =>
       expect(screen.getByText(/auto render: off/i)).toBeInTheDocument()
     );
+  });
+
+  it("shows advanced typst toggle in low-code mode", () => {
+    const onToggleAdvancedTypst = vi.fn();
+
+    renderWithProviders(
+      <EditorToolbar
+        onPublish={() => {}}
+        onOpenHistory={() => {}}
+        onOpenShortcuts={() => {}}
+        onOpenSettings={() => {}}
+        onFork={() => {}}
+        onToggleAutoRender={() => {}}
+        autoRender={false}
+        isLowCodeMode={true}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={onToggleAdvancedTypst}
+        onOpenBlocks={() => {}}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /advanced typst: off/i }));
+    expect(onToggleAdvancedTypst).toHaveBeenCalled();
+  });
+
+  it("opens blocks from toolbar in low-code mode", () => {
+    const onOpenBlocks = vi.fn();
+
+    renderWithProviders(
+      <EditorToolbar
+        onPublish={() => {}}
+        onOpenHistory={() => {}}
+        onOpenShortcuts={() => {}}
+        onOpenSettings={() => {}}
+        onFork={() => {}}
+        onToggleAutoRender={() => {}}
+        autoRender={false}
+        isLowCodeMode={true}
+        advancedTypstEnabled={false}
+        onToggleAdvancedTypst={() => {}}
+        onOpenBlocks={onOpenBlocks}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^blocks$/i }));
+    expect(onOpenBlocks).toHaveBeenCalled();
   });
 });

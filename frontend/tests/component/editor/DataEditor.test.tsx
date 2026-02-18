@@ -19,6 +19,8 @@ describe("DataEditor", () => {
     useEditorStore.setState({
       dataString: "{}",
       dataError: "Invalid JSON",
+      source: '#let data = sys.inputs\n#data.at("customer.name", default: "")',
+      lowCodeSpec: null,
       setData: vi.fn(),
     } as any);
   });
@@ -35,5 +37,17 @@ describe("DataEditor", () => {
       typeof vi.fn
     >;
     expect(setData).toHaveBeenCalledWith('{ "ok": true }');
+  });
+
+  it("generates sample JSON from detected dynamic fields", () => {
+    renderWithProviders(<DataEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: /generate sample json/i }));
+    const setData = useEditorStore.getState().setData as unknown as ReturnType<
+      typeof vi.fn
+    >;
+    expect(setData).toHaveBeenCalledWith(
+      JSON.stringify({ customer: { name: "" } }, null, 2)
+    );
   });
 });

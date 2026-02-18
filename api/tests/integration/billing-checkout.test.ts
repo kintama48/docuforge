@@ -1,75 +1,30 @@
 /**
- * Integration tests for billing checkout and webhook flows.
+ * Integration tests for provider-switched billing checkout and webhook flows.
  */
+import { createHmac } from 'node:crypto';
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { createApp } from '../../src/app';
 import { initTestDb, getDb, resetDb, schema } from '../../src/db/client';
 import { setupTestEnv, createTestUser, getAuthHeaders } from '../setup';
 import { createTestJwt } from '../helpers/auth';
-import { setStripeClient } from '../../src/routes/billing';
-import { env } from '../../src/config/env';
-import { eq } from 'drizzle-orm';
+import { reloadEnv, env } from '../../src/config/env';
 
 const originalEnv = { ...process.env };
 
-function createStripeStub() {
-  let customerCreateCalls = 0;
-  let sessionCreateCalls = 0;
-  let shouldThrowSignature = false;
-
-  const stub = {
-    customers: {
-      create: async () => {
-        customerCreateCalls += 1;
-        return { id: 'cus_test' };
-      },
-    },
-    checkout: {
-      sessions: {
-        create: async () => {
-          sessionCreateCalls += 1;
-          return { url: 'https://checkout.test/session' };
-        },
-      },
-    },
-    webhooks: {
-      constructEventAsync: async (body: string) => {
-        if (shouldThrowSignature) {
-          throw new Error('invalid signature');
-        }
-        return JSON.parse(body);
-      },
-    },
-    __state: {
-      get customerCalls() {
-        return customerCreateCalls;
-      },
-      get sessionCalls() {
-        return sessionCreateCalls;
-      },
-      setThrowSignature(value: boolean) {
-        shouldThrowSignature = value;
-      },
-    },
-  };
-
-  return stub;
-}
-
 describe('Billing checkout and webhook', () => {
   let app: ReturnType<typeof createApp>;
-  let stripeStub: ReturnType<typeof createStripeStub>;
+  let originalFetch: typeof globalThis.fetch;
 
   beforeEach(async () => {
     setupTestEnv('http://127.0.0.1:3001');
     await initTestDb();
-    stripeStub = createStripeStub();
-    setStripeClient(stripeStub as any);
     app = createApp();
+    originalFetch = globalThis.fetch;
   });
 
   afterEach(() => {
-    setStripeClient(null);
+    globalThis.fetch = originalFetch;
     resetDb();
     for (const key of Object.keys(process.env)) {
       if (!(key in originalEnv)) {
@@ -77,11 +32,52 @@ describe('Billing checkout and webhook', () => {
       }
     }
     Object.assign(process.env, originalEnv);
+    reloadEnv();
   });
 
-  it('creates checkout session and stores stripe customer', async () => {
-    const user = await createTestUser(getDb() as any);
+  it('returns 503 when billing is disabled', async () => {
+    process.env.BILLING_ENABLED = 'false';
+    process.env.BILLING_PROVIDER = 'none';
+    reloadEnv();
 
+    const user = await createTestUser(getDb() as any);
+    const response = await app.request('/v1/billing/checkout', {
+      method: 'POST',
+      headers: getAuthHeaders(user, false),
+      body: JSON.stringify({ plan: 'starter' }),
+    });
+
+    expect(response.status).toBe(503);
+  });
+
+  it('creates a Paddle checkout URL', async () => {
+    process.env.BILLING_ENABLED = 'true';
+    process.env.BILLING_PROVIDER = 'paddle';
+    process.env.PADDLE_API_KEY = 'pdl_test';
+    process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
+    process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
+    reloadEnv();
+
+    let providerCalls = 0;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('/transactions')) {
+        providerCalls += 1;
+      }
+      return new Response(
+        JSON.stringify({
+          data: {
+            checkout: {
+              url: 'https://checkout.paddle.test/session',
+            },
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }) as typeof fetch;
+
+    const user = await createTestUser(getDb() as any);
     const response = await app.request('/v1/billing/checkout', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
@@ -90,18 +86,63 @@ describe('Billing checkout and webhook', () => {
 
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.checkout_url).toBe('https://checkout.test/session');
-    expect(stripeStub.__state.customerCalls).toBe(1);
-    expect(stripeStub.__state.sessionCalls).toBe(1);
+    expect(body.checkout_url).toBe('https://checkout.paddle.test/session');
+    expect(body.provider).toBe('paddle');
+    expect(providerCalls).toBe(1);
+  });
 
-    const db = getDb();
-    const [record] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
-    expect(record?.stripeCustomerId).toBe('cus_test');
+  it('creates a Lemon Squeezy checkout URL', async () => {
+    process.env.BILLING_ENABLED = 'true';
+    process.env.BILLING_PROVIDER = 'lemonsqueezy';
+    process.env.LEMONSQUEEZY_API_KEY = 'ls_test';
+    process.env.LEMONSQUEEZY_WEBHOOK_SECRET = 'ls_whsec';
+    process.env.LEMONSQUEEZY_STORE_ID = '111';
+    process.env.LEMONSQUEEZY_VARIANT_ID_STARTER = '222';
+    process.env.LEMONSQUEEZY_VARIANT_ID_PRO = '333';
+    reloadEnv();
+
+    let providerCalls = 0;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('/checkouts')) {
+        providerCalls += 1;
+      }
+      return new Response(
+        JSON.stringify({
+          data: {
+            attributes: {
+              url: 'https://checkout.lemonsqueezy.test/session',
+            },
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/vnd.api+json' } }
+      );
+    }) as typeof fetch;
+
+    const user = await createTestUser(getDb() as any);
+    const response = await app.request('/v1/billing/checkout', {
+      method: 'POST',
+      headers: getAuthHeaders(user, false),
+      body: JSON.stringify({ plan: 'pro' }),
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.checkout_url).toBe('https://checkout.lemonsqueezy.test/session');
+    expect(body.provider).toBe('lemonsqueezy');
+    expect(providerCalls).toBe(1);
   });
 
   it('returns internal error when user is missing', async () => {
-    const token = await createTestJwt('usr_missing', 'missing@example.com');
+    process.env.BILLING_ENABLED = 'true';
+    process.env.BILLING_PROVIDER = 'paddle';
+    process.env.PADDLE_API_KEY = 'pdl_test';
+    process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
+    process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
+    reloadEnv();
 
+    const token = await createTestJwt('usr_missing', 'missing@example.com');
     const response = await app.request('/v1/billing/checkout', {
       method: 'POST',
       headers: {
@@ -114,120 +155,104 @@ describe('Billing checkout and webhook', () => {
     expect(response.status).toBe(500);
   });
 
-  it('fails when price is not configured', async () => {
-    const originalPriceId = env.STRIPE_STARTER_PRICE_ID;
-    env.STRIPE_STARTER_PRICE_ID = '';
+  it('rejects webhook without signature (paddle)', async () => {
+    process.env.BILLING_ENABLED = 'true';
+    process.env.BILLING_PROVIDER = 'paddle';
+    process.env.PADDLE_API_KEY = 'pdl_test';
+    process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
+    process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
+    reloadEnv();
 
-    const user = await createTestUser(getDb() as any);
-    const db = getDb();
-    await db
-      .update(schema.users)
-      .set({ stripeCustomerId: 'cus_existing' })
-      .where(eq(schema.users.id, user.id));
-
-    const response = await app.request('/v1/billing/checkout', {
-      method: 'POST',
-      headers: getAuthHeaders(user, false),
-      body: JSON.stringify({ plan: 'starter' }),
-    });
-
-    env.STRIPE_STARTER_PRICE_ID = originalPriceId;
-    expect(response.status).toBe(500);
-  });
-
-  it('rejects webhook without signature', async () => {
     const response = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      body: JSON.stringify({ type: 'checkout.session.completed', data: { object: {} } }),
+      body: JSON.stringify({ event_type: 'transaction.completed' }),
     });
 
     expect(response.status).toBe(422);
   });
 
-  it('rejects webhook with invalid signature', async () => {
-    stripeStub.__state.setThrowSignature(true);
+  it('rejects webhook with invalid signature (lemonsqueezy)', async () => {
+    process.env.BILLING_ENABLED = 'true';
+    process.env.BILLING_PROVIDER = 'lemonsqueezy';
+    process.env.LEMONSQUEEZY_API_KEY = 'ls_test';
+    process.env.LEMONSQUEEZY_WEBHOOK_SECRET = 'ls_whsec';
+    process.env.LEMONSQUEEZY_STORE_ID = '111';
+    process.env.LEMONSQUEEZY_VARIANT_ID_STARTER = '222';
+    process.env.LEMONSQUEEZY_VARIANT_ID_PRO = '333';
+    reloadEnv();
 
     const response = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
-      body: JSON.stringify({ type: 'checkout.session.completed', data: { object: {} } }),
+      headers: { 'x-signature': 'invalid' },
+      body: JSON.stringify({ meta: { event_name: 'subscription_created' } }),
     });
 
     expect(response.status).toBe(422);
   });
 
-  it('handles checkout session completed webhook', async () => {
-    const user = await createTestUser(getDb() as any);
+  it('handles Paddle upgrade and cancel webhooks', async () => {
+    process.env.BILLING_ENABLED = 'true';
+    process.env.BILLING_PROVIDER = 'paddle';
+    process.env.PADDLE_API_KEY = 'pdl_test';
+    process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
+    process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
+    reloadEnv();
 
-    const event = {
-      type: 'checkout.session.completed',
-      data: {
-        object: {
-          customer: 'cus_checkout',
-          metadata: { userId: user.id, plan: 'starter' },
-        },
-      },
-    };
-
-    const response = await app.request('/v1/billing/webhook', {
-      method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
-      body: JSON.stringify(event),
-    });
-
-    expect(response.status).toBe(200);
-
-    const db = getDb();
-    const [record] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
-    expect(record?.planTier).toBe('starter');
-    expect(record?.stripeCustomerId).toBe('cus_checkout');
-  });
-
-  it('handles subscription updated and deleted webhooks', async () => {
     const user = await createTestUser(getDb() as any);
     const db = getDb();
-    await db
-      .update(schema.users)
-      .set({ stripeCustomerId: 'cus_sub' })
-      .where(eq(schema.users.id, user.id));
 
-    const updateEvent = {
-      type: 'customer.subscription.updated',
+    const upgradePayload = {
+      event_type: 'transaction.completed',
       data: {
-        object: {
-          customer: 'cus_sub',
-          items: { data: [{ price: { id: process.env.STRIPE_PRO_PRICE_ID } }] },
+        customer_id: 'cus_paddle_1',
+        custom_data: {
+          userId: user.id,
+          plan: 'starter',
         },
       },
     };
+    const upgradeBody = JSON.stringify(upgradePayload);
+    const ts = Math.floor(Date.now() / 1000).toString();
+    const h1 = createHmac('sha256', env.PADDLE_WEBHOOK_SECRET || '')
+      .update(`${ts}:${upgradeBody}`)
+      .digest('hex');
 
-    const updateResponse = await app.request('/v1/billing/webhook', {
+    const upgradeResponse = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
-      body: JSON.stringify(updateEvent),
+      headers: {
+        'paddle-signature': `ts=${ts};h1=${h1}`,
+      },
+      body: upgradeBody,
     });
-    expect(updateResponse.status).toBe(200);
+    expect(upgradeResponse.status).toBe(200);
 
-    const [updated] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
-    expect(updated?.planTier).toBe('pro');
+    const [upgraded] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
+    expect(upgraded?.planTier).toBe('starter');
 
-    const deleteEvent = {
-      type: 'customer.subscription.deleted',
+    const cancelPayload = {
+      event_type: 'subscription.canceled',
       data: {
-        object: {
-          customer: 'cus_sub',
-        },
+        customer_id: 'cus_paddle_1',
       },
     };
+    const cancelBody = JSON.stringify(cancelPayload);
+    const cancelTs = (Math.floor(Date.now() / 1000) + 1).toString();
+    const cancelH1 = createHmac('sha256', env.PADDLE_WEBHOOK_SECRET || '')
+      .update(`${cancelTs}:${cancelBody}`)
+      .digest('hex');
 
-    const deleteResponse = await app.request('/v1/billing/webhook', {
+    const cancelResponse = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
-      body: JSON.stringify(deleteEvent),
+      headers: {
+        'paddle-signature': `ts=${cancelTs};h1=${cancelH1}`,
+      },
+      body: cancelBody,
     });
-    expect(deleteResponse.status).toBe(200);
+    expect(cancelResponse.status).toBe(200);
 
-    const [deleted] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
-    expect(deleted?.planTier).toBe('free');
+    const [downgraded] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
+    expect(downgraded?.planTier).toBe('free');
   });
 });

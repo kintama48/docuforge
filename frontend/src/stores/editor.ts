@@ -3,24 +3,37 @@
 import { create } from "zustand";
 import type * as Monaco from "monaco-editor";
 import type { TemplateDetail, TemplateVersion } from "@/src/lib/api-types";
+import type { LowCodeSpec } from "@/src/lib/low-code";
+import { cloneLowCodeSpec } from "@/src/lib/low-code";
 
 // FE-C3 fix: Use proper Monaco types instead of 'any'
 type MonacoEditor = Monaco.editor.IStandaloneCodeEditor;
 type MonacoInstance = typeof Monaco;
 
 type RenderError = { message: string; file: string; line: number; column: number };
+type EditorMode = "code" | "low-code";
+
+function specsEqual(a: LowCodeSpec | null, b: LowCodeSpec | null): boolean {
+  if (a === null && b === null) return true;
+  if (a === null || b === null) return false;
+  return JSON.stringify(a) === JSON.stringify(b);
+}
 
 type EditorState = {
   templateId: string | null;
   templateName: string;
   templateDescription: string;
   source: string;
+  lowCodeSpec: LowCodeSpec | null;
+  editorMode: EditorMode;
+  advancedTypstEnabled: boolean;
   files: Record<string, string>;
   activeFile: string;
   data: Record<string, unknown>;
   dataString: string;
   isDirty: boolean;
   lastSavedSource: string;
+  lastSavedLowCodeSpec: LowCodeSpec | null;
   publishedVersion: number | null;
   renderStatus: "idle" | "rendering" | "success" | "error";
   renderError: RenderError | null;
@@ -38,6 +51,10 @@ type EditorState = {
   loadTemplate: (template: TemplateDetail) => void;
   loadVersion: (version: TemplateVersion) => void;
   setSource: (source: string) => void;
+  setLowCodeSpec: (spec: LowCodeSpec | null) => void;
+  setEditorMode: (mode: EditorMode) => void;
+  setAdvancedTypstEnabled: (value: boolean) => void;
+  detachFromLowCode: () => void;
   setTemplateName: (name: string) => void;
   setTemplateDescription: (description: string) => void;
   setActiveFile: (filename: string) => void;
@@ -67,12 +84,16 @@ const initialState = {
   templateName: "",
   templateDescription: "",
   source: "",
+  lowCodeSpec: null,
+  editorMode: "code" as EditorMode,
+  advancedTypstEnabled: false,
   files: {},
   activeFile: "main.typ",
   data: {},
   dataString: "{}",
   isDirty: false,
   lastSavedSource: "",
+  lastSavedLowCodeSpec: null,
   publishedVersion: null,
   renderStatus: "idle" as const,
   renderError: null,
@@ -94,12 +115,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   loadTemplate: (template) => {
     const defaults = template.live_version?.defaults || {};
     const source = template.live_version?.source || "";
+    const lowCodeSpec = (template.live_version?.low_code_spec as LowCodeSpec | null) ?? null;
     const files = template.live_version?.files || {};
     set({
       templateId: template.id,
       templateName: template.name,
       templateDescription: template.description || "",
       source,
+      lowCodeSpec: lowCodeSpec ? cloneLowCodeSpec(lowCodeSpec) : null,
+      editorMode: lowCodeSpec ? "low-code" : "code",
+      advancedTypstEnabled: false,
       files,
       activeFile: "main.typ",
       data: defaults,
@@ -107,6 +132,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       dataError: null,
       isDirty: false,
       lastSavedSource: source,
+      lastSavedLowCodeSpec: lowCodeSpec ? cloneLowCodeSpec(lowCodeSpec) : null,
       publishedVersion: template.live_version?.version_number ?? null,
       readOnly: false,
       viewingVersion: null,
@@ -115,9 +141,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   loadVersion: (version) => {
     const defaults = version.defaults || {};
     const source = version.source || "";
+    const lowCodeSpec = (version.low_code_spec as LowCodeSpec | null) ?? null;
     const files = version.files || {};
     set({
       source,
+      lowCodeSpec: lowCodeSpec ? cloneLowCodeSpec(lowCodeSpec) : null,
+      editorMode: lowCodeSpec ? "low-code" : "code",
+      advancedTypstEnabled: false,
       files,
       activeFile: "main.typ",
       data: defaults,
@@ -125,6 +155,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       dataError: null,
       isDirty: false,
       lastSavedSource: source,
+      lastSavedLowCodeSpec: lowCodeSpec ? cloneLowCodeSpec(lowCodeSpec) : null,
     });
   },
   setSource: (source) => {
@@ -134,6 +165,29 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       isDirty: source !== lastSavedSource,
     });
   },
+  setLowCodeSpec: (spec) => {
+    set((state) => {
+      const normalizedSpec = spec ? cloneLowCodeSpec(spec) : null;
+      return {
+        lowCodeSpec: normalizedSpec,
+        editorMode: normalizedSpec ? "low-code" : "code",
+        isDirty:
+          state.source !== state.lastSavedSource ||
+          !specsEqual(normalizedSpec, state.lastSavedLowCodeSpec),
+      };
+    });
+  },
+  setEditorMode: (mode) => set({ editorMode: mode }),
+  setAdvancedTypstEnabled: (value) => set({ advancedTypstEnabled: value }),
+  detachFromLowCode: () =>
+    set((state) => ({
+      lowCodeSpec: null,
+      editorMode: "code",
+      advancedTypstEnabled: true,
+      isDirty:
+        state.source !== state.lastSavedSource ||
+        !specsEqual(null, state.lastSavedLowCodeSpec),
+    })),
   setTemplateName: (name) => set({ templateName: name }),
   setTemplateDescription: (description) => set({ templateDescription: description }),
   setActiveFile: (filename) => set({ activeFile: filename }),
@@ -193,13 +247,29 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
   },
   setRenderError: (error) => {
+    if (!error) {
+      set({
+        renderError: null,
+        renderStatus: "idle",
+      });
+      return;
+    }
+    const currentUrl = get().pdfUrl;
+    if (currentUrl) URL.revokeObjectURL(currentUrl);
     set({
       renderError: error,
-      renderStatus: error ? "error" : "idle",
+      renderStatus: "error",
+      pdfBlob: null,
+      pdfUrl: null,
     });
   },
   setRateLimitUntil: (value) => set({ rateLimitUntil: value }),
-  markClean: () => set({ isDirty: false, lastSavedSource: get().source }),
+  markClean: () =>
+    set({
+      isDirty: false,
+      lastSavedSource: get().source,
+      lastSavedLowCodeSpec: get().lowCodeSpec ? cloneLowCodeSpec(get().lowCodeSpec!) : null,
+    }),
   setReadOnly: (value) => set({ readOnly: value }),
   setViewingVersion: (version) => set({ viewingVersion: version }),
   setPublishedVersion: (version) => set({ publishedVersion: version }),

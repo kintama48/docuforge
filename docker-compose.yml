@@ -17,10 +17,14 @@ services:
       DATABASE_URL: file:/data/docuforge.db
       APP_URL: http://localhost:5173
       API_URL: http://localhost:3000
+      REDIS_URL: redis://redis:6379
+      RENDER_QUEUE_ENABLED: "true"
+      RENDER_QUEUE_AUTO_START_WORKER: "true"
     volumes:
       - api-data:/data
     depends_on:
       - engine
+      - redis
 
   frontend:
     build: ./frontend
@@ -33,5 +37,14 @@ services:
     depends_on:
       - api
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
 volumes:
   api-data:
+  redis-data:

@@ -2,7 +2,6 @@
 
 import { AppShell } from "@/src/components/layout/AppShell";
 import { ProtectedRoute } from "@/src/components/auth/ProtectedRoute";
-import { useApiKeys } from "@/src/hooks/use-api-keys";
 import { useUsage } from "@/src/hooks/use-usage";
 import { useAuthStore } from "@/src/stores/auth";
 import { useCreateCheckout } from "@/src/hooks/use-billing";
@@ -13,15 +12,35 @@ import { QuickStartGuide } from "@/src/components/settings/QuickStartGuide";
 import { PlanSection } from "@/src/components/settings/PlanSection";
 import { toast } from "sonner";
 import { useI18n } from "@/src/lib/i18n";
+import { env } from "@/src/config/env";
 
 export default function SettingsPage() {
   const { messages } = useI18n();
   const { data: usage } = useUsage();
-  const { data: keys } = useApiKeys();
   const user = useAuthStore((state) => state.user);
   const createCheckout = useCreateCheckout();
-  const apiKey = keys?.keys?.[0]?.prefix || "docu_live_...";
-  const portalUrl = process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL;
+  const billingEnabled = env.billingEnabled && env.billingProvider !== "none";
+  const portalUrl = env.billingPortalUrl;
+
+  const handleUpgrade = (plan: "starter" | "pro") => {
+    if (!billingEnabled) {
+      toast.info("Billing is currently disabled.");
+      return;
+    }
+    createCheckout.mutate({ plan });
+  };
+
+  const handleManage = () => {
+    if (!billingEnabled) {
+      toast.info("Billing is currently disabled.");
+      return;
+    }
+    if (portalUrl) {
+      window.location.href = portalUrl;
+      return;
+    }
+    toast.info(messages.settings.portalNotConfigured);
+  };
 
   return (
     <ProtectedRoute>
@@ -30,29 +49,19 @@ export default function SettingsPage() {
           <ProfileSection
             email={user?.email}
             plan={user?.plan}
-            onUpgrade={(plan) => createCheckout.mutate({ plan })}
-            onManage={() => {
-              if (portalUrl) {
-                window.location.href = portalUrl;
-                return;
-              }
-              toast.info(messages.settings.portalNotConfigured);
-            }}
+            billingEnabled={billingEnabled}
+            onUpgrade={handleUpgrade}
+            onManage={handleManage}
           />
           <PlanSection
             plan={user?.plan}
-            onUpgrade={(plan) => createCheckout.mutate({ plan })}
-            onManage={() => {
-              if (portalUrl) {
-                window.location.href = portalUrl;
-                return;
-              }
-              toast.info(messages.settings.portalNotConfigured);
-            }}
+            billingEnabled={billingEnabled}
+            onUpgrade={handleUpgrade}
+            onManage={handleManage}
           />
           <UsageSection usage={usage} />
           <ApiKeySection />
-          <QuickStartGuide apiKey={apiKey} />
+          <QuickStartGuide />
         </div>
       </AppShell>
     </ProtectedRoute>

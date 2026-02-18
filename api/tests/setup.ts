@@ -22,6 +22,7 @@ import type { PlanTier } from '../src/types';
 import { resetDb, initTestDb, getDb, schema as dbSchema } from '../src/db/client';
 import { createApp } from '../src/app';
 import { reloadEnv } from '../src/config/env';
+import { clearResolvedAssetCache } from '../src/services/asset';
 
 // Re-export helpers for convenience
 export { createTestDatabase, closeTestDatabase, type TestDb, schema } from './helpers/db';
@@ -29,7 +30,6 @@ export { createMockEngine, type MockEngine, type MockEngineConfig, MINIMAL_PDF }
 export { createTestServer, type TestServer } from './helpers/test-server';
 export { createAuthHeaders, createApiKeyHeaders, createTestJwt, createExpiredJwt, createInvalidSignatureJwt, TEST_JWT_SECRET } from './helpers/auth';
 export * from './helpers/fixtures';
-export * from './helpers/mock-stripe';
 
 /**
  * Test context that holds all test infrastructure.
@@ -52,13 +52,30 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.JWT_SECRET = TEST_JWT_SECRET;
   process.env.JWT_EXPIRY = '1h';
   process.env.ENGINE_TIMEOUT_MS = '5000';
+  process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+  process.env.RENDER_QUEUE_ENABLED = 'false';
+  process.env.RENDER_QUEUE_AUTO_START_WORKER = 'false';
+  process.env.RENDER_QUEUE_NAME = 'docuforge-render-test';
+  process.env.RENDER_QUEUE_CONCURRENCY = '1';
+  process.env.RENDER_QUEUE_ATTEMPTS = '1';
+  process.env.RENDER_QUEUE_BACKOFF_MS = '1';
+  process.env.RENDER_QUEUE_RESULT_TTL_SECONDS = '60';
   process.env.FREE_MONTHLY_LIMIT = '500';
   process.env.STARTER_MONTHLY_LIMIT = '10000';
   process.env.PRO_MONTHLY_LIMIT = '50000';
-  process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret_12345';
-  process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
-  process.env.STRIPE_STARTER_PRICE_ID = 'price_starter_test';
-  process.env.STRIPE_PRO_PRICE_ID = 'price_pro_test';
+  process.env.BILLING_ENABLED = 'false';
+  process.env.BILLING_PROVIDER = 'none';
+  process.env.BILLING_SUCCESS_URL = 'http://localhost:5173/settings?upgraded=true';
+  process.env.BILLING_CANCEL_URL = 'http://localhost:5173/settings';
+  process.env.PADDLE_API_KEY = '';
+  process.env.PADDLE_WEBHOOK_SECRET = '';
+  process.env.PADDLE_PRICE_ID_STARTER = '';
+  process.env.PADDLE_PRICE_ID_PRO = '';
+  process.env.LEMONSQUEEZY_API_KEY = '';
+  process.env.LEMONSQUEEZY_WEBHOOK_SECRET = '';
+  process.env.LEMONSQUEEZY_STORE_ID = '';
+  process.env.LEMONSQUEEZY_VARIANT_ID_STARTER = '';
+  process.env.LEMONSQUEEZY_VARIANT_ID_PRO = '';
   process.env.R2_ENDPOINT = 'https://fake.r2.cloudflarestorage.com';
   process.env.R2_ACCESS_KEY_ID = 'fake_access_key';
   process.env.R2_SECRET_ACCESS_KEY = 'fake_secret_key';
@@ -104,6 +121,7 @@ export async function createTestContext(engineConfig?: MockEngineConfig): Promis
     cleanup: async () => {
       await engine.stop();
       closeTestDatabase(sqlite);
+      clearResolvedAssetCache();
       resetDb();
     },
   };
@@ -117,7 +135,7 @@ export interface CreateTestUserOptions {
   password?: string;
   planTier?: PlanTier;
   planRenders?: number;
-  stripeCustomerId?: string;
+  billingCustomerId?: string;
 }
 
 /**
@@ -155,7 +173,7 @@ export async function createTestUser(
     id: userId,
     email,
     passwordHash,
-    stripeCustomerId: options.stripeCustomerId || null,
+    billingCustomerId: options.billingCustomerId || null,
     planTier,
     planRenders,
     createdAt: now,
@@ -252,6 +270,7 @@ export interface CreateTestTemplateOptions {
   name?: string;
   description?: string;
   source?: string;
+  lowCodeSpec?: Record<string, unknown>;
   files?: Record<string, string>;
   defaults?: Record<string, unknown>;
   isPublic?: boolean;
@@ -302,6 +321,7 @@ export async function createTestTemplate(
     source,
     files: options.files || null,
     defaults: options.defaults || null,
+    lowCodeSpec: options.lowCodeSpec || null,
     commitMessage: options.commitMessage || 'Initial version',
     createdAt: now,
   });
