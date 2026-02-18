@@ -7,11 +7,13 @@ import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
+import { getLocalizedNavLabels } from "@/src/lib/marketing-nav";
 
 export function SiteHeader() {
   const { messages, locale } = useI18n();
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
+  const navLabels = getLocalizedNavLabels(locale);
   return (
     <header className="border-b border-[var(--line)] bg-[var(--bg)]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
@@ -34,6 +36,12 @@ export function SiteHeader() {
           </Link>
           <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
             {messages.nav.docs}
+          </Link>
+          <Link href={localePath("/blog")} className="hover:text-[var(--ink)]">
+            {navLabels.blog}
+          </Link>
+          <Link href={localePath("/playground")} className="hover:text-[var(--ink)]">
+            {navLabels.playground}
           </Link>
           <Link href={localePath("/#api")} className="hover:text-[var(--ink)]">
             {messages.nav.api}

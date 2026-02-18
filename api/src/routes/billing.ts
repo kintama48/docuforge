@@ -14,7 +14,7 @@ const billing = new Hono();
 // Usage, checkout, and webhook — all must be fresh
 billing.use('*', noCache);
 
-type PlanTier = 'starter' | 'pro';
+type PlanTier = 'dev' | 'starter' | 'pro';
 
 type BillingEvent = {
   userId?: string;
@@ -33,7 +33,7 @@ function isBillingActive() {
 }
 
 function normalizePlan(value: unknown): PlanTier | undefined {
-  if (value === 'starter' || value === 'pro') {
+  if (value === 'dev' || value === 'starter' || value === 'pro') {
     return value;
   }
   return undefined;
@@ -42,6 +42,7 @@ function normalizePlan(value: unknown): PlanTier | undefined {
 function mapPaddlePriceToPlan(priceId: unknown): PlanTier | undefined {
   const id = typeof priceId === 'string' ? priceId : '';
   if (id && id === env.PADDLE_PRICE_ID_PRO) return 'pro';
+  if (id && id === env.PADDLE_PRICE_ID_DEV) return 'dev';
   if (id && id === env.PADDLE_PRICE_ID_STARTER) return 'starter';
   return undefined;
 }
@@ -49,6 +50,7 @@ function mapPaddlePriceToPlan(priceId: unknown): PlanTier | undefined {
 function mapLemonVariantToPlan(variantId: unknown): PlanTier | undefined {
   const id = String(variantId || '');
   if (id && id === env.LEMONSQUEEZY_VARIANT_ID_PRO) return 'pro';
+  if (id && id === env.LEMONSQUEEZY_VARIANT_ID_DEV) return 'dev';
   if (id && id === env.LEMONSQUEEZY_VARIANT_ID_STARTER) return 'starter';
   return undefined;
 }
@@ -96,7 +98,12 @@ function verifyLemonSignature(rawBody: string, signatureHeader: string): boolean
 }
 
 async function createPaddleCheckout(user: { id: string; email: string }, plan: PlanTier) {
-  const priceId = plan === 'pro' ? env.PADDLE_PRICE_ID_PRO : env.PADDLE_PRICE_ID_STARTER;
+  const priceId =
+    plan === 'pro'
+      ? env.PADDLE_PRICE_ID_PRO
+      : plan === 'starter'
+        ? env.PADDLE_PRICE_ID_STARTER
+        : env.PADDLE_PRICE_ID_DEV;
   if (!priceId || !env.PADDLE_API_KEY) {
     throw new InternalError('Paddle billing is not configured');
   }
@@ -136,7 +143,11 @@ async function createPaddleCheckout(user: { id: string; email: string }, plan: P
 
 async function createLemonCheckout(user: { id: string; email: string }, plan: PlanTier) {
   const variantId =
-    plan === 'pro' ? env.LEMONSQUEEZY_VARIANT_ID_PRO : env.LEMONSQUEEZY_VARIANT_ID_STARTER;
+    plan === 'pro'
+      ? env.LEMONSQUEEZY_VARIANT_ID_PRO
+      : plan === 'starter'
+        ? env.LEMONSQUEEZY_VARIANT_ID_STARTER
+        : env.LEMONSQUEEZY_VARIANT_ID_DEV;
   if (!variantId || !env.LEMONSQUEEZY_API_KEY || !env.LEMONSQUEEZY_STORE_ID) {
     throw new InternalError('Lemon Squeezy billing is not configured');
   }

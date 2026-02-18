@@ -9,10 +9,16 @@ type PlanLimits = {
 
 export const planLimits: Record<string, PlanLimits> = {
   free: {
-    renders: 500,
+    renders: 1000,
     aiCredits: 5,
     templates: 10,
     assetsBytes: 50 * 1024 * 1024,
+  },
+  dev: {
+    renders: 3000,
+    aiCredits: 10,
+    templates: 30,
+    assetsBytes: 150 * 1024 * 1024,
   },
   starter: {
     renders: 10_000,

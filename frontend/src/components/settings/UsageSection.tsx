@@ -61,6 +61,7 @@ export function UsageSection({ usage }: { usage?: UsageResponse }) {
               <tr>
                 <th className="py-2">{messages.settings.feature}</th>
                 <th className="py-2">{messages.settings.free}</th>
+                <th className="py-2">Dev</th>
                 <th className="py-2">{messages.settings.starter}</th>
                 <th className="py-2">{messages.settings.pro}</th>
               </tr>
@@ -81,6 +82,7 @@ export function UsageSection({ usage }: { usage?: UsageResponse }) {
                   <tr key={label} className="border-t border-[var(--line)]">
                     <td className="py-2 text-[var(--ink)]">{label}</td>
                     <td className="py-2">{fmt(planLimits.free[key as keyof typeof planLimits.free])}</td>
+                    <td className="py-2">{fmt(planLimits.dev[key as keyof typeof planLimits.dev])}</td>
                     <td className="py-2">{fmt(planLimits.starter[key as keyof typeof planLimits.starter])}</td>
                     <td className="py-2">{fmt(planLimits.pro[key as keyof typeof planLimits.pro])}</td>
                   </tr>

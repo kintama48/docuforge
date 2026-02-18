@@ -51,6 +51,7 @@ const envSchema = z.object({
   PADDLE_API_KEY: z.string().optional(),
   PADDLE_API_URL: z.string().url().default('https://api.paddle.com'),
   PADDLE_WEBHOOK_SECRET: z.string().optional(),
+  PADDLE_PRICE_ID_DEV: z.string().optional(),
   PADDLE_PRICE_ID_STARTER: z.string().optional(),
   PADDLE_PRICE_ID_PRO: z.string().optional(),
 
@@ -59,6 +60,7 @@ const envSchema = z.object({
   LEMONSQUEEZY_API_URL: z.string().url().default('https://api.lemonsqueezy.com/v1'),
   LEMONSQUEEZY_WEBHOOK_SECRET: z.string().optional(),
   LEMONSQUEEZY_STORE_ID: z.string().optional(),
+  LEMONSQUEEZY_VARIANT_ID_DEV: z.string().optional(),
   LEMONSQUEEZY_VARIANT_ID_STARTER: z.string().optional(),
   LEMONSQUEEZY_VARIANT_ID_PRO: z.string().optional(),
 
@@ -94,7 +96,8 @@ const envSchema = z.object({
   RAG_EMBEDDING_MODEL: z.string().default('text-embedding-004'),
 
   // Limits
-  FREE_MONTHLY_LIMIT: z.coerce.number().default(500),
+  FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
+  DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
   STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
   PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
@@ -116,6 +119,7 @@ const envSchema = z.object({
     const required: Array<keyof typeof value> = [
       'PADDLE_API_KEY',
       'PADDLE_WEBHOOK_SECRET',
+      'PADDLE_PRICE_ID_DEV',
       'PADDLE_PRICE_ID_STARTER',
       'PADDLE_PRICE_ID_PRO',
     ];
@@ -135,6 +139,7 @@ const envSchema = z.object({
       'LEMONSQUEEZY_API_KEY',
       'LEMONSQUEEZY_WEBHOOK_SECRET',
       'LEMONSQUEEZY_STORE_ID',
+      'LEMONSQUEEZY_VARIANT_ID_DEV',
       'LEMONSQUEEZY_VARIANT_ID_STARTER',
       'LEMONSQUEEZY_VARIANT_ID_PRO',
     ];
@@ -191,6 +196,8 @@ export function getPlanLimit(planTier: string): number {
       return env.PRO_MONTHLY_LIMIT;
     case 'starter':
       return env.STARTER_MONTHLY_LIMIT;
+    case 'dev':
+      return env.DEV_MONTHLY_LIMIT;
     default:
       return env.FREE_MONTHLY_LIMIT;
   }

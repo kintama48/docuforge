@@ -6,11 +6,193 @@ import { SiteHeader } from "./components/site-header";
 import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
+import type { Locale } from "@/src/lib/i18n-config";
+
+const blogHighlights: Record<
+  Locale,
+  {
+    label: string;
+    title: string;
+    subtitle: string;
+    cta: string;
+    cards: Array<{ title: string; href: string; keyword: string }>;
+  }
+> = {
+  en: {
+    label: "Growth Content",
+    title: "SEO + GEO guides built for conversion",
+    subtitle:
+      "High-intent technical content targeting developers searching for PDF generation APIs, template automation, and migration paths.",
+    cta: "Browse all guides",
+    cards: [
+      {
+        title: "How to Create an Invoice PDF Template",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "How to Create a Shipping Label PDF Template",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge vs Puppeteer for PDF Generation",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+  fr: {
+    label: "Contenu Croissance",
+    title: "Guides SEO + GEO orientés conversion",
+    subtitle:
+      "Du contenu technique à forte intention pour les équipes qui recherchent une API de génération PDF et l'automatisation de templates.",
+    cta: "Voir tous les guides",
+    cards: [
+      {
+        title: "Comment créer un template PDF facture",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "Comment créer un template PDF étiquette d'expédition",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge vs Puppeteer pour la génération PDF",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+  de: {
+    label: "Wachstums-Content",
+    title: "SEO + GEO Guides für mehr Conversion",
+    subtitle:
+      "Technische Inhalte mit hoher Kaufintention für Teams, die eine PDF-API und Template-Automatisierung suchen.",
+    cta: "Alle Guides öffnen",
+    cards: [
+      {
+        title: "So erstellst du ein Rechnung-PDF-Template",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "So erstellst du ein Versandetikett-PDF-Template",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge vs Puppeteer für PDF-Generierung",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+  it: {
+    label: "Contenuti Growth",
+    title: "Guide SEO + GEO pensate per convertire",
+    subtitle:
+      "Contenuti tecnici ad alta intenzione per team che cercano API PDF e automazione dei template.",
+    cta: "Sfoglia tutte le guide",
+    cards: [
+      {
+        title: "Come creare un template PDF fattura",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "Come creare un template PDF etichetta di spedizione",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge vs Puppeteer per la generazione PDF",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+  es: {
+    label: "Contenido de Growth",
+    title: "Guías SEO + GEO con foco en conversión",
+    subtitle:
+      "Contenido técnico de alta intención para equipos que buscan APIs de generación PDF y automatización de plantillas.",
+    cta: "Ver todas las guías",
+    cards: [
+      {
+        title: "Cómo crear una plantilla PDF de factura",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "Cómo crear una plantilla PDF de etiqueta de envío",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge vs Puppeteer para generación PDF",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+  ar: {
+    label: "محتوى النمو",
+    title: "أدلة SEO و GEO تركّز على التحويل",
+    subtitle:
+      "محتوى تقني عالي النية للفرق التي تبحث عن واجهات API لتوليد PDF وأتمتة القوالب.",
+    cta: "تصفح جميع الأدلة",
+    cards: [
+      {
+        title: "كيفية إنشاء قالب PDF للفواتير",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "كيفية إنشاء قالب PDF لملصق الشحن",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge مقابل Puppeteer لتوليد PDF",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+  zh: {
+    label: "增长内容",
+    title: "面向转化的 SEO + GEO 指南",
+    subtitle:
+      "面向高意向开发者的技术内容，覆盖 PDF 生成 API、模板自动化与迁移方案。",
+    cta: "查看全部指南",
+    cards: [
+      {
+        title: "如何创建发票 PDF 模板",
+        href: "/templates/invoice",
+        keyword: "invoice generation API",
+      },
+      {
+        title: "如何创建物流面单 PDF 模板",
+        href: "/templates/shipping-label",
+        keyword: "shipping label template",
+      },
+      {
+        title: "DocuForge 与 Puppeteer 的 PDF 生成对比",
+        href: "/compare/puppeteer-pdf-generation",
+        keyword: "Puppeteer PDF alternative",
+      },
+    ],
+  },
+};
 
 export default function Home() {
   const { messages, locale } = useI18n();
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
+  const blogCopy = blogHighlights[locale];
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
@@ -339,6 +521,47 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="blogs" className="section-pad scroll-mt-24 border-t border-[var(--line)]">
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  {blogCopy.label}
+                </p>
+                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
+                  {blogCopy.title}
+                </h2>
+                <p className="mt-4 max-w-2xl text-pretty text-base text-[var(--muted)]">
+                  {blogCopy.subtitle}
+                </p>
+              </div>
+              <Link
+                href={localePath("/blog")}
+                className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
+              >
+                {blogCopy.cta}
+              </Link>
+            </div>
+
+            <div className="mt-10 grid gap-5 lg:grid-cols-3">
+              {blogCopy.cards.map((item) => (
+                <Link
+                  key={item.href}
+                  href={localePath(item.href)}
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                    {item.keyword}
+                  </p>
+                  <p className="mt-3 text-lg font-semibold text-[var(--ink)]">
+                    {item.title}
+                  </p>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
