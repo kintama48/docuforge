@@ -6,7 +6,7 @@ export const users = sqliteTable('users', {
   passwordHash: text('password_hash').notNull(),
   billingCustomerId: text('stripe_customer_id'),
   planTier: text('plan_tier').notNull().default('free'),
-  planRenders: integer('plan_renders').notNull().default(500),
+  planRenders: integer('plan_renders').notNull().default(1000),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });

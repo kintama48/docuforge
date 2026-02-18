@@ -15,7 +15,7 @@ describe("PlanSection", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/upgrade to starter/i)).toBeInTheDocument();
     fireEvent.click(screen.getByText(/compare paid plans/i));
-    expect(onUpgrade).toHaveBeenCalledWith("starter");
+    expect(onUpgrade).toHaveBeenCalledWith("dev");
   });
 
   it("shows manage subscription and upgrades on paid plans", () => {

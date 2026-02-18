@@ -55,6 +55,7 @@ describe('Billing checkout and webhook', () => {
     process.env.BILLING_PROVIDER = 'paddle';
     process.env.PADDLE_API_KEY = 'pdl_test';
     process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_DEV = 'pri_dev';
     process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
     process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
     reloadEnv();
@@ -97,6 +98,7 @@ describe('Billing checkout and webhook', () => {
     process.env.LEMONSQUEEZY_API_KEY = 'ls_test';
     process.env.LEMONSQUEEZY_WEBHOOK_SECRET = 'ls_whsec';
     process.env.LEMONSQUEEZY_STORE_ID = '111';
+    process.env.LEMONSQUEEZY_VARIANT_ID_DEV = '999';
     process.env.LEMONSQUEEZY_VARIANT_ID_STARTER = '222';
     process.env.LEMONSQUEEZY_VARIANT_ID_PRO = '333';
     reloadEnv();
@@ -138,6 +140,7 @@ describe('Billing checkout and webhook', () => {
     process.env.BILLING_PROVIDER = 'paddle';
     process.env.PADDLE_API_KEY = 'pdl_test';
     process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_DEV = 'pri_dev';
     process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
     process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
     reloadEnv();
@@ -160,6 +163,7 @@ describe('Billing checkout and webhook', () => {
     process.env.BILLING_PROVIDER = 'paddle';
     process.env.PADDLE_API_KEY = 'pdl_test';
     process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_DEV = 'pri_dev';
     process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
     process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
     reloadEnv();
@@ -178,6 +182,7 @@ describe('Billing checkout and webhook', () => {
     process.env.LEMONSQUEEZY_API_KEY = 'ls_test';
     process.env.LEMONSQUEEZY_WEBHOOK_SECRET = 'ls_whsec';
     process.env.LEMONSQUEEZY_STORE_ID = '111';
+    process.env.LEMONSQUEEZY_VARIANT_ID_DEV = '999';
     process.env.LEMONSQUEEZY_VARIANT_ID_STARTER = '222';
     process.env.LEMONSQUEEZY_VARIANT_ID_PRO = '333';
     reloadEnv();
@@ -196,6 +201,7 @@ describe('Billing checkout and webhook', () => {
     process.env.BILLING_PROVIDER = 'paddle';
     process.env.PADDLE_API_KEY = 'pdl_test';
     process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
+    process.env.PADDLE_PRICE_ID_DEV = 'pri_dev';
     process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
     process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
     reloadEnv();

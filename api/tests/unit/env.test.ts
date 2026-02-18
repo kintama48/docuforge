@@ -30,18 +30,21 @@ const envSchema = z
     BILLING_PROVIDER: z.enum(['none', 'paddle', 'lemonsqueezy']).default('none'),
     PADDLE_API_KEY: z.string().optional(),
     PADDLE_WEBHOOK_SECRET: z.string().optional(),
+    PADDLE_PRICE_ID_DEV: z.string().optional(),
     PADDLE_PRICE_ID_STARTER: z.string().optional(),
     PADDLE_PRICE_ID_PRO: z.string().optional(),
     LEMONSQUEEZY_API_KEY: z.string().optional(),
     LEMONSQUEEZY_WEBHOOK_SECRET: z.string().optional(),
     LEMONSQUEEZY_STORE_ID: z.string().optional(),
+    LEMONSQUEEZY_VARIANT_ID_DEV: z.string().optional(),
     LEMONSQUEEZY_VARIANT_ID_STARTER: z.string().optional(),
     LEMONSQUEEZY_VARIANT_ID_PRO: z.string().optional(),
     GEMINI_API_KEY: z.string().min(1),
     AI_MODEL: z.string().default('gemini-2.5-flash'),
     JWT_SECRET: z.string().min(32),
     JWT_EXPIRY: z.string().default('7d'),
-    FREE_MONTHLY_LIMIT: z.coerce.number().default(500),
+    FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
+    DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
     STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
     PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
     MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
@@ -61,6 +64,7 @@ const envSchema = z
       for (const key of [
         'PADDLE_API_KEY',
         'PADDLE_WEBHOOK_SECRET',
+        'PADDLE_PRICE_ID_DEV',
         'PADDLE_PRICE_ID_STARTER',
         'PADDLE_PRICE_ID_PRO',
       ] as const) {
@@ -79,6 +83,7 @@ const envSchema = z
         'LEMONSQUEEZY_API_KEY',
         'LEMONSQUEEZY_WEBHOOK_SECRET',
         'LEMONSQUEEZY_STORE_ID',
+        'LEMONSQUEEZY_VARIANT_ID_DEV',
         'LEMONSQUEEZY_VARIANT_ID_STARTER',
         'LEMONSQUEEZY_VARIANT_ID_PRO',
       ] as const) {
@@ -181,6 +186,7 @@ describe('env', () => {
       BILLING_PROVIDER: 'paddle',
       PADDLE_API_KEY: 'pdl_abc',
       PADDLE_WEBHOOK_SECRET: 'pdl_whsec',
+      PADDLE_PRICE_ID_DEV: 'pri_dev',
       PADDLE_PRICE_ID_STARTER: 'pri_start',
       PADDLE_PRICE_ID_PRO: 'pri_pro',
     });
@@ -192,6 +198,7 @@ describe('env', () => {
       ...baseEnv(),
       PORT: '8080',
       FREE_MONTHLY_LIMIT: '123',
+      DEV_MONTHLY_LIMIT: '234',
       STARTER_MONTHLY_LIMIT: '456',
       PRO_MONTHLY_LIMIT: '789',
     });
@@ -199,6 +206,7 @@ describe('env', () => {
     if (!result.success) return;
     expect(result.data.PORT).toBe(8080);
     expect(result.data.FREE_MONTHLY_LIMIT).toBe(123);
+    expect(result.data.DEV_MONTHLY_LIMIT).toBe(234);
     expect(result.data.STARTER_MONTHLY_LIMIT).toBe(456);
     expect(result.data.PRO_MONTHLY_LIMIT).toBe(789);
   });

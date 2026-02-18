@@ -5,11 +5,13 @@ import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
+import { getLocalizedNavLabels } from "@/src/lib/marketing-nav";
 
 export function SiteFooter() {
   const { messages, locale } = useI18n();
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
+  const navLabels = getLocalizedNavLabels(locale);
   return (
     <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
@@ -53,6 +55,12 @@ export function SiteFooter() {
             <div className="mt-3 flex flex-col gap-2 text-[var(--muted)]">
               <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
                 {messages.footer.links.apiDocs}
+              </Link>
+              <Link href={localePath("/blog")} className="hover:text-[var(--ink)]">
+                {navLabels.blog}
+              </Link>
+              <Link href={localePath("/playground")} className="hover:text-[var(--ink)]">
+                {navLabels.playground}
               </Link>
               <Link href={localePath("/#api")} className="hover:text-[var(--ink)]">
                 {messages.footer.links.quickStart}

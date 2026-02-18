@@ -60,7 +60,8 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.RENDER_QUEUE_ATTEMPTS = '1';
   process.env.RENDER_QUEUE_BACKOFF_MS = '1';
   process.env.RENDER_QUEUE_RESULT_TTL_SECONDS = '60';
-  process.env.FREE_MONTHLY_LIMIT = '500';
+  process.env.FREE_MONTHLY_LIMIT = '1000';
+  process.env.DEV_MONTHLY_LIMIT = '3000';
   process.env.STARTER_MONTHLY_LIMIT = '10000';
   process.env.PRO_MONTHLY_LIMIT = '50000';
   process.env.BILLING_ENABLED = 'false';
@@ -69,11 +70,13 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.BILLING_CANCEL_URL = 'http://localhost:5173/settings';
   process.env.PADDLE_API_KEY = '';
   process.env.PADDLE_WEBHOOK_SECRET = '';
+  process.env.PADDLE_PRICE_ID_DEV = '';
   process.env.PADDLE_PRICE_ID_STARTER = '';
   process.env.PADDLE_PRICE_ID_PRO = '';
   process.env.LEMONSQUEEZY_API_KEY = '';
   process.env.LEMONSQUEEZY_WEBHOOK_SECRET = '';
   process.env.LEMONSQUEEZY_STORE_ID = '';
+  process.env.LEMONSQUEEZY_VARIANT_ID_DEV = '';
   process.env.LEMONSQUEEZY_VARIANT_ID_STARTER = '';
   process.env.LEMONSQUEEZY_VARIANT_ID_PRO = '';
   process.env.R2_ENDPOINT = 'https://fake.r2.cloudflarestorage.com';
@@ -163,7 +166,15 @@ export async function createTestUser(
   const email = options.email || `test-${userId}@example.com`;
   const password = options.password || 'testpassword123';
   const planTier = options.planTier || 'free';
-  const planRenders = options.planRenders ?? (planTier === 'pro' ? 50000 : planTier === 'starter' ? 10000 : 500);
+  const planRenders =
+    options.planRenders ??
+    (planTier === 'pro'
+      ? 50000
+      : planTier === 'starter'
+        ? 10000
+        : planTier === 'dev'
+          ? 3000
+          : 1000);
 
   // Hash password
   const passwordHash = await Bun.password.hash(password);
@@ -503,7 +514,15 @@ export async function updateUserPlan(
   planTier: PlanTier,
   planRenders?: number
 ): Promise<void> {
-  const renders = planRenders ?? (planTier === 'pro' ? 50000 : planTier === 'starter' ? 10000 : 500);
+  const renders =
+    planRenders ??
+    (planTier === 'pro'
+      ? 50000
+      : planTier === 'starter'
+        ? 10000
+        : planTier === 'dev'
+          ? 3000
+          : 1000);
 
   await db
     .update(schema.users)

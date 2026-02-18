@@ -37,8 +37,10 @@ const marketingExact = new Set([
   "/terms",
   "/privacy",
   "/content-policy",
+  "/playground",
+  "/sitemap.xml",
 ]);
-const marketingPrefixes = ["/docs", "/og"];
+const marketingPrefixes = ["/docs", "/og", "/blog", "/templates", "/compare", "/industries"];
 const consolePrefixes = [
   "/dashboard",
   "/editor",
@@ -83,7 +85,7 @@ export function middleware(request: NextRequest) {
   if (basePath === "/robots.txt") {
     const body = isConsoleHost
       ? "User-agent: *\nDisallow: /\n"
-      : "User-agent: *\nAllow: /\n";
+      : `User-agent: *\nAllow: /\nSitemap: ${nextUrl.origin}/sitemap.xml\n`;
     const response = new NextResponse(body, {
       status: 200,
       headers: { "Content-Type": "text/plain" },
@@ -137,11 +139,21 @@ export function middleware(request: NextRequest) {
   requestHeaders.set("x-docuforge-path", basePath);
   requestHeaders.set("x-docuforge-host", hostname);
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  const rewriteTarget = pathLocale
+    ? new URL(`${basePath}${nextUrl.search}`, nextUrl.origin)
+    : null;
+
+  const response = rewriteTarget
+    ? NextResponse.rewrite(rewriteTarget, {
+        request: {
+          headers: requestHeaders,
+        },
+      })
+    : NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
 
   const cookieDomain = hostname.endsWith(".docuforge.app")
     ? ".docuforge.app"

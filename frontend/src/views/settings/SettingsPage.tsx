@@ -22,7 +22,7 @@ export default function SettingsPage() {
   const billingEnabled = env.billingEnabled && env.billingProvider !== "none";
   const portalUrl = env.billingPortalUrl;
 
-  const handleUpgrade = (plan: "starter" | "pro") => {
+  const handleUpgrade = (plan: "dev" | "starter" | "pro") => {
     if (!billingEnabled) {
       toast.info("Billing is currently disabled.");
       return;
