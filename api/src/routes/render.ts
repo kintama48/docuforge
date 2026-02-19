@@ -12,15 +12,8 @@ import { checkCredits, logRender } from '../services/usage';
 import { resolveUserAssets } from '../services/asset';
 import { NotFoundError, LimitExceededError, ValidationError } from '../lib/errors';
 import { env } from '../config/env';
-import {
-  enqueueRenderJob,
-  getRenderJobPdf,
-  getRenderJobStatus,
-  isRenderQueueEnabled,
-} from '../services/render-queue';
-import { executeProductionRender } from '../services/render-task';
+import { dispatchWebhookEvent } from '../services/webhook';
 import type { EnginePayload } from '../types';
-import { compileLowCodeSpec } from '../lib/low-code';
 
 const render = new Hono();
 type PasswordProtectionMode = 'none' | 'client_blind' | 'server_ephemeral_legacy';
@@ -70,15 +63,7 @@ render.post('/', apiKeyAuth, renderRateLimit, noCache, zValidator('json', render
   const db = getDb();
   const protectionMode: PasswordProtectionMode = password_protection_mode || 'none';
 
-  const key = raw.trim();
-  if (key.length < 8 || key.length > 128) {
-    throw new ValidationError('Idempotency-Key must be between 8 and 128 characters');
-  }
-
-  return key;
-}
-
-async function assertCreditsAvailable(userId: string) {
+  // Check credits
   const credits = await checkCredits(userId);
   if (!credits.allowed) {
     throw new LimitExceededError(`Monthly render limit reached (${credits.used}/${credits.limit})`, {
@@ -88,15 +73,15 @@ async function assertCreditsAvailable(userId: string) {
         plan: credits.plan,
         resets_at: credits.periodEnd.toISOString(),
       },
-      upgrade_url: 'https://docuforge.app/pricing',
+      upgrade_url: 'https://www.docuforge.app/pricing',
     });
   }
-}
 
-// POST /v1/render - Production render with API key
-render.post('/', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSchema), async (c) => {
-  const { template_id, data } = c.req.valid('json');
-  const { userId } = c.get('auth');
+  // Resolve template
+  const [template] = await db
+    .select()
+    .from(schema.templates)
+    .where(eq(schema.templates.id, template_id));
 
   if (!template) {
     throw new NotFoundError('Template not found');
@@ -339,106 +324,23 @@ render.post('/secure', apiKeyAuth, renderRateLimit, noCache, zValidator('json', 
   c.header('X-Pdf-Protection-Mode', 'server_ephemeral_legacy');
   c.header('X-Pdf-Protection-Legacy', 'true');
 
-  return c.body(Uint8Array.from(result.pdf));
-});
-
-// POST /v1/render/jobs - Queue a production render (idempotent by Idempotency-Key)
-render.post('/jobs', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSchema), async (c) => {
-  if (!isRenderQueueEnabled()) {
-    throw new NotFoundError('Render queue is disabled');
-  }
-
-  const { template_id, data } = c.req.valid('json');
-  const { userId } = c.get('auth');
-  const idempotencyKey = getIdempotencyKey(c);
-
-  // Fast failure before queueing. Worker checks credits again at execution time.
-  await assertCreditsAvailable(userId);
-
-  const job = await enqueueRenderJob({
-    userId,
-    templateId: template_id,
-    data: data || {},
-    idempotencyKey,
-  });
-
-  c.header('X-Render-Job-Id', job.jobId);
-
-  return c.json(
-    {
-      job_id: job.jobId,
-      status: job.status,
-      duplicate: job.duplicate,
-      poll_url: `${env.API_URL}/v1/render/jobs/${job.jobId}`,
-      pdf_url: `${env.API_URL}/v1/render/jobs/${job.jobId}/pdf`,
-    },
-    job.duplicate ? 200 : 202
-  );
-});
-
-// GET /v1/render/jobs/:jobId - Render job status
-render.get('/jobs/:jobId', apiKeyAuth, noCache, zValidator('param', renderJobParamSchema), async (c) => {
-  if (!isRenderQueueEnabled()) {
-    throw new NotFoundError('Render queue is disabled');
-  }
-
-  const { userId } = c.get('auth');
-  const { jobId } = c.req.valid('param');
-
-  const status = await getRenderJobStatus(userId, jobId);
-  if (!status) {
-    throw new NotFoundError('Render job not found');
-  }
-
-  return c.json(status);
-});
-
-// GET /v1/render/jobs/:jobId/pdf - Download completed job PDF
-render.get('/jobs/:jobId/pdf', apiKeyAuth, noCache, zValidator('param', renderJobParamSchema), async (c) => {
-  if (!isRenderQueueEnabled()) {
-    throw new NotFoundError('Render queue is disabled');
-  }
-
-  const { userId } = c.get('auth');
-  const { jobId } = c.req.valid('param');
-
-  const result = await getRenderJobPdf(userId, jobId);
-  if (!result) {
-    throw new NotFoundError('Render job not found');
-  }
-
-  if (result.status !== 'completed' || !result.pdf) {
-    if (result.status === 'failed') {
-      throw new ConflictError(result.error || 'Render job failed');
-    }
-    throw new ConflictError(`Render job is ${result.status}. Try again later`);
-  }
-
-  c.header('Content-Type', 'application/pdf');
-  c.header('Content-Disposition', `inline; filename="${jobId}.pdf"`);
-  c.header('X-Render-Id', result.renderLogId || '');
-  c.header('X-Render-Duration', String(result.durationMs || 0));
-  c.header('Cache-Control', 'no-store');
-
-  return c.body(Uint8Array.from(result.pdf));
+  return c.body(result.pdf);
 });
 
 // POST /v1/render/preview - Preview render with JWT
 render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', renderPreviewSchema), async (c) => {
-  const { source, low_code_spec, files, data } = c.req.valid('json');
+  const { source, files, data } = c.req.valid('json');
   const { userId } = c.get('auth');
-  if (!source && !low_code_spec) {
-    throw new ValidationError('Either source or low_code_spec is required');
-  }
-  const resolvedSource = source ?? compileLowCodeSpec(low_code_spec!);
 
+  // Resolve assets
   const assets = await resolveUserAssets(userId);
 
+  // Build engine payload
   const payload: EnginePayload = {
     template: {
       main: 'main.typ',
       files: {
-        'main.typ': resolvedSource,
+        'main.typ': source,
         ...(files || {}),
       },
     },
@@ -452,6 +354,7 @@ render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', r
     },
   };
 
+  // Render (no credit check for preview)
   let result;
   let logId: string;
 
@@ -476,13 +379,14 @@ render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', r
     throw err;
   }
 
+  // Return PDF
   c.header('Content-Type', 'application/pdf');
   c.header('Content-Disposition', 'inline; filename="preview.pdf"');
   c.header('X-Render-Duration', String(result.durationMs));
   c.header('X-Render-Id', logId);
   c.header('X-Pdf-Protection-Mode', 'none');
 
-  return c.body(Uint8Array.from(result.pdf));
+  return c.body(result.pdf);
 });
 
 export default render;

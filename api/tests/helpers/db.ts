@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS template_versions (
   source TEXT NOT NULL,
   files TEXT,
   defaults TEXT,
-  low_code_spec TEXT,
   commit_message TEXT,
   created_at INTEGER NOT NULL
 );

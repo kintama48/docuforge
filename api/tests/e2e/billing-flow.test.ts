@@ -5,11 +5,10 @@
  * 1. Register as free user
  * 2. Fill render_logs to simulate 1000 renders (use fillRenderLogs helper)
  * 3. POST /v1/render -> Expect 402 Payment Required
- * 4. Simulate Paddle webhook (transaction.completed, plan=starter)
+ * 4. Simulate Stripe webhook (checkout.session.completed, plan=starter)
  * 5. Verify plan_tier updated to "starter"
  * 6. POST /v1/render -> Expect 200 (limit is now 10K)
  */
-import { createHmac } from 'node:crypto';
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { createApp } from '../../src/app';
 import {
@@ -17,11 +16,13 @@ import {
   createTestServer,
   setupTestEnv,
   fillRenderLogs,
+  createSignedWebhook,
+  createCheckoutCompletedEvent,
+  TEST_WEBHOOK_SECRET,
   type MockEngine,
 } from '../setup';
 import { resetDb, initTestDb, getDb, schema } from '../../src/db/client';
 import { eq } from 'drizzle-orm';
-import { reloadEnv, env } from '../../src/config/env';
 
 describe('E2E: Billing Flow', () => {
   let db: ReturnType<typeof getDb>;
@@ -33,14 +34,6 @@ describe('E2E: Billing Flow', () => {
   beforeAll(async () => {
     engine = createMockEngine();
     setupTestEnv(engine.url);
-    process.env.BILLING_ENABLED = 'true';
-    process.env.BILLING_PROVIDER = 'paddle';
-    process.env.PADDLE_API_KEY = 'pdl_test';
-    process.env.PADDLE_WEBHOOK_SECRET = 'pdl_whsec';
-    process.env.PADDLE_PRICE_ID_DEV = 'pri_dev';
-    process.env.PADDLE_PRICE_ID_STARTER = 'pri_start';
-    process.env.PADDLE_PRICE_ID_PRO = 'pri_pro';
-    reloadEnv();
 
     // Initialize the global database for tests
     await initTestDb();
@@ -57,7 +50,7 @@ describe('E2E: Billing Flow', () => {
     resetDb();
   });
 
-  test('free user hits limit, upgrades via Paddle webhook, and can render again', async () => {
+  test('free user hits limit, upgrades via Stripe, and can render again', async () => {
     // Step 1: Register as free user
     const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
       method: 'POST',
@@ -132,32 +125,35 @@ describe('E2E: Billing Flow', () => {
     expect(blockedData.usage.used).toBe(1000);
     expect(blockedData.usage.limit).toBe(1000);
     expect(blockedData.usage.plan).toBe('free');
-    expect(blockedData.upgrade_url).toBe('https://docuforge.app/pricing');
+    expect(blockedData.upgrade_url).toBe('https://www.docuforge.app/pricing');
 
-    // Step 4: Simulate Paddle webhook for upgrade to starter
-    const externalCustomerId = `cus_billing_${Date.now()}`;
-    const webhookEvent = {
-      event_type: 'transaction.completed',
-      data: {
-        customer_id: externalCustomerId,
-        custom_data: {
-          userId,
-          plan: 'starter',
-        },
-      },
+    // Step 4: Simulate Stripe webhook for upgrade to starter
+    const stripeCustomerId = `cus_billing_${Date.now()}`;
+    const stripeSubscriptionId = `sub_billing_${Date.now()}`;
+
+    const webhookEvent = createCheckoutCompletedEvent({
+      customerId: stripeCustomerId,
+      subscriptionId: stripeSubscriptionId,
+      priceId: process.env.STRIPE_STARTER_PRICE_ID || 'price_starter_test',
+      planTier: 'starter',
+    });
+
+    // Add userId to metadata for the webhook to identify the user
+    (webhookEvent.data.object as Record<string, unknown>).metadata = {
+      userId,
+      plan: 'starter',
     };
-    const webhookBody = JSON.stringify(webhookEvent);
-    const ts = Math.floor(Date.now() / 1000).toString();
-    const signatureHash = createHmac('sha256', env.PADDLE_WEBHOOK_SECRET || '')
-      .update(`${ts}:${webhookBody}`)
-      .digest('hex');
-    const signature = `ts=${ts};h1=${signatureHash}`;
+
+    const { body: webhookBody, signature } = createSignedWebhook(
+      webhookEvent,
+      TEST_WEBHOOK_SECRET
+    );
 
     const webhookResponse = await fetch(`${baseUrl}/v1/billing/webhook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'paddle-signature': signature,
+        'stripe-signature': signature,
       },
       body: webhookBody,
     });
@@ -174,7 +170,7 @@ describe('E2E: Billing Flow', () => {
 
     expect(updatedUser.planTier).toBe('starter');
     expect(updatedUser.planRenders).toBe(10000);
-    expect(updatedUser.billingCustomerId).toBe(externalCustomerId);
+    expect(updatedUser.stripeCustomerId).toBe(stripeCustomerId);
 
     // Verify usage endpoint reflects new limit
     const newUsageResponse = await fetch(`${baseUrl}/v1/usage`, {
@@ -211,23 +207,21 @@ describe('E2E: Billing Flow', () => {
   });
 
   test('invalid webhook signature is rejected', async () => {
-    const webhookBody = JSON.stringify({
-      event_type: 'transaction.completed',
-      data: {
-        customer_id: 'cus_test',
-        custom_data: {
-          userId: 'usr_test',
-          plan: 'starter',
-        },
-      },
+    const webhookEvent = createCheckoutCompletedEvent({
+      customerId: 'cus_test',
+      subscriptionId: 'sub_test',
+      priceId: 'price_starter_test',
+      planTier: 'starter',
     });
+
+    const webhookBody = JSON.stringify(webhookEvent);
 
     // Send with invalid signature
     const webhookResponse = await fetch(`${baseUrl}/v1/billing/webhook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'paddle-signature': 'ts=123;h1=invalid_signature',
+        'stripe-signature': 't=123,v1=invalid_signature',
       },
       body: webhookBody,
     });
@@ -238,21 +232,19 @@ describe('E2E: Billing Flow', () => {
   });
 
   test('webhook without signature is rejected', async () => {
+    const webhookEvent = createCheckoutCompletedEvent({
+      customerId: 'cus_test',
+      subscriptionId: 'sub_test',
+      priceId: 'price_starter_test',
+      planTier: 'starter',
+    });
+
     const webhookResponse = await fetch(`${baseUrl}/v1/billing/webhook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        event_type: 'transaction.completed',
-        data: {
-          customer_id: 'cus_test',
-          custom_data: {
-            userId: 'usr_test',
-            plan: 'starter',
-          },
-        },
-      }),
+      body: JSON.stringify(webhookEvent),
     });
 
     expect(webhookResponse.status).toBe(422);

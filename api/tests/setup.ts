@@ -22,7 +22,6 @@ import type { PlanTier } from '../src/types';
 import { resetDb, initTestDb, getDb, schema as dbSchema } from '../src/db/client';
 import { createApp } from '../src/app';
 import { reloadEnv } from '../src/config/env';
-import { clearResolvedAssetCache } from '../src/services/asset';
 
 // Re-export helpers for convenience
 export { createTestDatabase, closeTestDatabase, type TestDb, schema } from './helpers/db';
@@ -30,6 +29,7 @@ export { createMockEngine, type MockEngine, type MockEngineConfig, MINIMAL_PDF }
 export { createTestServer, type TestServer } from './helpers/test-server';
 export { createAuthHeaders, createApiKeyHeaders, createTestJwt, createExpiredJwt, createInvalidSignatureJwt, TEST_JWT_SECRET } from './helpers/auth';
 export * from './helpers/fixtures';
+export * from './helpers/mock-stripe';
 
 /**
  * Test context that holds all test infrastructure.
@@ -106,7 +106,6 @@ export async function createTestContext(engineConfig?: MockEngineConfig): Promis
     cleanup: async () => {
       await engine.stop();
       closeTestDatabase(sqlite);
-      clearResolvedAssetCache();
       resetDb();
     },
   };
@@ -120,7 +119,7 @@ export interface CreateTestUserOptions {
   password?: string;
   planTier?: PlanTier;
   planRenders?: number;
-  billingCustomerId?: string;
+  stripeCustomerId?: string;
 }
 
 /**
@@ -160,7 +159,7 @@ export async function createTestUser(
     id: userId,
     email,
     passwordHash,
-    billingCustomerId: options.billingCustomerId || null,
+    stripeCustomerId: options.stripeCustomerId || null,
     planTier,
     planRenders,
     createdAt: now,
@@ -257,7 +256,6 @@ export interface CreateTestTemplateOptions {
   name?: string;
   description?: string;
   source?: string;
-  lowCodeSpec?: Record<string, unknown>;
   files?: Record<string, string>;
   defaults?: Record<string, unknown>;
   isPublic?: boolean;
@@ -308,7 +306,6 @@ export async function createTestTemplate(
     source,
     files: options.files || null,
     defaults: options.defaults || null,
-    lowCodeSpec: options.lowCodeSpec || null,
     commitMessage: options.commitMessage || 'Initial version',
     createdAt: now,
   });

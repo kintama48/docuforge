@@ -11,14 +11,15 @@ export function SiteFooter() {
   const contentCopy = getContentHubCopy(locale);
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
-  const navLabels = getLocalizedNavLabels(locale);
   return (
     <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
-              <BrandLogo className="h-9 w-9" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface-2)] font-display text-xs tracking-[0.2em] text-[var(--muted)]">
+                DF
+              </span>
               <span className="font-display text-lg text-[var(--ink)]">
                 DocuForge
               </span>

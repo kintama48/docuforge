@@ -1,102 +1,34 @@
 /**
- * Unit tests for src/config/env.ts schema behavior.
+ * Unit tests for src/config/env.ts
+ *
+ * Tests environment variable loading and validation.
+ *
+ * Note: These tests verify the validation schema behavior
+ * without actually modifying process.env (which would affect other tests).
  */
 import { describe, test, expect } from 'bun:test';
 import { z } from 'zod';
 
-const envBoolean = z.preprocess((value) => {
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) return true;
-    if (['false', '0', 'no', 'n', 'off', ''].includes(normalized)) return false;
-  }
-  return value;
-}, z.boolean());
+// Recreate the schema from env.ts for isolated testing
+const envSchema = z.object({
+  // Server
+  PORT: z.coerce.number().default(3000),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-const envSchema = z
-  .object({
-    PORT: z.coerce.number().default(3000),
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    DATABASE_URL: z.string().min(1),
-    DATABASE_AUTH_TOKEN: z.string().optional(),
-    ENGINE_URL: z.string().url().default('http://127.0.0.1:3001'),
-    ENGINE_TIMEOUT_MS: z.coerce.number().default(5000),
-    R2_ENDPOINT: z.string().url(),
-    R2_ACCESS_KEY_ID: z.string().min(1),
-    R2_SECRET_ACCESS_KEY: z.string().min(1),
-    R2_BUCKET: z.string().min(1),
-    R2_PUBLIC_URL: z.string().url(),
-    BILLING_ENABLED: envBoolean.default(false),
-    BILLING_PROVIDER: z.enum(['none', 'paddle', 'lemonsqueezy']).default('none'),
-    PADDLE_API_KEY: z.string().optional(),
-    PADDLE_WEBHOOK_SECRET: z.string().optional(),
-    PADDLE_PRICE_ID_DEV: z.string().optional(),
-    PADDLE_PRICE_ID_STARTER: z.string().optional(),
-    PADDLE_PRICE_ID_PRO: z.string().optional(),
-    LEMONSQUEEZY_API_KEY: z.string().optional(),
-    LEMONSQUEEZY_WEBHOOK_SECRET: z.string().optional(),
-    LEMONSQUEEZY_STORE_ID: z.string().optional(),
-    LEMONSQUEEZY_VARIANT_ID_DEV: z.string().optional(),
-    LEMONSQUEEZY_VARIANT_ID_STARTER: z.string().optional(),
-    LEMONSQUEEZY_VARIANT_ID_PRO: z.string().optional(),
-    GEMINI_API_KEY: z.string().min(1),
-    AI_MODEL: z.string().default('gemini-2.5-flash'),
-    JWT_SECRET: z.string().min(32),
-    JWT_EXPIRY: z.string().default('7d'),
-    FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
-    DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
-    STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
-    PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
-    MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
-  })
-  .superRefine((value, ctx) => {
-    if (!value.BILLING_ENABLED) return;
-    if (value.BILLING_PROVIDER === 'none') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'BILLING_PROVIDER must not be none when billing is enabled',
-        path: ['BILLING_PROVIDER'],
-      });
-      return;
-    }
+  // Database
+  DATABASE_URL: z.string().min(1),
+  DATABASE_AUTH_TOKEN: z.string().optional(),
 
-    if (value.BILLING_PROVIDER === 'paddle') {
-      for (const key of [
-        'PADDLE_API_KEY',
-        'PADDLE_WEBHOOK_SECRET',
-        'PADDLE_PRICE_ID_DEV',
-        'PADDLE_PRICE_ID_STARTER',
-        'PADDLE_PRICE_ID_PRO',
-      ] as const) {
-        if (!value[key]) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${key} required`,
-            path: [key],
-          });
-        }
-      }
-    }
+  // Rust Engine
+  ENGINE_URL: z.string().url().default('http://127.0.0.1:3001'),
+  ENGINE_TIMEOUT_MS: z.coerce.number().default(5000),
 
-    if (value.BILLING_PROVIDER === 'lemonsqueezy') {
-      for (const key of [
-        'LEMONSQUEEZY_API_KEY',
-        'LEMONSQUEEZY_WEBHOOK_SECRET',
-        'LEMONSQUEEZY_STORE_ID',
-        'LEMONSQUEEZY_VARIANT_ID_DEV',
-        'LEMONSQUEEZY_VARIANT_ID_STARTER',
-        'LEMONSQUEEZY_VARIANT_ID_PRO',
-      ] as const) {
-        if (!value[key]) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${key} required`,
-            path: [key],
-          });
-        }
-      }
-    }
-  });
+  // Cloudflare R2
+  R2_ENDPOINT: z.string().url(),
+  R2_ACCESS_KEY_ID: z.string().min(1),
+  R2_SECRET_ACCESS_KEY: z.string().min(1),
+  R2_BUCKET: z.string().min(1),
+  R2_PUBLIC_URL: z.string().url(),
 
   // Stripe
   STRIPE_SECRET_KEY: z.string().min(1),
@@ -140,39 +72,9 @@ describe('env', () => {
         JWT_SECRET: 'this-is-a-32-character-secret!!!',
       };
 
-  test('applies defaults', () => {
-    const result = envSchema.safeParse(baseEnv());
-    expect(result.success).toBe(true);
-    if (!result.success) return;
-
-    expect(result.data.PORT).toBe(3000);
-    expect(result.data.NODE_ENV).toBe('development');
-    expect(result.data.ENGINE_URL).toBe('http://127.0.0.1:3001');
-    expect(result.data.AI_MODEL).toBe('gemini-2.5-flash');
-    expect(result.data.BILLING_ENABLED).toBe(false);
-  });
-
-  test('fails without DATABASE_URL', () => {
-    const env = baseEnv();
-    delete (env as Partial<typeof env>).DATABASE_URL;
-    const result = envSchema.safeParse(env);
-    expect(result.success).toBe(false);
-  });
-
-  test('fails without JWT_SECRET', () => {
-    const env = baseEnv();
-    delete (env as Partial<typeof env>).JWT_SECRET;
-    const result = envSchema.safeParse(env);
-    expect(result.success).toBe(false);
-  });
-
-  test('fails on invalid R2 endpoint URL', () => {
-    const result = envSchema.safeParse({
-      ...baseEnv(),
-      R2_ENDPOINT: 'not-a-url',
+      const result = envSchema.safeParse(validEnv);
+      expect(result.success).toBe(true);
     });
-    expect(result.success).toBe(false);
-  });
 
     test('defaults applied for optional', () => {
       const minimalEnv = {
@@ -209,12 +111,6 @@ describe('env', () => {
         expect(result.data.MAX_UPLOAD_SIZE_MB).toBe(10);
       }
     });
-    expect(result.success).toBe(false);
-    if (result.success) return;
-    const paths = result.error.issues.map((i) => i.path.join('.'));
-    expect(paths).toContain('PADDLE_API_KEY');
-    expect(paths).toContain('PADDLE_WEBHOOK_SECRET');
-  });
 
     test('throws on missing required (DATABASE_URL)', () => {
       const missingDbUrl = {
@@ -240,12 +136,6 @@ describe('env', () => {
         expect(paths).toContain('DATABASE_URL');
       }
     });
-    expect(result.success).toBe(false);
-    if (result.success) return;
-    const paths = result.error.issues.map((i) => i.path.join('.'));
-    expect(paths).toContain('LEMONSQUEEZY_API_KEY');
-    expect(paths).toContain('LEMONSQUEEZY_STORE_ID');
-  });
 
     test('throws on missing required (JWT_SECRET)', () => {
       const missingJwtSecret = {
@@ -271,8 +161,6 @@ describe('env', () => {
         expect(paths).toContain('JWT_SECRET');
       }
     });
-    expect(result.success).toBe(true);
-  });
 
     test('throws on JWT_SECRET too short', () => {
       const shortJwtSecret = {
@@ -298,14 +186,6 @@ describe('env', () => {
         expect(result.error.issues.some((i) => i.path.includes('JWT_SECRET'))).toBe(true);
       }
     });
-    expect(result.success).toBe(true);
-    if (!result.success) return;
-    expect(result.data.PORT).toBe(8080);
-    expect(result.data.FREE_MONTHLY_LIMIT).toBe(123);
-    expect(result.data.DEV_MONTHLY_LIMIT).toBe(234);
-    expect(result.data.STARTER_MONTHLY_LIMIT).toBe(456);
-    expect(result.data.PRO_MONTHLY_LIMIT).toBe(789);
-  });
 
     test('throws on invalid R2_ENDPOINT URL', () => {
       const invalidR2Endpoint = {
@@ -331,8 +211,6 @@ describe('env', () => {
         expect(result.error.issues.some((i) => i.path.includes('R2_ENDPOINT'))).toBe(true);
       }
     });
-    expect(result.success).toBe(false);
-  });
 
     test('throws on missing multiple required vars', () => {
       const manyMissing = {

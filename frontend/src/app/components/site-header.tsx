@@ -13,12 +13,13 @@ export function SiteHeader() {
   const contentCopy = getContentHubCopy(locale);
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
-  const navLabels = getLocalizedNavLabels(locale);
   return (
     <header className="border-b border-[var(--line)] bg-[var(--bg)]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Link href={localePath("/")} className="flex items-center gap-3">
-          <BrandLogo className="h-9 w-9" priority />
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] font-display text-xs tracking-[0.2em] text-[var(--muted)]">
+            DF
+          </span>
           <span className="font-display text-lg text-[var(--ink)]">
             DocuForge
           </span>

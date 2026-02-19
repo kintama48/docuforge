@@ -399,7 +399,7 @@ Authorization: Bearer <token>`}</CodeBlock>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={consoleUrl}
-                    className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
+                    className="inline-flex items-center justify-center rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
                   >
                     {content.cta.primary}
                   </Link>

@@ -4,7 +4,7 @@ export interface User {
   id: string;
   email: string;
   passwordHash: string;
-  billingCustomerId: string | null;
+  stripeCustomerId: string | null;
   planTier: PlanTier;
   planRenders: number;
   createdAt: number;
@@ -40,7 +40,6 @@ export interface TemplateVersion {
   source: string;
   files: Record<string, string> | null;
   defaults: Record<string, unknown> | null;
-  lowCodeSpec: Record<string, unknown> | null;
   commitMessage: string | null;
   createdAt: number;
 }

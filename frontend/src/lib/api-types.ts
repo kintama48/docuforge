@@ -1,3 +1,5 @@
+import type { LowCodeSpec } from "@/src/lib/low-code";
+
 export type User = {
   id: string;
   email: string;
