@@ -40,9 +40,10 @@ fn load_template(name: &str) -> String {
 
 fn load_data(name: &str) -> serde_json::Value {
     let path = fixtures_dir().join("data").join(name);
-    let content = fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("Failed to load data {}: {}", name, e));
-    serde_json::from_str(&content).unwrap_or_else(|e| panic!("Failed to parse JSON {}: {}", name, e))
+    let content =
+        fs::read_to_string(&path).unwrap_or_else(|e| panic!("Failed to load data {}: {}", name, e));
+    serde_json::from_str(&content)
+        .unwrap_or_else(|e| panic!("Failed to parse JSON {}: {}", name, e))
 }
 
 fn make_request(template_content: &str, data: Option<serde_json::Value>) -> RenderRequest {
@@ -80,7 +81,10 @@ fn validate_pdf(pdf: &[u8], min_size: usize) {
 
     // Check for essential PDF structure
     assert!(pdf_str.contains("%%EOF"), "PDF should have EOF marker");
-    assert!(pdf_str.contains("/Type /Page"), "PDF should have page definition");
+    assert!(
+        pdf_str.contains("/Type /Page"),
+        "PDF should have page definition"
+    );
     assert!(pdf_str.contains("/Font"), "PDF should have font references");
 }
 
@@ -135,7 +139,11 @@ async fn test_invoice_template() {
     let request = make_request(&template, Some(data));
 
     let result = compiler.compile(&request, 5000).await;
-    assert!(result.is_ok(), "invoice.typ should compile successfully: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "invoice.typ should compile successfully: {:?}",
+        result.err()
+    );
 
     let pdf = result.unwrap();
     validate_pdf(&pdf, 2000);
@@ -155,7 +163,11 @@ async fn test_letter_template() {
     let request = make_request(&template, Some(data));
 
     let result = compiler.compile(&request, 5000).await;
-    assert!(result.is_ok(), "letter.typ should compile successfully: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "letter.typ should compile successfully: {:?}",
+        result.err()
+    );
 
     let pdf = result.unwrap();
     validate_pdf(&pdf, 2000);
@@ -175,7 +187,11 @@ async fn test_report_template() {
     let request = make_request(&template, Some(data));
 
     let result = compiler.compile(&request, 10000).await; // Longer timeout for multi-page
-    assert!(result.is_ok(), "report.typ should compile successfully: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "report.typ should compile successfully: {:?}",
+        result.err()
+    );
 
     let pdf = result.unwrap();
     validate_pdf(&pdf, 5000); // Multi-page should be larger
@@ -183,7 +199,11 @@ async fn test_report_template() {
     // Check that it likely has multiple pages
     let pdf_str = String::from_utf8_lossy(&pdf);
     let page_count = pdf_str.matches("/Type /Page").count();
-    println!("report.typ PDF size: {} bytes, pages: {}", pdf.len(), page_count);
+    println!(
+        "report.typ PDF size: {} bytes, pages: {}",
+        pdf.len(),
+        page_count
+    );
 
     // Report should have multiple pages due to pagebreaks
     assert!(page_count >= 3, "Report should have at least 3 pages");
@@ -299,10 +319,7 @@ async fn test_boolean_data() {
     let content = r#"
 Active: #if sys.inputs.is_active [Yes] else [No]
 "#;
-    let request = make_request(
-        content,
-        Some(serde_json::json!({ "is_active": true })),
-    );
+    let request = make_request(content, Some(serde_json::json!({ "is_active": true })));
 
     let result = compiler.compile(&request, 5000).await;
     assert!(result.is_ok());
@@ -330,10 +347,7 @@ async fn test_null_handling() {
     let content = r#"
 Value: #sys.inputs.maybe_null
 "#;
-    let request = make_request(
-        content,
-        Some(serde_json::json!({ "maybe_null": null })),
-    );
+    let request = make_request(content, Some(serde_json::json!({ "maybe_null": null })));
 
     let result = compiler.compile(&request, 5000).await;
     // Typst handles none values gracefully

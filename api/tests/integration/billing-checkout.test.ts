@@ -135,6 +135,20 @@ describe('Billing checkout and webhook', () => {
     expect(providerCalls).toBe(1);
   });
 
+  it('creates checkout session for dev plan', async () => {
+    const user = await createTestUser(getDb() as any);
+
+    const response = await app.request('/v1/billing/checkout', {
+      method: 'POST',
+      headers: getAuthHeaders(user, false),
+      body: JSON.stringify({ plan: 'dev' }),
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.checkout_url).toBe('https://checkout.test/session');
+  });
+
   it('returns internal error when user is missing', async () => {
     process.env.BILLING_ENABLED = 'true';
     process.env.BILLING_PROVIDER = 'paddle';
@@ -237,8 +251,28 @@ describe('Billing checkout and webhook', () => {
     const [upgraded] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
     expect(upgraded?.planTier).toBe('starter');
 
-    const cancelPayload = {
-      event_type: 'subscription.canceled',
+    const devUpdateEvent = {
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          customer: 'cus_sub',
+          items: { data: [{ price: { id: process.env.STRIPE_DEV_PRICE_ID } }] },
+        },
+      },
+    };
+
+    const devUpdateResponse = await app.request('/v1/billing/webhook', {
+      method: 'POST',
+      headers: { 'stripe-signature': 'sig' },
+      body: JSON.stringify(devUpdateEvent),
+    });
+    expect(devUpdateResponse.status).toBe(200);
+
+    const [devUpdated] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
+    expect(devUpdated?.planTier).toBe('dev');
+
+    const deleteEvent = {
+      type: 'customer.subscription.deleted',
       data: {
         customer_id: 'cus_paddle_1',
       },

@@ -41,28 +41,12 @@ const envSchema = z.object({
   R2_BUCKET: z.string().min(1),
   R2_PUBLIC_URL: z.string().url(),
 
-  // Billing
-  BILLING_ENABLED: envBoolean.default(false),
-  BILLING_PROVIDER: z.enum(['none', 'paddle', 'lemonsqueezy']).default('none'),
-  BILLING_SUCCESS_URL: z.string().url().optional(),
-  BILLING_CANCEL_URL: z.string().url().optional(),
-
-  // Paddle
-  PADDLE_API_KEY: z.string().optional(),
-  PADDLE_API_URL: z.string().url().default('https://api.paddle.com'),
-  PADDLE_WEBHOOK_SECRET: z.string().optional(),
-  PADDLE_PRICE_ID_DEV: z.string().optional(),
-  PADDLE_PRICE_ID_STARTER: z.string().optional(),
-  PADDLE_PRICE_ID_PRO: z.string().optional(),
-
-  // Lemon Squeezy
-  LEMONSQUEEZY_API_KEY: z.string().optional(),
-  LEMONSQUEEZY_API_URL: z.string().url().default('https://api.lemonsqueezy.com/v1'),
-  LEMONSQUEEZY_WEBHOOK_SECRET: z.string().optional(),
-  LEMONSQUEEZY_STORE_ID: z.string().optional(),
-  LEMONSQUEEZY_VARIANT_ID_DEV: z.string().optional(),
-  LEMONSQUEEZY_VARIANT_ID_STARTER: z.string().optional(),
-  LEMONSQUEEZY_VARIANT_ID_PRO: z.string().optional(),
+  // Stripe
+  STRIPE_SECRET_KEY: z.string().min(1),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  STRIPE_DEV_PRICE_ID: z.string().min(1),
+  STRIPE_STARTER_PRICE_ID: z.string().min(1),
+  STRIPE_PRO_PRICE_ID: z.string().min(1),
 
   // AI
   AI_ENABLED: envBoolean.default(true),

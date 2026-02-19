@@ -3,55 +3,32 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   async headers() {
-    const longLivedEdgeCache = [
+    const edgeCache = [
       {
         key: "Cache-Control",
-        value: "public, max-age=0, s-maxage=259200, stale-while-revalidate=86400",
+        value: "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400",
       },
     ];
+    const cachedRoutes = [
+      "/blog",
+      "/blog/:slug*",
+      "/templates",
+      "/templates/:slug*",
+      "/compare",
+      "/compare/:slug*",
+      "/industries",
+      "/industries/:slug*",
+      "/playground",
+      "/docs",
+      "/docs/:slug*",
+      "/sitemap.xml",
+    ];
+    const localePrefix = "/:locale(fr|de|it|es|ar|zh)";
 
-    return [
-      {
-        source: "/playground",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/blog/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/templates/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/compare/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/industries/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/:locale(fr|de|it|es|ar|zh)/playground",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/:locale(fr|de|it|es|ar|zh)/blog/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/:locale(fr|de|it|es|ar|zh)/templates/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/:locale(fr|de|it|es|ar|zh)/compare/:path*",
-        headers: longLivedEdgeCache,
-      },
-      {
-        source: "/:locale(fr|de|it|es|ar|zh)/industries/:path*",
-        headers: longLivedEdgeCache,
-      },
-    ];
+    return cachedRoutes.flatMap((source) => [
+      { source, headers: edgeCache },
+      { source: `${localePrefix}${source}`, headers: edgeCache },
+    ]);
   },
 };
 

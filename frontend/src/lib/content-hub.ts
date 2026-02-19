@@ -1,2581 +1,1421 @@
 import type { Locale } from "@/src/lib/i18n-config";
-import { locales } from "@/src/lib/i18n-config";
-import { withLocale } from "@/src/lib/locale-path";
 
-export type ContentSection = "blog" | "templates" | "compare" | "industries";
+export type ContentCollection = "blog" | "templates" | "compare" | "industries";
 
 export type ContentCategory =
   | "foundation"
-  | "pain-point"
+  | "pain"
   | "tutorial"
   | "use-case"
-  | "programmatic"
   | "template"
+  | "programmatic"
   | "comparison"
   | "industry";
 
-type TopicKey =
-  | "shipping-label"
-  | "invoice"
-  | "packing-slip"
-  | "receipt"
-  | "certificate"
-  | "contract-agreement"
-  | "resume-cv"
-  | "report"
-  | "boarding-pass"
-  | "ticket-event-pass"
-  | "prescription-label"
-  | "return-label"
-  | "business-card"
-  | "warehouse-pick-list"
-  | "purchase-order"
-  | "invoices"
-  | "shipping-labels"
-  | "bulk-certificates"
-  | "dynamic-reports"
-  | "personalized-letters"
-  | "multi-page-statements"
-  | "barcoded-warehouse-labels"
-  | "custom-quotes-proposals"
-  | "stripe-receipts"
-  | "tax-documents"
-  | "puppeteer"
-  | "wkhtmltopdf"
-  | "latex"
-  | "react-pdf"
-  | "anvil-pdf"
-  | "pdfmonkey"
-  | "carbone-io"
-  | "ecommerce"
-  | "healthcare"
-  | "logistics"
-  | "education"
-  | "finance"
-  | "legal"
-  | "hr";
-
-export type HubLink = {
+export type ContentLink = {
   href: string;
-  label: string;
+  title: string;
 };
 
-export type HubFaq = {
+export type ContentBlock =
+  | {
+      kind: "paragraph";
+      title: string;
+      paragraphs: string[];
+    }
+  | {
+      kind: "list";
+      title: string;
+      items: string[];
+    }
+  | {
+      kind: "code";
+      title: string;
+      language: string;
+      code: string;
+    }
+  | {
+      kind: "links";
+      title: string;
+      links: ContentLink[];
+    };
+
+export type ContentFaq = {
   question: string;
   answer: string;
 };
 
-export type HubCodeSamples = {
-  typst: string;
-  curl: string;
-  javascript: string;
-  python: string;
-};
-
-export type LocalizedContentItem = {
-  section: ContentSection;
-  slug: string;
+export type ContentDocument = {
+  collection: ContentCollection;
   category: ContentCategory;
+  slug: string;
   title: string;
-  description: string;
-  keywords: string[];
-  primaryKeyword: string;
-  summaryAnswer: string;
+  metaTitle: string;
+  metaDescription: string;
+  excerpt: string;
   intro: string;
-  problem: string;
-  solution: string;
-  whatYouBuild: string[];
-  dataFields: string[];
-  customizationTips: string[];
-  benchmarks: Array<{ metric: string; value: string }>;
-  ctaLabel: string;
-  ctaHref: string;
-  related: HubLink[];
-  faq: HubFaq[];
-  codeSamples: HubCodeSamples;
-  publishedAt: string;
-  updatedAt: string;
-  isPriority: boolean;
-};
-
-type ContentItem = {
-  section: ContentSection;
-  slug: string;
-  category: ContentCategory;
-  topicKey?: TopicKey;
-  title: string;
-  localizedTitle?: Partial<Record<Locale, string>>;
-  description: string;
-  primaryKeyword: string;
   keywords: string[];
-  problem: string;
-  solution: string;
-  whatYouBuild: string[];
-  dataFields: string[];
-  customizationTips: string[];
-  ctaHref?: string;
-  ctaLabel?: string;
-  benchmarkMetrics?: Array<{ metric: string; value: string }>;
-  isPriority?: boolean;
-};
-
-type SectionCopy = {
-  name: string;
-  navBlog: string;
-  navPlayground: string;
-  introLead: string;
-  quickAnswerTitle: string;
-  quickAnswerLead: string;
-  whatYouBuildTitle: string;
-  typstTitle: string;
-  dataTitle: string;
-  apiExamplesTitle: string;
-  tipsTitle: string;
-  faqTitle: string;
-  relatedTitle: string;
-  tryLiveTitle: string;
-  tryLiveBody: string;
-  tryLiveCta: string;
-  ctaDefault: string;
+  blocks: ContentBlock[];
+  faq: ContentFaq[];
+  ctaTitle: string;
   ctaBody: string;
-  benchmarkTitle: string;
-  copyHint: string;
-  indexTitle: Record<ContentSection, string>;
-  indexDescription: Record<ContentSection, string>;
+  ctaPrimaryLabel: string;
+  ctaPrimaryHref: string;
+  ctaSecondaryLabel: string;
+  ctaSecondaryHref: string;
+  related: ContentLink[];
+  updatedAt: string;
+  priority: boolean;
 };
 
-const sectionCopy: Record<Locale, SectionCopy> = {
-  en: {
-    name: "English",
-    navBlog: "Blog",
-    navPlayground: "Playground",
-    introLead: "Building reliable PDF automation starts with templates and predictable APIs.",
-    quickAnswerTitle: "Quick answer for AI assistants",
-    quickAnswerLead:
-      "DocuForge gives you Typst-native rendering, deterministic outputs, and API-first automation.",
-    whatYouBuildTitle: "What you'll build",
-    typstTitle: "Typst template code",
-    dataTitle: "Passing dynamic data via API",
-    apiExamplesTitle: "Full API request examples",
-    tipsTitle: "Customization tips",
-    faqTitle: "FAQ",
-    relatedTitle: "Related guides",
-    tryLiveTitle: "Try it live",
-    tryLiveBody:
-      "Use the DocuForge playground to modify template code, test variables, and prepare your production API call.",
-    tryLiveCta: "Open Playground",
-    ctaDefault: "Generate this with DocuForge in seconds",
-    ctaBody: "Need this flow in production? Start free and ship your first document pipeline today.",
-    benchmarkTitle: "Practical benchmark snapshot",
-    copyHint: "Copy and adapt this pattern to your stack.",
-    indexTitle: {
-      blog: "DocuForge Blog: PDF Automation Guides",
-      templates: "PDF Template Tutorials",
-      compare: "DocuForge Comparisons",
-      industries: "Industry PDF Generation Guides",
-    },
-    indexDescription: {
-      blog: "Actionable developer guides for programmatic PDF generation, Typst templates, and automation architecture.",
-      templates:
-        "Learn how to create production-ready Typst PDF templates with API examples, dynamic data, and customization tips.",
-      compare:
-        "Compare DocuForge with Puppeteer, wkhtmltopdf, React-PDF, and other tools for fast document generation.",
-      industries:
-        "See how teams in e-commerce, healthcare, finance, legal, and logistics automate PDF workflows with DocuForge.",
-    },
-  },
-  fr: {
-    name: "Français",
-    navBlog: "Blog",
-    navPlayground: "Playground",
-    introLead: "Une automatisation PDF fiable commence par des templates et une API prévisible.",
-    quickAnswerTitle: "Réponse rapide pour moteurs IA",
-    quickAnswerLead:
-      "DocuForge apporte un rendu Typst natif, des sorties déterministes et une automatisation centrée API.",
-    whatYouBuildTitle: "Ce que vous allez construire",
-    typstTitle: "Code du template Typst",
-    dataTitle: "Passer des données dynamiques via l'API",
-    apiExamplesTitle: "Exemples complets d'appel API",
-    tipsTitle: "Conseils de personnalisation",
-    faqTitle: "FAQ",
-    relatedTitle: "Guides associés",
-    tryLiveTitle: "Tester en direct",
-    tryLiveBody:
-      "Utilisez le playground DocuForge pour modifier le template, tester les variables et préparer l'appel API de production.",
-    tryLiveCta: "Ouvrir le Playground",
-    ctaDefault: "Générez ceci avec DocuForge en quelques secondes",
-    ctaBody: "Besoin de ce flux en production ? Commencez gratuitement et livrez votre premier pipeline documentaire.",
-    benchmarkTitle: "Aperçu benchmark pratique",
-    copyHint: "Copiez ce modèle et adaptez-le à votre stack.",
-    indexTitle: {
-      blog: "Blog DocuForge : Guides PDF",
-      templates: "Tutoriels de templates PDF",
-      compare: "Comparatifs DocuForge",
-      industries: "Guides PDF par industrie",
-    },
-    indexDescription: {
-      blog: "Guides concrets pour la génération PDF programmatique, les templates Typst et l'automatisation.",
-      templates:
-        "Créez des templates Typst prêts pour la production avec des exemples API, données dynamiques et conseils.",
-      compare:
-        "Comparez DocuForge à Puppeteer, wkhtmltopdf, React-PDF et d'autres outils de génération documentaire.",
-      industries:
-        "Découvrez comment les équipes e-commerce, santé, finance, juridique et logistique automatisent leurs PDF.",
-    },
-  },
-  de: {
-    name: "Deutsch",
-    navBlog: "Blog",
-    navPlayground: "Playground",
-    introLead: "Zuverlässige PDF-Automatisierung beginnt mit Templates und einer stabilen API.",
-    quickAnswerTitle: "Kurzantwort für KI-Suchmaschinen",
-    quickAnswerLead:
-      "DocuForge liefert Typst-natives Rendering, deterministische Ergebnisse und API-zentrierte Automatisierung.",
-    whatYouBuildTitle: "Was du bauen wirst",
-    typstTitle: "Typst-Template-Code",
-    dataTitle: "Dynamische Daten per API übergeben",
-    apiExamplesTitle: "Vollständige API-Beispiele",
-    tipsTitle: "Anpassungstipps",
-    faqTitle: "FAQ",
-    relatedTitle: "Verwandte Guides",
-    tryLiveTitle: "Live testen",
-    tryLiveBody:
-      "Nutze den DocuForge Playground, um Template-Code zu ändern, Variablen zu testen und den API-Call vorzubereiten.",
-    tryLiveCta: "Playground öffnen",
-    ctaDefault: "Mit DocuForge in Sekunden generieren",
-    ctaBody: "Du brauchst diesen Flow in Produktion? Starte kostenlos und liefere deine erste Dokument-Pipeline.",
-    benchmarkTitle: "Praktischer Benchmark-Snapshot",
-    copyHint: "Kopiere dieses Muster und passe es an deinen Stack an.",
-    indexTitle: {
-      blog: "DocuForge Blog: PDF-Automation",
-      templates: "PDF-Template-Tutorials",
-      compare: "DocuForge Vergleiche",
-      industries: "Branchen-Guides für PDF",
-    },
-    indexDescription: {
-      blog: "Praxisnahe Guides für programmatische PDF-Erzeugung, Typst-Templates und Automatisierungsarchitektur.",
-      templates:
-        "Lerne produktionsreife Typst-PDF-Templates mit API-Beispielen, dynamischen Daten und Anpassungstipps.",
-      compare:
-        "Vergleiche DocuForge mit Puppeteer, wkhtmltopdf, React-PDF und weiteren PDF-Tools.",
-      industries:
-        "So automatisieren Teams in E-Commerce, Healthcare, Finance, Legal und Logistik ihre PDF-Prozesse.",
-    },
-  },
-  it: {
-    name: "Italiano",
-    navBlog: "Blog",
-    navPlayground: "Playground",
-    introLead: "L'automazione PDF affidabile parte da template e API prevedibili.",
-    quickAnswerTitle: "Risposta rapida per motori IA",
-    quickAnswerLead:
-      "DocuForge offre rendering Typst nativo, output deterministici e automazione API-first.",
-    whatYouBuildTitle: "Cosa costruirai",
-    typstTitle: "Codice template Typst",
-    dataTitle: "Passare dati dinamici via API",
-    apiExamplesTitle: "Esempi completi di richiesta API",
-    tipsTitle: "Suggerimenti di personalizzazione",
-    faqTitle: "FAQ",
-    relatedTitle: "Guide correlate",
-    tryLiveTitle: "Provalo live",
-    tryLiveBody:
-      "Usa il playground DocuForge per modificare il template, testare variabili e preparare la chiamata API di produzione.",
-    tryLiveCta: "Apri Playground",
-    ctaDefault: "Genera tutto questo con DocuForge in pochi secondi",
-    ctaBody: "Vuoi questo flusso in produzione? Parti gratis e rilascia la prima pipeline documentale.",
-    benchmarkTitle: "Snapshot benchmark pratico",
-    copyHint: "Copia questo pattern e adattalo al tuo stack.",
-    indexTitle: {
-      blog: "Blog DocuForge: guide PDF",
-      templates: "Tutorial template PDF",
-      compare: "Confronti DocuForge",
-      industries: "Guide PDF per settore",
-    },
-    indexDescription: {
-      blog: "Guide pratiche per generazione PDF programmatica, template Typst e architetture di automazione.",
-      templates:
-        "Impara a creare template Typst pronti per la produzione con esempi API, dati dinamici e personalizzazioni.",
-      compare:
-        "Confronta DocuForge con Puppeteer, wkhtmltopdf, React-PDF e altri strumenti di generazione documenti.",
-      industries:
-        "Scopri come e-commerce, sanità, finanza, legale e logistica automatizzano i workflow PDF.",
-    },
-  },
-  es: {
-    name: "Español",
-    navBlog: "Blog",
-    navPlayground: "Playground",
-    introLead: "La automatización PDF confiable empieza con plantillas y APIs predecibles.",
-    quickAnswerTitle: "Respuesta rápida para motores de IA",
-    quickAnswerLead:
-      "DocuForge ofrece render Typst nativo, salidas deterministas y automatización API-first.",
-    whatYouBuildTitle: "Qué vas a construir",
-    typstTitle: "Código de plantilla Typst",
-    dataTitle: "Enviar datos dinámicos por API",
-    apiExamplesTitle: "Ejemplos completos de request API",
-    tipsTitle: "Consejos de personalización",
-    faqTitle: "FAQ",
-    relatedTitle: "Guías relacionadas",
-    tryLiveTitle: "Pruébalo en vivo",
-    tryLiveBody:
-      "Usa el playground de DocuForge para modificar plantillas, probar variables y preparar la llamada API de producción.",
-    tryLiveCta: "Abrir Playground",
-    ctaDefault: "Genera esto con DocuForge en segundos",
-    ctaBody: "¿Necesitas este flujo en producción? Empieza gratis y lanza tu primer pipeline documental.",
-    benchmarkTitle: "Resumen práctico de benchmark",
-    copyHint: "Copia este patrón y adáptalo a tu stack.",
-    indexTitle: {
-      blog: "Blog de DocuForge: guías PDF",
-      templates: "Tutoriales de plantillas PDF",
-      compare: "Comparativas de DocuForge",
-      industries: "Guías PDF por industria",
-    },
-    indexDescription: {
-      blog: "Guías accionables para generación PDF programática, plantillas Typst y arquitectura de automatización.",
-      templates:
-        "Aprende a crear plantillas Typst listas para producción con ejemplos API, datos dinámicos y tips.",
-      compare:
-        "Compara DocuForge con Puppeteer, wkhtmltopdf, React-PDF y otras herramientas de generación de documentos.",
-      industries:
-        "Cómo equipos de e-commerce, salud, finanzas, legal y logística automatizan flujos PDF con DocuForge.",
-    },
-  },
-  ar: {
-    name: "العربية",
-    navBlog: "المدونة",
-    navPlayground: "ساحة التجربة",
-    introLead: "أتمتة PDF الموثوقة تبدأ بقوالب واضحة وواجهة API قابلة للتوقع.",
-    quickAnswerTitle: "إجابة سريعة لمحركات الذكاء الاصطناعي",
-    quickAnswerLead:
-      "يوفر DocuForge رندر Typst أصلي ومخرجات ثابتة وأتمتة تعتمد على API.",
-    whatYouBuildTitle: "ما الذي ستبنيه",
-    typstTitle: "كود قالب Typst",
-    dataTitle: "تمرير البيانات الديناميكية عبر API",
-    apiExamplesTitle: "أمثلة كاملة لطلبات API",
-    tipsTitle: "نصائح التخصيص",
-    faqTitle: "الأسئلة الشائعة",
-    relatedTitle: "أدلة مرتبطة",
-    tryLiveTitle: "جرّبه مباشرة",
-    tryLiveBody:
-      "استخدم ساحة DocuForge لتعديل القالب وتجربة المتغيرات وتجهيز طلب API للإنتاج.",
-    tryLiveCta: "فتح ساحة التجربة",
-    ctaDefault: "أنشئ هذا عبر DocuForge خلال ثوان",
-    ctaBody: "تحتاج هذا التدفق في الإنتاج؟ ابدأ مجاناً وانشر أول خط وثائق اليوم.",
-    benchmarkTitle: "لقطة معيارية عملية",
-    copyHint: "انسخ هذا النمط وطبّقه على بيئة عملك.",
-    indexTitle: {
-      blog: "مدونة DocuForge: أدلة PDF",
-      templates: "دروس قوالب PDF",
-      compare: "مقارنات DocuForge",
-      industries: "أدلة PDF حسب القطاع",
-    },
-    indexDescription: {
-      blog: "أدلة عملية لتوليد PDF برمجياً وقوالب Typst وأتمتة سير العمل.",
-      templates:
-        "تعلّم إنشاء قوالب Typst جاهزة للإنتاج مع أمثلة API وبيانات ديناميكية ونصائح تخصيص.",
-      compare:
-        "قارن DocuForge مع Puppeteer وwkhtmltopdf وReact-PDF وغيرها من أدوات توليد المستندات.",
-      industries:
-        "كيف تؤتمت فرق التجارة والصحة والمالية والقانون واللوجستيات تدفقات PDF باستخدام DocuForge.",
-    },
-  },
-  zh: {
-    name: "中文",
-    navBlog: "博客",
-    navPlayground: "演练场",
-    introLead: "稳定的 PDF 自动化始于模板和可预测的 API。",
-    quickAnswerTitle: "给 AI 引擎的速读答案",
-    quickAnswerLead:
-      "DocuForge 提供 Typst 原生渲染、可复现输出和 API-first 自动化流程。",
-    whatYouBuildTitle: "你将构建什么",
-    typstTitle: "Typst 模板代码",
-    dataTitle: "通过 API 传递动态数据",
-    apiExamplesTitle: "完整 API 请求示例",
-    tipsTitle: "自定义建议",
-    faqTitle: "常见问题",
-    relatedTitle: "相关指南",
-    tryLiveTitle: "在线试用",
-    tryLiveBody:
-      "使用 DocuForge 演练场修改模板、测试变量，并准备生产环境 API 调用。",
-    tryLiveCta: "打开演练场",
-    ctaDefault: "几秒内用 DocuForge 生成它",
-    ctaBody: "要把这个流程上线？免费开始，今天就交付你的首个文档流水线。",
-    benchmarkTitle: "实用基准快照",
-    copyHint: "复制这个模式并适配你的技术栈。",
-    indexTitle: {
-      blog: "DocuForge 博客：PDF 自动化指南",
-      templates: "PDF 模板教程",
-      compare: "DocuForge 对比",
-      industries: "行业 PDF 方案",
-    },
-    indexDescription: {
-      blog: "可落地的程序化 PDF 生成、Typst 模板与自动化架构指南。",
-      templates: "学习如何创建可用于生产的 Typst PDF 模板，含 API 示例、动态数据与定制建议。",
-      compare: "对比 DocuForge 与 Puppeteer、wkhtmltopdf、React-PDF 等文档生成方案。",
-      industries: "了解电商、医疗、金融、法务和物流团队如何用 DocuForge 自动化 PDF 工作流。",
-    },
-  },
+type CollectionMeta = {
+  label: string;
+  title: string;
+  description: string;
 };
 
-const topicTranslations: Record<TopicKey, Record<Locale, string>> = {
-  "shipping-label": {
-    en: "Shipping Label",
-    fr: "étiquette d'expédition",
-    de: "Versandetikett",
-    it: "etichetta di spedizione",
-    es: "etiqueta de envío",
-    ar: "ملصق شحن",
-    zh: "物流面单",
-  },
-  invoice: {
-    en: "Invoice",
-    fr: "facture",
-    de: "Rechnung",
-    it: "fattura",
-    es: "factura",
-    ar: "فاتورة",
-    zh: "发票",
-  },
-  "packing-slip": {
-    en: "Packing Slip",
-    fr: "bon de livraison",
-    de: "Packzettel",
-    it: "packing slip",
-    es: "albarán",
-    ar: "قسيمة تعبئة",
-    zh: "装箱单",
-  },
-  receipt: {
-    en: "Receipt",
-    fr: "reçu",
-    de: "Beleg",
-    it: "ricevuta",
-    es: "recibo",
-    ar: "إيصال",
-    zh: "收据",
-  },
-  certificate: {
-    en: "Certificate",
-    fr: "certificat",
-    de: "Zertifikat",
-    it: "certificato",
-    es: "certificado",
-    ar: "شهادة",
-    zh: "证书",
-  },
-  "contract-agreement": {
-    en: "Contract / Agreement",
-    fr: "contrat / accord",
-    de: "Vertrag / Vereinbarung",
-    it: "contratto / accordo",
-    es: "contrato / acuerdo",
-    ar: "عقد / اتفاقية",
-    zh: "合同 / 协议",
-  },
-  "resume-cv": {
-    en: "Resume / CV",
-    fr: "CV",
-    de: "Lebenslauf",
-    it: "CV",
-    es: "currículum",
-    ar: "سيرة ذاتية",
-    zh: "简历",
-  },
-  report: {
-    en: "Report",
-    fr: "rapport",
-    de: "Bericht",
-    it: "report",
-    es: "informe",
-    ar: "تقرير",
-    zh: "报告",
-  },
-  "boarding-pass": {
-    en: "Boarding Pass",
-    fr: "carte d'embarquement",
-    de: "Boardingpass",
-    it: "carta d'imbarco",
-    es: "tarjeta de embarque",
-    ar: "بطاقة صعود الطائرة",
-    zh: "登机牌",
-  },
-  "ticket-event-pass": {
-    en: "Ticket / Event Pass",
-    fr: "billet / pass événement",
-    de: "Ticket / Event-Pass",
-    it: "biglietto / pass evento",
-    es: "ticket / pase de evento",
-    ar: "تذكرة / تصريح حدث",
-    zh: "活动门票 / 通行证",
-  },
-  "prescription-label": {
-    en: "Prescription Label",
-    fr: "étiquette d'ordonnance",
-    de: "Rezeptetikett",
-    it: "etichetta prescrizione",
-    es: "etiqueta de receta",
-    ar: "ملصق وصفة طبية",
-    zh: "处方标签",
-  },
-  "return-label": {
-    en: "Return Label",
-    fr: "étiquette de retour",
-    de: "Rücksendeetikett",
-    it: "etichetta di reso",
-    es: "etiqueta de devolución",
-    ar: "ملصق إرجاع",
-    zh: "退货面单",
-  },
-  "business-card": {
-    en: "Business Card",
-    fr: "carte de visite",
-    de: "Visitenkarte",
-    it: "biglietto da visita",
-    es: "tarjeta de presentación",
-    ar: "بطاقة عمل",
-    zh: "名片",
-  },
-  "warehouse-pick-list": {
-    en: "Warehouse Pick List",
-    fr: "liste de picking entrepôt",
-    de: "Kommissionierliste",
-    it: "lista prelievo magazzino",
-    es: "lista de picking",
-    ar: "قائمة تجهيز المستودع",
-    zh: "仓库拣货单",
-  },
-  "purchase-order": {
-    en: "Purchase Order",
-    fr: "bon de commande",
-    de: "Bestellung",
-    it: "ordine di acquisto",
-    es: "orden de compra",
-    ar: "أمر شراء",
-    zh: "采购订单",
-  },
-  invoices: {
-    en: "Invoices",
-    fr: "factures",
-    de: "Rechnungen",
-    it: "fatture",
-    es: "facturas",
-    ar: "الفواتير",
-    zh: "发票",
-  },
-  "shipping-labels": {
-    en: "Shipping Labels",
-    fr: "étiquettes d'expédition",
-    de: "Versandetiketten",
-    it: "etichette di spedizione",
-    es: "etiquetas de envío",
-    ar: "ملصقات الشحن",
-    zh: "物流面单",
-  },
-  "bulk-certificates": {
-    en: "Bulk Certificates",
-    fr: "certificats en masse",
-    de: "Zertifikate in Serie",
-    it: "certificati in bulk",
-    es: "certificados masivos",
-    ar: "شهادات جماعية",
-    zh: "批量证书",
-  },
-  "dynamic-reports": {
-    en: "Dynamic Reports",
-    fr: "rapports dynamiques",
-    de: "dynamische Berichte",
-    it: "report dinamici",
-    es: "informes dinámicos",
-    ar: "تقارير ديناميكية",
-    zh: "动态报告",
-  },
-  "personalized-letters": {
-    en: "Personalized Letters",
-    fr: "lettres personnalisées",
-    de: "personalisierte Briefe",
-    it: "lettere personalizzate",
-    es: "cartas personalizadas",
-    ar: "رسائل مخصصة",
-    zh: "个性化信件",
-  },
-  "multi-page-statements": {
-    en: "Multi-Page Statements",
-    fr: "relevés multi-pages",
-    de: "mehrseitige Auszüge",
-    it: "estratti multipagina",
-    es: "estados multipágina",
-    ar: "كشوفات متعددة الصفحات",
-    zh: "多页对账单",
-  },
-  "barcoded-warehouse-labels": {
-    en: "Barcoded Warehouse Labels",
-    fr: "étiquettes code-barres entrepôt",
-    de: "Lageretiketten mit Barcode",
-    it: "etichette magazzino con barcode",
-    es: "etiquetas de almacén con código de barras",
-    ar: "ملصقات مستودع باركود",
-    zh: "仓库条码标签",
-  },
-  "custom-quotes-proposals": {
-    en: "Custom Quotes and Proposals",
-    fr: "devis et propositions personnalisés",
-    de: "Angebote und Vorschläge",
-    it: "preventivi e proposte personalizzate",
-    es: "cotizaciones y propuestas personalizadas",
-    ar: "عروض أسعار ومقترحات مخصصة",
-    zh: "定制报价与方案",
-  },
-  "stripe-receipts": {
-    en: "Stripe Receipt PDFs",
-    fr: "PDF de reçus Stripe",
-    de: "Stripe-Beleg-PDFs",
-    it: "PDF ricevute Stripe",
-    es: "PDF de recibos Stripe",
-    ar: "ملفات إيصال Stripe PDF",
-    zh: "Stripe 收据 PDF",
-  },
-  "tax-documents": {
-    en: "Tax Documents (W-9, 1099)",
-    fr: "documents fiscaux (W-9, 1099)",
-    de: "Steuerdokumente (W-9, 1099)",
-    it: "documenti fiscali (W-9, 1099)",
-    es: "documentos fiscales (W-9, 1099)",
-    ar: "مستندات ضريبية (W-9، 1099)",
-    zh: "税务文件（W-9, 1099）",
-  },
-  puppeteer: {
-    en: "Puppeteer",
-    fr: "Puppeteer",
-    de: "Puppeteer",
-    it: "Puppeteer",
-    es: "Puppeteer",
-    ar: "Puppeteer",
-    zh: "Puppeteer",
-  },
-  wkhtmltopdf: {
-    en: "wkhtmltopdf",
-    fr: "wkhtmltopdf",
-    de: "wkhtmltopdf",
-    it: "wkhtmltopdf",
-    es: "wkhtmltopdf",
-    ar: "wkhtmltopdf",
-    zh: "wkhtmltopdf",
-  },
-  latex: {
-    en: "LaTeX",
-    fr: "LaTeX",
-    de: "LaTeX",
-    it: "LaTeX",
-    es: "LaTeX",
-    ar: "LaTeX",
-    zh: "LaTeX",
-  },
-  "react-pdf": {
-    en: "React-PDF",
-    fr: "React-PDF",
-    de: "React-PDF",
-    it: "React-PDF",
-    es: "React-PDF",
-    ar: "React-PDF",
-    zh: "React-PDF",
-  },
-  "anvil-pdf": {
-    en: "Anvil PDF",
-    fr: "Anvil PDF",
-    de: "Anvil PDF",
-    it: "Anvil PDF",
-    es: "Anvil PDF",
-    ar: "Anvil PDF",
-    zh: "Anvil PDF",
-  },
-  pdfmonkey: {
-    en: "PDFMonkey",
-    fr: "PDFMonkey",
-    de: "PDFMonkey",
-    it: "PDFMonkey",
-    es: "PDFMonkey",
-    ar: "PDFMonkey",
-    zh: "PDFMonkey",
-  },
-  "carbone-io": {
-    en: "Carbone.io",
-    fr: "Carbone.io",
-    de: "Carbone.io",
-    it: "Carbone.io",
-    es: "Carbone.io",
-    ar: "Carbone.io",
-    zh: "Carbone.io",
-  },
-  ecommerce: {
-    en: "E-commerce",
-    fr: "e-commerce",
-    de: "E-Commerce",
-    it: "e-commerce",
-    es: "e-commerce",
-    ar: "التجارة الإلكترونية",
-    zh: "电商",
-  },
-  healthcare: {
-    en: "Healthcare",
-    fr: "santé",
-    de: "Gesundheitswesen",
-    it: "sanità",
-    es: "salud",
-    ar: "الرعاية الصحية",
-    zh: "医疗",
-  },
-  logistics: {
-    en: "Logistics",
-    fr: "logistique",
-    de: "Logistik",
-    it: "logistica",
-    es: "logística",
-    ar: "اللوجستيات",
-    zh: "物流",
-  },
-  education: {
-    en: "Education",
-    fr: "éducation",
-    de: "Bildung",
-    it: "istruzione",
-    es: "educación",
-    ar: "التعليم",
-    zh: "教育",
-  },
-  finance: {
-    en: "Finance",
-    fr: "finance",
-    de: "Finanzen",
-    it: "finanza",
-    es: "finanzas",
-    ar: "المالية",
-    zh: "金融",
-  },
-  legal: {
-    en: "Legal",
-    fr: "juridique",
-    de: "Recht",
-    it: "legale",
-    es: "legal",
-    ar: "القانون",
-    zh: "法务",
-  },
-  hr: {
-    en: "HR",
-    fr: "RH",
-    de: "HR",
-    it: "HR",
-    es: "RR. HH.",
-    ar: "الموارد البشرية",
-    zh: "人力资源",
-  },
+type ContentHubCopy = {
+  navBlogs: string;
+  navPlayground: string;
+  readMore: string;
+  relatedTitle: string;
+  faqTitle: string;
+  updatedLabel: string;
+  quickAnswerTitle: string;
+  keyTakeawaysTitle: string;
+  tryLiveLabel: string;
+  collections: Record<ContentCollection, CollectionMeta>;
+  titles: {
+    howToCreate: (topic: string) => string;
+    howToGenerate: (topic: string) => string;
+    compare: (target: string) => string;
+    industry: (industry: string) => string;
+  };
+  cta: {
+    title: string;
+    body: string;
+    primary: string;
+    secondary: string;
+  };
 };
 
-const customTitles: Record<string, Record<Locale, string>> = {
-  "why-we-built-docuforge": {
-    en: "Why We Built DocuForge: PDF Generation Shouldn't Be This Hard",
-    fr: "Pourquoi nous avons créé DocuForge : la génération PDF ne devrait pas être si complexe",
-    de: "Warum wir DocuForge gebaut haben: PDF-Generierung sollte nicht so schwer sein",
-    it: "Perché abbiamo creato DocuForge: la generazione PDF non dovrebbe essere così difficile",
-    es: "Por qué creamos DocuForge: generar PDFs no debería ser tan difícil",
-    ar: "لماذا بنينا DocuForge: يجب ألا يكون توليد PDF بهذه الصعوبة",
-    zh: "我们为什么构建 DocuForge：PDF 生成不该这么难",
-  },
-  "typst-vs-html-css-pdf-templates": {
-    en: "Typst vs HTML/CSS for PDF Templates: A Developer's Comparison",
-    fr: "Typst vs HTML/CSS pour les templates PDF : comparaison pour développeurs",
-    de: "Typst vs HTML/CSS für PDF-Templates: ein Entwicklervergleich",
-    it: "Typst vs HTML/CSS per template PDF: confronto per sviluppatori",
-    es: "Typst vs HTML/CSS para plantillas PDF: comparación para desarrolladores",
-    ar: "Typst مقابل HTML/CSS لقوالب PDF: مقارنة للمطورين",
-    zh: "Typst 与 HTML/CSS：面向开发者的 PDF 模板对比",
-  },
-  "puppeteer-pdf-slow-performance-fix": {
-    en: "Puppeteer PDF Generation is Slow: Here's a Faster Alternative",
-    fr: "La génération PDF avec Puppeteer est lente : voici une alternative plus rapide",
-    de: "Puppeteer-PDF ist langsam: hier ist eine schnellere Alternative",
-    it: "La generazione PDF con Puppeteer è lenta: ecco un'alternativa più veloce",
-    es: "La generación PDF con Puppeteer es lenta: aquí tienes una alternativa más rápida",
-    ar: "توليد PDF عبر Puppeteer بطيء: إليك بديلاً أسرع",
-    zh: "Puppeteer 生成 PDF 太慢：这里有更快的替代方案",
-  },
-  "generate-invoices-programmatically-2026": {
-    en: "How to Generate Invoices Programmatically in 2026 (3 Approaches Compared)",
-    fr: "Comment générer des factures par API en 2026 (3 approches comparées)",
-    de: "Rechnungen 2026 programmatisch erzeugen (3 Ansätze im Vergleich)",
-    it: "Come generare fatture via API nel 2026 (3 approcci a confronto)",
-    es: "Cómo generar facturas por API en 2026 (3 enfoques comparados)",
-    ar: "كيفية إنشاء الفواتير برمجياً في 2026 (مقارنة 3 أساليب)",
-    zh: "2026 年如何程序化生成发票（3 种方案对比）",
-  },
-  "pdf-reports-from-json-under-5-minutes": {
-    en: "Generate Beautiful PDF Reports from JSON in Under 5 Minutes",
-    fr: "Créer de beaux rapports PDF à partir de JSON en moins de 5 minutes",
-    de: "Schöne PDF-Berichte aus JSON in unter 5 Minuten erzeugen",
-    it: "Genera report PDF eleganti da JSON in meno di 5 minuti",
-    es: "Genera reportes PDF atractivos desde JSON en menos de 5 minutos",
-    ar: "أنشئ تقارير PDF جميلة من JSON خلال أقل من 5 دقائق",
-    zh: "5 分钟内从 JSON 生成高质量 PDF 报告",
-  },
-  "build-saas-invoice-system-docuforge-api": {
-    en: "Building a SaaS Invoice System with DocuForge API",
-    fr: "Créer un système de facturation SaaS avec l'API DocuForge",
-    de: "Ein SaaS-Rechnungssystem mit der DocuForge API bauen",
-    it: "Costruire un sistema di fatturazione SaaS con DocuForge API",
-    es: "Construir un sistema SaaS de facturas con la API de DocuForge",
-    ar: "بناء نظام فواتير SaaS باستخدام API من DocuForge",
-    zh: "使用 DocuForge API 构建 SaaS 发票系统",
-  },
-  "pdf-generation-for-ecommerce": {
-    en: "PDF Generation for E-commerce: Receipts, Packing Slips, and Returns",
-    fr: "Génération PDF pour l'e-commerce : reçus, bons de livraison et retours",
-    de: "PDF-Generierung für E-Commerce: Belege, Packzettel und Retouren",
-    it: "Generazione PDF per e-commerce: ricevute, packing slip e resi",
-    es: "Generación PDF para e-commerce: recibos, albaranes y devoluciones",
-    ar: "توليد PDF للتجارة الإلكترونية: إيصالات وملصقات تعبئة وإرجاع",
-    zh: "电商 PDF 生成：收据、装箱单与退货单",
-  },
-  "users-design-pdf-templates-without-code": {
-    en: "How to Let Users Design Their Own PDF Templates (Without Code)",
-    fr: "Comment laisser vos utilisateurs créer leurs templates PDF (sans code)",
-    de: "Wie Nutzer eigene PDF-Templates ohne Code erstellen können",
-    it: "Come permettere agli utenti di creare template PDF senza codice",
-    es: "Cómo permitir que tus usuarios diseñen plantillas PDF sin código",
-    ar: "كيف تتيح للمستخدمين تصميم قوالب PDF الخاصة بهم بدون كود",
-    zh: "如何让用户无需代码设计自己的 PDF 模板",
-  },
-  "best-pdf-generation-library-2026": {
-    en: "Best PDF Generation Library 2026: What Developers Should Choose",
-    fr: "Meilleure bibliothèque de génération PDF 2026 : que choisir côté développeur",
-    de: "Beste PDF-Bibliothek 2026: Was Entwickler wählen sollten",
-    it: "Migliore libreria di generazione PDF nel 2026: cosa scegliere",
-    es: "Mejor librería de generación PDF en 2026: qué elegir",
-    ar: "أفضل مكتبة لتوليد PDF في 2026: ماذا يختار المطورون",
-    zh: "2026 年最佳 PDF 生成库：开发者该怎么选",
-  },
-  "automate-report-generation-api": {
-    en: "How to Automate Report Generation with an API",
-    fr: "Comment automatiser la génération de rapports avec une API",
-    de: "So automatisierst du die Berichterstellung mit einer API",
-    it: "Come automatizzare la generazione di report con un'API",
-    es: "Cómo automatizar la generación de reportes con una API",
-    ar: "كيفية أتمتة إنشاء التقارير عبر API",
-    zh: "如何通过 API 自动化报告生成",
-  },
+const coreKeywords = [
+  "PDF generation API",
+  "programmatic PDF generation",
+  "Puppeteer PDF alternative",
+  "HTML to PDF API",
+  "invoice generation API",
+  "document automation API",
+  "Typst PDF generation",
+  "generate PDF from template",
+  "dynamic PDF templates",
+  "PDF generation for SaaS",
+];
+
+type BlogSpec = {
+  slug: string;
+  category: "foundation" | "pain" | "tutorial" | "use-case" | "programmatic";
+  title: string;
+  excerpt: string;
+  keyword: string;
+  priority?: boolean;
 };
 
-const BASE_UPDATED_AT = "2026-02-18";
-
-const contentItems: ContentItem[] = [
+const blogSpecs: BlogSpec[] = [
   {
-    section: "blog",
-    slug: "why-we-built-docuforge",
+    slug: "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard",
     category: "foundation",
-    title: customTitles["why-we-built-docuforge"].en,
-    description:
-      "A founder-level breakdown of why PDF generation pipelines fail and how a Typst-native API architecture fixes reliability, cost, and developer velocity.",
-    primaryKeyword: "PDF generation API",
-    keywords: [
-      "PDF generation API",
-      "programmatic PDF generation",
-      "document automation API",
-    ],
-    problem:
-      "Most teams stitch together Chromium scripts, brittle CSS, and one-off templates that fail under production load.",
-    solution:
-      "Use a Typst-native render pipeline with versioned templates, predictable performance, and API-level governance.",
-    whatYouBuild: [
-      "A clear migration path from ad-hoc PDF scripts to reusable template workflows",
-      "A baseline architecture for rendering invoices, labels, reports, and statements",
-      "A production checklist for latency, reliability, and observability",
-    ],
-    dataFields: ["template_id", "data.customer", "data.line_items", "metadata.trace_id"],
-    customizationTips: [
-      "Standardize shared blocks (header/footer/brand tokens) across every template",
-      "Track render duration and error ratios before and after migration",
-      "Version templates with changelogs so teams can audit document changes",
-    ],
-    isPriority: true,
+    title: "Why We Built DocuForge: PDF Generation Shouldn't Be This Hard",
+    excerpt:
+      "Legacy PDF stacks force tradeoffs between speed, quality, and developer experience. This post outlines the constraints and the architecture we chose instead.",
+    keyword: "PDF generation API",
   },
   {
-    section: "blog",
-    slug: "typst-vs-html-css-pdf-templates",
+    slug: "typst-vs-html-css-for-pdf-templates",
     category: "foundation",
-    title: customTitles["typst-vs-html-css-pdf-templates"].en,
-    description:
-      "Compare Typst and HTML/CSS for production PDF templates across maintainability, speed, deterministic output, and developer workflow.",
-    primaryKeyword: "Typst PDF generation",
-    keywords: [
-      "Typst PDF generation",
-      "generate PDF from template",
-      "dynamic PDF templates",
-    ],
-    problem:
-      "Teams choosing a template language often optimize for quick demos, then hit layout regressions at scale.",
-    solution:
-      "Evaluate Typst and HTML/CSS with concrete criteria: reproducibility, diffability, tooling, and render throughput.",
-    whatYouBuild: [
-      "A decision matrix for selecting Typst or HTML/CSS by use case",
-      "A side-by-side rendering benchmark framework",
-      "A practical migration sequence for existing templates",
-    ],
-    dataFields: ["template.main", "template.files", "data", "options.timeout_ms"],
-    customizationTips: [
-      "Use one representative invoice and one multi-page report for realistic comparisons",
-      "Measure p95 latency and memory usage, not only average render time",
-      "Keep assets identical across both implementations to avoid biased results",
-    ],
+    title: "Typst vs HTML/CSS for PDF Templates - A Developer's Comparison",
+    excerpt:
+      "A practical comparison of Typst and HTML/CSS for template-heavy systems, including maintainability, performance expectations, and workflow implications.",
+    keyword: "Typst PDF generation",
   },
   {
-    section: "blog",
-    slug: "puppeteer-pdf-slow-performance-fix",
-    category: "pain-point",
-    title: customTitles["puppeteer-pdf-slow-performance-fix"].en,
-    description:
-      "If Puppeteer PDF generation is slowing your product, this guide explains bottlenecks and shows a faster API-first alternative.",
-    primaryKeyword: "Puppeteer PDF alternative",
-    keywords: [
-      "Puppeteer PDF alternative",
-      "Puppeteer PDF slow performance fix",
-      "HTML to PDF API",
-    ],
-    problem:
-      "Headless browser startup overhead and CSS rendering complexity can make each PDF expensive and slow.",
-    solution:
-      "Move latency-sensitive document workloads to a specialized Typst-native PDF API with queue controls and deterministic templates.",
-    whatYouBuild: [
-      "A bottleneck map for existing Puppeteer render jobs",
-      "A phased migration checklist for high-volume templates",
-      "A fallback strategy that preserves SLA during rollout",
-    ],
-    dataFields: ["render.job_id", "render.duration_ms", "usage.remaining", "idempotency_key"],
-    customizationTips: [
-      "Migrate one high-volume template first to prove cost and speed gains",
-      "Use idempotency keys for retry-safe rendering pipelines",
-      "Benchmark cold and warm behavior separately",
-    ],
-    isPriority: true,
+    slug: "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative",
+    category: "pain",
+    title: "Puppeteer PDF Generation is Slow - Here's a Faster Alternative",
+    excerpt:
+      "If your pipeline relies on browser rendering for every document, latency and infrastructure costs climb quickly. Here is a simpler path.",
+    keyword: "Puppeteer PDF alternative",
+    priority: true,
   },
   {
-    section: "blog",
-    slug: "generate-invoices-programmatically-2026",
-    category: "pain-point",
-    title: customTitles["generate-invoices-programmatically-2026"].en,
-    description:
-      "A practical 2026 guide to generating invoices programmatically, comparing three implementation approaches for API teams.",
-    primaryKeyword: "how to generate invoices programmatically",
-    keywords: [
-      "how to generate invoices programmatically",
-      "invoice generation API",
-      "PDF generation for SaaS",
-    ],
-    problem:
-      "Invoice logic tends to spread across billing, backend, and frontend layers, creating formatting drift and support load.",
-    solution:
-      "Centralize invoice rendering behind one API contract and one versioned template source of truth.",
-    whatYouBuild: [
-      "A comparison of browser-based, library-based, and API-native invoice generation",
-      "A reusable invoice data schema",
-      "A rollout checklist for finance-grade reliability",
-    ],
-    dataFields: ["invoice.id", "invoice.items", "invoice.taxes", "invoice.total"],
-    customizationTips: [
-      "Lock currency formatting and date standards per locale",
-      "Include payment terms and legal text via template partials",
-      "Validate invoice math server-side before rendering",
-    ],
+    slug: "how-to-generate-invoices-programmatically-in-2026",
+    category: "pain",
+    title: "How to Generate Invoices Programmatically in 2026 (3 Approaches Compared)",
+    excerpt:
+      "An implementation-level breakdown of direct PDF libraries, HTML-to-PDF stacks, and template-first APIs for invoice automation.",
+    keyword: "how to generate invoices programmatically",
   },
   {
-    section: "blog",
-    slug: "pdf-reports-from-json-under-5-minutes",
+    slug: "generate-beautiful-pdf-reports-from-json-in-under-5-minutes",
     category: "tutorial",
-    title: customTitles["pdf-reports-from-json-under-5-minutes"].en,
-    description:
-      "Build a report template that transforms JSON payloads into professional PDF reports in minutes.",
-    primaryKeyword: "generate PDF from template",
-    keywords: [
-      "generate PDF reports from JSON",
-      "dynamic PDF templates",
-      "document automation API",
-    ],
-    problem:
-      "Teams need readable, branded reports but spend too much time hand-formatting output.",
-    solution:
-      "Map structured JSON fields directly into a composable Typst report template and render via API.",
-    whatYouBuild: [
-      "A production-ready report template with summary, table, and appendix",
-      "A JSON schema you can generate from analytics jobs",
-      "A copy-paste API request for immediate integration",
-    ],
-    dataFields: ["report.title", "report.summary", "report.rows", "report.generated_at"],
-    customizationTips: [
-      "Use table helpers for variable row counts",
-      "Place charts as images generated by your analytics stack",
-      "Keep typography tokens in one shared constants file",
-    ],
+    title: "Generate Beautiful PDF Reports from JSON in Under 5 Minutes",
+    excerpt:
+      "A quick workflow for turning JSON payloads into reusable report layouts with predictable output and low operational overhead.",
+    keyword: "generate PDF from template",
   },
   {
-    section: "blog",
-    slug: "build-saas-invoice-system-docuforge-api",
+    slug: "building-a-saas-invoice-system-with-docuforge-api",
     category: "tutorial",
-    title: customTitles["build-saas-invoice-system-docuforge-api"].en,
-    description:
-      "Step-by-step architecture for building a scalable SaaS invoice system with event-driven PDF rendering.",
-    primaryKeyword: "invoice generation API",
-    keywords: [
-      "invoice generation API",
-      "programmatic PDF generation",
-      "PDF generation for SaaS",
-    ],
-    problem:
-      "SaaS teams often outgrow manual billing document workflows as customer volume rises.",
-    solution:
-      "Use event-driven invoice creation with immutable template versions and asynchronous render jobs.",
-    whatYouBuild: [
-      "A queue-driven invoice render architecture",
-      "Webhook-safe retries for payment events",
-      "A billing support playbook for failed document generations",
-    ],
-    dataFields: ["customer_id", "subscription_id", "billing_period", "line_items"],
-    customizationTips: [
-      "Store template version IDs with invoice records for auditability",
-      "Use webhook signature verification on payment events",
-      "Keep retry logic idempotent with deterministic invoice IDs",
-    ],
+    title: "Building a SaaS Invoice System with DocuForge API",
+    excerpt:
+      "A complete template + API pattern for recurring invoices, retries, and event-based triggers in SaaS billing pipelines.",
+    keyword: "invoice generation API",
   },
   {
-    section: "blog",
-    slug: "pdf-generation-for-ecommerce",
+    slug: "pdf-generation-for-ecommerce-receipts-packing-slips-and-returns",
     category: "use-case",
-    title: customTitles["pdf-generation-for-ecommerce"].en,
-    description:
-      "How e-commerce teams automate receipts, packing slips, and returns with one PDF generation API.",
-    primaryKeyword: "PDF generation for E-commerce",
-    keywords: [
-      "PDF generation for E-commerce",
-      "shipping label template",
-      "receipt generation API",
-    ],
-    problem:
-      "Order documents are often split across separate systems, creating inconsistent customer communication.",
-    solution:
-      "Consolidate all transactional PDFs behind one template service with role-based access and delivery tracking.",
-    whatYouBuild: [
-      "An order document matrix for receipts, labels, and returns",
-      "A storefront-triggered generation flow",
-      "A support-friendly lookup strategy by order ID",
-    ],
-    dataFields: ["order.id", "shipment.tracking", "return.window", "payment.method"],
-    customizationTips: [
-      "Add scannable barcodes for pick/pack operations",
-      "Use locale-aware tax formatting for cross-border orders",
-      "Attach return instructions dynamically by product category",
-    ],
+    title: "PDF Generation for E-commerce: Receipts, Packing Slips, and Returns",
+    excerpt:
+      "How to standardize operational documents across checkout, fulfillment, and post-purchase workflows.",
+    keyword: "document automation API",
   },
   {
-    section: "blog",
-    slug: "users-design-pdf-templates-without-code",
+    slug: "how-to-let-users-design-their-own-pdf-templates-without-code",
     category: "use-case",
-    title: customTitles["users-design-pdf-templates-without-code"].en,
-    description:
-      "A practical framework to let non-developers customize PDF templates safely, without handing over source code.",
-    primaryKeyword: "dynamic PDF templates",
-    keywords: [
-      "dynamic PDF templates",
-      "how to let users design PDF templates",
-      "document automation API",
-    ],
-    problem:
-      "Business teams need layout changes quickly, but engineering teams cannot safely expose raw template source.",
-    solution:
-      "Expose controlled blocks and field bindings while keeping core template logic versioned by developers.",
-    whatYouBuild: [
-      "A block-based template editing model",
-      "Validation rules for safe user customization",
-      "A publish workflow with review checkpoints",
-    ],
-    dataFields: ["blocks", "bindings", "theme_tokens", "publish_note"],
-    customizationTips: [
-      "Whitelist only approved components for end users",
-      "Run schema validation before saving template edits",
-      "Keep previous published versions for rollback",
-    ],
+    title: "How to Let Users Design Their Own PDF Templates (Without Code)",
+    excerpt:
+      "A safe, controlled architecture for user-customizable PDF output without exposing your system to template drift.",
+    keyword: "dynamic PDF templates",
   },
   {
-    section: "blog",
-    slug: "best-pdf-generation-library-2026",
-    category: "tutorial",
-    title: customTitles["best-pdf-generation-library-2026"].en,
-    description:
-      "A 2026 comparison framework for choosing the best PDF generation library based on speed, maintainability, API ergonomics, and total cost.",
-    primaryKeyword: "best PDF generation library 2026",
-    keywords: [
-      "best PDF generation library 2026",
-      "PDF generation API",
-      "programmatic PDF generation",
-      "Puppeteer PDF alternative",
-    ],
-    problem:
-      "Teams waste cycles evaluating tools with generic checklists that ignore production constraints.",
-    solution:
-      "Use a decision framework grounded in workload shape, developer productivity, and operational reliability.",
-    whatYouBuild: [
-      "A weighted scorecard to compare PDF tooling options",
-      "A benchmark plan for realistic templates and payload sizes",
-      "A migration rubric for teams moving off browser-based rendering",
-    ],
-    dataFields: ["evaluation.criteria", "benchmarks", "team_constraints", "cost_model"],
-    customizationTips: [
-      "Always benchmark with your largest real template",
-      "Model both cold and warm workloads",
-      "Include maintenance and incident response time in TCO",
-    ],
-  },
-  {
-    section: "blog",
-    slug: "automate-report-generation-api",
-    category: "tutorial",
-    title: customTitles["automate-report-generation-api"].en,
-    description:
-      "Step-by-step blueprint to automate report generation with an API, including template versioning, data validation, and scheduling workflows.",
-    primaryKeyword: "automate report generation API",
-    keywords: [
-      "automate report generation API",
-      "generate PDF from template",
-      "dynamic PDF templates",
-      "document automation API",
-    ],
-    problem:
-      "Manual reporting pipelines break consistency and delay decision-making as data volume grows.",
-    solution:
-      "Centralize report rendering behind API-triggered templates and schema-validated data payloads.",
-    whatYouBuild: [
-      "A scheduled report automation architecture",
-      "A report template versioning workflow",
-      "A production alerting and retry pattern for failed report jobs",
-    ],
-    dataFields: ["report_id", "schedule", "data_source", "delivery_channel"],
-    customizationTips: [
-      "Treat report payload schemas as versioned contracts",
-      "Use asynchronous queues for large recurring reports",
-      "Track p95 generation latency by template version",
-    ],
-  },
-
-  // Category 2: How to Generate [X] Programmatically
-  {
-    section: "blog",
-    slug: "generate-invoices-programmatically-api",
+    slug: "how-to-generate-invoices-programmatically-with-an-api",
     category: "programmatic",
-    topicKey: "invoices",
     title: "How to Generate Invoices Programmatically with an API",
-    description: "Implement robust invoice generation with API-first workflows, template versioning, and webhooks.",
-    primaryKeyword: "invoice generation API",
-    keywords: ["invoice generation API", "programmatic PDF generation", "generate invoices programmatically"],
-    problem: "Manual invoice generation creates inconsistent branding and delayed billing cycles.",
-    solution: "Use API-triggered templates with deterministic formatting and automated delivery.",
-    whatYouBuild: [
-      "An invoice template with tax and totals",
-      "A single API call pattern for backend services",
-      "A retry-safe invoice generation pipeline",
-    ],
-    dataFields: ["invoice_number", "line_items", "tax_rate", "due_date"],
-    customizationTips: [
-      "Keep number formatting consistent by locale",
-      "Compute totals server-side before rendering",
-      "Attach a payment link dynamically",
-    ],
+    excerpt:
+      "Use template versioning and idempotent render calls to deliver reliable invoice automation from backend jobs.",
+    keyword: "invoice generation API",
   },
   {
-    section: "blog",
-    slug: "generate-shipping-labels-at-scale",
+    slug: "how-to-generate-shipping-labels-at-scale",
     category: "programmatic",
-    topicKey: "shipping-labels",
     title: "How to Generate Shipping Labels at Scale",
-    description: "Generate thousands of shipping labels with deterministic templates, barcodes, and queue-based rendering.",
-    primaryKeyword: "shipping label template",
-    keywords: ["shipping label template", "programmatic PDF generation", "document automation API"],
-    problem: "Large fulfillment windows expose bottlenecks in ad-hoc label generation scripts.",
-    solution: "Adopt queue-based rendering with standardized carrier-specific template variants.",
-    whatYouBuild: [
-      "A carrier-ready shipping label template",
-      "A batch generation endpoint contract",
-      "A fulfillment observability dashboard baseline",
-    ],
-    dataFields: ["carrier", "service_level", "tracking_number", "destination"],
-    customizationTips: [
-      "Render 4x6 and A4 variants from shared blocks",
-      "Embed barcode and QR fallback values",
-      "Log failed labels with order IDs for replay",
-    ],
+    excerpt:
+      "Batch, retry, and queue-friendly techniques for high-volume shipping label generation.",
+    keyword: "programmatic PDF generation",
   },
   {
-    section: "blog",
-    slug: "generate-bulk-certificates-from-csv",
+    slug: "how-to-generate-bulk-certificates-from-a-csv",
     category: "programmatic",
-    topicKey: "bulk-certificates",
     title: "How to Generate Bulk Certificates from a CSV",
-    description: "Turn CSV participant data into branded certificate PDFs with batch-safe API calls.",
-    primaryKeyword: "bulk certificate generation",
-    keywords: ["generate certificates from CSV", "Typst PDF generation", "document automation API"],
-    problem: "Manual certificate workflows become error-prone when participant counts grow.",
-    solution: "Parse CSV rows into validated payloads and render certificates in parallel jobs.",
-    whatYouBuild: [
-      "A certificate template with signature slots",
-      "A CSV-to-JSON transformation pipeline",
-      "A duplicate-prevention strategy for reruns",
-    ],
-    dataFields: ["recipient_name", "course_name", "issued_on", "credential_id"],
-    customizationTips: [
-      "Include QR verification links for authenticity",
-      "Use font subsets for multilingual names",
-      "Store generated certificate IDs in your LMS",
-    ],
+    excerpt:
+      "Convert structured CSV records into branded certificates with a deterministic template pipeline.",
+    keyword: "document automation API",
   },
   {
-    section: "blog",
-    slug: "generate-dynamic-reports-from-json",
+    slug: "how-to-generate-dynamic-reports-from-json-data",
     category: "programmatic",
-    topicKey: "dynamic-reports",
     title: "How to Generate Dynamic Reports from JSON Data",
-    description: "Use JSON payloads to render report PDFs with dynamic sections and reliable pagination.",
-    primaryKeyword: "generate PDF reports from JSON",
-    keywords: ["dynamic PDF templates", "generate PDF from template", "report generation API"],
-    problem: "Report structures change frequently across customers and teams.",
-    solution: "Use schema-driven JSON plus reusable template blocks to keep layouts flexible but controlled.",
-    whatYouBuild: [
-      "A JSON schema for variable report content",
-      "A Typst report template with page-safe sections",
-      "A report-generation endpoint pattern for scheduled jobs",
-    ],
-    dataFields: ["title", "sections", "kpis", "appendix"],
-    customizationTips: [
-      "Use conditional blocks for optional report sections",
-      "Place table headers on each new page",
-      "Generate charts as static images before render",
-    ],
+    excerpt:
+      "Render data-rich reports from nested JSON payloads while keeping template logic readable.",
+    keyword: "dynamic PDF templates",
   },
   {
-    section: "blog",
-    slug: "generate-personalized-letters-in-bulk",
+    slug: "how-to-generate-personalized-letters-in-bulk",
     category: "programmatic",
-    topicKey: "personalized-letters",
     title: "How to Generate Personalized Letters in Bulk",
-    description: "Generate personalized customer letters at scale with merge fields, template guards, and API queues.",
-    primaryKeyword: "bulk PDF generation",
-    keywords: ["personalized letters", "programmatic PDF generation", "document automation API"],
-    problem: "Mail-merge workflows break when formatting rules differ across customer segments.",
-    solution: "Use one template with controlled conditional logic and per-recipient data payloads.",
-    whatYouBuild: [
-      "A multi-segment letter template",
-      "A merge pipeline from CRM data",
-      "A controlled retry flow for failed recipients",
-    ],
-    dataFields: ["recipient_name", "segment", "offer_details", "action_link"],
-    customizationTips: [
-      "Limit conditional branches to maintain template readability",
-      "Use dry-run preview batches before production",
-      "Keep sender signatures as managed assets",
-    ],
+    excerpt:
+      "Scale personalization with merge-style data models and reusable paragraph fragments.",
+    keyword: "programmatic PDF generation",
   },
   {
-    section: "blog",
-    slug: "generate-multi-page-pdf-statements",
+    slug: "how-to-generate-multi-page-pdf-statements",
     category: "programmatic",
-    topicKey: "multi-page-statements",
     title: "How to Generate Multi-Page PDF Statements",
-    description: "Build statement PDFs that scale to thousands of rows while preserving readability and deterministic pagination.",
-    primaryKeyword: "multi-page PDF statements",
-    keywords: ["programmatic PDF generation", "generate statements API", "dynamic PDF templates"],
-    problem: "Statement documents can explode in page count and break visual consistency.",
-    solution: "Use layout primitives and table controls designed for long-form financial documents.",
-    whatYouBuild: [
-      "A statement template with repeating headers",
-      "A long-table rendering strategy",
-      "A performance checklist for high-row payloads",
-    ],
-    dataFields: ["account_id", "period_start", "period_end", "transactions"],
-    customizationTips: [
-      "Group transactions by date for readability",
-      "Add running balances on each page",
-      "Use fixed-width fonts for numeric columns",
-    ],
+    excerpt:
+      "Handle grouped line items, page breaks, and consistent totals in multi-page statements.",
+    keyword: "PDF generation for SaaS",
   },
   {
-    section: "blog",
-    slug: "generate-barcoded-warehouse-labels",
+    slug: "how-to-generate-barcoded-warehouse-labels",
     category: "programmatic",
-    topicKey: "barcoded-warehouse-labels",
     title: "How to Generate Barcoded Warehouse Labels",
-    description: "Create warehouse-ready barcode label PDFs with API-driven data and high-throughput rendering.",
-    primaryKeyword: "warehouse labels",
-    keywords: ["barcoded warehouse labels", "shipping label template", "PDF generation API"],
-    problem: "Warehouse operations need consistent machine-readable labels under strict timing constraints.",
-    solution: "Standardize label dimensions and barcode payloads through a single template contract.",
-    whatYouBuild: [
-      "A barcode-first label template",
-      "A SKU/lot payload contract",
-      "A batch rendering pattern for warehouse shifts",
-    ],
-    dataFields: ["sku", "lot", "bin", "barcode_payload"],
-    customizationTips: [
-      "Keep barcode quiet zones clear",
-      "Print test labels per printer model",
-      "Track barcode parse failures to improve data quality",
-    ],
+    excerpt:
+      "Build scan-first warehouse labels with predictable dimensions and high print readability.",
+    keyword: "programmatic PDF generation",
   },
   {
-    section: "blog",
-    slug: "generate-custom-quotes-proposals-automatically",
+    slug: "how-to-generate-custom-quotes-and-proposals-automatically",
     category: "programmatic",
-    topicKey: "custom-quotes-proposals",
     title: "How to Generate Custom Quotes/Proposals Automatically",
-    description: "Automate quote and proposal PDFs with configurable sections, pricing tables, and approval-ready layouts.",
-    primaryKeyword: "custom proposal PDF",
-    keywords: ["generate custom quotes", "dynamic PDF templates", "document automation API"],
-    problem: "Sales teams need fast quote iteration without waiting for engineering on every layout change.",
-    solution: "Use reusable content blocks and API-bound pricing data to generate proposals instantly.",
-    whatYouBuild: [
-      "A modular proposal template",
-      "A pricing and discount data contract",
-      "An automated quote approval artifact",
-    ],
-    dataFields: ["opportunity_name", "line_items", "discount", "valid_until"],
-    customizationTips: [
-      "Use feature-flagged sections for vertical-specific messaging",
-      "Keep legal clauses in reusable includes",
-      "Generate one public and one internal version per quote",
-    ],
+    excerpt:
+      "Automate quote and proposal generation with pricing rules and reusable template sections.",
+    keyword: "document automation API",
   },
   {
-    section: "blog",
-    slug: "generate-pdf-receipts-from-stripe-webhooks",
+    slug: "how-to-generate-pdf-receipts-from-stripe-webhooks",
     category: "programmatic",
-    topicKey: "stripe-receipts",
     title: "How to Generate PDF Receipts from Stripe Webhooks",
-    description: "Create receipt PDFs automatically when Stripe payment events fire, with idempotent and retry-safe processing.",
-    primaryKeyword: "receipt generation API",
-    keywords: ["Stripe webhook PDF receipt", "receipt template", "invoice generation API"],
-    problem: "Payment events can arrive out of order or be retried, causing duplicate receipts.",
-    solution: "Use webhook signature verification and idempotent render keys before triggering receipt PDFs.",
-    whatYouBuild: [
-      "A Stripe event to receipt pipeline",
-      "A receipt template mapped to payment data",
-      "A duplicate-safe document delivery process",
-    ],
-    dataFields: ["event_id", "payment_intent", "customer_email", "amount_paid"],
-    customizationTips: [
-      "Persist processed event IDs for dedupe",
-      "Include tax region and VAT info when available",
-      "Send receipts asynchronously to avoid checkout latency",
-    ],
+    excerpt:
+      "Trigger receipt generation directly from billing events with idempotent request semantics.",
+    keyword: "HTML to PDF API",
   },
   {
-    section: "blog",
-    slug: "generate-tax-documents-programmatically",
+    slug: "how-to-generate-tax-documents-programmatically",
     category: "programmatic",
-    topicKey: "tax-documents",
     title: "How to Generate Tax Documents (W-9, 1099) Programmatically",
-    description: "Automate tax document generation with schema validation, immutable records, and secure PDF workflows.",
-    primaryKeyword: "generate tax documents programmatically",
-    keywords: ["W-9 PDF generation", "1099 automation", "document automation API"],
-    problem: "Tax forms require strict formatting, traceability, and security controls.",
-    solution: "Use validated data models, signed template versions, and auditable PDF generation events.",
-    whatYouBuild: [
-      "A tax-form generation architecture",
-      "A secure data validation and rendering flow",
-      "An audit trail for compliance reviews",
-    ],
-    dataFields: ["taxpayer_name", "tin_masked", "tax_year", "filing_status"],
-    customizationTips: [
-      "Restrict access to tax payload fields",
-      "Store immutable render metadata for each form",
-      "Integrate redaction policies for support tooling",
-    ],
-  },
-
-  // Category 1: templates
-  {
-    section: "templates",
-    slug: "shipping-label",
-    category: "template",
-    topicKey: "shipping-label",
-    title: "How to Create a Shipping Label PDF Template",
-    description: "Build a shipping label PDF template with barcode fields and API-driven data binding.",
-    primaryKeyword: "shipping label template",
-    keywords: ["shipping label template", "Typst PDF generation", "HTML to PDF API"],
-    problem: "Carrier labels need strict dimensions, scannable barcodes, and consistent layout.",
-    solution: "Use a deterministic Typst template with configurable zones for sender, receiver, and tracking.",
-    whatYouBuild: [
-      "A 4x6 shipping label layout",
-      "Barcode-ready tracking block",
-      "API payload mapping for destination and parcel fields",
-    ],
-    dataFields: ["from_address", "to_address", "tracking_number", "service_level"],
-    customizationTips: [
-      "Support multiple carriers with shared base components",
-      "Keep text truncation rules explicit for long addresses",
-      "Validate country and postal fields before render",
-    ],
-    isPriority: true,
-  },
-  {
-    section: "templates",
-    slug: "invoice",
-    category: "template",
-    topicKey: "invoice",
-    title: "How to Create an Invoice PDF Template",
-    description: "Create a production-ready invoice PDF template with dynamic line items and totals.",
-    primaryKeyword: "invoice generation API",
-    keywords: ["invoice generation API", "programmatic PDF generation", "Typst PDF generation"],
-    problem: "Invoice documents need legal consistency, dynamic totals, and per-customer personalization.",
-    solution: "Define one reusable invoice template and bind data fields through a stable API contract.",
-    whatYouBuild: [
-      "A branded invoice header",
-      "Line-item and tax table",
-      "Total, due date, and payment terms section",
-    ],
-    dataFields: ["invoice_id", "customer", "line_items", "totals"],
-    customizationTips: [
-      "Include localized tax labels per region",
-      "Format currency server-side for consistency",
-      "Store template version for each sent invoice",
-    ],
-    isPriority: true,
-  },
-  {
-    section: "templates",
-    slug: "packing-slip",
-    category: "template",
-    topicKey: "packing-slip",
-    title: "How to Create a Packing Slip PDF Template",
-    description: "Build a clean packing slip template with SKU, quantity, and shipment metadata.",
-    primaryKeyword: "packing slip template",
-    keywords: ["packing slip template", "PDF generation API", "dynamic PDF templates"],
-    problem: "Warehouse teams need print-friendly packing slips aligned with fulfillment systems.",
-    solution: "Use a compact Typst layout with itemized rows and shipment metadata.",
-    whatYouBuild: [
-      "A fulfillment-focused packing slip",
-      "SKU and quantity table",
-      "Shipment metadata block",
-    ],
-    dataFields: ["order_id", "items", "warehouse", "ship_date"],
-    customizationTips: [
-      "Highlight fragile items with conditional badges",
-      "Add picking notes in a dedicated column",
-      "Use bold grouping for bundles and kits",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "receipt",
-    category: "template",
-    topicKey: "receipt",
-    title: "How to Create a Receipt PDF Template",
-    description: "Generate receipt PDFs from transaction events with clean totals and payment metadata.",
-    primaryKeyword: "receipt generation API",
-    keywords: ["receipt generation API", "PDF generation API", "programmatic PDF generation"],
-    problem: "Receipts must be generated instantly and match payment provider records.",
-    solution: "Bind receipt layouts to payment event payloads with deterministic formatting.",
-    whatYouBuild: [
-      "A transaction receipt layout",
-      "Payment method and reference blocks",
-      "Tax and subtotal breakdown",
-    ],
-    dataFields: ["transaction_id", "amount", "payment_method", "timestamp"],
-    customizationTips: [
-      "Include support contact details for charge disputes",
-      "Add region-specific tax disclosure text",
-      "Keep receipt width mobile-printer friendly",
-    ],
-    isPriority: true,
-  },
-  {
-    section: "templates",
-    slug: "certificate",
-    category: "template",
-    topicKey: "certificate",
-    title: "How to Create a Certificate PDF Template",
-    description: "Design certificate templates with dynamic names, dates, and verification IDs.",
-    primaryKeyword: "certificate PDF template",
-    keywords: ["certificate PDF template", "Typst PDF generation", "document automation API"],
-    problem: "Certificates require polished typography and reliable personalization at scale.",
-    solution: "Use a high-contrast template with merge fields and optional signature assets.",
-    whatYouBuild: [
-      "An award-style certificate layout",
-      "Dynamic recipient and course fields",
-      "Verification code block",
-    ],
-    dataFields: ["recipient_name", "course_name", "issued_date", "verification_id"],
-    customizationTips: [
-      "Use locked spacing tokens to avoid visual drift",
-      "Add QR links to verify authenticity",
-      "Keep signature assets in high-resolution format",
-    ],
-    isPriority: true,
-  },
-  {
-    section: "templates",
-    slug: "contract-agreement",
-    category: "template",
-    topicKey: "contract-agreement",
-    title: "How to Create a Contract/Agreement PDF Template",
-    description: "Create legal contract templates with structured clauses and signature-ready sections.",
-    primaryKeyword: "contract PDF template",
-    keywords: ["contract PDF template", "document automation API", "dynamic PDF templates"],
-    problem: "Legal documents need consistent clauses while preserving deal-specific variables.",
-    solution: "Use a clause-based template architecture with strict field validation.",
-    whatYouBuild: [
-      "A reusable legal agreement structure",
-      "Clause include strategy",
-      "Signature and date section",
-    ],
-    dataFields: ["party_a", "party_b", "effective_date", "terms"],
-    customizationTips: [
-      "Isolate jurisdiction clauses as separate includes",
-      "Validate signatory fields before rendering",
-      "Keep amendment history linked to template versions",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "resume-cv",
-    category: "template",
-    topicKey: "resume-cv",
-    title: "How to Create a Resume/CV PDF Template",
-    description: "Build a resume template that adapts to variable experience sections and multilingual content.",
-    primaryKeyword: "resume PDF template",
-    keywords: ["resume PDF template", "Typst template", "generate PDF from template"],
-    problem: "Resume structures vary widely and can break visual balance in static layouts.",
-    solution: "Use flexible section blocks and conditional rendering for optional experiences.",
-    whatYouBuild: [
-      "A modern CV layout",
-      "Skills and timeline sections",
-      "Dynamic project and experience blocks",
-    ],
-    dataFields: ["name", "summary", "experience", "skills"],
-    customizationTips: [
-      "Keep line lengths short for readability",
-      "Use bullet limits for dense sections",
-      "Support optional avatar and links",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "report",
-    category: "template",
-    topicKey: "report",
-    title: "How to Create a Report PDF Template",
-    description: "Create report templates with dynamic sections, tables, and executive summaries.",
-    primaryKeyword: "report PDF template",
-    keywords: ["report PDF template", "generate PDF from template", "programmatic PDF generation"],
-    problem: "Reporting teams need repeatable layouts across changing data sets.",
-    solution: "Build modular report sections with configurable data bindings.",
-    whatYouBuild: [
-      "An executive summary page",
-      "KPI and table sections",
-      "Appendix-ready report layout",
-    ],
-    dataFields: ["title", "kpis", "sections", "appendix"],
-    customizationTips: [
-      "Keep summary cards above fold on page one",
-      "Use table style tokens for brand consistency",
-      "Split dense appendices by section heading",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "boarding-pass",
-    category: "template",
-    topicKey: "boarding-pass",
-    title: "How to Create a Boarding Pass PDF Template",
-    description: "Build boarding pass templates with scannable IDs and compact travel details.",
-    primaryKeyword: "boarding pass PDF template",
-    keywords: ["boarding pass template", "PDF generation API", "dynamic PDF templates"],
-    problem: "Travel documents must fit strict space while staying machine-readable.",
-    solution: "Use zone-based layouts with clear hierarchy for gate and passenger data.",
-    whatYouBuild: [
-      "A compact boarding pass layout",
-      "Passenger and route information blocks",
-      "Barcode/QR section",
-    ],
-    dataFields: ["passenger", "flight", "seat", "boarding_time"],
-    customizationTips: [
-      "Test contrast for scanner readability",
-      "Keep critical fields in fixed positions",
-      "Add offline-friendly plain text fallback",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "ticket-event-pass",
-    category: "template",
-    topicKey: "ticket-event-pass",
-    title: "How to Create a Ticket/Event Pass PDF Template",
-    description: "Generate event ticket PDFs with branding, seat metadata, and anti-fraud identifiers.",
-    primaryKeyword: "event ticket PDF template",
-    keywords: ["event ticket template", "PDF generation API", "document automation API"],
-    problem: "Event teams need high-volume ticket generation with unique identifiers.",
-    solution: "Use a reusable ticket design with per-attendee dynamic security fields.",
-    whatYouBuild: [
-      "An event pass layout",
-      "Seat and attendee metadata",
-      "Unique code block for validation",
-    ],
-    dataFields: ["event_name", "attendee", "seat", "ticket_code"],
-    customizationTips: [
-      "Use one-time ticket tokens per attendee",
-      "Include venue map URL in footer",
-      "Add accessibility text for entry instructions",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "prescription-label",
-    category: "template",
-    topicKey: "prescription-label",
-    title: "How to Create a Prescription Label PDF Template",
-    description: "Build prescription label templates with dosage, patient, and compliance-friendly formatting.",
-    primaryKeyword: "prescription label template",
-    keywords: ["prescription label template", "healthcare PDF generation", "document automation API"],
-    problem: "Prescription labels require strict readability and regulated field formatting.",
-    solution: "Define locked label dimensions and validated medical field mappings.",
-    whatYouBuild: [
-      "A medication label layout",
-      "Patient and dosage details",
-      "Refill and warning sections",
-    ],
-    dataFields: ["patient_name", "drug_name", "dosage", "refills"],
-    customizationTips: [
-      "Prioritize legibility over decorative styling",
-      "Add pharmacy contact in fixed position",
-      "Use high-contrast warning text",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "return-label",
-    category: "template",
-    topicKey: "return-label",
-    title: "How to Create a Return Label PDF Template",
-    description: "Create return label templates with destination routing, barcode fields, and return reason metadata.",
-    primaryKeyword: "return label template",
-    keywords: ["return label template", "ecommerce PDF generation", "shipping label template"],
-    problem: "Return workflows need clear routing and accurate parcel identifiers.",
-    solution: "Use a standardized label template tied to return authorization payloads.",
-    whatYouBuild: [
-      "A return shipping label design",
-      "Return authorization details",
-      "Barcode and routing information",
-    ],
-    dataFields: ["rma", "origin", "destination", "reason_code"],
-    customizationTips: [
-      "Show return window deadline prominently",
-      "Map reason codes to localized text",
-      "Use carrier-specific service options",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "business-card",
-    category: "template",
-    topicKey: "business-card",
-    title: "How to Create a Business Card PDF Template",
-    description: "Build printable business card templates with brand-safe typography and dynamic contact fields.",
-    primaryKeyword: "business card PDF template",
-    keywords: ["business card template", "Typst PDF generation", "generate PDF from template"],
-    problem: "Brand teams need consistent card layouts across departments.",
-    solution: "Use locked dimensions and data-bound contact fields.",
-    whatYouBuild: [
-      "A front and back card layout",
-      "Dynamic contact info bindings",
-      "Print-safe spacing and bleed margins",
-    ],
-    dataFields: ["name", "role", "email", "phone"],
-    customizationTips: [
-      "Validate logo assets at print resolution",
-      "Use color-safe palettes for CMYK conversion",
-      "Keep QR links short and trackable",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "warehouse-pick-list",
-    category: "template",
-    topicKey: "warehouse-pick-list",
-    title: "How to Create a Warehouse Pick List PDF Template",
-    description: "Create pick list templates optimized for warehouse operations, bin routing, and item grouping.",
-    primaryKeyword: "warehouse pick list template",
-    keywords: ["warehouse pick list", "logistics PDF generation", "programmatic PDF generation"],
-    problem: "Pick operations fail when item instructions are inconsistent or hard to scan.",
-    solution: "Use a table-first layout with clear picking sequences and barcode support.",
-    whatYouBuild: [
-      "A grouped pick list format",
-      "Bin and quantity columns",
-      "Priority and route indicators",
-    ],
-    dataFields: ["pick_id", "zone", "items", "priority"],
-    customizationTips: [
-      "Sort lines by physical warehouse path",
-      "Use bold markers for urgent picks",
-      "Include verification signature blocks",
-    ],
-  },
-  {
-    section: "templates",
-    slug: "purchase-order",
-    category: "template",
-    topicKey: "purchase-order",
-    title: "How to Create a Purchase Order PDF Template",
-    description: "Build purchase order templates with supplier, item, and approval metadata for procurement workflows.",
-    primaryKeyword: "purchase order template",
-    keywords: ["purchase order template", "finance PDF generation", "document automation API"],
-    problem: "Procurement teams need standardized PO documents across vendors and departments.",
-    solution: "Define one template with strict field mappings and approval metadata.",
-    whatYouBuild: [
-      "A purchase order layout",
-      "Supplier and line-item sections",
-      "Approval and payment terms blocks",
-    ],
-    dataFields: ["po_number", "supplier", "items", "approver"],
-    customizationTips: [
-      "Keep vendor terms in reusable blocks",
-      "Map internal cost center fields explicitly",
-      "Attach ERP reference IDs for traceability",
-    ],
-  },
-
-  // Category 3: comparisons
-  {
-    section: "compare",
-    slug: "puppeteer-pdf-generation",
-    category: "comparison",
-    topicKey: "puppeteer",
-    title: "DocuForge vs Puppeteer for PDF Generation",
-    description: "A practical comparison of DocuForge and Puppeteer on speed, reliability, and developer workflow.",
-    primaryKeyword: "Puppeteer PDF alternative",
-    keywords: ["DocuForge vs Puppeteer", "Puppeteer PDF alternative", "programmatic PDF generation"],
-    problem: "Teams evaluating Puppeteer alternatives need measurable criteria, not generic feature lists.",
-    solution: "Compare cold starts, deterministic layout control, scaling model, and maintenance overhead.",
-    whatYouBuild: [
-      "A side-by-side architecture evaluation",
-      "Benchmark dimensions for your own stack",
-      "A migration scoring checklist",
-    ],
-    dataFields: ["p95_latency", "error_rate", "template_complexity", "ops_overhead"],
-    customizationTips: [
-      "Benchmark on your largest real template",
-      "Measure developer iteration speed, not just runtime",
-      "Estimate long-term infra cost with growth scenarios",
-    ],
-    benchmarkMetrics: [
-      { metric: "Cold start behavior", value: "DocuForge: warm Typst runtime, Puppeteer: browser spin-up" },
-      { metric: "Template determinism", value: "DocuForge: high, Puppeteer: CSS/runtime-dependent" },
-      { metric: "Operational complexity", value: "DocuForge: API-native, Puppeteer: browser fleet management" },
-    ],
-    isPriority: true,
-  },
-  {
-    section: "compare",
-    slug: "wkhtmltopdf",
-    category: "comparison",
-    topicKey: "wkhtmltopdf",
-    title: "DocuForge vs wkhtmltopdf - Which is Better?",
-    description: "Compare modern API-first PDF generation against legacy wkhtmltopdf rendering workflows.",
-    primaryKeyword: "wkhtmltopdf alternative",
-    keywords: ["DocuForge vs wkhtmltopdf", "wkhtmltopdf alternative", "PDF generation API"],
-    problem: "Legacy engines can limit maintainability and modern layout requirements.",
-    solution: "Evaluate rendering fidelity, API ergonomics, and production scalability side by side.",
-    whatYouBuild: [
-      "A migration readiness checklist",
-      "A compatibility and feature audit",
-      "A rollout strategy for replacing legacy jobs",
-    ],
-    dataFields: ["render_fidelity", "maintenance_hours", "api_surface", "queue_support"],
-    customizationTips: [
-      "Run a compatibility matrix before migration",
-      "Rebuild one template to validate output quality",
-      "Keep rollback switches for legacy jobs",
-    ],
-  },
-  {
-    section: "compare",
-    slug: "latex-document-templates",
-    category: "comparison",
-    topicKey: "latex",
-    title: "DocuForge vs LaTeX for Document Templates",
-    description: "When should teams use LaTeX, and when does a modern PDF API provide a better developer experience?",
-    primaryKeyword: "LaTeX PDF alternative",
-    keywords: ["DocuForge vs LaTeX", "LaTeX document templates", "Typst PDF generation"],
-    problem: "LaTeX excels in academic precision but can slow product teams shipping transactional documents.",
-    solution: "Compare authoring complexity, team onboarding cost, and API integration effort.",
-    whatYouBuild: [
-      "A decision matrix by document type",
-      "A developer onboarding effort estimate",
-      "A practical coexistence strategy",
-    ],
-    dataFields: ["authoring_time", "learning_curve", "integration_effort", "render_consistency"],
-    customizationTips: [
-      "Preserve LaTeX for niche use-cases where needed",
-      "Use DocuForge for API-driven transactional docs",
-      "Maintain shared design tokens across both systems",
-    ],
-  },
-  {
-    section: "compare",
-    slug: "react-pdf",
-    category: "comparison",
-    topicKey: "react-pdf",
-    title: "DocuForge vs React-PDF - When to Use What",
-    description: "A clear framework for deciding between React-PDF component rendering and API-driven Typst templates.",
-    primaryKeyword: "React-PDF alternative",
-    keywords: ["DocuForge vs React-PDF", "React-PDF alternative", "document automation API"],
-    problem: "Frontend-first PDF rendering can become hard to scale for backend-heavy workflows.",
-    solution: "Map tool choice to ownership model, workload shape, and deployment requirements.",
-    whatYouBuild: [
-      "A team ownership decision guide",
-      "A workload fit checklist",
-      "A migration trigger rubric",
-    ],
-    dataFields: ["frontend_dependency", "backend_control", "scaling_model", "template_lifecycle"],
-    customizationTips: [
-      "Keep React-PDF for client-side previews if useful",
-      "Move server-side production generation to API workflows",
-      "Standardize data contracts across both rendering paths",
-    ],
-  },
-  {
-    section: "compare",
-    slug: "anvil-pdf",
-    category: "comparison",
-    topicKey: "anvil-pdf",
-    title: "DocuForge vs Anvil PDF - Feature Comparison",
-    description: "Compare developer ergonomics, API shape, and extensibility between DocuForge and Anvil PDF.",
-    primaryKeyword: "Anvil PDF alternative",
-    keywords: ["DocuForge vs Anvil PDF", "Anvil PDF alternative", "PDF generation API"],
-    problem: "Evaluation cycles stall when feature checklists ignore implementation cost.",
-    solution: "Use concrete implementation criteria: template control, data flow, testing, and deployment fit.",
-    whatYouBuild: [
-      "A feature and fit scorecard",
-      "A migration complexity estimate",
-      "A procurement-ready summary",
-    ],
-    dataFields: ["feature_depth", "api_design", "integration_time", "pricing_model"],
-    customizationTips: [
-      "Assess real template portability",
-      "Prototype one end-to-end workflow before committing",
-      "Include SRE input on operational footprint",
-    ],
-  },
-  {
-    section: "compare",
-    slug: "pdfmonkey-pricing-features",
-    category: "comparison",
-    topicKey: "pdfmonkey",
-    title: "DocuForge vs PDFMonkey - Pricing and Features",
-    description: "A practical pricing and feature comparison for teams evaluating API PDF providers.",
-    primaryKeyword: "PDFMonkey alternative",
-    keywords: ["DocuForge vs PDFMonkey", "PDFMonkey pricing", "programmatic PDF generation"],
-    problem: "Teams can underestimate future cost when provider pricing and feature constraints are unclear.",
-    solution: "Compare pricing behavior at scale and the impact of feature limits on your roadmap.",
-    whatYouBuild: [
-      "A volume-based pricing model comparison",
-      "A feature-gap risk checklist",
-      "A vendor selection framework",
-    ],
-    dataFields: ["monthly_volume", "unit_cost", "included_features", "upgrade_paths"],
-    customizationTips: [
-      "Model 6-12 month growth in your pricing comparison",
-      "Include engineering support costs in TCO",
-      "Review data export and portability options",
-    ],
-  },
-  {
-    section: "compare",
-    slug: "carbone-io-developer-experience",
-    category: "comparison",
-    topicKey: "carbone-io",
-    title: "DocuForge vs Carbone.io - Developer Experience Compared",
-    description: "Compare DocuForge and Carbone.io from a developer experience and delivery-speed perspective.",
-    primaryKeyword: "Carbone.io alternative",
-    keywords: ["DocuForge vs Carbone.io", "Carbone.io alternative", "document automation API"],
-    problem: "Developer experience differences can compound over time and affect shipping velocity.",
-    solution: "Evaluate local iteration flow, template testing, and API integration complexity.",
-    whatYouBuild: [
-      "A DX-focused comparison checklist",
-      "A testing and debugging matrix",
-      "A velocity-based tool selection rubric",
-    ],
-    dataFields: ["local_dev_flow", "debuggability", "template_testing", "sdk_quality"],
-    customizationTips: [
-      "Run one sprint pilot with each tool",
-      "Track onboarding time for new engineers",
-      "Audit error observability and diagnostics quality",
-    ],
-  },
-
-  // Category 4: industries
-  {
-    section: "industries",
-    slug: "ecommerce",
-    category: "industry",
-    topicKey: "ecommerce",
-    title: "PDF Generation for E-commerce (labels, receipts, returns)",
-    description: "How e-commerce teams automate labels, receipts, and return documents with one API layer.",
-    primaryKeyword: "PDF Generation for E-commerce",
-    keywords: ["PDF Generation for E-commerce", "shipping label template", "receipt generation API"],
-    problem: "E-commerce stacks often split document generation across many disconnected systems.",
-    solution: "Unify all order lifecycle PDFs in a single API and template governance model.",
-    whatYouBuild: [
-      "A complete order-document pipeline",
-      "Template reuse across receipt, label, and return documents",
-      "Operational monitoring for high-season spikes",
-    ],
-    dataFields: ["order", "shipment", "payment", "return"],
-    customizationTips: [
-      "Use locale-aware templates for global checkout",
-      "Generate labels in queue batches during peak traffic",
-      "Link each document to order timeline events",
-    ],
-  },
-  {
-    section: "industries",
-    slug: "healthcare",
-    category: "industry",
-    topicKey: "healthcare",
-    title: "PDF Generation for Healthcare (prescriptions, reports, forms)",
-    description: "Build compliant healthcare document workflows for prescriptions, forms, and patient reports.",
-    primaryKeyword: "PDF Generation for Healthcare",
-    keywords: ["healthcare PDF generation", "prescription label template", "document automation API"],
-    problem: "Healthcare documents require strict formatting, readability, and audit controls.",
-    solution: "Use validated templates with controlled fields and secure rendering pipelines.",
-    whatYouBuild: [
-      "A healthcare document template library",
-      "Patient-safe field validation rules",
-      "Audit-friendly document lifecycle tracking",
-    ],
-    dataFields: ["patient", "provider", "prescription", "visit_report"],
-    customizationTips: [
-      "Separate PHI-sensitive sections clearly",
-      "Apply minimum font sizes for safety",
-      "Log every template and data revision",
-    ],
-  },
-  {
-    section: "industries",
-    slug: "logistics",
-    category: "industry",
-    topicKey: "logistics",
-    title: "PDF Generation for Logistics (BOL, shipping labels, manifests)",
-    description: "Automate logistics paperwork with structured templates for BOL, manifests, and labels.",
-    primaryKeyword: "PDF Generation for Logistics",
-    keywords: ["logistics PDF generation", "shipping label template", "warehouse pick list"],
-    problem: "Logistics operations need machine-readable docs generated under strict SLA windows.",
-    solution: "Use standardized template families and batch API rendering flows.",
-    whatYouBuild: [
-      "A logistics document architecture",
-      "Manifest and BOL template standards",
-      "A warehouse-to-carrier automation flow",
-    ],
-    dataFields: ["manifest", "shipment", "bol", "carrier"],
-    customizationTips: [
-      "Use barcode-rich fields for scanning",
-      "Normalize unit and weight formats",
-      "Maintain per-carrier layout variants",
-    ],
-  },
-  {
-    section: "industries",
-    slug: "education",
-    category: "industry",
-    topicKey: "education",
-    title: "PDF Generation for Education (certificates, transcripts, ID cards)",
-    description: "Generate certificates, transcripts, and student document PDFs with scalable template automation.",
-    primaryKeyword: "PDF Generation for Education",
-    keywords: ["education PDF generation", "certificate PDF template", "bulk certificates"],
-    problem: "Academic institutions manage high-volume personalized documents across departments.",
-    solution: "Use shared templates with secure personalization and verification fields.",
-    whatYouBuild: [
-      "A certificate and transcript template suite",
-      "Student-level personalization bindings",
-      "A verification and reissue workflow",
-    ],
-    dataFields: ["student", "program", "grades", "credential_id"],
-    customizationTips: [
-      "Add verification links for every credential",
-      "Use multilingual name support",
-      "Keep transcript pagination deterministic",
-    ],
-  },
-  {
-    section: "industries",
-    slug: "finance",
-    category: "industry",
-    topicKey: "finance",
-    title: "PDF Generation for Finance (statements, invoices, tax docs)",
-    description: "Design secure, auditable financial document pipelines for statements, invoices, and tax files.",
-    primaryKeyword: "PDF Generation for Finance",
-    keywords: ["finance PDF generation", "invoice generation API", "tax documents programmatically"],
-    problem: "Financial docs require precision, consistency, and clear audit trails.",
-    solution: "Adopt immutable template versions and data validation before each render.",
-    whatYouBuild: [
-      "A finance document architecture",
-      "Statement and invoice template standards",
-      "Audit-ready render metadata strategy",
-    ],
-    dataFields: ["account", "period", "totals", "compliance"],
-    customizationTips: [
-      "Use signed template releases",
-      "Retain render metadata for audits",
-      "Mask sensitive identifiers in support tools",
-    ],
-  },
-  {
-    section: "industries",
-    slug: "legal",
-    category: "industry",
-    topicKey: "legal",
-    title: "PDF Generation for Legal (contracts, NDAs, compliance docs)",
-    description: "Create legal document workflows for contracts, NDAs, and compliance records with version control.",
-    primaryKeyword: "PDF Generation for Legal",
-    keywords: ["legal PDF generation", "contract PDF template", "compliance documents"],
-    problem: "Legal documentation workflows demand strict versioning and clause consistency.",
-    solution: "Use clause-based template structures and controlled publish workflows.",
-    whatYouBuild: [
-      "A legal template lifecycle",
-      "Clause library strategy",
-      "Compliance document release governance",
-    ],
-    dataFields: ["parties", "clauses", "effective_date", "signatures"],
-    customizationTips: [
-      "Track jurisdiction-specific variants",
-      "Require legal review before publish",
-      "Store immutable release notes for each change",
-    ],
-  },
-  {
-    section: "industries",
-    slug: "hr",
-    category: "industry",
-    topicKey: "hr",
-    title: "PDF Generation for HR (offer letters, pay stubs, onboarding docs)",
-    description: "Automate HR documents like offers, pay stubs, and onboarding forms with API-safe personalization.",
-    primaryKeyword: "PDF Generation for HR",
-    keywords: ["HR PDF generation", "offer letter template", "onboarding documents"],
-    problem: "HR teams need personalized documents quickly while preserving policy consistency.",
-    solution: "Use approved templates with strict field mappings and role-based generation controls.",
-    whatYouBuild: [
-      "An HR template catalog",
-      "Role-based data binding rules",
-      "A secure onboarding document pipeline",
-    ],
-    dataFields: ["employee", "role", "salary", "start_date"],
-    customizationTips: [
-      "Use separate templates by employment type",
-      "Apply approval gates for compensation fields",
-      "Link generated docs to HRIS records",
-    ],
+    excerpt:
+      "A safer template strategy for regulated tax output with strong version control and traceability.",
+    keyword: "document automation API",
   },
 ];
 
-const templateTitlePattern: Record<Locale, string> = {
-  en: "How to Create a {subject} PDF Template",
-  fr: "Comment créer un template PDF {subject}",
-  de: "So erstellst du ein {subject}-PDF-Template",
-  it: "Come creare un template PDF {subject}",
-  es: "Cómo crear una plantilla PDF de {subject}",
-  ar: "كيفية إنشاء قالب PDF لـ {subject}",
-  zh: "如何创建 {subject} PDF 模板",
+type TemplateSpec = {
+  slug: string;
+  topic: string;
+  useCase: string;
+  priority?: boolean;
 };
 
-const programmaticTitlePattern: Record<Locale, string> = {
-  en: "How to Generate {subject} Programmatically",
-  fr: "Comment générer {subject} par API",
-  de: "Wie man {subject} programmatisch erzeugt",
-  it: "Come generare {subject} via API",
-  es: "Cómo generar {subject} programáticamente",
-  ar: "كيفية إنشاء {subject} برمجياً",
-  zh: "如何程序化生成 {subject}",
+const templateSpecs: TemplateSpec[] = [
+  {
+    slug: "shipping-label",
+    topic: "Shipping Label",
+    useCase:
+      "Generate carrier-ready labels from checkout and fulfillment systems without hand-editing layouts.",
+    priority: true,
+  },
+  {
+    slug: "invoice",
+    topic: "Invoice",
+    useCase:
+      "Standardize invoice output across subscriptions, one-time charges, and finance reconciliation workflows.",
+    priority: true,
+  },
+  {
+    slug: "packing-slip",
+    topic: "Packing Slip",
+    useCase:
+      "Package operations need a reliable summary of order lines, SKUs, and shipment notes.",
+  },
+  {
+    slug: "receipt",
+    topic: "Receipt",
+    useCase:
+      "Automatically issue receipts from payment events with consistent branding and tax line clarity.",
+    priority: true,
+  },
+  {
+    slug: "certificate",
+    topic: "Certificate",
+    useCase:
+      "Create verifiable completion, attendance, and achievement certificates from user records.",
+    priority: true,
+  },
+  {
+    slug: "contract-agreement",
+    topic: "Contract/Agreement",
+    useCase:
+      "Render legal-ready agreements with dynamic clauses and signature metadata placeholders.",
+  },
+  {
+    slug: "resume-cv",
+    topic: "Resume/CV",
+    useCase:
+      "Generate clean candidate resumes from structured profile fields with reusable section components.",
+  },
+  {
+    slug: "report",
+    topic: "Report",
+    useCase:
+      "Turn analytics and operational datasets into polished report documents with predictable structure.",
+  },
+  {
+    slug: "boarding-pass",
+    topic: "Boarding Pass",
+    useCase:
+      "Create travel-ready boarding passes with scannable identifiers and strict space constraints.",
+  },
+  {
+    slug: "ticket-event-pass",
+    topic: "Ticket/Event Pass",
+    useCase:
+      "Issue digital and printable event passes with attendee metadata and barcode fields.",
+  },
+  {
+    slug: "prescription-label",
+    topic: "Prescription Label",
+    useCase:
+      "Generate pharmacy labels with dosage instructions, identifiers, and regulated formatting requirements.",
+  },
+  {
+    slug: "return-label",
+    topic: "Return Label",
+    useCase:
+      "Streamline returns by generating pre-formatted return labels from order state transitions.",
+  },
+  {
+    slug: "business-card",
+    topic: "Business Card",
+    useCase:
+      "Produce consistent business cards from employee directories and role metadata.",
+  },
+  {
+    slug: "warehouse-pick-list",
+    topic: "Warehouse Pick List",
+    useCase:
+      "Create pick lists optimized for warehouse paths, item grouping, and fulfillment speed.",
+  },
+  {
+    slug: "purchase-order",
+    topic: "Purchase Order",
+    useCase:
+      "Automate purchase order generation with supplier-specific terms and itemized totals.",
+  },
+];
+
+type CompareSpec = {
+  slug: string;
+  target: string;
+  subtitle: string;
+  priority?: boolean;
 };
 
-const comparisonTitlePattern: Record<Locale, string> = {
-  en: "DocuForge vs {subject} for PDF Generation",
-  fr: "DocuForge vs {subject} pour la génération PDF",
-  de: "DocuForge vs {subject} für PDF-Generierung",
-  it: "DocuForge vs {subject} per generazione PDF",
-  es: "DocuForge vs {subject} para generación PDF",
-  ar: "DocuForge مقابل {subject} لتوليد PDF",
-  zh: "DocuForge 与 {subject} 的 PDF 生成对比",
+const compareSpecs: CompareSpec[] = [
+  {
+    slug: "puppeteer",
+    target: "Puppeteer",
+    subtitle: "Browser rendering flexibility vs Typst-first throughput and maintenance.",
+    priority: true,
+  },
+  {
+    slug: "wkhtmltopdf",
+    target: "wkhtmltopdf",
+    subtitle: "Legacy HTML conversion compatibility vs modern template control.",
+  },
+  {
+    slug: "latex",
+    target: "LaTeX",
+    subtitle: "Academic-grade typesetting vs API-first developer workflow speed.",
+  },
+  {
+    slug: "react-pdf",
+    target: "React-PDF",
+    subtitle: "Component-driven rendering vs strict document template separation.",
+  },
+  {
+    slug: "anvil-pdf",
+    target: "Anvil PDF",
+    subtitle: "Managed document platform features vs code-first template ownership.",
+  },
+  {
+    slug: "pdfmonkey",
+    target: "PDFMonkey",
+    subtitle: "Template SaaS workflows vs deeper developer customization controls.",
+  },
+  {
+    slug: "carbone-io",
+    target: "Carbone.io",
+    subtitle: "Data-driven document generation vs Typst-native implementation simplicity.",
+  },
+];
+
+type IndustrySpec = {
+  slug: string;
+  industry: string;
+  documents: string[];
 };
 
-const industryTitlePattern: Record<Locale, string> = {
-  en: "PDF Generation for {subject}",
-  fr: "Génération PDF pour {subject}",
-  de: "PDF-Generierung für {subject}",
-  it: "Generazione PDF per {subject}",
-  es: "Generación PDF para {subject}",
-  ar: "توليد PDF لقطاع {subject}",
-  zh: "面向{subject}的 PDF 生成",
+const industrySpecs: IndustrySpec[] = [
+  {
+    slug: "ecommerce",
+    industry: "E-commerce",
+    documents: ["shipping labels", "receipts", "packing slips", "return labels"],
+  },
+  {
+    slug: "healthcare",
+    industry: "Healthcare",
+    documents: ["prescription labels", "reports", "intake forms", "discharge summaries"],
+  },
+  {
+    slug: "logistics",
+    industry: "Logistics",
+    documents: ["BOLs", "manifests", "shipping labels", "warehouse pick lists"],
+  },
+  {
+    slug: "education",
+    industry: "Education",
+    documents: ["certificates", "transcripts", "ID cards", "exam reports"],
+  },
+  {
+    slug: "finance",
+    industry: "Finance",
+    documents: ["statements", "invoices", "tax docs", "compliance summaries"],
+  },
+  {
+    slug: "legal",
+    industry: "Legal",
+    documents: ["contracts", "NDAs", "compliance docs", "matter summaries"],
+  },
+  {
+    slug: "hr",
+    industry: "HR",
+    documents: ["offer letters", "pay stubs", "onboarding packs", "policy acknowledgements"],
+  },
+];
+
+const copyByLocale: Record<Locale, ContentHubCopy> = {
+  en: {
+    navBlogs: "Blogs",
+    navPlayground: "Playground",
+    readMore: "Read article",
+    relatedTitle: "Related resources",
+    faqTitle: "FAQ",
+    updatedLabel: "Updated",
+    quickAnswerTitle: "Quick answer",
+    keyTakeawaysTitle: "Key takeaways",
+    tryLiveLabel: "Try it live",
+    collections: {
+      blog: {
+        label: "Developer blog",
+        title: "Guides for PDF generation APIs and document automation",
+        description:
+          "Practical implementation guides, architecture comparisons, and scaling patterns for Typst and programmatic PDF generation.",
+      },
+      templates: {
+        label: "Template tutorials",
+        title: "How to create production-ready PDF templates",
+        description:
+          "Reusable Typst template walkthroughs with copyable code, API examples, and customization tips for high-intent use cases.",
+      },
+      compare: {
+        label: "Comparisons",
+        title: "DocuForge vs other PDF generation tools",
+        description:
+          "Direct, implementation-level comparisons to help engineering teams choose the right rendering stack.",
+      },
+      industries: {
+        label: "Industry guides",
+        title: "Document automation by industry",
+        description:
+          "Use-case landing pages for teams in commerce, logistics, healthcare, finance, legal, education, and HR.",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `How to Create a ${topic} PDF Template`,
+      howToGenerate: (topic) => `How to Generate ${topic} Programmatically`,
+      compare: (target) => `DocuForge vs ${target} for PDF Generation`,
+      industry: (industry) => `PDF Generation for ${industry}`,
+    },
+    cta: {
+      title: "Ship faster with a template-first API",
+      body: "Use the DocuForge playground to test templates live, then move the same payload into production.",
+      primary: "Try DocuForge free",
+      secondary: "Open playground",
+    },
+  },
+  fr: {
+    navBlogs: "Blog",
+    navPlayground: "Playground",
+    readMore: "Lire l'article",
+    relatedTitle: "Ressources associees",
+    faqTitle: "FAQ",
+    updatedLabel: "Mis a jour",
+    quickAnswerTitle: "Reponse rapide",
+    keyTakeawaysTitle: "Points cles",
+    tryLiveLabel: "Tester en direct",
+    collections: {
+      blog: {
+        label: "Blog developpeur",
+        title: "Guides PDF generation API et automatisation documentaire",
+        description:
+          "Guides pratiques, comparatifs d'architecture et patterns de scalabilite pour Typst et la generation PDF programmatique.",
+      },
+      templates: {
+        label: "Tutoriels templates",
+        title: "Creer des templates PDF prets pour la production",
+        description:
+          "Tutoriels Typst avec code copiable, exemples API et conseils de personnalisation.",
+      },
+      compare: {
+        label: "Comparatifs",
+        title: "DocuForge vs autres outils de generation PDF",
+        description:
+          "Comparatifs techniques pour aider les equipes a choisir la bonne stack de rendu.",
+      },
+      industries: {
+        label: "Guides metiers",
+        title: "Automatisation documentaire par secteur",
+        description:
+          "Pages d'usage pour e-commerce, logistique, sante, finance, legal, education et RH.",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `Comment creer un template PDF ${topic}`,
+      howToGenerate: (topic) => `Comment generer ${topic} par API`,
+      compare: (target) => `DocuForge vs ${target} pour la generation PDF`,
+      industry: (industry) => `Generation PDF pour ${industry}`,
+    },
+    cta: {
+      title: "Livrez plus vite avec une API orientee templates",
+      body: "Testez vos templates dans le playground, puis reutilisez la meme requete en production.",
+      primary: "Essayer DocuForge gratuitement",
+      secondary: "Ouvrir le playground",
+    },
+  },
+  de: {
+    navBlogs: "Blog",
+    navPlayground: "Playground",
+    readMore: "Artikel lesen",
+    relatedTitle: "Verwandte Inhalte",
+    faqTitle: "FAQ",
+    updatedLabel: "Aktualisiert",
+    quickAnswerTitle: "Kurzantwort",
+    keyTakeawaysTitle: "Wichtigste Punkte",
+    tryLiveLabel: "Live testen",
+    collections: {
+      blog: {
+        label: "Developer Blog",
+        title: "Guides fur PDF APIs und Dokumentautomatisierung",
+        description:
+          "Praxisnahe Guides, Tool-Vergleiche und Skalierungsansatze fur Typst und programmatische PDF-Erzeugung.",
+      },
+      templates: {
+        label: "Template Tutorials",
+        title: "Produktionsreife PDF Templates erstellen",
+        description:
+          "Wiederverwendbare Typst-Beispiele mit Code, API-Requests und Customization-Tipps.",
+      },
+      compare: {
+        label: "Vergleiche",
+        title: "DocuForge im Vergleich zu anderen PDF Tools",
+        description:
+          "Technische Vergleiche fur Engineering-Teams mit Fokus auf Betrieb und Geschwindigkeit.",
+      },
+      industries: {
+        label: "Branchen",
+        title: "Dokumentautomatisierung nach Branche",
+        description:
+          "Use-Case Seiten fur Commerce, Logistik, Healthcare, Finance, Legal, Education und HR.",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `${topic} PDF Template erstellen`,
+      howToGenerate: (topic) => `${topic} programmatisch erzeugen`,
+      compare: (target) => `DocuForge vs ${target} fur PDF Generierung`,
+      industry: (industry) => `PDF Generierung fur ${industry}`,
+    },
+    cta: {
+      title: "Schneller liefern mit einer Template-first API",
+      body: "Templates live testen und dieselbe Payload direkt in Produktion verwenden.",
+      primary: "DocuForge kostenlos testen",
+      secondary: "Playground offnen",
+    },
+  },
+  it: {
+    navBlogs: "Blog",
+    navPlayground: "Playground",
+    readMore: "Leggi articolo",
+    relatedTitle: "Risorse correlate",
+    faqTitle: "FAQ",
+    updatedLabel: "Aggiornato",
+    quickAnswerTitle: "Risposta rapida",
+    keyTakeawaysTitle: "Punti chiave",
+    tryLiveLabel: "Provalo live",
+    collections: {
+      blog: {
+        label: "Blog developer",
+        title: "Guide per PDF generation API e automazione documentale",
+        description:
+          "Guide pratiche, confronti architetturali e pattern di scalabilita per Typst e PDF programmatici.",
+      },
+      templates: {
+        label: "Tutorial template",
+        title: "Come creare template PDF pronti per la produzione",
+        description:
+          "Tutorial Typst con codice copiabile, esempi API e suggerimenti di personalizzazione.",
+      },
+      compare: {
+        label: "Confronti",
+        title: "DocuForge vs altri tool di PDF generation",
+        description:
+          "Confronti tecnici orientati a scelta stack, costi e complessita operativa.",
+      },
+      industries: {
+        label: "Guide settore",
+        title: "Automazione documentale per settore",
+        description:
+          "Pagine use case per e-commerce, sanita, logistica, finance, legal, education e HR.",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `Come creare un template PDF ${topic}`,
+      howToGenerate: (topic) => `Come generare ${topic} in modo programmatico`,
+      compare: (target) => `DocuForge vs ${target} per PDF generation`,
+      industry: (industry) => `PDF generation per ${industry}`,
+    },
+    cta: {
+      title: "Rilascia piu velocemente con un'API template-first",
+      body: "Prova i template nel playground e usa la stessa richiesta in produzione.",
+      primary: "Prova DocuForge gratis",
+      secondary: "Apri playground",
+    },
+  },
+  es: {
+    navBlogs: "Blog",
+    navPlayground: "Playground",
+    readMore: "Leer articulo",
+    relatedTitle: "Recursos relacionados",
+    faqTitle: "FAQ",
+    updatedLabel: "Actualizado",
+    quickAnswerTitle: "Respuesta rapida",
+    keyTakeawaysTitle: "Puntos clave",
+    tryLiveLabel: "Probar en vivo",
+    collections: {
+      blog: {
+        label: "Blog developer",
+        title: "Guias de PDF generation API y automatizacion documental",
+        description:
+          "Guias practicas, comparativas tecnicas y patrones de escalado para Typst y PDFs programaticos.",
+      },
+      templates: {
+        label: "Tutoriales de templates",
+        title: "Como crear templates PDF listos para produccion",
+        description:
+          "Tutoriales Typst con codigo copiable, ejemplos API y consejos de personalizacion.",
+      },
+      compare: {
+        label: "Comparativas",
+        title: "DocuForge vs otras herramientas de PDF generation",
+        description:
+          "Comparativas para equipos de ingenieria enfocados en rendimiento y mantenibilidad.",
+      },
+      industries: {
+        label: "Guias por industria",
+        title: "Automatizacion de documentos por industria",
+        description:
+          "Paginas de uso para ecommerce, salud, logistica, finanzas, legal, educacion y RRHH.",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `Como crear una plantilla PDF ${topic}`,
+      howToGenerate: (topic) => `Como generar ${topic} programaticamente`,
+      compare: (target) => `DocuForge vs ${target} para PDF generation`,
+      industry: (industry) => `PDF generation para ${industry}`,
+    },
+    cta: {
+      title: "Entrega mas rapido con una API orientada a plantillas",
+      body: "Prueba plantillas en el playground y reutiliza la misma solicitud en produccion.",
+      primary: "Probar DocuForge gratis",
+      secondary: "Abrir playground",
+    },
+  },
+  ar: {
+    navBlogs: "المدونة",
+    navPlayground: "Playground",
+    readMore: "اقرا المقال",
+    relatedTitle: "محتوى مرتبط",
+    faqTitle: "الاسئلة الشائعة",
+    updatedLabel: "اخر تحديث",
+    quickAnswerTitle: "اجابة سريعة",
+    keyTakeawaysTitle: "اهم النقاط",
+    tryLiveLabel: "جرب مباشرة",
+    collections: {
+      blog: {
+        label: "مدونة المطور",
+        title: "ادلة PDF generation API و اتمتة المستندات",
+        description:
+          "ادلة عملية ومقارنات تقنية لتصميم قوالب Typst وتوليد PDF بشكل برمجي.",
+      },
+      templates: {
+        label: "دروس القوالب",
+        title: "كيفية انشاء قوالب PDF جاهزة للانتاج",
+        description:
+          "شروحات Typst مع كود قابل للنسخ وامثلة API ونصائح تخصيص.",
+      },
+      compare: {
+        label: "مقارنات",
+        title: "DocuForge مقارنة بادوات PDF اخرى",
+        description:
+          "مقارنات تقنية تساعد الفرق الهندسية على اختيار بنية التوليد المناسبة.",
+      },
+      industries: {
+        label: "حلول حسب القطاع",
+        title: "اتمتة المستندات حسب الصناعة",
+        description:
+          "صفحات استخدام للتجارة الالكترونية والصحة واللوجستيات والمالية والقانون والموارد البشرية.",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `كيفية انشاء قالب PDF ${topic}`,
+      howToGenerate: (topic) => `كيفية توليد ${topic} برمجيا`,
+      compare: (target) => `DocuForge مقابل ${target} لتوليد PDF`,
+      industry: (industry) => `توليد PDF لقطاع ${industry}`,
+    },
+    cta: {
+      title: "اطلق اسرع عبر API مبنية على القوالب",
+      body: "اختبر القوالب في Playground ثم استخدم نفس الطلب في بيئة الانتاج.",
+      primary: "جرب DocuForge مجانا",
+      secondary: "افتح Playground",
+    },
+  },
+  zh: {
+    navBlogs: "博客",
+    navPlayground: "Playground",
+    readMore: "阅读文章",
+    relatedTitle: "相关文章",
+    faqTitle: "常见问题",
+    updatedLabel: "更新于",
+    quickAnswerTitle: "快速结论",
+    keyTakeawaysTitle: "关键要点",
+    tryLiveLabel: "在线试用",
+    collections: {
+      blog: {
+        label: "开发者博客",
+        title: "PDF generation API 与文档自动化指南",
+        description:
+          "面向工程团队的实战指南、架构对比与扩展模式，覆盖 Typst 与程序化 PDF 生成。",
+      },
+      templates: {
+        label: "模板教程",
+        title: "如何创建可用于生产的 PDF 模板",
+        description:
+          "包含可复制 Typst 代码、API 调用示例和定制建议的模板页面集合。",
+      },
+      compare: {
+        label: "对比",
+        title: "DocuForge 与其他 PDF 工具对比",
+        description:
+          "帮助技术团队从性能、维护性和交付效率角度选择工具。",
+      },
+      industries: {
+        label: "行业方案",
+        title: "按行业的文档自动化",
+        description:
+          "覆盖电商、医疗、物流、教育、金融、法务与人力资源场景。",
+      },
+    },
+    titles: {
+      howToCreate: (topic) => `如何创建 ${topic} PDF 模板`,
+      howToGenerate: (topic) => `如何以编程方式生成 ${topic}`,
+      compare: (target) => `DocuForge 与 ${target} 的 PDF 生成对比`,
+      industry: (industry) => `${industry} 行业的 PDF 生成`,
+    },
+    cta: {
+      title: "通过模板优先 API 更快交付",
+      body: "先在 Playground 实时测试模板，再将同一请求投入生产。",
+      primary: "免费试用 DocuForge",
+      secondary: "打开 Playground",
+    },
+  },
 };
 
-function toTitleCase(input: string): string {
-  return input.replace(/\b\w/g, (char) => char.toUpperCase());
+const fixedBlogTitles: Partial<Record<Locale, Record<string, string>>> = {
+  fr: {
+    "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard":
+      "Pourquoi nous avons cree DocuForge : la generation PDF ne devrait pas etre aussi complexe",
+    "typst-vs-html-css-for-pdf-templates":
+      "Typst vs HTML/CSS pour les templates PDF - comparaison developpeur",
+    "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative":
+      "La generation PDF avec Puppeteer est lente - voici une alternative plus rapide",
+  },
+  de: {
+    "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard":
+      "Warum wir DocuForge gebaut haben: PDF Generierung sollte nicht so schwer sein",
+    "typst-vs-html-css-for-pdf-templates":
+      "Typst vs HTML/CSS fur PDF Templates - Entwicklervergleich",
+    "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative":
+      "Puppeteer PDF ist langsam - hier ist eine schnellere Alternative",
+  },
+  it: {
+    "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard":
+      "Perche abbiamo creato DocuForge: la PDF generation non dovrebbe essere cosi difficile",
+    "typst-vs-html-css-for-pdf-templates":
+      "Typst vs HTML/CSS per template PDF - confronto per developer",
+    "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative":
+      "Puppeteer PDF e lento - ecco un'alternativa piu veloce",
+  },
+  es: {
+    "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard":
+      "Por que construimos DocuForge: la generacion PDF no deberia ser tan dificil",
+    "typst-vs-html-css-for-pdf-templates":
+      "Typst vs HTML/CSS para plantillas PDF - comparacion para developers",
+    "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative":
+      "La generacion PDF con Puppeteer es lenta - aqui tienes una alternativa mas rapida",
+  },
+  ar: {
+    "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard":
+      "لماذا بنينا DocuForge: توليد PDF لا يجب ان يكون بهذا التعقيد",
+    "typst-vs-html-css-for-pdf-templates":
+      "Typst مقابل HTML/CSS لقوالب PDF - مقارنة للمطورين",
+    "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative":
+      "توليد PDF عبر Puppeteer بطيء - هذا بديل اسرع",
+  },
+  zh: {
+    "why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard":
+      "我们为什么构建 DocuForge：PDF 生成不该这么难",
+    "typst-vs-html-css-for-pdf-templates":
+      "Typst 与 HTML/CSS 的 PDF 模板对比（开发者视角）",
+    "puppeteer-pdf-generation-is-slow-heres-a-faster-alternative":
+      "Puppeteer PDF 生成太慢：一个更快的替代方案",
+  },
+};
+
+function getCopy(locale: Locale): ContentHubCopy {
+  return copyByLocale[locale] ?? copyByLocale.en;
 }
 
-function localizeTopic(topicKey: TopicKey | undefined, locale: Locale): string {
-  if (!topicKey) return "";
-  return topicTranslations[topicKey]?.[locale] ?? topicTranslations[topicKey]?.en ?? topicKey;
+export function getContentHubCopy(locale: Locale): ContentHubCopy {
+  return getCopy(locale);
 }
 
-function localizeTitle(item: ContentItem, locale: Locale): string {
-  const explicit = item.localizedTitle?.[locale] || customTitles[item.slug]?.[locale];
-  if (explicit) return explicit;
-
-  if (!item.topicKey) {
-    return item.title;
-  }
-
-  const subject = localizeTopic(item.topicKey, locale);
-
-  if (item.category === "template") {
-    return templateTitlePattern[locale].replace("{subject}", subject);
-  }
-
-  if (item.category === "programmatic") {
-    return programmaticTitlePattern[locale].replace("{subject}", subject);
-  }
-
-  if (item.category === "comparison") {
-    return comparisonTitlePattern[locale].replace("{subject}", subject);
-  }
-
-  if (item.category === "industry") {
-    return industryTitlePattern[locale].replace("{subject}", subject);
-  }
-
-  return item.title;
+function toPath(collection: ContentCollection, slug: string) {
+  return `/${collection}/${slug}`;
 }
 
-function estimateBenchmarks(item: ContentItem): Array<{ metric: string; value: string }> {
-  if (item.benchmarkMetrics && item.benchmarkMetrics.length > 0) {
-    return item.benchmarkMetrics;
-  }
-
-  return [
-    { metric: "Template setup time", value: "~15-45 minutes for first production-ready version" },
-    { metric: "Integration effort", value: "One API call + stable JSON payload contract" },
-    { metric: "Scale behavior", value: "Queue-friendly, deterministic rendering across retries" },
-  ];
+function normalizeTitle(locale: Locale, spec: BlogSpec): string {
+  return fixedBlogTitles[locale]?.[spec.slug] ?? spec.title;
 }
 
-function safeIdentifier(value: string) {
-  return value.replace(/[^a-z0-9_]/gi, "_").toLowerCase();
-}
-
-function sampleValue(field: string): string {
-  const normalized = field.toLowerCase();
-  if (normalized.includes("date") || normalized.includes("time")) return "2026-02-18";
-  if (normalized.includes("amount") || normalized.includes("total") || normalized.includes("tax")) return "129.95";
-  if (normalized.includes("email")) return "team@example.com";
-  if (normalized.includes("id") || normalized.includes("number") || normalized.includes("code")) return "DOCU-2026-001";
-  if (normalized.includes("items") || normalized.includes("sections") || normalized.includes("transactions"))
-    return "[...]";
-  return "sample_value";
-}
-
-function buildJsonDataFields(fields: string[]) {
-  const lines = fields.map((field) => {
-    const key = safeIdentifier(field.split(".").slice(-1)[0]);
-    return `  \"${key}\": \"${sampleValue(field)}\"`;
-  });
-  return lines.join(",\n");
-}
-
-function buildCodeSamples(item: ContentItem): HubCodeSamples {
-  const dataFields = item.dataFields.length > 0 ? item.dataFields : ["document_id", "customer_name"];
-  const payload = buildJsonDataFields(dataFields);
-  const templateName = toTitleCase((item.topicKey || item.slug).replace(/-/g, " "));
-
-  const typst = `#let doc = json.decode(sys.inputs.at("data", default: "{}"))
-
-#set page(width: 210mm, height: 297mm, margin: 14mm)
-#set text(font: "Inter", size: 10pt)
-
-#text(size: 18pt, weight: "bold")[${templateName}]
-#v(8pt)
-
-#for (key, value) in doc.pairs() {
-  [*#key:* #value]\\
-}
-
-#v(14pt)
-#text(size: 9pt, fill: rgb("#64748b"))[Generated with DocuForge + Typst]`;
-
-  const curl = `curl -X POST "$DOCUFORGE_API_URL/v1/render" \\
+function buildArticleCodeExample(slug: string) {
+  return `curl -X POST "$DOCUFORGE_API_URL/v1/render" \\
   -H "X-API-Key: $DOCUFORGE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "template_id": "tmpl_${item.slug.replace(/-/g, "_")}",
+    "template_id": "tpl_${slug.replaceAll("-", "_")}",
     "data": {
-${payload}
+      "document_id": "${slug.toUpperCase().slice(0, 12)}-001",
+      "generated_at": "2026-02-19T12:00:00Z"
     }
   }' \\
-  --output ${item.slug}.pdf`;
+  --output document.pdf`;
+}
 
-  const javascript = `const response = await fetch(process.env.DOCUFORGE_API_URL + "/v1/render", {
+function buildTemplateTypst(topic: string) {
+  return `#set page(paper: "a4", margin: 12pt)
+#set text(font: "Inter", size: 10pt)
+
+#let payload = sys.inputs
+
+#grid(
+  columns: (2fr, 1fr),
+  gutter: 12pt,
+  [#text(size: 18pt, weight: "bold")[${topic}]],
+  [#align(right)[#text(weight: "semibold")[#payload.document_id]]],
+)
+
+#v(8pt)
+#line(length: 100%)
+#v(8pt)
+
+#for (label, value) in (
+  ("Customer", payload.customer),
+  ("Date", payload.date),
+  ("Reference", payload.reference),
+) {
+  #grid(columns: (1fr, 2fr), [#text(fill: rgb("#666"))[#label]], [#value])
+}
+
+#v(10pt)
+#table(
+  columns: (2fr, auto, auto),
+  inset: 6pt,
+  stroke: rgb("#ddd"),
+  [*Item*], [*Qty*], [*Amount*],
+  ..payload.items.map(item => (
+    item.name,
+    str(item.qty),
+    "$" + str(item.amount),
+  )).flatten(),
+)
+
+#align(right)[#text(weight: "bold")[Total: $ #payload.total]]`;
+}
+
+function buildTemplateJsonExample() {
+  return `{
+  "document_id": "DOC-1001",
+  "customer": "Acme Fulfillment",
+  "date": "2026-02-19",
+  "reference": "REF-9920",
+  "items": [
+    { "name": "Widget A", "qty": 2, "amount": 49.99 },
+    { "name": "Widget B", "qty": 1, "amount": 19.99 }
+  ],
+  "total": 119.97
+}`;
+}
+
+function buildJavascriptExample(slug: string) {
+  return `const response = await fetch(\`\${process.env.DOCUFORGE_API_URL}/v1/render\`, {
   method: "POST",
   headers: {
     "X-API-Key": process.env.DOCUFORGE_API_KEY,
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    template_id: "tmpl_${item.slug.replace(/-/g, "_")}",
-    data: {
-${dataFields
-  .map((field) => {
-    const key = safeIdentifier(field.split(".").slice(-1)[0]);
-    return `      ${key}: "${sampleValue(field)}"`;
-  })
-  .join(",\n")}
-    },
+    template_id: "tpl_${slug.replaceAll("-", "_")}",
+    data: payload,
   }),
 });
 
-if (!response.ok) throw new Error("Render failed");
 const pdf = await response.arrayBuffer();`;
+}
 
-  const python = `import requests
+function buildPythonExample(slug: string) {
+  return `import requests
 
-response = requests.post(
-    f"{DOCUFORGE_API_URL}/v1/render",
-    headers={
-        "X-API-Key": DOCUFORGE_API_KEY,
-        "Content-Type": "application/json",
-    },
+resp = requests.post(
+    f"{API_URL}/v1/render",
+    headers={"X-API-Key": API_KEY, "Content-Type": "application/json"},
     json={
-        "template_id": "tmpl_${item.slug.replace(/-/g, "_")}",
-        "data": {
-${dataFields
-  .map((field) => {
-    const key = safeIdentifier(field.split(".").slice(-1)[0]);
-    return `            "${key}": "${sampleValue(field)}"`;
-  })
-  .join(",\n")}
-        },
+        "template_id": "tpl_${slug.replaceAll("-", "_")}",
+        "data": payload,
     },
     timeout=30,
 )
-response.raise_for_status()
 
-with open("${item.slug}.pdf", "wb") as f:
-    f.write(response.content)`;
-
-  return { typst, curl, javascript, python };
+with open("output.pdf", "wb") as f:
+    f.write(resp.content)`;
 }
 
-function descriptionByLocale(baseDescription: string, locale: Locale): string {
-  if (locale === "en") return baseDescription;
-  const copy = sectionCopy[locale];
-  return `${baseDescription} ${copy.quickAnswerLead}`;
-}
+function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
+  const copy = getCopy(locale);
+  const title = normalizeTitle(locale, spec);
+  const metaTitle = `${title} | DocuForge`;
+  const metaDescription = `${spec.excerpt} Learn implementation patterns, code examples, and rollout guidance for ${spec.keyword}.`;
+  const intro = `Teams searching for ${spec.keyword} usually hit the same problem: they can generate a PDF, but the workflow is hard to operate once real volume arrives. This guide focuses on the implementation details that matter in production: stable templates, predictable API contracts, and low-friction debugging. Instead of generic advice, you will see practical patterns you can apply immediately, including baseline request structures, rollout checkpoints, and tradeoffs between speed and flexibility. If your goal is reliable document automation with fewer moving parts, this article gives you a direct path.`;
 
-function buildSummaryAnswer(item: ContentItem, locale: Locale): string {
-  const copy = sectionCopy[locale];
-  const title = localizeTitle(item, locale);
-  return `${title}. ${copy.quickAnswerLead}`;
-}
-
-function buildIntro(item: ContentItem, locale: Locale): string {
-  const copy = sectionCopy[locale];
-  return `${copy.introLead} ${item.problem} Teams evaluating this workflow usually need speed, predictable output quality, and low operational overhead across repeated document runs. In practice, ad-hoc scripts and loosely defined templates cause brittle formatting, expensive debugging, and slow delivery. ${item.solution} This guide focuses on implementation patterns you can ship quickly: stable template contracts, API-first data binding, measurable benchmarks, and clear rollout steps. By the end, you should have a repeatable approach that improves developer velocity while keeping document generation reliable in production.`;
-}
-
-function buildFaq(item: ContentItem, locale: Locale): HubFaq[] {
-  const topic = localizeTopic(item.topicKey, locale) || item.title;
-  const baseQuestions: Record<Locale, [string, string][]> = {
-    en: [
-      [
-        `What makes this ${topic} workflow production-ready?`,
-        "A stable template contract, validated data payloads, and idempotent API calls with monitoring.",
-      ],
-      [
-        "How should I test before launch?",
-        "Run fixture-based render tests, include edge-case payloads, and validate p95 render duration.",
-      ],
-      [
-        "Can I customize the layout later?",
-        "Yes. Use template versioning so updates remain auditable and easy to roll back.",
-      ],
-    ],
-    fr: [
-      [
-        `Comment rendre ce workflow ${topic} prêt pour la production ?`,
-        "Utilisez un contrat de template stable, des données validées et des appels API idempotents avec monitoring.",
-      ],
-      [
-        "Comment tester avant la mise en ligne ?",
-        "Exécutez des tests de rendu avec jeux de données réels et validez la latence p95.",
-      ],
-      [
-        "Peut-on personnaliser le layout ensuite ?",
-        "Oui, via la versioning des templates pour garder un historique clair et réversible.",
-      ],
-    ],
-    de: [
-      [
-        `Was macht diesen ${topic}-Workflow produktionsreif?`,
-        "Ein stabiles Template-Vertrag, validierte Daten und idempotente API-Aufrufe mit Monitoring.",
-      ],
-      [
-        "Wie teste ich vor dem Rollout?",
-        "Nutze Fixture-Tests, Edge-Cases und überprüfe die p95-Renderlatenz.",
-      ],
-      [
-        "Kann ich das Layout später ändern?",
-        "Ja, mit Template-Versionierung und sauberer Rollback-Strategie.",
-      ],
-    ],
-    it: [
-      [
-        `Cosa rende questo workflow ${topic} pronto per la produzione?`,
-        "Contratto template stabile, payload validati e chiamate API idempotenti monitorate.",
-      ],
-      [
-        "Come testare prima del rilascio?",
-        "Esegui test con fixture reali, casi limite e controlla la latenza p95.",
-      ],
-      [
-        "Posso personalizzare il layout in seguito?",
-        "Sì, usa il versioning dei template per modifiche tracciabili e rollback semplici.",
-      ],
-    ],
-    es: [
-      [
-        `¿Qué hace que este flujo de ${topic} esté listo para producción?`,
-        "Contrato de plantilla estable, payloads validados y llamadas API idempotentes con monitoreo.",
-      ],
-      [
-        "¿Cómo probar antes de lanzar?",
-        "Ejecuta pruebas con fixtures reales, casos límite y valida la latencia p95.",
-      ],
-      [
-        "¿Puedo personalizar el layout después?",
-        "Sí, usando versionado de plantillas para cambios auditables y rollback rápido.",
-      ],
-    ],
-    ar: [
-      [
-        `ما الذي يجعل سير عمل ${topic} جاهزاً للإنتاج؟`,
-        "عقد قالب ثابت وبيانات مُتحقق منها واستدعاءات API قابلة لإعادة المحاولة بأمان مع المراقبة.",
-      ],
-      [
-        "كيف أختبر قبل الإطلاق؟",
-        "شغّل اختبارات ببيانات حقيقية وحالات طرفية وتحقق من زمن الاستجابة p95.",
-      ],
-      [
-        "هل يمكن تخصيص التصميم لاحقاً؟",
-        "نعم، باستخدام إصدارات القوالب للحفاظ على تاريخ واضح وإمكانية الرجوع.",
-      ],
-    ],
-    zh: [
-      [
-        `${topic} 工作流如何达到生产可用？`,
-        "关键是稳定模板契约、已校验数据载荷、幂等 API 调用和可观测性。",
-      ],
-      [
-        "上线前如何测试？",
-        "使用夹具数据覆盖边界场景，并验证 p95 渲染耗时。",
-      ],
-      [
-        "后续还能改版式吗？",
-        "可以。通过模板版本管理保持可审计、可回滚。",
-      ],
-    ],
-  };
-
-  return baseQuestions[locale].map(([question, answer]) => ({ question, answer }));
-}
-
-function localizedRelatedLabel(item: ContentItem, locale: Locale): string {
-  const title = localizeTitle(item, locale);
-  return title.length > 68 ? `${title.slice(0, 65)}...` : title;
-}
-
-function localizedCtaLabel(item: ContentItem, locale: Locale): string {
-  if (item.ctaLabel) return item.ctaLabel;
-  return sectionCopy[locale].ctaDefault;
-}
-
-function sectionPath(section: ContentSection) {
-  return `/${section}`;
-}
-
-function filterBySection(section: ContentSection) {
-  return contentItems.filter((item) => item.section === section);
-}
-
-function resolveRelated(item: ContentItem, locale: Locale): HubLink[] {
-  const basePath = sectionPath(item.section);
-  const sameSection = filterBySection(item.section)
-    .filter((candidate) => candidate.slug !== item.slug)
-    .sort((a, b) => Number(Boolean(b.isPriority)) - Number(Boolean(a.isPriority)))
-    .slice(0, 3)
-    .map((candidate) => ({
-      href: `${basePath}/${candidate.slug}`,
-      label: localizedRelatedLabel(candidate, locale),
-    }));
-
-  const crossSectionSeed: ContentItem[] = [
-    contentItems.find((entry) => entry.section === "templates" && entry.slug === "invoice"),
-    contentItems.find((entry) => entry.section === "templates" && entry.slug === "shipping-label"),
-    contentItems.find((entry) => entry.section === "compare" && entry.slug === "puppeteer-pdf-generation"),
-  ].filter(Boolean) as ContentItem[];
-
-  const crossSection = crossSectionSeed
-    .filter((candidate) => candidate.slug !== item.slug)
-    .slice(0, 2)
-    .map((candidate) => ({
-      href: `/${candidate.section}/${candidate.slug}`,
-      label: localizedRelatedLabel(candidate, locale),
-    }));
-
-  return [...sameSection, ...crossSection].slice(0, 5);
-}
-
-function localizedKeywords(item: ContentItem, locale: Locale): string[] {
-  const topic = localizeTopic(item.topicKey, locale);
-  if (!topic) return item.keywords;
-  return Array.from(new Set([...item.keywords, `${topic} PDF`, `DocuForge ${topic}`]));
-}
-
-export function getSectionCopy(locale: Locale): SectionCopy {
-  return sectionCopy[locale] ?? sectionCopy.en;
-}
-
-export function getContentSections(): ContentSection[] {
-  return ["blog", "templates", "compare", "industries"];
-}
-
-export function getContentItemsBySection(section: ContentSection): ContentItem[] {
-  return filterBySection(section);
-}
-
-export function getContentItem(section: ContentSection, slug: string): ContentItem | null {
-  return (
-    contentItems.find((item) => item.section === section && item.slug === slug) ?? null
-  );
-}
-
-export function localizeContentItem(item: ContentItem, locale: Locale): LocalizedContentItem {
-  const related = resolveRelated(item, locale).map((entry) => ({
-    href: withLocale(entry.href, locale),
-    label: entry.label,
-  }));
-
-  return {
-    section: item.section,
-    slug: item.slug,
-    category: item.category,
-    title: localizeTitle(item, locale),
-    description: descriptionByLocale(item.description, locale),
-    keywords: localizedKeywords(item, locale),
-    primaryKeyword: item.primaryKeyword,
-    summaryAnswer: buildSummaryAnswer(item, locale),
-    intro: buildIntro(item, locale),
-    problem: item.problem,
-    solution: item.solution,
-    whatYouBuild: item.whatYouBuild,
-    dataFields: item.dataFields,
-    customizationTips: item.customizationTips,
-    benchmarks: estimateBenchmarks(item),
-    ctaLabel: localizedCtaLabel(item, locale),
-    ctaHref: withLocale(item.ctaHref || "/pricing", locale),
-    related,
-    faq: buildFaq(item, locale),
-    codeSamples: buildCodeSamples(item),
-    publishedAt: BASE_UPDATED_AT,
-    updatedAt: BASE_UPDATED_AT,
-    isPriority: Boolean(item.isPriority),
-  };
-}
-
-export function getLocalizedContentItem(
-  section: ContentSection,
-  slug: string,
-  locale: Locale
-): LocalizedContentItem | null {
-  const item = getContentItem(section, slug);
-  if (!item) return null;
-  return localizeContentItem(item, locale);
-}
-
-export function getSectionIndex(
-  section: ContentSection,
-  locale: Locale
-): {
-  title: string;
-  description: string;
-  items: LocalizedContentItem[];
-} {
-  const copy = getSectionCopy(locale);
-  const items = getContentItemsBySection(section).map((item) => localizeContentItem(item, locale));
-
-  return {
-    title: copy.indexTitle[section],
-    description: copy.indexDescription[section],
-    items,
-  };
-}
-
-export function getAllStaticContentRoutes(): string[] {
-  return contentItems.map((item) => `/${item.section}/${item.slug}`);
-}
-
-export function getAllLocalizedRoutes(): string[] {
-  const staticRoutes = [
-    "/",
-    "/docs",
-    "/pricing",
-    "/playground",
-    "/blog",
-    "/templates",
-    "/compare",
-    "/industries",
-    ...getAllStaticContentRoutes(),
+  const quickAnswer = `Use a template-first workflow with explicit versioning and strict request validation. Keep preview and production render paths separate, then automate document generation with idempotent backend jobs.`;
+  const takeaways = [
+    "Model each document type as a template with a stable data contract.",
+    "Keep preview rendering separate from production rendering to reduce risk.",
+    "Use internal links, canonical metadata, and structured snippets for stronger SEO and GEO visibility.",
+    "Expose one clear CTA to docs or playground to reduce conversion friction.",
   ];
 
-  const routes = new Set<string>();
-  staticRoutes.forEach((route) => {
-    routes.add(route);
-    locales
-      .filter((locale) => locale !== "en")
-      .forEach((locale) => routes.add(withLocale(route, locale)));
-  });
+  const blocks: ContentBlock[] = [
+    {
+      kind: "paragraph",
+      title: copy.quickAnswerTitle,
+      paragraphs: [quickAnswer],
+    },
+    {
+      kind: "paragraph",
+      title: "Implementation pattern",
+      paragraphs: [
+        "Start with one template per document family, not one template per customer. Keep dynamic data in JSON and rendering logic in Typst. This keeps change control simple and makes debugging deterministic.",
+        "For batch generation, enqueue requests by document type so failures are isolated and retries stay targeted. Monitor render duration, error rates, and monthly quota consumption.",
+      ],
+    },
+    {
+      kind: "code",
+      title: "API request example",
+      language: "bash",
+      code: buildArticleCodeExample(spec.slug),
+    },
+    {
+      kind: "list",
+      title: copy.keyTakeawaysTitle,
+      items: takeaways,
+    },
+    {
+      kind: "links",
+      title: copy.relatedTitle,
+      links: [
+        { href: "/docs", title: "DocuForge API docs" },
+        { href: "/docs#security", title: "Security controls and governance" },
+        { href: "/docs#mcp", title: "MCP integration docs" },
+        { href: "/playground", title: "Template playground" },
+      ],
+    },
+  ];
 
-  return Array.from(routes);
-}
+  const faq: ContentFaq[] = [
+    {
+      question: "What is the best way to start with programmatic PDF generation?",
+      answer:
+        "Start with one high-frequency document (usually invoices or receipts), define its JSON input contract, and automate from there.",
+    },
+    {
+      question: "How do I keep templates maintainable as features grow?",
+      answer:
+        "Use versioned templates, avoid copy-paste layout logic, and keep each template focused on one document intent.",
+    },
+  ];
 
-export function getPriorityLinks(locale: Locale): HubLink[] {
-  const priorityItems = contentItems
-    .filter((item) => item.isPriority)
-    .slice(0, 5)
-    .map((item) => ({
-      href: withLocale(`/${item.section}/${item.slug}`, locale),
-      label: localizeTitle(item, locale),
-    }));
-
-  return priorityItems;
-}
-
-export function getLocalizedNavLabels(locale: Locale): {
-  blog: string;
-  playground: string;
-} {
-  const copy = getSectionCopy(locale);
   return {
-    blog: copy.navBlog,
-    playground: copy.navPlayground,
+    collection: "blog",
+    category: spec.category,
+    slug: spec.slug,
+    title,
+    metaTitle,
+    metaDescription,
+    excerpt: spec.excerpt,
+    intro,
+    keywords: [spec.keyword, ...coreKeywords],
+    blocks,
+    faq,
+    ctaTitle: copy.cta.title,
+    ctaBody: copy.cta.body,
+    ctaPrimaryLabel: copy.cta.primary,
+    ctaPrimaryHref: "/register",
+    ctaSecondaryLabel: copy.cta.secondary,
+    ctaSecondaryHref: "/playground",
+    related: [],
+    updatedAt: "2026-02-19",
+    priority: Boolean(spec.priority),
   };
 }
 
-export type { ContentItem };
+function buildTemplateDocument(spec: TemplateSpec, locale: Locale): ContentDocument {
+  const copy = getCopy(locale);
+  const title = copy.titles.howToCreate(spec.topic);
+  const metaTitle = `${title} | DocuForge`;
+  const metaDescription = `Learn how to create and generate ${spec.topic.toLowerCase()} PDFs programmatically using Typst templates and the DocuForge API.`;
+  const intro = `${spec.useCase} This tutorial shows a full template workflow you can ship today: preview the target output, copy the Typst template, pass dynamic data via API, and productionize with repeatable request payloads. The structure is intentionally practical and optimized for developer onboarding, search visibility, and AI-assisted retrieval.`;
+
+  const slugSafe = spec.slug.replaceAll("-", "_");
+  const blocks: ContentBlock[] = [
+    {
+      kind: "paragraph",
+      title: "1. What you'll build",
+      paragraphs: [
+        `You will build a ${spec.topic} PDF template that accepts dynamic data and renders consistently across environments.`,
+        "The final document includes branded header content, structured rows, and predictable totals suitable for programmatic generation.",
+      ],
+    },
+    {
+      kind: "code",
+      title: "2. The Typst template code (copyable)",
+      language: "typst",
+      code: buildTemplateTypst(spec.topic),
+    },
+    {
+      kind: "code",
+      title: "3. Passing dynamic data via API",
+      language: "json",
+      code: buildTemplateJsonExample(),
+    },
+    {
+      kind: "code",
+      title: "4. Full API request example (curl)",
+      language: "bash",
+      code: `curl -X POST "$DOCUFORGE_API_URL/v1/render" \\
+  -H "X-API-Key: $DOCUFORGE_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "template_id": "tpl_${slugSafe}",
+    "data": {
+      "document_id": "DOC-1001",
+      "customer": "Acme Fulfillment",
+      "date": "2026-02-19",
+      "reference": "REF-9920",
+      "items": [
+        { "name": "Widget A", "qty": 2, "amount": 49.99 },
+        { "name": "Widget B", "qty": 1, "amount": 19.99 }
+      ],
+      "total": 119.97
+    }
+  }' \\
+  --output ${spec.slug}.pdf`,
+    },
+    {
+      kind: "code",
+      title: "4. Full API request example (JavaScript)",
+      language: "ts",
+      code: buildJavascriptExample(spec.slug),
+    },
+    {
+      kind: "code",
+      title: "4. Full API request example (Python)",
+      language: "python",
+      code: buildPythonExample(spec.slug),
+    },
+    {
+      kind: "list",
+      title: "5. Customization tips (logo, barcode, layout)",
+      items: [
+        "Keep document width and spacing constants in one place to avoid drift.",
+        "Prefer deterministic barcode input values generated by your backend.",
+        "Store brand colors and typography in template variables for easy theme updates.",
+        "Use reusable snippets for repeated footers, legal text, and totals.",
+      ],
+    },
+    {
+      kind: "links",
+      title: `6. ${copy.tryLiveLabel}`,
+      links: [{ href: "/playground", title: copy.cta.secondary }],
+    },
+  ];
+
+  const faq: ContentFaq[] = [
+    {
+      question: `Can I reuse this ${spec.topic.toLowerCase()} template across multiple customers?`,
+      answer:
+        "Yes. Keep customer-specific values in the data payload and keep the layout logic in the template.",
+    },
+    {
+      question: "Which endpoint should I use in production?",
+      answer:
+        "Use POST /v1/render with an API key for production traffic, and POST /v1/render/preview for draft iteration.",
+    },
+  ];
+
+  return {
+    collection: "templates",
+    category: "template",
+    slug: spec.slug,
+    title,
+    metaTitle,
+    metaDescription,
+    excerpt: spec.useCase,
+    intro,
+    keywords: [title, "Typst PDF generation", "generate PDF from template", ...coreKeywords],
+    blocks,
+    faq,
+    ctaTitle: "Generate this with DocuForge in seconds",
+    ctaBody: "Use the same template in preview and production routes with a stable request payload.",
+    ctaPrimaryLabel: copy.cta.primary,
+    ctaPrimaryHref: "/register",
+    ctaSecondaryLabel: copy.cta.secondary,
+    ctaSecondaryHref: "/playground",
+    related: [],
+    updatedAt: "2026-02-19",
+    priority: Boolean(spec.priority),
+  };
+}
+
+function buildComparisonDocument(spec: CompareSpec, locale: Locale): ContentDocument {
+  const copy = getCopy(locale);
+  const title = copy.titles.compare(spec.target);
+  const metaTitle = `${title} | DocuForge`;
+  const metaDescription = `Compare DocuForge and ${spec.target} for performance, template maintainability, developer experience, and API workflow fit.`;
+  const intro = `Teams evaluating ${spec.target} are usually balancing delivery speed, infrastructure overhead, and template maintainability. This comparison is written for implementation decisions, not marketing checklists. It highlights where each option fits, where migration cost appears, and what to benchmark before committing.`;
+
+  const blocks: ContentBlock[] = [
+    {
+      kind: "paragraph",
+      title: "Decision context",
+      paragraphs: [
+        spec.subtitle,
+        "Choose based on your dominant constraint: rendering throughput, template ownership model, or operational complexity.",
+      ],
+    },
+    {
+      kind: "list",
+      title: "What to benchmark first",
+      items: [
+        "Median and p95 render time for your top 3 templates.",
+        "Error rate under queue burst load and retry behavior.",
+        "Template authoring overhead for non-trivial multi-page documents.",
+        "Cost profile at projected monthly document volume.",
+      ],
+    },
+    {
+      kind: "code",
+      title: "Benchmark harness starter (Node.js)",
+      language: "ts",
+      code: `import { performance } from "node:perf_hooks";
+
+async function benchmark(run: () => Promise<void>, rounds = 20) {
+  const durations: number[] = [];
+  for (let i = 0; i < rounds; i += 1) {
+    const start = performance.now();
+    await run();
+    durations.push(performance.now() - start);
+  }
+  durations.sort((a, b) => a - b);
+  return {
+    p50: durations[Math.floor(durations.length * 0.5)],
+    p95: durations[Math.floor(durations.length * 0.95)],
+  };
+}`,
+    },
+    {
+      kind: "links",
+      title: copy.relatedTitle,
+      links: [
+        { href: "/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative", title: "Performance alternatives guide" },
+        { href: "/templates/invoice", title: "Invoice template tutorial" },
+      ],
+    },
+  ];
+
+  return {
+    collection: "compare",
+    category: "comparison",
+    slug: spec.slug,
+    title,
+    metaTitle,
+    metaDescription,
+    excerpt: spec.subtitle,
+    intro,
+    keywords: [title, "Puppeteer PDF alternative", "best PDF generation library 2026", ...coreKeywords],
+    blocks,
+    faq: [
+      {
+        question: "Should we migrate all templates at once?",
+        answer:
+          "No. Start with one high-volume document category, measure latency and error reduction, then migrate incrementally.",
+      },
+      {
+        question: "What makes comparison results credible?",
+        answer:
+          "Use the same payload set, the same infrastructure class, and compare at p50 and p95 latencies with failure rate.",
+      },
+    ],
+    ctaTitle: copy.cta.title,
+    ctaBody: copy.cta.body,
+    ctaPrimaryLabel: copy.cta.primary,
+    ctaPrimaryHref: "/register",
+    ctaSecondaryLabel: copy.cta.secondary,
+    ctaSecondaryHref: "/playground",
+    related: [],
+    updatedAt: "2026-02-19",
+    priority: Boolean(spec.priority),
+  };
+}
+
+function buildIndustryDocument(spec: IndustrySpec, locale: Locale): ContentDocument {
+  const copy = getCopy(locale);
+  const title = copy.titles.industry(spec.industry);
+  const metaTitle = `${title} | DocuForge`;
+  const metaDescription = `${title} with template-first automation for ${spec.documents.join(", ")} and other operational workflows.`;
+  const intro = `${spec.industry} teams often need consistent documents across customer communication, operations, and compliance. A template-first API reduces manual overhead by keeping layout logic centralized while data stays dynamic. This guide outlines the highest-impact document types and an implementation model that can scale with real traffic.`;
+
+  const blocks: ContentBlock[] = [
+    {
+      kind: "list",
+      title: "High-impact document workflows",
+      items: spec.documents.map((item) => `Automate ${item} with reusable data contracts.`),
+    },
+    {
+      kind: "paragraph",
+      title: "Recommended architecture",
+      paragraphs: [
+        "Use one template family per workflow, then map source-system fields into a normalized document payload before rendering.",
+        "Route preview workflows through authenticated user sessions and production workflows through API keys with monthly quota monitoring.",
+      ],
+    },
+    {
+      kind: "code",
+      title: "Queue worker pseudocode",
+      language: "ts",
+      code: `for await (const job of queue.consume("document-jobs")) {
+  const payload = mapSourceToDocument(job.data);
+  await renderWithTemplate(job.templateId, payload);
+  await markJobDone(job.id);
+}`,
+    },
+    {
+      kind: "links",
+      title: copy.relatedTitle,
+      links: [
+        { href: "/templates/shipping-label", title: "Shipping label template" },
+        { href: "/templates/invoice", title: "Invoice template" },
+        { href: "/blog/how-to-generate-invoices-programmatically-with-an-api", title: "Programmatic invoice guide" },
+      ],
+    },
+  ];
+
+  return {
+    collection: "industries",
+    category: "industry",
+    slug: spec.slug,
+    title,
+    metaTitle,
+    metaDescription,
+    excerpt: `${spec.industry} document automation patterns for API-first teams.`,
+    intro,
+    keywords: [title, "document automation API", ...coreKeywords],
+    blocks,
+    faq: [
+      {
+        question: `Which ${spec.industry} document should we automate first?`,
+        answer:
+          "Start with the highest-frequency document that currently causes manual rework, then standardize upstream payload mapping.",
+      },
+      {
+        question: "How do we keep compliance-sensitive documents stable?",
+        answer:
+          "Use versioned templates with explicit release steps and audit-friendly change notes for each update.",
+      },
+    ],
+    ctaTitle: copy.cta.title,
+    ctaBody: copy.cta.body,
+    ctaPrimaryLabel: copy.cta.primary,
+    ctaPrimaryHref: "/register",
+    ctaSecondaryLabel: copy.cta.secondary,
+    ctaSecondaryHref: "/playground",
+    related: [],
+    updatedAt: "2026-02-19",
+    priority: false,
+  };
+}
+
+function buildCollection(collection: ContentCollection, locale: Locale): ContentDocument[] {
+  switch (collection) {
+    case "blog":
+      return blogSpecs.map((spec) => buildBlogDocument(spec, locale));
+    case "templates":
+      return templateSpecs.map((spec) => buildTemplateDocument(spec, locale));
+    case "compare":
+      return compareSpecs.map((spec) => buildComparisonDocument(spec, locale));
+    case "industries":
+      return industrySpecs.map((spec) => buildIndustryDocument(spec, locale));
+    default:
+      return [];
+  }
+}
+
+function withRelated(docs: ContentDocument[]): ContentDocument[] {
+  return docs.map((doc) => {
+    const related = docs
+      .filter((candidate) => candidate.slug !== doc.slug)
+      .sort((a, b) => Number(b.priority) - Number(a.priority))
+      .slice(0, 3)
+      .map((candidate) => ({
+        href: toPath(candidate.collection, candidate.slug),
+        title: candidate.title,
+      }));
+
+    return { ...doc, related };
+  });
+}
+
+export function listContent(collection: ContentCollection, locale: Locale): ContentDocument[] {
+  return withRelated(buildCollection(collection, locale)).sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority ? -1 : 1;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+export function getContentBySlug(
+  collection: ContentCollection,
+  slug: string,
+  locale: Locale
+): ContentDocument | null {
+  const docs = listContent(collection, locale);
+  return docs.find((doc) => doc.slug === slug) ?? null;
+}
+
+export function getCollectionMeta(collection: ContentCollection, locale: Locale): CollectionMeta {
+  return getCopy(locale).collections[collection];
+}
+
+export function getContentHubNav(locale: Locale) {
+  const copy = getCopy(locale);
+  return {
+    blogLabel: copy.navBlogs,
+    playgroundLabel: copy.navPlayground,
+  };
+}
+
+export function listAllContentPaths(): Array<{ collection: ContentCollection; slug: string }> {
+  return [
+    ...blogSpecs.map((item) => ({ collection: "blog" as const, slug: item.slug })),
+    ...templateSpecs.map((item) => ({ collection: "templates" as const, slug: item.slug })),
+    ...compareSpecs.map((item) => ({ collection: "compare" as const, slug: item.slug })),
+    ...industrySpecs.map((item) => ({ collection: "industries" as const, slug: item.slug })),
+  ];
+}

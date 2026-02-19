@@ -1,0 +1,98 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.docuforge/docuforge-mcp",
+  "display_name": "DocuForge MCP",
+  "description": "Render PDFs with DocuForge using MCP tools for template discovery, preview, and final output.",
+  "status": "active",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/docuforge/docuforge",
+    "source": "github"
+  },
+  "website_url": "https://www.docuforge.app",
+  "documentation_url": "https://www.docuforge.app/docs/mcp/overview",
+  "support": {
+    "email": "support@docuforge.app"
+  },
+  "license": "MIT",
+  "tags": [
+    "pdf",
+    "documents",
+    "typst",
+    "rendering",
+    "automation"
+  ],
+  "categories": [
+    "productivity",
+    "developer-tools"
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.docuforge.app/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer ${MCP_SERVER_TOKEN}",
+          "isSecret": true
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "docuforge_get_usage",
+      "description": "Return current render quota usage for the configured DocuForge account."
+    },
+    {
+      "name": "docuforge_list_templates",
+      "description": "List available templates from DocuForge."
+    },
+    {
+      "name": "docuforge_get_template",
+      "description": "Get metadata for a single DocuForge template."
+    },
+    {
+      "name": "docuforge_render_pdf",
+      "description": "Render a production PDF from a template ID and data payload. Supports client-blind password mode."
+    },
+    {
+      "name": "docuforge_render_preview_pdf",
+      "description": "Render a preview PDF from inline Typst source and files."
+    }
+  ],
+  "prompts": [
+    {
+      "name": "docuforge_render_from_intent",
+      "description": "Guide the model through selecting a template and rendering a PDF with DocuForge tools."
+    }
+  ],
+  "resources": [
+    {
+      "uri": "docuforge://capabilities",
+      "name": "DocuForge capabilities",
+      "description": "When and how to use DocuForge tools effectively."
+    },
+    {
+      "uri": "docuforge://templates/official",
+      "name": "Official templates",
+      "description": "Catalog of official templates available in DocuForge."
+    },
+    {
+      "uri": "docuforge://security/client-blind-passwords",
+      "name": "Client-blind password guide",
+      "description": "How to apply passphrase protection locally without sharing passphrases with DocuForge."
+    }
+  ],
+  "clients": [
+    {
+      "name": "Claude"
+    },
+    {
+      "name": "Cursor"
+    },
+    {
+      "name": "Codex"
+    }
+  ]
+}

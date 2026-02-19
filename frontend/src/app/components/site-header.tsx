@@ -6,11 +6,11 @@ import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
-import { BrandLogo } from "@/src/components/brand/BrandLogo";
-import { getLocalizedNavLabels } from "@/src/lib/marketing-nav";
+import { getContentHubCopy } from "@/src/lib/content-hub";
 
 export function SiteHeader() {
   const { messages, locale } = useI18n();
+  const contentCopy = getContentHubCopy(locale);
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   const navLabels = getLocalizedNavLabels(locale);
@@ -38,10 +38,10 @@ export function SiteHeader() {
             {messages.nav.docs}
           </Link>
           <Link href={localePath("/blog")} className="hover:text-[var(--ink)]">
-            {navLabels.blog}
+            {contentCopy.navBlogs}
           </Link>
           <Link href={localePath("/playground")} className="hover:text-[var(--ink)]">
-            {navLabels.playground}
+            {contentCopy.navPlayground}
           </Link>
           <Link href={localePath("/#api")} className="hover:text-[var(--ink)]">
             {messages.nav.api}

@@ -110,4 +110,35 @@ describePipeline('API -> Engine pipeline (real engine)', () => {
     const buffer = await response.arrayBuffer();
     expect(buffer.byteLength).toBeGreaterThan(100);
   });
+
+  it('renders an encrypted PDF through the real engine', async () => {
+    const db = getDb() as any;
+    const user = await createTestUser(db);
+    const template = await createTestTemplate(db, user.id, {
+      source: '#set page(paper: "a4")\n= Encrypted\nConfidential',
+    });
+
+    const response = await app.request('/v1/render/secure', {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(user, true),
+        'X-Pdf-Password': 'super-secret-password',
+      },
+      body: JSON.stringify({
+        template_id: template.id,
+        data: {},
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toBe('application/pdf');
+    expect(response.headers.get('X-Pdf-Encrypted')).toBe('aes256');
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    expect(bytes.byteLength).toBeGreaterThan(100);
+
+    // Encrypted PDFs include an Encrypt dictionary in trailer/catalog objects.
+    const text = new TextDecoder().decode(bytes);
+    expect(text.includes('/Encrypt')).toBe(true);
+  });
 });

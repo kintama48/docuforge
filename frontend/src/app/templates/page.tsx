@@ -1,28 +1,50 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { normalizeLocale } from "@/src/lib/i18n-config";
-import { getSectionIndex } from "@/src/lib/content-hub";
-import { buildSectionMetadata } from "@/src/lib/content-hub-seo";
-import { ContentHubIndexPage } from "@/src/app/components/content-hub-page";
+import { ContentCollectionPage } from "@/src/app/components/content-hub-page";
+import {
+  getCollectionMeta,
+  getContentHubCopy,
+  listContent,
+} from "@/src/lib/content-hub";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
-  return buildSectionMetadata("templates", locale);
+  const headerList = await headers();
+  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const meta = getCollectionMeta("templates", locale);
+
+  return {
+    title: `${meta.title} | DocuForge`,
+    description: meta.description,
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      images: [`/og/${locale}`],
+    },
+    twitter: {
+      title: meta.title,
+      description: meta.description,
+      images: [`/og/${locale}`],
+    },
+  };
 }
 
 export default async function TemplatesIndexPage() {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
-  const index = getSectionIndex("templates", locale);
+  const headerList = await headers();
+  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const docs = listContent("templates", locale);
+  const meta = getCollectionMeta("templates", locale);
+  const copy = getContentHubCopy(locale);
 
   return (
-    <ContentHubIndexPage
+    <ContentCollectionPage
       locale={locale}
-      section="templates"
-      title={index.title}
-      description={index.description}
-      items={index.items}
+      collection="templates"
+      title={meta.title}
+      label={meta.label}
+      description={meta.description}
+      docs={docs}
+      readMoreLabel={copy.readMore}
     />
   );
 }

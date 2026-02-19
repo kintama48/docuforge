@@ -7,7 +7,7 @@ import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
-import type { Locale } from "@/src/lib/i18n-config";
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 function fmtLimit(v: number | null): string {
   if (v === null) return "Unlimited";
@@ -18,72 +18,44 @@ type PlanKey = "free" | "dev" | "starter" | "pro" | "enterprise";
 
 const planOrder: PlanKey[] = ["free", "dev", "starter", "pro", "enterprise"];
 
-const devPlanCopy: Record<
-  Locale,
-  { name: string; description: string; cta: string }
-> = {
-  en: {
-    name: "Dev",
-    description:
-      "Sweet spot for indie builders and early teams shipping production PDFs.",
-    cta: "Upgrade to Dev",
-  },
-  fr: {
-    name: "Dev",
-    description:
-      "Le bon équilibre pour les équipes qui lancent leurs premiers flux PDF en production.",
-    cta: "Passer à Dev",
-  },
-  de: {
-    name: "Dev",
-    description:
-      "Der Sweet Spot für Teams, die produktive PDF-Workflows aufbauen.",
-    cta: "Auf Dev wechseln",
-  },
-  it: {
-    name: "Dev",
-    description:
-      "La fascia ideale per team piccoli che vogliono PDF in produzione.",
-    cta: "Passa a Dev",
-  },
-  es: {
-    name: "Dev",
-    description:
-      "Punto ideal para equipos pequeños que lanzan flujos PDF en producción.",
-    cta: "Subir a Dev",
-  },
-  ar: {
-    name: "Dev",
-    description:
-      "الخيار الأنسب للفرق الصغيرة التي تريد تشغيل تدفقات PDF في الإنتاج.",
-    cta: "الترقية إلى Dev",
-  },
-  zh: {
-    name: "Dev",
-    description: "适合小团队的甜蜜区，快速把 PDF 工作流上线。",
-    cta: "升级到 Dev",
-  },
-};
-
 export default function PricingPage() {
   const { messages, locale } = useI18n();
+  const devCopy = getDevPlanCopy(locale);
   const consoleRegisterUrl = getConsoleLocaleUrl("/register", locale);
-  const basePlans = messages.pricing.plans;
-  const localizedDev = devPlanCopy[locale] ?? devPlanCopy.en;
-  const plansByKey: Record<
+  const localizedPlans: Record<
     PlanKey,
     { name: string; price: string; description: string; cta: string }
   > = {
-    free: basePlans[0],
-    dev: {
-      name: localizedDev.name,
-      price: "$19",
-      description: localizedDev.description,
-      cta: localizedDev.cta,
+    free: {
+      name: messages.pricing.plans[0].name,
+      price: messages.pricing.plans[0].price,
+      description: messages.pricing.plans[0].description,
+      cta: messages.pricing.plans[0].cta,
     },
-    starter: basePlans[1],
-    pro: basePlans[2],
-    enterprise: basePlans[3],
+    dev: {
+      name: devCopy.name,
+      price: devCopy.price,
+      description: devCopy.description,
+      cta: devCopy.cta,
+    },
+    starter: {
+      name: messages.pricing.plans[1].name,
+      price: messages.pricing.plans[1].price,
+      description: messages.pricing.plans[1].description,
+      cta: messages.pricing.plans[1].cta,
+    },
+    pro: {
+      name: messages.pricing.plans[2].name,
+      price: messages.pricing.plans[2].price,
+      description: messages.pricing.plans[2].description,
+      cta: messages.pricing.plans[2].cta,
+    },
+    enterprise: {
+      name: messages.pricing.plans[3].name,
+      price: messages.pricing.plans[3].price,
+      description: messages.pricing.plans[3].description,
+      cta: messages.pricing.plans[3].cta,
+    },
   };
 
   return (
@@ -105,9 +77,9 @@ export default function PricingPage() {
               </p>
             </div>
 
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-5">
               {planOrder.map((key) => {
-                const plan = plansByKey[key];
+                const plan = localizedPlans[key];
                 const limits = planLimits[key];
                 const featured = key === "dev";
                 const isCustom = key === "enterprise";

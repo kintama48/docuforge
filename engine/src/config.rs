@@ -8,6 +8,13 @@ pub struct Config {
     pub render_timeout_ms: u64,
     pub max_body_size_mb: usize,
     pub asset_cache_size_mb: usize,
+    pub template_cache_entries: u64,
+    pub redis_url: Option<String>,
+    pub template_cache_l2_enabled: bool,
+    pub template_cache_l2_ttl_sec: u64,
+    pub template_cache_l2_prefix: String,
+    pub template_cache_l2_connect_timeout_ms: u64,
+    pub template_cache_l2_max_entry_bytes: usize,
     pub log_level: String,
     pub log_format: String,
     pub sentry_dsn: Option<String>,
@@ -36,6 +43,29 @@ impl Config {
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(100),
+            template_cache_entries: env::var("TEMPLATE_CACHE_ENTRIES")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(1000),
+            redis_url: env::var("REDIS_URL").ok(),
+            template_cache_l2_enabled: env::var("TEMPLATE_CACHE_L2_ENABLED")
+                .ok()
+                .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
+                .unwrap_or(false),
+            template_cache_l2_ttl_sec: env::var("TEMPLATE_CACHE_L2_TTL_SEC")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(3600),
+            template_cache_l2_prefix: env::var("TEMPLATE_CACHE_L2_PREFIX")
+                .unwrap_or_else(|_| "tpl:v2:".to_string()),
+            template_cache_l2_connect_timeout_ms: env::var("TEMPLATE_CACHE_L2_CONNECT_TIMEOUT_MS")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(500),
+            template_cache_l2_max_entry_bytes: env::var("TEMPLATE_CACHE_L2_MAX_ENTRY_BYTES")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(2 * 1024 * 1024),
             log_level: env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string()),
             log_format: env::var("LOG_FORMAT").unwrap_or_else(|_| "pretty".to_string()),
             sentry_dsn: env::var("SENTRY_DSN").ok(),
@@ -100,6 +130,13 @@ mod tests {
                 ("RENDER_TIMEOUT_MS", None),
                 ("MAX_BODY_SIZE_MB", None),
                 ("ASSET_CACHE_SIZE_MB", None),
+                ("TEMPLATE_CACHE_ENTRIES", None),
+                ("REDIS_URL", None),
+                ("TEMPLATE_CACHE_L2_ENABLED", None),
+                ("TEMPLATE_CACHE_L2_TTL_SEC", None),
+                ("TEMPLATE_CACHE_L2_PREFIX", None),
+                ("TEMPLATE_CACHE_L2_CONNECT_TIMEOUT_MS", None),
+                ("TEMPLATE_CACHE_L2_MAX_ENTRY_BYTES", None),
                 ("LOG_LEVEL", None),
                 ("LOG_FORMAT", None),
                 ("SENTRY_DSN", None),
@@ -112,6 +149,13 @@ mod tests {
                 assert_eq!(config.render_timeout_ms, 5000);
                 assert_eq!(config.max_body_size_mb, 50);
                 assert_eq!(config.asset_cache_size_mb, 100);
+                assert_eq!(config.template_cache_entries, 1000);
+                assert_eq!(config.redis_url, None);
+                assert!(!config.template_cache_l2_enabled);
+                assert_eq!(config.template_cache_l2_ttl_sec, 3600);
+                assert_eq!(config.template_cache_l2_prefix, "tpl:v2:");
+                assert_eq!(config.template_cache_l2_connect_timeout_ms, 500);
+                assert_eq!(config.template_cache_l2_max_entry_bytes, 2 * 1024 * 1024);
                 assert_eq!(config.log_level, "info");
                 assert_eq!(config.log_format, "pretty");
                 assert!(config.sentry_dsn.is_none());
@@ -129,6 +173,13 @@ mod tests {
                 ("RENDER_TIMEOUT_MS", Some("1234")),
                 ("MAX_BODY_SIZE_MB", Some("10")),
                 ("ASSET_CACHE_SIZE_MB", Some("5")),
+                ("TEMPLATE_CACHE_ENTRIES", Some("2500")),
+                ("REDIS_URL", Some("redis://127.0.0.1:6379")),
+                ("TEMPLATE_CACHE_L2_ENABLED", Some("true")),
+                ("TEMPLATE_CACHE_L2_TTL_SEC", Some("120")),
+                ("TEMPLATE_CACHE_L2_PREFIX", Some("tpl:prod:")),
+                ("TEMPLATE_CACHE_L2_CONNECT_TIMEOUT_MS", Some("250")),
+                ("TEMPLATE_CACHE_L2_MAX_ENTRY_BYTES", Some("4096")),
                 ("LOG_LEVEL", Some("debug")),
                 ("LOG_FORMAT", Some("json")),
                 ("SENTRY_DSN", Some("https://key@sentry.io/123")),
@@ -141,9 +192,19 @@ mod tests {
                 assert_eq!(config.render_timeout_ms, 1234);
                 assert_eq!(config.max_body_size_mb, 10);
                 assert_eq!(config.asset_cache_size_mb, 5);
+                assert_eq!(config.template_cache_entries, 2500);
+                assert_eq!(config.redis_url.as_deref(), Some("redis://127.0.0.1:6379"));
+                assert!(config.template_cache_l2_enabled);
+                assert_eq!(config.template_cache_l2_ttl_sec, 120);
+                assert_eq!(config.template_cache_l2_prefix, "tpl:prod:");
+                assert_eq!(config.template_cache_l2_connect_timeout_ms, 250);
+                assert_eq!(config.template_cache_l2_max_entry_bytes, 4096);
                 assert_eq!(config.log_level, "debug");
                 assert_eq!(config.log_format, "json");
-                assert_eq!(config.sentry_dsn.as_deref(), Some("https://key@sentry.io/123"));
+                assert_eq!(
+                    config.sentry_dsn.as_deref(),
+                    Some("https://key@sentry.io/123")
+                );
                 assert_eq!(config.bind_addr(), "0.0.0.0:4000");
                 assert_eq!(config.max_body_size_bytes(), 10 * 1024 * 1024);
                 assert_eq!(config.asset_cache_size_bytes(), 5 * 1024 * 1024);
