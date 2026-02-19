@@ -7,7 +7,9 @@ type PlanLimits = {
   assetsBytes: number | null;
 };
 
-export const planLimits: Record<string, PlanLimits> = {
+export type PlanLimitTier = "free" | "dev" | "starter" | "pro" | "enterprise";
+
+export const planLimits: Record<PlanLimitTier, PlanLimits> = {
   free: {
     renders: 1000,
     aiCredits: 5,
@@ -17,7 +19,7 @@ export const planLimits: Record<string, PlanLimits> = {
   dev: {
     renders: 3000,
     aiCredits: 10,
-    templates: 30,
+    templates: 25,
     assetsBytes: 150 * 1024 * 1024,
   },
   starter: {

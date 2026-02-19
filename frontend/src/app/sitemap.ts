@@ -1,27 +1,38 @@
 import type { MetadataRoute } from "next";
-import { getAllLocalizedRoutes } from "@/src/lib/content-hub";
+import { env } from "@/src/config/env";
+import { locales } from "@/src/lib/i18n-config";
+import { withLocale } from "@/src/lib/locale-path";
+import { listAllContentPaths } from "@/src/lib/content-hub";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_MARKETING_URL ||
-  process.env.NEXT_PUBLIC_APP_URL ||
-  "https://docuforge.app";
-
-function toAbsolute(path: string) {
-  return new URL(path, baseUrl).toString();
+function absolute(path: string) {
+  const base = env.marketingUrl.endsWith("/")
+    ? env.marketingUrl.slice(0, -1)
+    : env.marketingUrl;
+  return `${base}${path}`;
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  return getAllLocalizedRoutes().map((route) => ({
-    url: toAbsolute(route),
-    lastModified: now,
-    changeFrequency: route.includes("/blog/") ? "weekly" : "daily",
-    priority:
-      route === "/" || route.endsWith("/templates/invoice") || route.endsWith("/compare/puppeteer-pdf-generation")
-        ? 0.9
-        : route.includes("/blog/") || route.includes("/templates/")
-          ? 0.8
-          : 0.7,
-  }));
+  const baseRoutes = ["/", "/pricing", "/docs", "/playground", "/blog", "/templates", "/compare", "/industries"];
+
+  const localizedBase = locales.flatMap((locale) =>
+    baseRoutes.map((path) => ({
+      url: absolute(withLocale(path, locale)),
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: path === "/" ? 1 : 0.8,
+    }))
+  );
+
+  const contentRoutes = listAllContentPaths().flatMap(({ collection, slug }) =>
+    locales.map((locale) => ({
+      url: absolute(withLocale(`/${collection}/${slug}`, locale)),
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }))
+  );
+
+  return [...localizedBase, ...contentRoutes];
 }

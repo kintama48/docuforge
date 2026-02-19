@@ -123,6 +123,10 @@ CREATE TABLE IF NOT EXISTS webhook_deliveries (
 );
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_webhook ON webhook_deliveries(webhook_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_status ON webhook_deliveries(status, next_retry_at);
+
+-- Backfill plan limits for existing users after limit changes.
+UPDATE users SET plan_renders = 1000 WHERE plan_tier = 'free' AND plan_renders < 1000;
+UPDATE users SET plan_renders = 3000 WHERE plan_tier = 'dev' AND plan_renders < 3000;
 `;
 
 export async function runMigrations() {

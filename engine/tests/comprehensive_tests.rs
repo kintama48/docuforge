@@ -45,9 +45,10 @@ fn load_template(name: &str) -> String {
 
 fn load_data(name: &str) -> serde_json::Value {
     let path = fixtures_dir().join("data").join(name);
-    let content = fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("Failed to load data {}: {}", name, e));
-    serde_json::from_str(&content).unwrap_or_else(|e| panic!("Failed to parse JSON {}: {}", name, e))
+    let content =
+        fs::read_to_string(&path).unwrap_or_else(|e| panic!("Failed to load data {}: {}", name, e));
+    serde_json::from_str(&content)
+        .unwrap_or_else(|e| panic!("Failed to parse JSON {}: {}", name, e))
 }
 
 fn make_request(template_content: &str, data: Option<serde_json::Value>) -> RenderRequest {
@@ -124,7 +125,10 @@ async fn test_invoice_detailed_compiles() {
 
     let pdf = result.unwrap();
     validate_pdf(&pdf, 5000);
-    assert!(has_embedded_fonts(&pdf), "Invoice should have embedded fonts");
+    assert!(
+        has_embedded_fonts(&pdf),
+        "Invoice should have embedded fonts"
+    );
 
     println!(
         "invoice_detailed.typ: {} bytes, {} pages",
@@ -344,10 +348,7 @@ async fn test_wide_table_10_columns() {
     let request = make_request(&template, Some(data));
 
     let result = compiler.compile(&request, 30000).await;
-    assert!(
-        result.is_ok(),
-        "Wide table with 10+ columns should compile"
-    );
+    assert!(result.is_ok(), "Wide table with 10+ columns should compile");
 }
 
 #[tokio::test]
@@ -709,10 +710,7 @@ async fn test_very_long_string() {
 #sys.inputs.long_text
 "#;
     let long_text = "A".repeat(10000); // 10k character string
-    let request = make_request(
-        content,
-        Some(serde_json::json!({ "long_text": long_text })),
-    );
+    let request = make_request(content, Some(serde_json::json!({ "long_text": long_text })));
 
     let result = compiler.compile(&request, 10000).await;
     assert!(result.is_ok(), "Very long strings should be handled");
@@ -923,7 +921,11 @@ async fn test_many_pages() {
 
     let pdf = result.unwrap();
     let page_count = count_pdf_pages(&pdf);
-    assert!(page_count >= 15, "Should have many pages, got {}", page_count);
+    assert!(
+        page_count >= 15,
+        "Should have many pages, got {}",
+        page_count
+    );
 }
 
 #[tokio::test]

@@ -11,8 +11,11 @@ function setBaseEnv() {
     R2_SECRET_ACCESS_KEY: 'secret_key',
     R2_BUCKET: 'test-bucket',
     R2_PUBLIC_URL: 'https://assets.test.com',
-    BILLING_ENABLED: 'false',
-    BILLING_PROVIDER: 'none',
+    STRIPE_SECRET_KEY: 'sk_test_abc',
+    STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+    STRIPE_DEV_PRICE_ID: 'price_dev',
+    STRIPE_STARTER_PRICE_ID: 'price_starter',
+    STRIPE_PRO_PRICE_ID: 'price_pro',
     GEMINI_API_KEY: 'test-gemini-abc',
     JWT_SECRET: 'this-is-a-32-character-secret!!!',
     NODE_ENV: 'test',
@@ -27,6 +30,7 @@ describe('env runtime', () => {
   test('reloadEnv updates plan limits', async () => {
     const { env, reloadEnv, getPlanLimit } = await import('../../src/config/env');
     process.env.FREE_MONTHLY_LIMIT = '123';
+    process.env.DEV_MONTHLY_LIMIT = '234';
     process.env.STARTER_MONTHLY_LIMIT = '456';
     process.env.PRO_MONTHLY_LIMIT = '789';
 
@@ -34,6 +38,7 @@ describe('env runtime', () => {
 
     expect(env.FREE_MONTHLY_LIMIT).toBe(123);
     expect(getPlanLimit('free')).toBe(123);
+    expect(getPlanLimit('dev')).toBe(234);
     expect(getPlanLimit('starter')).toBe(456);
     expect(getPlanLimit('pro')).toBe(789);
   });

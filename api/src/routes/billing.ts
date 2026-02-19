@@ -416,7 +416,29 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
     throw new InternalError('No active billing provider configured');
   }
 
-  return c.json({ checkout_url: checkoutUrl, provider: env.BILLING_PROVIDER });
+  // Get price ID
+  const priceByPlan: Record<'dev' | 'starter' | 'pro', string> = {
+    dev: env.STRIPE_DEV_PRICE_ID,
+    starter: env.STRIPE_STARTER_PRICE_ID,
+    pro: env.STRIPE_PRO_PRICE_ID,
+  };
+  const priceId = priceByPlan[plan];
+
+  if (!priceId) {
+    throw new InternalError('Price not configured');
+  }
+
+  // Create checkout session
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: 'subscription',
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: `${env.APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${env.APP_URL}/billing/cancel`,
+    metadata: { userId: user.id, plan },
+  });
+
+  return c.json({ checkout_url: session.url });
 });
 
 // POST /v1/billing/webhook - Provider webhook
@@ -435,13 +457,51 @@ billing.post('/billing/webhook', async (c) => {
 
   let event: BillingEvent = { action: 'ignore' };
 
-  if (env.BILLING_PROVIDER === 'paddle') {
-    const signature = c.req.header('paddle-signature');
-    if (!signature) {
-      throw new ValidationError('Missing webhook signature');
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const userId = session.metadata?.userId;
+      const plan = session.metadata?.plan as 'dev' | 'starter' | 'pro' | undefined;
+
+      if (userId && plan) {
+        await db
+          .update(schema.users)
+          .set({
+            planTier: plan,
+            planRenders: getPlanLimit(plan),
+            stripeCustomerId: session.customer as string,
+            updatedAt: Date.now(),
+          })
+          .where(eq(schema.users.id, userId));
+      }
+      break;
     }
-    if (!verifyPaddleSignature(rawBody, signature)) {
-      throw new ValidationError('Invalid webhook signature');
+
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = subscription.customer as string;
+
+      // Determine plan from price
+      const priceId = subscription.items.data[0]?.price?.id;
+      let plan: string = 'free';
+
+      if (priceId === env.STRIPE_PRO_PRICE_ID) {
+        plan = 'pro';
+      } else if (priceId === env.STRIPE_STARTER_PRICE_ID) {
+        plan = 'starter';
+      } else if (priceId === env.STRIPE_DEV_PRICE_ID) {
+        plan = 'dev';
+      }
+
+      await db
+        .update(schema.users)
+        .set({
+          planTier: plan,
+          planRenders: getPlanLimit(plan),
+          updatedAt: Date.now(),
+        })
+        .where(eq(schema.users.stripeCustomerId, customerId));
+      break;
     }
     event = parsePaddleWebhook(payload);
   } else if (env.BILLING_PROVIDER === 'lemonsqueezy') {

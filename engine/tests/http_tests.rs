@@ -247,7 +247,11 @@ This is the third page.
     // Check for multiple pages
     let pdf_str = String::from_utf8_lossy(pdf);
     let page_count = pdf_str.matches("/Type /Page").count();
-    assert!(page_count >= 3, "Should have at least 3 pages, got {}", page_count);
+    assert!(
+        page_count >= 3,
+        "Should have at least 3 pages, got {}",
+        page_count
+    );
 
     println!("Multipage PDF: {} bytes, {} pages", pdf.len(), page_count);
 }

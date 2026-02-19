@@ -29,7 +29,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "DocuForge API Docs · Reference",
       description:
-        "Authentication, rendering, templates, assets, AI, billing, and error handling for the DocuForge API.",
+        "Authentication, rendering, templates, assets, AI, billing, security controls, and MCP integration for the DocuForge API.",
       ogAlt: "DocuForge API documentation",
     },
   },
@@ -49,7 +49,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "Docs API DocuForge · Référence",
       description:
-        "Authentification, rendu, templates, assets, IA, facturation et gestion des erreurs pour l’API DocuForge.",
+        "Authentification, rendu, templates, assets, IA, facturation, sécurité et intégration MCP pour l’API DocuForge.",
       ogAlt: "Documentation API DocuForge",
     },
   },
@@ -69,7 +69,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "DocuForge API-Dokumentation · Referenz",
       description:
-        "Authentifizierung, Rendering, Templates, Assets, KI, Abrechnung und Fehlerbehandlung der DocuForge API.",
+        "Authentifizierung, Rendering, Templates, Assets, KI, Abrechnung, Sicherheitsfunktionen und MCP-Integration der DocuForge API.",
       ogAlt: "DocuForge API-Dokumentation",
     },
   },
@@ -89,7 +89,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "DocuForge API Docs · Riferimento",
       description:
-        "Autenticazione, rendering, template, asset, IA, billing e gestione errori per l’API DocuForge.",
+        "Autenticazione, rendering, template, asset, IA, billing, sicurezza e integrazione MCP per l’API DocuForge.",
       ogAlt: "Documentazione API DocuForge",
     },
   },
@@ -109,7 +109,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "Docs API DocuForge · Referencia",
       description:
-        "Autenticación, renderizado, plantillas, assets, IA, facturación y errores para la API de DocuForge.",
+        "Autenticación, renderizado, plantillas, assets, IA, facturación, seguridad e integración MCP para la API de DocuForge.",
       ogAlt: "Documentación API DocuForge",
     },
   },
@@ -129,7 +129,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "توثيق API DocuForge · مرجع",
       description:
-        "المصادقة، الرندر، القوالب، الأصول، الذكاء الاصطناعي، الفوترة، والأخطاء في API DocuForge.",
+        "المصادقة، الرندر، القوالب، الأصول، الذكاء الاصطناعي، الفوترة، ميزات الأمان وتكامل MCP في API DocuForge.",
       ogAlt: "توثيق API DocuForge",
     },
   },
@@ -149,7 +149,7 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
     docs: {
       title: "DocuForge API 文档 · 参考",
       description:
-        "认证、渲染、模板、资源、AI、计费与错误处理的官方说明。",
+        "覆盖认证、渲染、模板、资源、AI、计费、安全能力与 MCP 集成的官方文档。",
       ogAlt: "DocuForge API 文档",
     },
   },

@@ -42,25 +42,23 @@ export const createApiKeySchema = z.object({
 });
 
 // Render schemas
-export const renderSchema = z.object({
+export const passwordProtectionModeSchema = z.enum(['none', 'client_blind']);
+
+const renderBaseSchema = z.object({
   template_id: z.string().min(1, 'template_id is required'),
   data: z.record(z.unknown()).optional().default({}),
 });
 
-export const renderPreviewSchema = z
-  .object({
-    source: z.string().min(1).max(102400, 'Source must be under 100KB').optional(),
-    low_code_spec: lowCodeSpecSchema.optional(),
-    files: z.record(z.string().max(102400)).optional(),
-    data: z.record(z.unknown()).optional().default({}),
-  })
-  .refine((data) => Boolean(data.source) || data.low_code_spec !== undefined, {
-    message: 'Either source or low_code_spec is required',
-    path: ['source'],
-  });
+export const renderSchema = renderBaseSchema.extend({
+  password_protection_mode: passwordProtectionModeSchema.optional().default('none'),
+});
 
-export const renderJobParamSchema = z.object({
-  jobId: z.string().min(1).max(128),
+export const renderSecureSchema = renderBaseSchema;
+
+export const renderPreviewSchema = z.object({
+  source: z.string().min(1).max(102400, 'Source must be under 100KB'),
+  files: z.record(z.string().max(102400)).optional(),
+  data: z.record(z.unknown()).optional().default({}),
 });
 
 // Template schemas
@@ -212,6 +210,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
 export type RenderInput = z.infer<typeof renderSchema>;
+export type RenderSecureInput = z.infer<typeof renderSecureSchema>;
 export type RenderPreviewInput = z.infer<typeof renderPreviewSchema>;
 export type RenderJobParamInput = z.infer<typeof renderJobParamSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;

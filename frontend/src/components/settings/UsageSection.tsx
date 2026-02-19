@@ -5,6 +5,7 @@ import type { UsageResponse } from "@/src/lib/api-types";
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
 import { useI18n } from "@/src/lib/i18n";
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 function buildDailySeries(usage?: UsageResponse) {
   const used = usage?.renders.used ?? 0;
@@ -22,7 +23,8 @@ function buildDailySeries(usage?: UsageResponse) {
 }
 
 export function UsageSection({ usage }: { usage?: UsageResponse }) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
+  const devCopy = getDevPlanCopy(locale);
   const daily = useMemo(() => buildDailySeries(usage), [usage]);
   const maxValue = Math.max(1, ...daily);
 
@@ -61,7 +63,7 @@ export function UsageSection({ usage }: { usage?: UsageResponse }) {
               <tr>
                 <th className="py-2">{messages.settings.feature}</th>
                 <th className="py-2">{messages.settings.free}</th>
-                <th className="py-2">Dev</th>
+                <th className="py-2">{devCopy.name}</th>
                 <th className="py-2">{messages.settings.starter}</th>
                 <th className="py-2">{messages.settings.pro}</th>
               </tr>

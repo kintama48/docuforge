@@ -1,60 +1,11 @@
 "use client";
 
 import { useI18n } from "@/src/lib/i18n";
-import type { Locale } from "@/src/lib/i18n-config";
-
-const devCopy: Record<
-  Locale,
-  { name: string; upgradeDev: string; upgradeStarter: string; upgradePro: string }
-> = {
-  en: {
-    name: "Dev",
-    upgradeDev: "Upgrade to Dev",
-    upgradeStarter: "Upgrade to Starter",
-    upgradePro: "Upgrade to Pro",
-  },
-  fr: {
-    name: "Dev",
-    upgradeDev: "Passer à Dev",
-    upgradeStarter: "Passer à Starter",
-    upgradePro: "Passer à Pro",
-  },
-  de: {
-    name: "Dev",
-    upgradeDev: "Auf Dev wechseln",
-    upgradeStarter: "Auf Starter wechseln",
-    upgradePro: "Auf Pro wechseln",
-  },
-  it: {
-    name: "Dev",
-    upgradeDev: "Passa a Dev",
-    upgradeStarter: "Passa a Starter",
-    upgradePro: "Passa a Pro",
-  },
-  es: {
-    name: "Dev",
-    upgradeDev: "Subir a Dev",
-    upgradeStarter: "Subir a Starter",
-    upgradePro: "Subir a Pro",
-  },
-  ar: {
-    name: "Dev",
-    upgradeDev: "الترقية إلى Dev",
-    upgradeStarter: "الترقية إلى Starter",
-    upgradePro: "الترقية إلى Pro",
-  },
-  zh: {
-    name: "Dev",
-    upgradeDev: "升级到 Dev",
-    upgradeStarter: "升级到 Starter",
-    upgradePro: "升级到 Pro",
-  },
-};
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 type ProfileSectionProps = {
   email?: string | null;
   plan?: "free" | "dev" | "starter" | "pro" | null;
-  billingEnabled?: boolean;
   onUpgrade: (plan: "dev" | "starter" | "pro") => void;
   onManage?: () => void;
 };
@@ -67,17 +18,14 @@ export function ProfileSection({
   onManage,
 }: ProfileSectionProps) {
   const { messages, locale } = useI18n();
-  const dev = devCopy[locale] ?? devCopy.en;
-  const badge =
-    !plan
-      ? messages.settings.planUnknown
-      : plan === "free"
-        ? messages.settings.free
-        : plan === "dev"
-          ? dev.name
-        : plan === "starter"
-          ? messages.settings.starter
-          : messages.settings.pro;
+  const devCopy = getDevPlanCopy(locale);
+  const planLabels: Record<NonNullable<ProfileSectionProps["plan"]>, string> = {
+    free: messages.settings.free,
+    dev: devCopy.name,
+    starter: messages.settings.starter,
+    pro: messages.settings.pro,
+  };
+  const badge = !plan ? messages.settings.planUnknown : planLabels[plan];
 
   return (
     <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
@@ -95,21 +43,15 @@ export function ProfileSection({
         <div className="mt-4 flex flex-wrap gap-3">
           <button
             onClick={() => onUpgrade("dev")}
-            className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)]"
+            className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
           >
-            {dev.upgradeDev}
+            {devCopy.upgradeLabel}
           </button>
           <button
             onClick={() => onUpgrade("starter")}
-            className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
+            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
           >
-            {dev.upgradeStarter}
-          </button>
-          <button
-            onClick={() => onUpgrade("pro")}
-            className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
-          >
-            {dev.upgradePro}
+            {messages.settings.upgradeStarter}
           </button>
         </div>
       ) : billingEnabled ? (

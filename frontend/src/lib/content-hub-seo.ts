@@ -1,61 +1,50 @@
-import type { Metadata } from "next";
-import { getSectionCopy, type ContentSection, type LocalizedContentItem } from "@/src/lib/content-hub";
-import type { Locale } from "@/src/lib/i18n-config";
+import type { ContentDocument } from "@/src/lib/content-hub";
 
-export function buildSectionMetadata(section: ContentSection, locale: Locale): Metadata {
-  const copy = getSectionCopy(locale);
-  const title = copy.indexTitle[section];
-  const description = copy.indexDescription[section];
-  const ogImage = `/og/${locale}`;
+type BuildArticleJsonLdInput = {
+  siteUrl: string;
+  urlPath: string;
+  locale: string;
+  document: ContentDocument;
+};
 
-  return {
-    title,
-    description,
-    keywords: [section, "DocuForge", "PDF generation API", "Typst PDF generation"],
-    openGraph: {
-      title,
-      description,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+export function buildArticleJsonLd(input: BuildArticleJsonLdInput) {
+  const canonical = new URL(input.urlPath, input.siteUrl).toString();
+
+  const article = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    inLanguage: input.locale,
+    headline: input.document.title,
+    description: input.document.metaDescription,
+    dateModified: input.document.updatedAt,
+    datePublished: input.document.updatedAt,
+    mainEntityOfPage: canonical,
+    author: {
+      "@type": "Organization",
+      name: "DocuForge",
     },
-    twitter: {
-      title,
-      description,
-      images: [ogImage],
+    publisher: {
+      "@type": "Organization",
+      name: "DocuForge",
     },
+    keywords: input.document.keywords,
   };
-}
 
-export function buildItemMetadata(item: LocalizedContentItem, locale: Locale): Metadata {
-  const ogImage = `/og/${locale}`;
+  const faq =
+    input.document.faq.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: input.document.faq.map((item) => ({
+            "@type": "Question",
+            name: item.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: item.answer,
+            },
+          })),
+        }
+      : null;
 
-  return {
-    title: `${item.title} | DocuForge`,
-    description: item.description,
-    keywords: item.keywords,
-    openGraph: {
-      title: item.title,
-      description: item.description,
-      type: "article",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: item.title,
-        },
-      ],
-    },
-    twitter: {
-      title: item.title,
-      description: item.description,
-      images: [ogImage],
-    },
-  };
+  return faq ? [article, faq] : [article];
 }

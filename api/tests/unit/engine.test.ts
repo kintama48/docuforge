@@ -3,7 +3,13 @@
  */
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { renderPdf, checkEngineHealth } from '../../src/services/engine';
-import { CompilationError, EngineTimeoutError, EngineUnavailableError } from '../../src/lib/errors';
+import {
+  CompilationError,
+  EngineTimeoutError,
+  EngineUnavailableError,
+  InternalError,
+  ValidationError,
+} from '../../src/lib/errors';
 import { reloadEnv } from '../../src/config/env';
 import { createTestOrigin, registerFetchHandler } from '../helpers/fetch-router';
 
@@ -60,6 +66,32 @@ describe('engine service', () => {
 
     await expect(renderPdf({ source: '= Hello', data: {} } as any)).rejects.toBeInstanceOf(
       EngineUnavailableError
+    );
+  });
+
+  test('renderPdf throws ValidationError on 422 response', async () => {
+    unregister = registerFetchHandler(engineOrigin, async () =>
+      new Response(JSON.stringify({ error: 'invalid_request', message: 'Bad options' }), {
+        status: 422,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+    await expect(renderPdf({ source: '= Hello', data: {} } as any)).rejects.toBeInstanceOf(
+      ValidationError
+    );
+  });
+
+  test('renderPdf throws InternalError for encryption_failed response', async () => {
+    unregister = registerFetchHandler(engineOrigin, async () =>
+      new Response(JSON.stringify({ error: 'encryption_failed', message: 'encryption failed' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+    await expect(renderPdf({ source: '= Hello', data: {} } as any)).rejects.toBeInstanceOf(
+      InternalError
     );
   });
 
