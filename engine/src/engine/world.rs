@@ -38,19 +38,36 @@ impl DocuForgeWorld {
         fonts: Arc<FontLoader>,
         assets: HashMap<String, bytes::Bytes>,
     ) -> Result<Self, EngineError> {
+        Self::new_from_parts(
+            &request.template.main,
+            &request.template.files,
+            request.data.as_ref(),
+            fonts,
+            assets,
+        )
+    }
+
+    /// Create a world from pre-validated template parts and request data.
+    pub fn new_from_parts(
+        template_main: &str,
+        template_files: &HashMap<String, String>,
+        data: Option<&serde_json::Value>,
+        fonts: Arc<FontLoader>,
+        assets: HashMap<String, bytes::Bytes>,
+    ) -> Result<Self, EngineError> {
         // Build sys.inputs dict from request data
-        let inputs = build_inputs(request);
+        let inputs = build_inputs(data);
         let library = LazyHash::new(Library::builder().with_inputs(inputs).build());
 
         let book = LazyHash::new(fonts.font_book().clone());
 
         // Main file ID
-        let main_path = VirtualPath::new(&request.template.main);
+        let main_path = VirtualPath::new(template_main);
         let main_id = FileId::new(None, main_path);
 
         // Build source map from template files
         let mut sources = HashMap::new();
-        for (name, content) in &request.template.files {
+        for (name, content) in template_files {
             if !is_valid_path(name) {
                 return Err(EngineError::InvalidRequest(format!(
                     "Invalid file path: {}",
@@ -68,7 +85,7 @@ impl DocuForgeWorld {
         if !sources.contains_key(&main_id) {
             return Err(EngineError::InvalidRequest(format!(
                 "Main file '{}' not found in template files",
-                request.template.main
+                template_main
             )));
         }
 
@@ -157,8 +174,8 @@ impl World for DocuForgeWorld {
 }
 
 /// Build sys.inputs dictionary from request data.
-fn build_inputs(request: &RenderRequest) -> Dict {
-    let Some(data) = &request.data else {
+fn build_inputs(data: Option<&serde_json::Value>) -> Dict {
+    let Some(data) = data else {
         return Dict::new();
     };
 

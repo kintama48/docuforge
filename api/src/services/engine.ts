@@ -2,6 +2,8 @@ import {
   CompilationError,
   EngineTimeoutError,
   EngineUnavailableError,
+  InternalError,
+  ValidationError,
 } from '../lib/errors';
 import { env } from '../config/env';
 import { searchDocs, isInitialized } from './vector-store';
@@ -75,10 +77,27 @@ export async function renderPdf(payload: EnginePayload): Promise<RenderResult> {
       });
     }
 
+    if (response.status === 422) {
+      const errorBody = (await response.json()) as EngineErrorResponse;
+      throw new ValidationError(errorBody.message || 'Invalid render request');
+    }
+
+    if (response.status === 500) {
+      const errorBody = (await response.json()) as EngineErrorResponse;
+      if (errorBody.error === 'encryption_failed') {
+        throw new InternalError(errorBody.message || 'PDF encryption failed');
+      }
+    }
+
     // Unexpected error
     throw new EngineUnavailableError();
   } catch (err) {
-    if (err instanceof CompilationError || err instanceof EngineTimeoutError) {
+    if (
+      err instanceof CompilationError ||
+      err instanceof EngineTimeoutError ||
+      err instanceof ValidationError ||
+      err instanceof InternalError
+    ) {
       throw err;
     }
 
