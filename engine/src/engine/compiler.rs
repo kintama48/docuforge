@@ -1,19 +1,29 @@
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
+use base64::Engine as _;
 use bytes::Bytes;
+use lopdf::encryption::crypt_filters::{Aes256CryptFilter, CryptFilter};
+use lopdf::{Document, EncryptionState, EncryptionVersion, Permissions};
+use rand::RngCore;
 use tracing::{debug, info, warn};
 use typst::diag::{Severity, SourceDiagnostic, Warned};
 use typst::syntax::Span;
 use typst::World;
+use zeroize::Zeroize;
 
 use crate::cache::asset_cache::AssetCache;
+use crate::cache::template_cache::TemplateCache;
+use crate::cache::template_cache_l2::TemplateCacheL2;
 use crate::engine::fonts::FontLoader;
 use crate::engine::world::DocuForgeWorld;
 use crate::error::EngineError;
+use crate::models::request::{
+    EncryptionMode, EncryptionOptions, EncryptionPermissions, RenderRequest, TemplateCacheOptions,
+};
 use crate::models::response::ErrorSpan;
-use crate::models::request::RenderRequest;
 
 /// Compilation orchestrator.
 /// Handles asset resolution, world construction, and Typst compilation with timeout.
@@ -21,12 +31,31 @@ use crate::models::request::RenderRequest;
 pub struct Compiler {
     fonts: Arc<FontLoader>,
     asset_cache: AssetCache,
+    template_cache: TemplateCache,
+    template_cache_l2: Option<TemplateCacheL2>,
 }
 
 impl Compiler {
     /// Create a new compiler instance.
     pub fn new(fonts: Arc<FontLoader>, asset_cache: AssetCache) -> Self {
-        Self { fonts, asset_cache }
+        Self {
+            fonts,
+            asset_cache,
+            template_cache: TemplateCache::new(1_000),
+            template_cache_l2: None,
+        }
+    }
+
+    /// Override template cache capacity.
+    pub fn with_template_cache_entries(mut self, max_entries: u64) -> Self {
+        self.template_cache = TemplateCache::new(max_entries.max(1));
+        self
+    }
+
+    /// Configure Redis-backed L2 template cache.
+    pub fn with_template_cache_l2(mut self, cache: Option<TemplateCacheL2>) -> Self {
+        self.template_cache_l2 = cache;
+        self
     }
 
     /// Compile a render request to PDF bytes.
@@ -48,15 +77,36 @@ impl Compiler {
         // Step 1: Resolve all assets
         let assets = self.resolve_assets(request).await?;
 
-        // Step 2: Build the world
-        let world = DocuForgeWorld::new(request, Arc::clone(&self.fonts), assets)?;
+        // Step 2: Resolve (or memoize) template bundle and build world
+        let cache_hints = request
+            .options
+            .as_ref()
+            .and_then(|opts| opts.cache.as_ref());
+        let (cached_template, l1_hit, l2_hit) = self.resolve_template(request, cache_hints).await;
+        debug!(
+            l1_hit,
+            l2_hit,
+            cacheable = cache_hints.map(|h| h.cacheable).unwrap_or(false),
+            "Template cache lookup completed"
+        );
+        let world = DocuForgeWorld::new_from_parts(
+            cached_template.main.as_ref(),
+            cached_template.files.as_ref(),
+            request.data.as_ref(),
+            Arc::clone(&self.fonts),
+            assets,
+        )?;
+        let encryption = request
+            .options
+            .as_ref()
+            .and_then(|options| options.encryption.clone());
 
         // Step 3: Compile with timeout
         let timeout = Duration::from_millis(timeout_ms);
 
         let compile_result = tokio::time::timeout(timeout, async {
             // Typst compilation is CPU-bound, run in blocking thread pool
-            tokio::task::spawn_blocking(move || compile_and_export(world))
+            tokio::task::spawn_blocking(move || compile_and_export(world, encryption))
                 .await
                 .map_err(|e| EngineError::Internal(format!("Task join error: {}", e)))?
         })
@@ -95,11 +145,58 @@ impl Compiler {
         debug!(count = resolved.len(), "Assets resolved");
         Ok(resolved)
     }
+
+    async fn resolve_template(
+        &self,
+        request: &RenderRequest,
+        cache_hints: Option<&TemplateCacheOptions>,
+    ) -> (
+        Arc<crate::cache::template_cache::CachedTemplate>,
+        bool,
+        bool,
+    ) {
+        let cacheable = cache_hints.map(|h| h.cacheable).unwrap_or(false);
+        let template_fingerprint = cache_hints.and_then(|h| h.template_fingerprint.as_deref());
+
+        if cacheable {
+            if let (Some(l2), Some(fingerprint)) = (&self.template_cache_l2, template_fingerprint) {
+                match l2.get(fingerprint).await {
+                    Ok(Some(cached_from_l2)) => {
+                        self.template_cache
+                            .insert_precomputed(Arc::clone(&cached_from_l2));
+                        return (cached_from_l2, false, true);
+                    }
+                    Ok(None) => {
+                        let (cached, l1_hit) = self
+                            .template_cache
+                            .get_or_insert_with_state(&request.template);
+                        if !l1_hit {
+                            if let Err(err) = l2.set(fingerprint, cached.as_ref()).await {
+                                warn!(%err, "Failed to write template to Redis L2 cache");
+                            }
+                        }
+                        return (cached, l1_hit, false);
+                    }
+                    Err(err) => {
+                        warn!(%err, "Failed to read template from Redis L2 cache");
+                    }
+                }
+            }
+        }
+
+        let (cached, l1_hit) = self
+            .template_cache
+            .get_or_insert_with_state(&request.template);
+        (cached, l1_hit, false)
+    }
 }
 
 /// Perform Typst compilation and PDF export.
 /// This runs in a blocking thread.
-fn compile_and_export(world: DocuForgeWorld) -> Result<Vec<u8>, EngineError> {
+fn compile_and_export(
+    world: DocuForgeWorld,
+    encryption: Option<EncryptionOptions>,
+) -> Result<Vec<u8>, EngineError> {
     // Compile to document - returns Warned<SourceResult<Document>>
     let Warned { output, warnings } = typst::compile(&world);
 
@@ -111,8 +208,16 @@ fn compile_and_export(world: DocuForgeWorld) -> Result<Vec<u8>, EngineError> {
     match output {
         Ok(document) => {
             // Export to PDF
-            let pdf_bytes = typst_pdf::pdf(&document, &typst_pdf::PdfOptions::default())
+            let mut pdf_bytes = typst_pdf::pdf(&document, &typst_pdf::PdfOptions::default())
                 .map_err(|e| EngineError::Internal(format!("PDF export failed: {:?}", e)))?;
+
+            if let Some(mut encryption_options) = encryption {
+                let encrypted_pdf = encrypt_pdf_in_memory(&mut pdf_bytes, &mut encryption_options)?;
+                pdf_bytes.zeroize();
+                encryption_options.user_password.zeroize();
+                return Ok(encrypted_pdf);
+            }
+
             Ok(pdf_bytes)
         }
         Err(errors) => {
@@ -139,6 +244,74 @@ fn compile_and_export(world: DocuForgeWorld) -> Result<Vec<u8>, EngineError> {
             })
         }
     }
+}
+
+fn encrypt_pdf_in_memory(
+    plaintext_pdf: &mut Vec<u8>,
+    encryption: &mut EncryptionOptions,
+) -> Result<Vec<u8>, EngineError> {
+    if plaintext_pdf.is_empty() {
+        return Err(EngineError::EncryptionFailed(
+            "Cannot encrypt an empty PDF buffer".to_string(),
+        ));
+    }
+
+    if encryption.user_password.len() < 8 || encryption.user_password.len() > 128 {
+        return Err(EngineError::InvalidRequest(
+            "Encryption password must be between 8 and 128 characters".to_string(),
+        ));
+    }
+
+    if !matches!(encryption.mode, EncryptionMode::Aes256) {
+        return Err(EngineError::InvalidRequest(
+            "Only aes256 encryption mode is supported".to_string(),
+        ));
+    }
+
+    let permissions = match encryption.permissions {
+        EncryptionPermissions::PrintOnly => Permissions::PRINTABLE,
+    };
+
+    let mut document = Document::load_mem(plaintext_pdf)
+        .map_err(|e| EngineError::EncryptionFailed(format!("Failed to load generated PDF: {e}")))?;
+
+    let mut owner_password_bytes = [0u8; 32];
+    rand::rngs::OsRng.fill_bytes(&mut owner_password_bytes);
+    let mut owner_password = base64::engine::general_purpose::STANDARD.encode(owner_password_bytes);
+    owner_password_bytes.zeroize();
+
+    let mut file_encryption_key = [0u8; 32];
+    rand::rngs::OsRng.fill_bytes(&mut file_encryption_key);
+
+    let crypt_filter: Arc<dyn CryptFilter> = Arc::new(Aes256CryptFilter);
+    let encryption_version = EncryptionVersion::V5 {
+        encrypt_metadata: true,
+        crypt_filters: BTreeMap::from([(b"StdCF".to_vec(), crypt_filter)]),
+        file_encryption_key: &file_encryption_key,
+        stream_filter: b"StdCF".to_vec(),
+        string_filter: b"StdCF".to_vec(),
+        owner_password: owner_password.as_str(),
+        user_password: encryption.user_password.as_str(),
+        permissions,
+    };
+
+    let encryption_state = EncryptionState::try_from(encryption_version).map_err(|e| {
+        EngineError::EncryptionFailed(format!("Failed to build encryption state: {e}"))
+    })?;
+
+    document
+        .encrypt(&encryption_state)
+        .map_err(|e| EngineError::EncryptionFailed(format!("Failed to encrypt PDF: {e}")))?;
+
+    let mut encrypted_pdf = Vec::new();
+    document.save_to(&mut encrypted_pdf).map_err(|e| {
+        EngineError::EncryptionFailed(format!("Failed to serialize encrypted PDF: {e}"))
+    })?;
+
+    owner_password.zeroize();
+    file_encryption_key.zeroize();
+
+    Ok(encrypted_pdf)
 }
 
 /// Extract file/line/column from a Typst span.
@@ -186,7 +359,7 @@ fn log_diagnostic(world: &DocuForgeWorld, diag: &SourceDiagnostic) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::request::{Asset, Template};
+    use crate::models::request::{Asset, RenderOptions, Template};
     use serde_json::json;
 
     fn empty_fonts() -> Arc<FontLoader> {
@@ -348,6 +521,72 @@ mod tests {
         let result = compiler.compile(&request, 100).await;
         // Simple content should compile fast enough
         assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_compile_with_encryption_adds_encrypt_dictionary() {
+        let compiler = Compiler::new(empty_fonts(), test_cache());
+
+        let mut files = HashMap::new();
+        files.insert("main.typ".to_string(), "Top secret".to_string());
+
+        let request = RenderRequest {
+            template: Template {
+                main: "main.typ".to_string(),
+                files,
+            },
+            data: None,
+            assets: None,
+            options: Some(RenderOptions {
+                timeout_ms: Some(5000),
+                cache: None,
+                encryption: Some(EncryptionOptions {
+                    user_password: "super-secret-password".to_string(),
+                    mode: EncryptionMode::Aes256,
+                    permissions: EncryptionPermissions::PrintOnly,
+                }),
+            }),
+        };
+
+        let result = compiler.compile(&request, 5000).await;
+        assert!(result.is_ok());
+
+        let pdf_bytes = result.unwrap();
+        let document = Document::load_mem(&pdf_bytes).unwrap();
+        assert!(document.trailer.get(b"Encrypt").is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_compile_with_short_encryption_password_fails() {
+        let compiler = Compiler::new(empty_fonts(), test_cache());
+
+        let mut files = HashMap::new();
+        files.insert("main.typ".to_string(), "Hello".to_string());
+
+        let request = RenderRequest {
+            template: Template {
+                main: "main.typ".to_string(),
+                files,
+            },
+            data: None,
+            assets: None,
+            options: Some(RenderOptions {
+                timeout_ms: Some(5000),
+                cache: None,
+                encryption: Some(EncryptionOptions {
+                    user_password: "short".to_string(),
+                    mode: EncryptionMode::Aes256,
+                    permissions: EncryptionPermissions::PrintOnly,
+                }),
+            }),
+        };
+
+        let result = compiler.compile(&request, 5000).await;
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            EngineError::InvalidRequest(_)
+        ));
     }
 
     // Note: Testing actual timeout with infinite loop requires careful handling

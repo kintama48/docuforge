@@ -6,11 +6,16 @@ import { SiteHeader } from "./components/site-header";
 import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
+import { listContent } from "@/src/lib/content-hub";
+import { getMcpTools, getSecurityCapabilities } from "@/src/lib/security-mcp-content";
 
 export default function Home() {
   const { messages, locale } = useI18n();
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
+  const featuredPosts = listContent("blog", locale).slice(0, 3);
+  const securityHighlights = getSecurityCapabilities().slice(0, 4);
+  const mcpTools = getMcpTools();
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
@@ -234,40 +239,40 @@ export default function Home() {
 
         <section
           id="api"
-          className="section-pad scroll-mt-24 bg-[var(--inverse-bg)] text-[var(--inverse-ink)]"
+          className="section-pad scroll-mt-24 bg-[var(--ink)] text-white"
         >
           <div className="mx-auto w-full max-w-6xl px-6">
             <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
                   {messages.api.label}
                 </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--inverse-ink)] sm:text-4xl">
+                <h2 className="mt-3 font-display text-3xl text-white sm:text-4xl">
                   {messages.api.title}
                 </h2>
-                <p className="mt-4 text-pretty text-base text-[var(--inverse-muted)]">
+                <p className="mt-4 text-pretty text-base text-white/70">
                   {messages.api.subtitle}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={localePath("/docs")}
-                    className="inline-flex items-center justify-center rounded-md bg-white px-5 py-3 text-sm font-semibold text-[var(--ink-strong)] transition hover:bg-white/90"
+                    className="inline-flex items-center justify-center rounded-md bg-white px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:bg-white/90"
                   >
                     {messages.api.ctaDocs}
                   </Link>
                   <Link
                     href={consoleUrl}
-                    className="inline-flex items-center justify-center rounded-md border border-[var(--inverse-line)] bg-[var(--inverse-surface)] px-5 py-3 text-sm font-semibold text-[var(--inverse-ink)] transition hover:border-[var(--inverse-ink)]"
+                    className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:border-white"
                   >
                     {messages.api.ctaConsole}
                   </Link>
                 </div>
               </div>
-              <div className="rounded-2xl border border-[var(--inverse-line)] bg-[var(--inverse-surface)] p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
                   {messages.api.quickStartLabel}
                 </p>
-                <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--inverse-code-bg)] p-4 text-xs text-[var(--inverse-ink)]">
+                <pre className="mt-4 overflow-x-auto rounded-xl bg-black/40 p-4 text-xs text-white/90">
                   <code>{`curl -X POST "$DOCUFORGE_API_URL/v1/render/preview" \\
   -H "Authorization: Bearer $DOCUFORGE_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -339,6 +344,106 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="security" className="section-pad scroll-mt-24">
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-start">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Security and MCP
+                </p>
+                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
+                  Built for secure automation and AI-native workflows.
+                </h2>
+                <p className="mt-4 text-base text-[var(--muted)]">
+                  Authentication, rate limiting, webhook signing, and MCP tools are integrated in
+                  the core platform so production adoption is straightforward.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href={localePath("/docs#security")}
+                    className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
+                  >
+                    Review security docs
+                  </Link>
+                  <Link
+                    href={localePath("/docs#mcp")}
+                    className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
+                  >
+                    Explore MCP docs
+                  </Link>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {securityHighlights.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
+                  >
+                    {item}
+                  </div>
+                ))}
+                <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)] sm:col-span-2">
+                  <p className="font-semibold text-[var(--ink)]">MCP tools</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {mcpTools.map((tool) => (
+                      <span
+                        key={tool}
+                        className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--ink)]"
+                      >
+                        {tool}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="blog" className="section-pad scroll-mt-24 border-y border-[var(--line)] bg-[var(--surface)]">
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Blogs
+                </p>
+                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
+                  High-intent guides built for conversion.
+                </h2>
+              </div>
+              <Link
+                href={localePath("/blog")}
+                className="text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
+              >
+                Browse all blog posts
+              </Link>
+            </div>
+
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
+              {featuredPosts.map((post) => (
+                <article
+                  key={post.slug}
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
+                >
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                    {post.category}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-[var(--ink)]">
+                    {post.title}
+                  </h3>
+                  <p className="mt-3 text-sm text-[var(--muted)]">{post.excerpt}</p>
+                  <Link
+                    href={localePath(`/blog/${post.slug}`)}
+                    className="mt-4 inline-flex text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
+                  >
+                    Read article
+                  </Link>
+                </article>
+              ))}
             </div>
           </div>
         </section>

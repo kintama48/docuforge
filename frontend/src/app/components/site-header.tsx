@@ -6,17 +6,20 @@ import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
-import { BrandLogo } from "@/src/components/brand/BrandLogo";
+import { getContentHubCopy } from "@/src/lib/content-hub";
 
 export function SiteHeader() {
   const { messages, locale } = useI18n();
+  const contentCopy = getContentHubCopy(locale);
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   return (
     <header className="border-b border-[var(--line)] bg-[var(--bg)]">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Link href={localePath("/")} className="flex items-center gap-3">
-          <BrandLogo className="h-9 w-9" priority />
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] font-display text-xs tracking-[0.2em] text-[var(--muted)]">
+            DF
+          </span>
           <span className="font-display text-lg text-[var(--ink)]">
             DocuForge
           </span>
@@ -34,6 +37,12 @@ export function SiteHeader() {
           </Link>
           <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
             {messages.nav.docs}
+          </Link>
+          <Link href={localePath("/blog")} className="hover:text-[var(--ink)]">
+            {contentCopy.navBlogs}
+          </Link>
+          <Link href={localePath("/playground")} className="hover:text-[var(--ink)]">
+            {contentCopy.navPlayground}
           </Link>
           <Link href={localePath("/#api")} className="hover:text-[var(--ink)]">
             {messages.nav.api}

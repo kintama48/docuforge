@@ -82,7 +82,7 @@ async function createUser(
     email: `${userId}@test.com`,
     passwordHash: 'test_hash',
     planTier: opts.planTier || 'free',
-    planRenders: opts.planRenders ?? 500,
+    planRenders: opts.planRenders ?? 1000,
     createdAt: now,
     updatedAt: now,
   });
@@ -117,18 +117,18 @@ describe('usage', () => {
 
   describe('checkCredits', () => {
     test('fresh user has full credits (0 used)', async () => {
-      const userId = await createUser(testDb, { planRenders: 500 });
+      const userId = await createUser(testDb, { planRenders: 1000 });
 
       const result = await checkCredits(testDb, userId);
 
       expect(result.used).toBe(0);
-      expect(result.limit).toBe(500);
-      expect(result.remaining).toBe(500);
+      expect(result.limit).toBe(1000);
+      expect(result.remaining).toBe(1000);
       expect(result.allowed).toBe(true);
     });
 
     test('counts only success renders', async () => {
-      const userId = await createUser(testDb, { planRenders: 500 });
+      const userId = await createUser(testDb, { planRenders: 1000 });
 
       // Add 3 successful renders
       await createRenderLog(testDb, userId, { status: 'success' });
@@ -142,12 +142,12 @@ describe('usage', () => {
       const result = await checkCredits(testDb, userId);
 
       expect(result.used).toBe(3); // Only success counts
-      expect(result.remaining).toBe(497);
+      expect(result.remaining).toBe(997);
       expect(result.allowed).toBe(true);
     });
 
     test('counts only current month', async () => {
-      const userId = await createUser(testDb, { planRenders: 500 });
+      const userId = await createUser(testDb, { planRenders: 1000 });
 
       // Add render from last month
       const lastMonth = new Date();
@@ -163,7 +163,7 @@ describe('usage', () => {
       const result = await checkCredits(testDb, userId);
 
       expect(result.used).toBe(1); // Only current month
-      expect(result.remaining).toBe(499);
+      expect(result.remaining).toBe(999);
     });
 
     test('rejects when at limit', async () => {
@@ -199,16 +199,21 @@ describe('usage', () => {
     });
 
     test('different plans have different limits', async () => {
-      const freeUserId = await createUser(testDb, { planTier: 'free', planRenders: 500 });
+      const freeUserId = await createUser(testDb, { planTier: 'free', planRenders: 1000 });
+      const devUserId = await createUser(testDb, { planTier: 'dev', planRenders: 3000 });
       const starterUserId = await createUser(testDb, { planTier: 'starter', planRenders: 10000 });
       const proUserId = await createUser(testDb, { planTier: 'pro', planRenders: 50000 });
 
       const freeResult = await checkCredits(testDb, freeUserId);
+      const devResult = await checkCredits(testDb, devUserId);
       const starterResult = await checkCredits(testDb, starterUserId);
       const proResult = await checkCredits(testDb, proUserId);
 
-      expect(freeResult.limit).toBe(500);
+      expect(freeResult.limit).toBe(1000);
       expect(freeResult.plan).toBe('free');
+
+      expect(devResult.limit).toBe(3000);
+      expect(devResult.plan).toBe('dev');
 
       expect(starterResult.limit).toBe(10000);
       expect(starterResult.plan).toBe('starter');
@@ -218,7 +223,7 @@ describe('usage', () => {
     });
 
     test('user with some usage has correct remaining', async () => {
-      const userId = await createUser(testDb, { planRenders: 500 });
+      const userId = await createUser(testDb, { planRenders: 1000 });
 
       // Use 100 renders
       for (let i = 0; i < 100; i++) {
@@ -228,7 +233,7 @@ describe('usage', () => {
       const result = await checkCredits(testDb, userId);
 
       expect(result.used).toBe(100);
-      expect(result.remaining).toBe(400);
+      expect(result.remaining).toBe(900);
       expect(result.allowed).toBe(true);
     });
 

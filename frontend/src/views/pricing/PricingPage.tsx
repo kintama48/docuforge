@@ -7,19 +7,57 @@ import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 function fmtLimit(v: number | null): string {
   if (v === null) return "Unlimited";
   return v.toLocaleString();
 }
 
-type PlanKey = "free" | "starter" | "pro" | "enterprise";
+type PlanKey = "free" | "dev" | "starter" | "pro" | "enterprise";
 
-const planOrder: PlanKey[] = ["free", "starter", "pro", "enterprise"];
+const planOrder: PlanKey[] = ["free", "dev", "starter", "pro", "enterprise"];
 
 export default function PricingPage() {
   const { messages, locale } = useI18n();
+  const devCopy = getDevPlanCopy(locale);
   const consoleRegisterUrl = getConsoleLocaleUrl("/register", locale);
+  const localizedPlans: Record<
+    PlanKey,
+    { name: string; price: string; description: string; cta: string }
+  > = {
+    free: {
+      name: messages.pricing.plans[0].name,
+      price: messages.pricing.plans[0].price,
+      description: messages.pricing.plans[0].description,
+      cta: messages.pricing.plans[0].cta,
+    },
+    dev: {
+      name: devCopy.name,
+      price: devCopy.price,
+      description: devCopy.description,
+      cta: devCopy.cta,
+    },
+    starter: {
+      name: messages.pricing.plans[1].name,
+      price: messages.pricing.plans[1].price,
+      description: messages.pricing.plans[1].description,
+      cta: messages.pricing.plans[1].cta,
+    },
+    pro: {
+      name: messages.pricing.plans[2].name,
+      price: messages.pricing.plans[2].price,
+      description: messages.pricing.plans[2].description,
+      cta: messages.pricing.plans[2].cta,
+    },
+    enterprise: {
+      name: messages.pricing.plans[3].name,
+      price: messages.pricing.plans[3].price,
+      description: messages.pricing.plans[3].description,
+      cta: messages.pricing.plans[3].cta,
+    },
+  };
+
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
@@ -39,11 +77,11 @@ export default function PricingPage() {
               </p>
             </div>
 
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {planOrder.map((key, index) => {
-                const plan = messages.pricing.plans[index];
+            <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+              {planOrder.map((key) => {
+                const plan = localizedPlans[key];
                 const limits = planLimits[key];
-                const featured = key === "starter";
+                const featured = key === "dev";
                 const isCustom = key === "enterprise";
                 return (
                   <div

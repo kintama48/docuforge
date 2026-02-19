@@ -5,6 +5,7 @@ import type { UsageResponse } from "@/src/lib/api-types";
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
 import { useI18n } from "@/src/lib/i18n";
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 function buildDailySeries(usage?: UsageResponse) {
   const used = usage?.renders.used ?? 0;
@@ -22,29 +23,30 @@ function buildDailySeries(usage?: UsageResponse) {
 }
 
 export function UsageSection({ usage }: { usage?: UsageResponse }) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
+  const devCopy = getDevPlanCopy(locale);
   const daily = useMemo(() => buildDailySeries(usage), [usage]);
   const maxValue = Math.max(1, ...daily);
 
   return (
-    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
-      <h2 className="text-lg font-semibold text-[var(--ink)]">
+    <section className="rounded-2xl border border-[#27272a] bg-[#111113] p-6">
+      <h2 className="text-lg font-semibold text-white">
         {messages.settings.usageTitle}
       </h2>
-      <p className="mt-2 text-sm text-[var(--muted)]">
+      <p className="mt-2 text-sm text-[#a1a1aa]">
         {usage?.renders.used ?? 0} / {usage?.renders.limit ?? 0}{" "}
         {messages.settings.usageSummary}
       </p>
 
       <div className="mt-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted-dim)]">
+        <p className="text-xs uppercase tracking-[0.2em] text-[#71717a]">
           {messages.settings.dailyRenders}
         </p>
-        <div className="mt-4 flex h-24 items-end gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3">
+        <div className="mt-4 flex h-24 items-end gap-1 rounded-xl border border-[#27272a] bg-[#0f1117] p-3">
           {daily.map((value, index) => (
             <div
               key={`${value}-${index}`}
-              className="flex-1 rounded-sm bg-[var(--accent)]/70"
+              className="flex-1 rounded-sm bg-[#3b82f6]/70"
               style={{ height: `${Math.round((value / maxValue) * 100)}%` }}
             />
           ))}
@@ -52,15 +54,16 @@ export function UsageSection({ usage }: { usage?: UsageResponse }) {
       </div>
 
       <div className="mt-8">
-        <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted-dim)]">
+        <p className="text-xs uppercase tracking-[0.2em] text-[#71717a]">
           {messages.settings.planLimits}
         </p>
         <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-left text-xs text-[var(--muted)]">
-            <thead className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted-dim)]">
+          <table className="w-full text-left text-xs text-[#a1a1aa]">
+            <thead className="text-[11px] uppercase tracking-[0.18em] text-[#71717a]">
               <tr>
                 <th className="py-2">{messages.settings.feature}</th>
                 <th className="py-2">{messages.settings.free}</th>
+                <th className="py-2">{devCopy.name}</th>
                 <th className="py-2">{messages.settings.starter}</th>
                 <th className="py-2">{messages.settings.pro}</th>
               </tr>
@@ -78,9 +81,10 @@ export function UsageSection({ usage }: { usage?: UsageResponse }) {
                   return v.toLocaleString();
                 };
                 return (
-                  <tr key={label} className="border-t border-[var(--line)]">
-                    <td className="py-2 text-[var(--ink)]">{label}</td>
+                  <tr key={label} className="border-t border-[#27272a]">
+                    <td className="py-2 text-white">{label}</td>
                     <td className="py-2">{fmt(planLimits.free[key as keyof typeof planLimits.free])}</td>
+                    <td className="py-2">{fmt(planLimits.dev[key as keyof typeof planLimits.dev])}</td>
                     <td className="py-2">{fmt(planLimits.starter[key as keyof typeof planLimits.starter])}</td>
                     <td className="py-2">{fmt(planLimits.pro[key as keyof typeof planLimits.pro])}</td>
                   </tr>

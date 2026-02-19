@@ -6,6 +6,6 @@ import { UsageCard } from "@/src/components/dashboard/UsageCard";
 describe("UsageCard", () => {
   it("renders usage data", async () => {
     renderWithProviders(<UsageCard />);
-    expect(await screen.findByText(/42 \/ 500/i)).toBeInTheDocument();
+    expect(await screen.findByText(/42 \/ 1000/i)).toBeInTheDocument();
   });
 });

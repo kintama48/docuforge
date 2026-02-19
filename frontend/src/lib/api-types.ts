@@ -1,6 +1,10 @@
 import type { LowCodeSpec } from "@/src/lib/low-code";
 
-export type User = { id: string; email: string; plan: "free" | "starter" | "pro" };
+export type User = {
+  id: string;
+  email: string;
+  plan: "free" | "dev" | "starter" | "pro";
+};
 export type LoginResponse = { token: string; user: User };
 export type RegisterResponse = {
   token: string;

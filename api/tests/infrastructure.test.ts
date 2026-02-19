@@ -53,7 +53,7 @@ describe('Test Infrastructure', () => {
         email: 'test@example.com',
         passwordHash: 'hash123',
         planTier: 'free',
-        planRenders: 500,
+        planRenders: 1000,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
