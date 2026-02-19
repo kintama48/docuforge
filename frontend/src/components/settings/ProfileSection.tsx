@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
 import { useI18n } from "@/src/lib/i18n";
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 type ProfileSectionProps = {
   email?: string | null;
-  plan?: "free" | "starter" | "pro" | null;
-  onUpgrade: (plan: "starter" | "pro") => void;
+  plan?: "free" | "dev" | "starter" | "pro" | null;
+  onUpgrade: (plan: "dev" | "starter" | "pro") => void;
   onManage?: () => void;
 };
 
@@ -16,16 +16,15 @@ export function ProfileSection({
   onUpgrade,
   onManage,
 }: ProfileSectionProps) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
+  const devCopy = getDevPlanCopy(locale);
   const planLabels: Record<NonNullable<ProfileSectionProps["plan"]>, string> = {
     free: messages.settings.free,
+    dev: devCopy.name,
     starter: messages.settings.starter,
     pro: messages.settings.pro,
   };
-  const badge = useMemo(() => {
-    if (!plan) return messages.settings.planUnknown;
-    return planLabels[plan];
-  }, [plan, planLabels, messages.settings.planUnknown]);
+  const badge = !plan ? messages.settings.planUnknown : planLabels[plan];
 
   return (
     <section className="rounded-2xl border border-[#27272a] bg-[#111113] p-6">
@@ -42,16 +41,16 @@ export function ProfileSection({
       {plan === "free" ? (
         <div className="mt-4 flex flex-wrap gap-3">
           <button
-            onClick={() => onUpgrade("starter")}
+            onClick={() => onUpgrade("dev")}
             className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
           >
-            {messages.settings.upgradeStarter}
+            {devCopy.upgradeLabel}
           </button>
           <button
-            onClick={() => onUpgrade("pro")}
+            onClick={() => onUpgrade("starter")}
             className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
           >
-            {messages.settings.upgradePro}
+            {messages.settings.upgradeStarter}
           </button>
         </div>
       ) : (

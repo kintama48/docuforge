@@ -156,7 +156,7 @@ export const confirmUploadSchema = z.object({
 
 // Billing schemas
 export const createCheckoutSchema = z.object({
-  plan: z.enum(['starter', 'pro']),
+  plan: z.enum(['dev', 'starter', 'pro']),
 });
 
 // AI schemas

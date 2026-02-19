@@ -64,8 +64,12 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
   }
 
   // Get price ID
-  const priceId =
-    plan === 'pro' ? env.STRIPE_PRO_PRICE_ID : env.STRIPE_STARTER_PRICE_ID;
+  const priceByPlan: Record<'dev' | 'starter' | 'pro', string> = {
+    dev: env.STRIPE_DEV_PRICE_ID,
+    starter: env.STRIPE_STARTER_PRICE_ID,
+    pro: env.STRIPE_PRO_PRICE_ID,
+  };
+  const priceId = priceByPlan[plan];
 
   if (!priceId) {
     throw new InternalError('Price not configured');
@@ -109,7 +113,7 @@ billing.post('/billing/webhook', async (c) => {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
-      const plan = session.metadata?.plan as 'starter' | 'pro' | undefined;
+      const plan = session.metadata?.plan as 'dev' | 'starter' | 'pro' | undefined;
 
       if (userId && plan) {
         await db
@@ -137,6 +141,8 @@ billing.post('/billing/webhook', async (c) => {
         plan = 'pro';
       } else if (priceId === env.STRIPE_STARTER_PRICE_ID) {
         plan = 'starter';
+      } else if (priceId === env.STRIPE_DEV_PRICE_ID) {
+        plan = 'dev';
       }
 
       await db

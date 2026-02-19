@@ -47,7 +47,7 @@ describe('E2E: Full Render Flow', () => {
         password_hash TEXT NOT NULL,
         stripe_customer_id TEXT,
         plan_tier TEXT NOT NULL DEFAULT 'free',
-        plan_renders INTEGER NOT NULL DEFAULT 500,
+        plan_renders INTEGER NOT NULL DEFAULT 1000,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       );
@@ -242,8 +242,8 @@ describe('E2E: Full Render Flow', () => {
     expect(usageData.plan).toBe('free');
     expect(usageData.renders).toBeDefined();
     expect(usageData.renders.used).toBe(1);
-    expect(usageData.renders.limit).toBe(500);
-    expect(usageData.renders.remaining).toBe(499);
+    expect(usageData.renders.limit).toBe(1000);
+    expect(usageData.renders.remaining).toBe(999);
     expect(usageData.period).toBeDefined();
     expect(usageData.period.start).toBeDefined();
     expect(usageData.period.end).toBeDefined();
@@ -306,7 +306,7 @@ describe('E2E: Full Render Flow', () => {
 
     const usageData = await usageResponse.json();
     expect(usageData.renders.used).toBe(3);
-    expect(usageData.renders.remaining).toBe(497);
+    expect(usageData.renders.remaining).toBe(997);
   });
 
   test('render fails without valid API key', async () => {

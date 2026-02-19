@@ -212,7 +212,7 @@ async function createUser(db: TestDb): Promise<string> {
     email: `${userId}@test.com`,
     passwordHash: 'test_hash',
     planTier: 'free',
-    planRenders: 500,
+    planRenders: 1000,
     createdAt: now,
     updatedAt: now,
   });

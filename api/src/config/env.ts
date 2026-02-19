@@ -25,6 +25,7 @@ const envSchema = z.object({
   // Stripe
   STRIPE_SECRET_KEY: z.string().min(1),
   STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  STRIPE_DEV_PRICE_ID: z.string().min(1),
   STRIPE_STARTER_PRICE_ID: z.string().min(1),
   STRIPE_PRO_PRICE_ID: z.string().min(1),
 
@@ -60,7 +61,8 @@ const envSchema = z.object({
   RAG_EMBEDDING_MODEL: z.string().default('text-embedding-004'),
 
   // Limits
-  FREE_MONTHLY_LIMIT: z.coerce.number().default(500),
+  FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
+  DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
   STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
   PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
@@ -107,6 +109,8 @@ export function getPlanLimit(planTier: string): number {
       return env.PRO_MONTHLY_LIMIT;
     case 'starter':
       return env.STARTER_MONTHLY_LIMIT;
+    case 'dev':
+      return env.DEV_MONTHLY_LIMIT;
     default:
       return env.FREE_MONTHLY_LIMIT;
   }
