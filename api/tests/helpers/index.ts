@@ -3,5 +3,6 @@
  */
 export * from './db';
 export * from './mock-engine';
+export * from './mock-stripe';
 export * from './auth';
 export * from './fixtures';

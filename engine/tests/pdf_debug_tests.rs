@@ -82,7 +82,10 @@ async fn debug_compile_without_fonts_produces_blank_pdf() {
     let request = simple_request("Hello, World!");
 
     let result = compiler.compile(&request, 5000).await;
-    assert!(result.is_ok(), "Compilation should succeed even without fonts");
+    assert!(
+        result.is_ok(),
+        "Compilation should succeed even without fonts"
+    );
 
     let pdf = result.unwrap();
 
@@ -145,7 +148,10 @@ async fn debug_compare_pdf_sizes() {
 
     println!("PDF without fonts: {} bytes", pdf_no_fonts.len());
     println!("PDF with fonts: {} bytes", pdf_with_fonts.len());
-    println!("Difference: {} bytes", pdf_with_fonts.len() as i64 - pdf_no_fonts.len() as i64);
+    println!(
+        "Difference: {} bytes",
+        pdf_with_fonts.len() as i64 - pdf_no_fonts.len() as i64
+    );
 
     // PDF with fonts should be significantly larger due to embedded font data
     assert!(
@@ -288,7 +294,10 @@ async fn test_pdf_has_valid_structure() {
 
     // Check PDF has objects
     assert!(pdf_str.contains("obj"), "PDF should contain objects");
-    assert!(pdf_str.contains("endobj"), "PDF should have complete objects");
+    assert!(
+        pdf_str.contains("endobj"),
+        "PDF should have complete objects"
+    );
 }
 
 #[tokio::test]
@@ -300,7 +309,10 @@ async fn test_pdf_contains_page() {
     let pdf_str = String::from_utf8_lossy(&pdf);
 
     // PDF should contain page definition
-    assert!(pdf_str.contains("/Type /Page"), "PDF should contain page type");
+    assert!(
+        pdf_str.contains("/Type /Page"),
+        "PDF should contain page type"
+    );
     assert!(pdf_str.contains("/MediaBox"), "PDF should have media box");
 }
 
@@ -313,7 +325,10 @@ async fn test_pdf_contains_content_stream() {
     let pdf_str = String::from_utf8_lossy(&pdf);
 
     // PDF should contain content stream
-    assert!(pdf_str.contains("/Contents"), "PDF should have contents reference");
+    assert!(
+        pdf_str.contains("/Contents"),
+        "PDF should have contents reference"
+    );
     assert!(pdf_str.contains("stream"), "PDF should have stream");
     assert!(pdf_str.contains("endstream"), "PDF should have endstream");
 }

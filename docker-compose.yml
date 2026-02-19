@@ -37,13 +37,16 @@ services:
     depends_on:
       - api
 
-  redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes"]
+  mcp-server:
+    build: ./mcp-server
     ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
+      - "3200:3200"
+    env_file:
+      - ./mcp-server/.env
+    environment:
+      DOCUFORGE_API_BASE_URL: http://api:3000
+    depends_on:
+      - api
 
 volumes:
   api-data:

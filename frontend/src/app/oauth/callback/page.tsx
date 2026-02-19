@@ -35,7 +35,11 @@ export default function OAuthCallbackPage() {
 
         const data = (await response.json()) as {
           token: string;
-          user: { id: string; email: string; plan: "free" | "starter" | "pro" };
+          user: {
+            id: string;
+            email: string;
+            plan: "free" | "dev" | "starter" | "pro";
+          };
           api_key?: string;
           redirect?: string;
         };

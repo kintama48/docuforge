@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   stripe_customer_id TEXT,
   plan_tier TEXT NOT NULL DEFAULT 'free',
-  plan_renders INTEGER NOT NULL DEFAULT 500,
+  plan_renders INTEGER NOT NULL DEFAULT 1000,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS template_versions (
   source TEXT NOT NULL,
   files TEXT,
   defaults TEXT,
-  low_code_spec TEXT,
   commit_message TEXT,
   created_at INTEGER NOT NULL
 );

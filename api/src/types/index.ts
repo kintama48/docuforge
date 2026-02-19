@@ -1,10 +1,10 @@
-export type PlanTier = 'free' | 'starter' | 'pro';
+export type PlanTier = 'free' | 'dev' | 'starter' | 'pro';
 
 export interface User {
   id: string;
   email: string;
   passwordHash: string;
-  billingCustomerId: string | null;
+  stripeCustomerId: string | null;
   planTier: PlanTier;
   planRenders: number;
   createdAt: number;
@@ -40,7 +40,6 @@ export interface TemplateVersion {
   source: string;
   files: Record<string, string> | null;
   defaults: Record<string, unknown> | null;
-  lowCodeSpec: Record<string, unknown> | null;
   commitMessage: string | null;
   createdAt: number;
 }
@@ -82,6 +81,16 @@ export interface EnginePayload {
   assets: EngineAsset[];
   options: {
     timeout_ms: number;
+    cache?: {
+      cacheable: boolean;
+      template_fingerprint?: string;
+      version_id?: string;
+    };
+    encryption?: {
+      mode: 'aes256';
+      permissions: 'print_only';
+      user_password: string;
+    };
   };
 }
 

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   stripe_customer_id TEXT,
   plan_tier TEXT NOT NULL DEFAULT 'free',
-  plan_renders INTEGER NOT NULL DEFAULT 500,
+  plan_renders INTEGER NOT NULL DEFAULT 1000,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -49,13 +49,11 @@ CREATE TABLE IF NOT EXISTS template_versions (
   source TEXT NOT NULL,
   files TEXT,
   defaults TEXT,
-  low_code_spec TEXT,
   commit_message TEXT,
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_template_versions_template ON template_versions(template_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_template_versions_unique ON template_versions(template_id, version_number);
-ALTER TABLE template_versions ADD COLUMN low_code_spec TEXT;
 
 -- Assets table
 CREATE TABLE IF NOT EXISTS assets (
@@ -123,6 +121,10 @@ CREATE TABLE IF NOT EXISTS webhook_deliveries (
 );
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_webhook ON webhook_deliveries(webhook_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_status ON webhook_deliveries(status, next_retry_at);
+
+-- Backfill plan limits for existing users after limit changes.
+UPDATE users SET plan_renders = 1000 WHERE plan_tier = 'free' AND plan_renders < 1000;
+UPDATE users SET plan_renders = 3000 WHERE plan_tier = 'dev' AND plan_renders < 3000;
 `;
 
 export async function runMigrations() {
@@ -134,18 +136,7 @@ export async function runMigrations() {
     .filter((s) => s.length > 0);
 
   for (const statement of statements) {
-    try {
-      await client.execute(statement);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      const isDuplicateColumn =
-        statement.includes('ALTER TABLE template_versions ADD COLUMN low_code_spec') &&
-        message.toLowerCase().includes('duplicate column name');
-
-      if (!isDuplicateColumn) {
-        throw error;
-      }
-    }
+    await client.execute(statement);
   }
 
   console.log('Migrations completed successfully');

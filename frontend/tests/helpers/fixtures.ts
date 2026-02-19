@@ -79,7 +79,7 @@ export const fixtures = {
   },
   usage: {
     plan: "free",
-    renders: { used: 42, limit: 500, remaining: 458 },
+    renders: { used: 42, limit: 1000, remaining: 958 },
     period: { start: "2026-02-01", end: "2026-02-28" },
   },
   apiKeys: [

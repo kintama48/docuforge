@@ -88,6 +88,58 @@ describe('POST /v1/render', () => {
     expect(parseInt(duration!, 10)).toBeGreaterThanOrEqual(0);
   });
 
+  it('defaults to no password protection mode', async () => {
+    const response = await app.request('/v1/render', {
+      method: 'POST',
+      headers: getAuthHeaders(user, true),
+      body: JSON.stringify({
+        template_id: template.id,
+        data: {},
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('X-Pdf-Protection-Mode')).toBe('none');
+  });
+
+  it('supports client_blind password protection mode without sending password to server', async () => {
+    const response = await app.request('/v1/render', {
+      method: 'POST',
+      headers: getAuthHeaders(user, true),
+      body: JSON.stringify({
+        template_id: template.id,
+        data: { order_id: 'ORD-42' },
+        password_protection_mode: 'client_blind',
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('X-Pdf-Protection-Mode')).toBe('client_blind');
+
+    const lastRequest = ctx.engine.getLastRequest();
+    expect(lastRequest).toBeDefined();
+    expect(lastRequest!.body).toBeDefined();
+    expect(lastRequest!.body!.options.encryption).toBeUndefined();
+    expect(lastRequest!.body!.options.cache?.cacheable).toBe(true);
+    expect(lastRequest!.body!.options.cache?.template_fingerprint).toBeDefined();
+  });
+
+  it('rejects unknown password protection mode', async () => {
+    const response = await app.request('/v1/render', {
+      method: 'POST',
+      headers: getAuthHeaders(user, true),
+      body: JSON.stringify({
+        template_id: template.id,
+        data: {},
+        password_protection_mode: 'server_ephemeral_legacy',
+      }),
+    });
+
+    expect(response.status).toBe(422);
+    const body = await response.json();
+    expect(body.error).toBe('validation_error');
+  });
+
   it('rejects request without API key with 401', async () => {
     const response = await app.request('/v1/render', {
       method: 'POST',
