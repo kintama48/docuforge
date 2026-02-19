@@ -5,7 +5,7 @@ import { stripLocalePath, withLocale } from "./src/lib/locale-path";
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "https://docuforge.app";
+  "https://www.docuforge.app";
 
 const consoleUrl =
   process.env.NEXT_PUBLIC_CONSOLE_URL || "https://console.docuforge.app";
@@ -26,9 +26,9 @@ function safeHost(value: string, fallback: string) {
   }
 }
 
-const marketingOrigin = safeOrigin(marketingUrl, "https://docuforge.app");
+const marketingOrigin = safeOrigin(marketingUrl, "https://www.docuforge.app");
 const consoleOrigin = safeOrigin(consoleUrl, "https://console.docuforge.app");
-const marketingHost = safeHost(marketingOrigin, "https://docuforge.app");
+const marketingHost = safeHost(marketingOrigin, "https://www.docuforge.app");
 const consoleHost = safeHost(consoleOrigin, "https://console.docuforge.app");
 
 const marketingExact = new Set([
@@ -96,7 +96,7 @@ export function middleware(request: NextRequest) {
   if (basePath === "/robots.txt") {
     const body = isConsoleHost
       ? "User-agent: *\nDisallow: /\n"
-      : `User-agent: *\nAllow: /\nSitemap: ${nextUrl.origin}/sitemap.xml\n`;
+      : "User-agent: *\nAllow: /\n";
     const response = new NextResponse(body, {
       status: 200,
       headers: { "Content-Type": "text/plain" },
@@ -150,21 +150,11 @@ export function middleware(request: NextRequest) {
   requestHeaders.set("x-docuforge-path", basePath);
   requestHeaders.set("x-docuforge-host", hostname);
 
-  const rewriteTarget = pathLocale
-    ? new URL(`${basePath}${nextUrl.search}`, nextUrl.origin)
-    : null;
-
-  const response = rewriteTarget
-    ? NextResponse.rewrite(rewriteTarget, {
-        request: {
-          headers: requestHeaders,
-        },
-      })
-    : NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 
   const cookieDomain = hostname.endsWith(".docuforge.app")
     ? ".docuforge.app"

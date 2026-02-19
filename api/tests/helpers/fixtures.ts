@@ -23,12 +23,6 @@ export const sampleUsers = {
     email: 'not-an-email',
     password: 'securepassword123',
   },
-  dev: {
-    email: 'dev@example.com',
-    password: 'devpassword123',
-    planTier: 'dev' as const,
-    planRenders: 3000,
-  },
   pro: {
     email: 'pro@example.com',
     password: 'propassword123',
@@ -203,28 +197,6 @@ export const samplePreviewRequests = {
   valid: {
     source: '#set page(paper: "a4")\nHello, World!',
     data: {},
-  },
-  lowCode: {
-    low_code_spec: {
-      version: 1,
-      blocks: [
-        {
-          type: 'header',
-          props: {
-            title: '{{invoice.title}}',
-          },
-        },
-        {
-          type: 'paragraph',
-          props: {
-            text: 'Hello from low-code',
-          },
-        },
-      ],
-    },
-    data: {
-      invoice: { title: 'Invoice #123' },
-    },
   },
   withData: {
     source: '#set page(paper: "a4")\nHello, #sys.inputs.name!',
