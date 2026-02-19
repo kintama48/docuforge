@@ -37,8 +37,21 @@ const marketingExact = new Set([
   "/terms",
   "/privacy",
   "/content-policy",
+  "/blog",
+  "/templates",
+  "/compare",
+  "/industries",
+  "/playground",
 ]);
-const marketingPrefixes = ["/docs", "/og"];
+const marketingPrefixes = [
+  "/docs",
+  "/og",
+  "/blog",
+  "/templates",
+  "/compare",
+  "/industries",
+  "/playground",
+];
 const consolePrefixes = [
   "/dashboard",
   "/editor",

@@ -219,7 +219,8 @@ export const samplePreviewRequests = {
  * Plan limits for testing billing.
  */
 export const planLimits = {
-  free: 500,
+  free: 1000,
+  dev: 3000,
   starter: 10000,
   pro: 50000,
 };
@@ -230,6 +231,7 @@ export const planLimits = {
 export const stripeTestData = {
   customerId: 'cus_test123',
   subscriptionId: 'sub_test456',
+  devPriceId: 'price_dev_test',
   starterPriceId: 'price_starter_test',
   proPriceId: 'price_pro_test',
 };

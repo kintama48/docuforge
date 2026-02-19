@@ -2,7 +2,34 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async headers() {
+    const edgeCache = [
+      {
+        key: "Cache-Control",
+        value: "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400",
+      },
+    ];
+    const cachedRoutes = [
+      "/blog",
+      "/blog/:slug*",
+      "/templates",
+      "/templates/:slug*",
+      "/compare",
+      "/compare/:slug*",
+      "/industries",
+      "/industries/:slug*",
+      "/playground",
+      "/docs",
+      "/docs/:slug*",
+      "/sitemap.xml",
+    ];
+    const localePrefix = "/:locale(fr|de|it|es|ar|zh)";
+
+    return cachedRoutes.flatMap((source) => [
+      { source, headers: edgeCache },
+      { source: `${localePrefix}${source}`, headers: edgeCache },
+    ]);
+  },
 };
 
 export default withSentryConfig(nextConfig, {

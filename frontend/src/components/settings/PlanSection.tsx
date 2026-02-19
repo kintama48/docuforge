@@ -3,28 +3,35 @@
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
 import { useI18n } from "@/src/lib/i18n";
+import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
 
 function fmtLimit(v: number | null): string {
   if (v === null) return "Unlimited";
   return v.toLocaleString();
 }
 
-type PlanTier = "free" | "starter" | "pro";
+type PlanTier = "free" | "dev" | "starter" | "pro";
 
 type PlanSectionProps = {
   plan?: PlanTier | null;
-  onUpgrade: (plan: "starter" | "pro") => void;
+  onUpgrade: (plan: "dev" | "starter" | "pro") => void;
   onManage?: () => void;
 };
 
 export function PlanSection({ plan, onUpgrade, onManage }: PlanSectionProps) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
+  const devCopy = getDevPlanCopy(locale);
   const currentPlan: PlanTier = plan ?? "free";
   const planMeta: Record<PlanTier, { name: string; price: string; blurb: string }> = {
     free: {
       name: messages.settings.free,
       price: messages.pricing.plans[0].price,
       blurb: messages.settings.planFreeBlurb,
+    },
+    dev: {
+      name: devCopy.name,
+      price: devCopy.price,
+      blurb: devCopy.blurb,
     },
     starter: {
       name: messages.settings.starter,
@@ -59,7 +66,7 @@ export function PlanSection({ plan, onUpgrade, onManage }: PlanSectionProps) {
         )}
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {(Object.keys(planMeta) as PlanTier[]).map((tier) => {
           const details = planMeta[tier];
           const limit = planLimits[tier];
@@ -109,14 +116,16 @@ export function PlanSection({ plan, onUpgrade, onManage }: PlanSectionProps) {
                   onClick={() => onUpgrade(tier)}
                   className="mt-4 w-full rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
                 >
-                  {tier === "starter"
-                    ? messages.settings.upgradeStarter
-                    : messages.settings.upgradePro}
+                  {tier === "dev"
+                    ? devCopy.upgradeLabel
+                    : tier === "starter"
+                      ? messages.settings.upgradeStarter
+                      : messages.settings.upgradePro}
                 </button>
               )}
               {tier === "free" && currentPlan === "free" && (
                 <button
-                  onClick={() => onUpgrade("starter")}
+                  onClick={() => onUpgrade("dev")}
                   className="mt-4 w-full rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
                 >
                   {messages.settings.comparePaid}

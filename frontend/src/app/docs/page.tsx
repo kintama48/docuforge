@@ -8,6 +8,12 @@ import { withLocale } from "@/src/lib/locale-path";
 import { getDocsContent } from "./docs-content";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
+import {
+  getMcpLinks,
+  getMcpTools,
+  getSecurityAndMcpCopy,
+  getSecurityCapabilities,
+} from "@/src/lib/security-mcp-content";
 
 function CodeBlock({ children }: { children: string }) {
   return (
@@ -20,7 +26,6 @@ function CodeBlock({ children }: { children: string }) {
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
-  const content = getDocsContent(locale);
   const marketing = getMarketingMeta(locale).docs;
   return {
     title: marketing.title,
@@ -51,6 +56,14 @@ export default async function DocsPage() {
   const content = getDocsContent(locale);
   const localePath = (path: string) => withLocale(path, locale);
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
+  const securityMcpCopy = getSecurityAndMcpCopy(locale);
+  const securityCapabilities = getSecurityCapabilities();
+  const mcpTools = getMcpTools();
+  const mcpLinks = getMcpLinks();
+  const extraNav = [
+    { id: "security", label: securityMcpCopy.securityTitle },
+    { id: "mcp", label: securityMcpCopy.mcpTitle },
+  ];
 
   return (
     <div className="min-h-screen page-background">
@@ -77,6 +90,15 @@ export default async function DocsPage() {
               </p>
               <nav className="mt-4 flex flex-col gap-3 text-[var(--muted)]">
                 {content.nav.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className="hover:text-[var(--ink)]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                {extraNav.map((item) => (
                   <Link
                     key={item.id}
                     href={`#${item.id}`}
@@ -284,6 +306,85 @@ Authorization: Bearer <token>`}</CodeBlock>
                     <p className="mt-2 text-[var(--muted)]">{item.body}</p>
                   </div>
                 ))}
+              </div>
+            </section>
+
+            <section id="security">
+              <h2 className="font-display text-2xl text-[var(--ink)]">
+                {securityMcpCopy.securityTitle}
+              </h2>
+              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+                {securityMcpCopy.securitySubtitle}
+              </p>
+              <ul className="mt-6 space-y-3 text-sm text-[var(--muted)]">
+                {securityCapabilities.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section id="mcp">
+              <h2 className="font-display text-2xl text-[var(--ink)]">
+                {securityMcpCopy.mcpTitle}
+              </h2>
+              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+                {securityMcpCopy.mcpSubtitle}
+              </p>
+
+              <div className="mt-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]">
+                <p className="font-semibold text-[var(--ink)]">
+                  {securityMcpCopy.mcpQuickStartTitle}
+                </p>
+                <p className="mt-3">
+                  {securityMcpCopy.mcpEndpointLabel}:{" "}
+                  <code>https://mcp.docuforge.app/mcp</code>
+                </p>
+                <p className="mt-1">
+                  {securityMcpCopy.mcpAuthLabel}: <code>Bearer token</code>
+                </p>
+                <p className="mt-1">
+                  {securityMcpCopy.mcpHeaderLabel}:{" "}
+                  <code>Authorization: Bearer &lt;MCP_SERVER_TOKEN&gt;</code>
+                </p>
+              </div>
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+                  <p className="text-sm font-semibold text-[var(--ink)]">
+                    {securityMcpCopy.mcpToolsTitle}
+                  </p>
+                  <ul className="mt-3 space-y-2 text-sm text-[var(--muted)]">
+                    {mcpTools.map((tool) => (
+                      <li key={tool}>
+                        <code>{tool}</code>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+                  <p className="text-sm font-semibold text-[var(--ink)]">
+                    {securityMcpCopy.mcpLinksTitle}
+                  </p>
+                  <div className="mt-3 flex flex-col gap-2 text-sm text-[var(--muted)]">
+                    <Link href={localePath(mcpLinks.overview)} className="hover:text-[var(--ink)]">
+                      {securityMcpCopy.mcpOverviewLabel}
+                    </Link>
+                    <Link href={localePath(mcpLinks.cursor)} className="hover:text-[var(--ink)]">
+                      {securityMcpCopy.mcpCursorLabel}
+                    </Link>
+                    <Link href={localePath(mcpLinks.claude)} className="hover:text-[var(--ink)]">
+                      {securityMcpCopy.mcpClaudeLabel}
+                    </Link>
+                    <Link href={localePath(mcpLinks.codex)} className="hover:text-[var(--ink)]">
+                      {securityMcpCopy.mcpCodexLabel}
+                    </Link>
+                  </div>
+                </div>
               </div>
             </section>
 

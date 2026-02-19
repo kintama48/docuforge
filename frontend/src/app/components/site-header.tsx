@@ -6,9 +6,11 @@ import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { ThemeToggle } from "./theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
+import { getContentHubCopy } from "@/src/lib/content-hub";
 
 export function SiteHeader() {
   const { messages, locale } = useI18n();
+  const contentCopy = getContentHubCopy(locale);
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   return (
@@ -35,6 +37,12 @@ export function SiteHeader() {
           </Link>
           <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
             {messages.nav.docs}
+          </Link>
+          <Link href={localePath("/blog")} className="hover:text-[var(--ink)]">
+            {contentCopy.navBlogs}
+          </Link>
+          <Link href={localePath("/playground")} className="hover:text-[var(--ink)]">
+            {contentCopy.navPlayground}
           </Link>
           <Link href={localePath("/#api")} className="hover:text-[var(--ink)]">
             {messages.nav.api}

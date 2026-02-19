@@ -7,7 +7,7 @@ type CheckoutResponse = { checkout_url: string };
 
 export function useCreateCheckout() {
   return useMutation({
-    mutationFn: (payload: { plan: "starter" | "pro" }) =>
+    mutationFn: (payload: { plan: "dev" | "starter" | "pro" }) =>
       api.post<CheckoutResponse>("/v1/billing/checkout", payload),
     onSuccess: (data) => {
       if (typeof window !== "undefined") {
