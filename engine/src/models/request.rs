@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use utoipa::ToSchema;
 
 /// Request body for PDF rendering
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, Clone)]
 pub struct RenderRequest {
     /// Template files and entry point
     pub template: Template,
@@ -18,7 +18,7 @@ pub struct RenderRequest {
 }
 
 /// Template definition with files
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, Clone)]
 pub struct Template {
     /// Entry point file name (must exist in files map)
     #[schema(example = "main.typ")]
@@ -29,7 +29,7 @@ pub struct Template {
 }
 
 /// External asset (image, font, etc.)
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, Clone)]
 pub struct Asset {
     /// Asset filename to reference in template
     #[schema(example = "logo.png")]
@@ -44,9 +44,55 @@ pub struct Asset {
 }
 
 /// Rendering options
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, Clone)]
 pub struct RenderOptions {
     /// Compilation timeout in milliseconds (default: 30000)
     #[schema(example = 30000)]
     pub timeout_ms: Option<u64>,
+    /// Template compilation cache hints for in-process (L1) and Redis (L2) cache layers.
+    pub cache: Option<TemplateCacheOptions>,
+    /// Optional in-memory PDF encryption config.
+    pub encryption: Option<EncryptionOptions>,
+}
+
+/// Template cache hints from the API tier.
+#[derive(Debug, Deserialize, ToSchema, Clone)]
+pub struct TemplateCacheOptions {
+    /// Whether this template should be eligible for Redis L2 memoization.
+    #[schema(example = true)]
+    pub cacheable: bool,
+    /// Stable fingerprint representing the canonical template bundle.
+    #[schema(example = "6f63a0d4e4b26f84fd93cf51431d6535e5cd37f4fd5f6ea01f091f6d307f8fbe")]
+    pub template_fingerprint: Option<String>,
+    /// Optional template version ID for observability.
+    #[schema(example = "ver_01HXYZ...")]
+    pub version_id: Option<String>,
+}
+
+/// In-memory PDF encryption settings.
+#[derive(Debug, Deserialize, ToSchema, Clone)]
+pub struct EncryptionOptions {
+    /// User password required to open the generated PDF.
+    #[schema(example = "super-secret-deal")]
+    pub user_password: String,
+    /// Encryption mode.
+    #[schema(example = "aes256")]
+    pub mode: EncryptionMode,
+    /// Permission policy for the encrypted PDF.
+    #[schema(example = "print_only")]
+    pub permissions: EncryptionPermissions,
+}
+
+/// Supported encryption modes.
+#[derive(Debug, Deserialize, ToSchema, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum EncryptionMode {
+    Aes256,
+}
+
+/// Supported PDF permission policies.
+#[derive(Debug, Deserialize, ToSchema, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum EncryptionPermissions {
+    PrintOnly,
 }

@@ -81,6 +81,16 @@ export interface EnginePayload {
   assets: EngineAsset[];
   options: {
     timeout_ms: number;
+    cache?: {
+      cacheable: boolean;
+      template_fingerprint?: string;
+      version_id?: string;
+    };
+    encryption?: {
+      mode: 'aes256';
+      permissions: 'print_only';
+      user_password: string;
+    };
   };
 }
 
