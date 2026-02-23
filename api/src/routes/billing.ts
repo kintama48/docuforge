@@ -18,6 +18,17 @@ billing.use('*', noCache);
 let stripeClient: Stripe | null = null;
 
 function getStripe(): Stripe {
+  if (env.BILLING_PROVIDER === 'paddle') {
+    throw new InternalError('Paddle billing provider is not enabled in this deployment');
+  }
+  if (env.BILLING_PROVIDER === 'lemonsqueezy') {
+    throw new InternalError('Lemon Squeezy billing provider is not enabled in this deployment');
+  }
+
+  if (env.BILLING_PROVIDER !== 'stripe') {
+    throw new InternalError(`Unsupported billing provider: ${env.BILLING_PROVIDER}`);
+  }
+
   if (!stripeClient) {
     stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-01-27.acacia',

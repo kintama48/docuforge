@@ -1,13 +1,52 @@
 "use client";
 
 import Link from "next/link";
+import {
+  ArrowRight,
+  BracketsCurly,
+  CheckCircle,
+  Code,
+  Database,
+  FilePdf,
+  Gauge,
+  GitBranch,
+  RocketLaunch,
+  ShieldCheck,
+  Sparkle,
+  Stack,
+  TerminalWindow,
+} from "@phosphor-icons/react";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 import { listContent } from "@/src/lib/content-hub";
-import { getMcpTools, getSecurityCapabilities } from "@/src/lib/security-mcp-content";
+import {
+  getMcpTools,
+  getSecurityCapabilities,
+} from "@/src/lib/security-mcp-content";
+import { BrandLogo } from "@/src/components/brand/BrandLogo";
+
+const featureIcons = [BracketsCurly, TerminalWindow, Stack, Gauge, Database, RocketLaunch] as const;
+const featureTags = [
+  "Typst + Monaco",
+  "Hot preview",
+  "Assets once",
+  "Usage clarity",
+  "Versioned by default",
+  "Rust throughput",
+] as const;
+const workflowIcons = [Code, FilePdf, RocketLaunch] as const;
+
+function compactCopy(text: string, maxSentences = 1) {
+  const chunks = text
+    .split(/(?<=[.!?])\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (!chunks.length) return text;
+  return chunks.slice(0, maxSentences).join(" ");
+}
 
 export default function Home() {
   const { messages, locale } = useI18n();
@@ -15,73 +54,63 @@ export default function Home() {
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   const featuredPosts = listContent("blog", locale).slice(0, 3);
   const securityHighlights = getSecurityCapabilities().slice(0, 4);
-  const mcpTools = getMcpTools();
+  const mcpTools = getMcpTools().slice(0, 6);
+
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
 
       <main>
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-[var(--accent-soft)] blur-3xl pulse-soft" />
-            <div className="pointer-events-none absolute right-12 top-10 h-48 w-48 rounded-full bg-[var(--surface-2)] blur-2xl float-slower" />
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-20 top-20 h-72 w-72 rounded-full bg-[var(--accent-soft)] blur-3xl pulse-soft" />
+            <div className="absolute right-6 top-10 h-64 w-64 rounded-full bg-[var(--surface)] blur-3xl float-slower" />
           </div>
 
-          <div className="mx-auto w-full max-w-6xl px-6 pb-16 pt-16 lg:pb-24 lg:pt-24">
-            <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="mx-auto w-full max-w-[1400px] px-6 pb-16 pt-14 xl:px-8 lg:pb-20 lg:pt-20">
+            <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_580px] xl:gap-14">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)] fade-up">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)] fade-up">
                   {messages.hero.badge}
                 </div>
+
                 <h1
-                  className="mt-6 text-balance font-display text-4xl leading-tight text-[var(--ink)] sm:text-5xl lg:text-6xl fade-up"
-                  style={{ animationDelay: "120ms" }}
+                  className="mt-6 max-w-3xl text-balance font-display text-5xl leading-[1.02] text-[var(--ink)] sm:text-6xl xl:text-7xl fade-up"
+                  style={{ animationDelay: "90ms" }}
                 >
                   {messages.hero.title}
                 </h1>
+
                 <p
                   className="mt-5 max-w-xl text-pretty text-lg text-[var(--muted)] fade-up"
-                  style={{ animationDelay: "220ms" }}
+                  style={{ animationDelay: "180ms" }}
                 >
-                  {messages.hero.subtitle}
+                  {compactCopy(messages.hero.subtitle, 2)}
                 </p>
-                <div
-                  className="mt-6 max-w-xl rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm text-[var(--muted)] fade-up"
-                  style={{ animationDelay: "280ms" }}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em]">
-                    {messages.hero.engineLabel}
-                  </p>
-                  <p className="mt-2 text-sm text-[var(--ink)]">
-                    {messages.hero.engineBody}
-                  </p>
-                </div>
+
                 <div
                   className="mt-8 flex flex-wrap items-center gap-3 fade-up"
-                  style={{ animationDelay: "360ms" }}
+                  style={{ animationDelay: "260ms" }}
                 >
-                  <Link
-                    href={localePath("/docs")}
-                    className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
-                  >
+                  <Link href={localePath("/docs")} className="btn btn-primary">
                     {messages.hero.ctaDocs}
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
-                  <Link
-                    href={consoleUrl}
-                    className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
-                  >
+                  <Link href={consoleUrl} className="btn btn-secondary">
                     {messages.hero.ctaConsole}
                   </Link>
                 </div>
 
-                <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                  {messages.hero.stats.map((item, index) => (
+                <div
+                  className="mt-8 grid gap-3 sm:grid-cols-3 fade-up"
+                  style={{ animationDelay: "340ms" }}
+                >
+                  {messages.hero.stats.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm text-[var(--muted)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)] fade-up"
-                      style={{ animationDelay: `${460 + index * 80}ms` }}
+                      className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4"
                     >
-                      <p className="text-xs uppercase tracking-[0.2em]">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                         {item.label}
                       </p>
                       <p className="mt-2 text-base font-semibold text-[var(--ink)]">
@@ -92,36 +121,72 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="relative">
-                <div className="rounded-[28px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(15,17,21,0.25)] fade-up" style={{ animationDelay: "260ms" }}>
-                  <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-                    <span className="font-semibold uppercase tracking-[0.2em]">
-                      Editor
+              <div className="relative fade-up" style={{ animationDelay: "180ms" }}>
+                <div className="rounded-[30px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] lg:p-7">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <BrandLogo className="h-10 w-10 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-1.5" />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                          Workflow canvas
+                        </p>
+                        <p className="text-sm font-semibold text-[var(--ink)]">Template to PDF in one loop</p>
+                      </div>
+                    </div>
+                    <span className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs font-semibold text-[var(--ink)]">
+                      42ms
                     </span>
-                    <span>main.typ</span>
                   </div>
-                  <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
                     <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-4">
-                      <div className="h-2 w-24 rounded-full bg-[var(--line)]" />
-                      <div className="mt-4 space-y-3">
-                        <div className="h-2 w-full rounded-full bg-[var(--line)]" />
-                        <div className="h-2 w-5/6 rounded-full bg-[var(--line)]" />
-                        <div className="h-2 w-4/6 rounded-full bg-[var(--line)]" />
-                        <div className="h-2 w-5/6 rounded-full bg-[var(--line)]" />
+                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface)] text-[var(--ink)]">
+                        <Code className="h-4 w-4" aria-hidden="true" />
                       </div>
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Write</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--ink)]">main.typ + data.json</p>
                     </div>
-                    <div className="rounded-2xl border border-[var(--line)] bg-white p-4">
-                      <div className="h-3 w-20 rounded-full bg-[var(--accent-soft)]" />
-                      <div className="mt-4 space-y-3">
-                        <div className="h-20 rounded-xl border border-[var(--line)] bg-[var(--surface-2)]" />
-                        <div className="h-12 rounded-xl border border-[var(--line)] bg-[var(--surface-2)]" />
+
+                    <div className="hidden items-center justify-center sm:flex">
+                      <ArrowRight className="h-4 w-4 text-[var(--muted)]" aria-hidden="true" />
+                    </div>
+
+                    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-4">
+                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface)] text-[var(--ink)]">
+                        <Sparkle className="h-4 w-4" aria-hidden="true" />
                       </div>
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Preview</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--ink)]">Queue + diagnostics</p>
                     </div>
+
+                    <div className="hidden items-center justify-center sm:flex">
+                      <ArrowRight className="h-4 w-4 text-[var(--muted)]" aria-hidden="true" />
+                    </div>
+
+                    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-4">
+                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface)] text-[var(--ink)]">
+                        <FilePdf className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Ship</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--ink)]">Versioned API render</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {mcpTools.slice(0, 4).map((tool) => (
+                      <span
+                        key={tool}
+                        className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--ink)]"
+                      >
+                        <CheckCircle className="h-3.5 w-3.5 text-[var(--good)]" aria-hidden="true" />
+                        {tool}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                <div className="absolute -bottom-6 -right-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-xs font-semibold text-[var(--ink)] shadow-[var(--shadow)] float-slow">
-                  Rendered in 42ms
+                <div className="absolute -bottom-5 -left-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--ink)] shadow-[var(--shadow)]">
+                  Queue healthy
                 </div>
               </div>
             </div>
@@ -129,36 +194,43 @@ export default function Home() {
         </section>
 
         <section id="features" className="section-pad scroll-mt-24">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   {messages.features.label}
                 </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
+                <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
                   {messages.features.title}
                 </h2>
               </div>
               <p className="max-w-xl text-pretty text-base text-[var(--muted)]">
-                {messages.features.subtitle}
+                {compactCopy(messages.features.subtitle, 1)}
               </p>
             </div>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {messages.features.items.map((item, index) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)] fade-up"
-                  style={{ animationDelay: `${120 + index * 80}ms` }}
-                >
-                  <h3 className="text-lg font-semibold text-[var(--ink)]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm text-[var(--muted)]">
-                    {item.body}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {messages.features.items.map((item, index) => {
+                const Icon = featureIcons[index % featureIcons.length];
+                const tag = featureTags[index % featureTags.length];
+                return (
+                  <article
+                    key={item.title}
+                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
+                  >
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)]">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <h3 className="mt-4 text-xl font-semibold text-[var(--ink)]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-[var(--muted)]">{compactCopy(item.body, 1)}</p>
+                    <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                      {tag}
+                    </p>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -167,280 +239,148 @@ export default function Home() {
           id="workflow"
           className="section-pad scroll-mt-24 border-y border-[var(--line)] bg-[var(--surface)]"
         >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   {messages.workflow.label}
                 </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
+                <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
                   {messages.workflow.title}
                 </h2>
               </div>
               <p className="max-w-xl text-pretty text-base text-[var(--muted)]">
-                {messages.workflow.subtitle}
+                {compactCopy(messages.workflow.subtitle, 1)}
               </p>
             </div>
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              {messages.workflow.steps.map((item, index) => (
-                <div
-                  key={item.step}
-                  className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)] fade-up"
-                  style={{ animationDelay: `${140 + index * 90}ms` }}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                    Step {item.step}
-                  </p>
-                  <h3 className="mt-3 text-lg font-semibold text-[var(--ink)]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm text-[var(--muted)]">
-                    {item.body}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-10 grid gap-5 lg:grid-cols-3">
+              {messages.workflow.steps.map((item, index) => {
+                const Icon = workflowIcons[index % workflowIcons.length];
+                return (
+                  <article
+                    key={item.step}
+                    className="relative rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                        Step {item.step}
+                      </p>
+                      <Icon className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
+                    </div>
+                    <h3 className="mt-3 text-2xl font-semibold text-[var(--ink)]">{item.title}</h3>
+                    <p className="mt-3 text-sm text-[var(--muted)]">{compactCopy(item.body, 1)}</p>
+                    {index < messages.workflow.steps.length - 1 ? (
+                      <ArrowRight
+                        className="absolute -right-3 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-[var(--muted)] lg:block"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        <section id="templates" className="section-pad scroll-mt-24">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                  {messages.templates.label}
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
-                  {messages.templates.title}
-                </h2>
-                <p className="mt-4 text-pretty text-base text-[var(--muted)]">
-                  {messages.templates.subtitle}
-                </p>
+        <section id="api" className="section-pad scroll-mt-24 bg-[var(--ink)] text-white">
+          <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-6 xl:grid-cols-[1.08fr_0.92fr] xl:px-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+                Security, API and MCP
+              </p>
+              <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-white sm:text-5xl">
+                Secure automation that stays programmable.
+              </h2>
+              <p className="mt-4 max-w-2xl text-base text-white/75">
+                Auth, rate limits, webhook signing, and MCP tool access are built in from day one.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href={localePath("/docs")} className="btn btn-inverse">
+                  {messages.api.ctaDocs}
+                </Link>
+                <Link href={consoleUrl} className="btn btn-outline-inverse">
+                  {messages.api.ctaConsole}
+                </Link>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {messages.templates.items.map((item) => (
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {securityHighlights.map((item) => (
                   <div
                     key={item}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
+                    className="rounded-xl border border-white/15 bg-white/5 p-4 text-sm text-white/80"
                   >
-                    <p className="text-sm font-semibold text-[var(--ink)]">
-                      {item}
-                    </p>
-                    <p className="mt-2 text-xs text-[var(--muted)]">
-                      {messages.templates.itemLabel}
-                    </p>
+                    <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/10">
+                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                    </div>
+                    {compactCopy(item, 1)}
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-        </section>
 
-        <section
-          id="api"
-          className="section-pad scroll-mt-24 bg-[var(--ink)] text-white"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-                  {messages.api.label}
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-white sm:text-4xl">
-                  {messages.api.title}
-                </h2>
-                <p className="mt-4 text-pretty text-base text-white/70">
-                  {messages.api.subtitle}
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href={localePath("/docs")}
-                    className="inline-flex items-center justify-center rounded-md bg-white px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:bg-white/90"
-                  >
-                    {messages.api.ctaDocs}
-                  </Link>
-                  <Link
-                    href={consoleUrl}
-                    className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:border-white"
-                  >
-                    {messages.api.ctaConsole}
-                  </Link>
-                </div>
+            <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+                <TerminalWindow className="h-4 w-4" aria-hidden="true" />
+                Render quick start
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-                  {messages.api.quickStartLabel}
-                </p>
-                <pre className="mt-4 overflow-x-auto rounded-xl bg-black/40 p-4 text-xs text-white/90">
-                  <code>{`curl -X POST "$DOCUFORGE_API_URL/v1/render/preview" \\
+              <pre className="mt-4 overflow-x-auto rounded-xl bg-black/35 p-4 text-xs text-white/90">
+                <code>{`curl -X POST "$DOCUFORGE_API_URL/v1/render/preview" \\
   -H "Authorization: Bearer $DOCUFORGE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{ "source": "...", "data": { "invoice_id": "1234" } }' \\
   --output preview.pdf`}</code>
-                </pre>
-              </div>
-            </div>
-          </div>
-        </section>
+              </pre>
 
-        <section id="principles" className="section-pad scroll-mt-24">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                  {messages.principles.label}
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
-                  {messages.principles.title}
-                </h2>
-                <p className="mt-4 text-pretty text-base text-[var(--muted)]">
-                  {messages.principles.subtitle}
-                </p>
-              </div>
-              <div className="grid gap-4">
-                {messages.principles.items.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)] transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
+              <div className="mt-5 flex flex-wrap gap-2">
+                {mcpTools.map((tool) => (
+                  <span
+                    key={tool}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white/85"
                   >
-                    {item}
-                  </div>
+                    <Sparkle className="h-3.5 w-3.5" aria-hidden="true" />
+                    {tool}
+                  </span>
                 ))}
               </div>
             </div>
           </div>
         </section>
 
-        <section
-          id="system"
-          className="section-pad scroll-mt-24 border-t border-[var(--line)] bg-[var(--surface)]"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                  {messages.system.label}
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
-                  {messages.system.title}
-                </h2>
-                <p className="mt-4 text-pretty text-base text-[var(--muted)]">
-                  {messages.system.subtitle}
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {messages.system.items.map((item) => (
-                  <div
-                    key={item.title}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
-                  >
-                    <p className="text-sm font-semibold text-[var(--ink)]">
-                      {item.title}
-                    </p>
-                    <p className="mt-2 text-xs text-[var(--muted)]">
-                      {item.body}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="security" className="section-pad scroll-mt-24">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-start">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                  Security and MCP
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
-                  Built for secure automation and AI-native workflows.
-                </h2>
-                <p className="mt-4 text-base text-[var(--muted)]">
-                  Authentication, rate limiting, webhook signing, and MCP tools are integrated in
-                  the core platform so production adoption is straightforward.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    href={localePath("/docs#security")}
-                    className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
-                  >
-                    Review security docs
-                  </Link>
-                  <Link
-                    href={localePath("/docs#mcp")}
-                    className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
-                  >
-                    Explore MCP docs
-                  </Link>
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {securityHighlights.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
-                  >
-                    {item}
-                  </div>
-                ))}
-                <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)] sm:col-span-2">
-                  <p className="font-semibold text-[var(--ink)]">MCP tools</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {mcpTools.map((tool) => (
-                      <span
-                        key={tool}
-                        className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--ink)]"
-                      >
-                        {tool}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="blog" className="section-pad scroll-mt-24 border-y border-[var(--line)] bg-[var(--surface)]">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <section id="blog" className="section-pad scroll-mt-24">
+          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   Blogs
                 </p>
-                <h2 className="mt-3 font-display text-3xl text-[var(--ink)] sm:text-4xl">
-                  High-intent guides built for conversion.
+                <h2 className="mt-3 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                  Learn by shipping.
                 </h2>
               </div>
-              <Link
-                href={localePath("/blog")}
-                className="text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
-              >
-                Browse all blog posts
+              <Link href={localePath("/blog")} className="btn btn-secondary btn-sm w-fit">
+                Browse posts
               </Link>
             </div>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
               {featuredPosts.map((post) => (
                 <article
                   key={post.slug}
                   className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow)]"
                 >
-                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                     {post.category}
                   </p>
-                  <h3 className="mt-2 text-lg font-semibold text-[var(--ink)]">
-                    {post.title}
-                  </h3>
-                  <p className="mt-3 text-sm text-[var(--muted)]">{post.excerpt}</p>
+                  <h3 className="mt-3 text-xl font-semibold text-[var(--ink)]">{post.title}</h3>
+                  <p className="mt-3 text-sm text-[var(--muted)]">{compactCopy(post.excerpt, 1)}</p>
                   <Link
                     href={localePath(`/blog/${post.slug}`)}
-                    className="mt-4 inline-flex text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
+                    className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
                   >
-                    Read article
+                    Read
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </article>
               ))}
@@ -449,27 +389,35 @@ export default function Home() {
         </section>
 
         <section className="section-pad">
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-10 text-center">
-              <h2 className="font-display text-3xl text-[var(--ink)] sm:text-4xl">
+          <div className="mx-auto w-full max-w-[1200px] px-6 xl:px-8">
+            <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8 text-center shadow-[var(--shadow)] sm:p-10">
+              <h2 className="text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
                 {messages.cta.title}
               </h2>
-              <p className="mt-4 text-pretty text-base text-[var(--muted)]">
-                {messages.cta.subtitle}
+              <p className="mx-auto mt-4 max-w-2xl text-base text-[var(--muted)]">
+                {compactCopy(messages.cta.subtitle, 1)}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link
-                  href={localePath("/docs")}
-                  className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
-                >
+                <Link href={localePath("/docs")} className="btn btn-primary">
                   {messages.cta.ctaDocs}
                 </Link>
-                <Link
-                  href={consoleUrl}
-                  className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
-                >
+                <Link href={consoleUrl} className="btn btn-secondary">
                   {messages.cta.ctaConsole}
                 </Link>
+              </div>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                <span className="inline-flex items-center gap-1">
+                  <Gauge className="h-4 w-4" aria-hidden="true" />
+                  Fast renders
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <GitBranch className="h-4 w-4" aria-hidden="true" />
+                  Versioned templates
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                  Production-safe API
+                </span>
               </div>
             </div>
           </div>

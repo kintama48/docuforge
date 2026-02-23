@@ -4,19 +4,19 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Heading1,
-  Heading2,
-  List,
-  ListOrdered,
-  Link2,
+  TextB,
+  TextItalic,
+  TextUnderline,
+  TextStrikethrough,
+  TextHOne,
+  TextHTwo,
+  ListBullets,
+  ListNumbers,
+  LinkSimple,
   Image,
-  Code2,
+  Code,
   Table,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 import { ThemeToggle } from "@/src/app/components/theme-toggle";
 import { useEditorStore } from "@/src/stores/editor";
 import { useI18n } from "@/src/lib/i18n";
@@ -221,23 +221,23 @@ export function EditorToolbar({
   );
 }
 
-const toolbarGroups: { id: FormatAction; icon: typeof Bold; label: string }[][] = [
+const toolbarGroups: { id: FormatAction; icon: typeof TextB; label: string }[][] = [
   [
-    { id: "bold", icon: Bold, label: "Bold" },
-    { id: "italic", icon: Italic, label: "Italic" },
-    { id: "underline", icon: Underline, label: "Underline" },
-    { id: "strike", icon: Strikethrough, label: "Strikethrough" },
+    { id: "bold", icon: TextB, label: "Bold" },
+    { id: "italic", icon: TextItalic, label: "Italic" },
+    { id: "underline", icon: TextUnderline, label: "Underline" },
+    { id: "strike", icon: TextStrikethrough, label: "Strikethrough" },
   ],
   [
-    { id: "h1", icon: Heading1, label: "Heading 1" },
-    { id: "h2", icon: Heading2, label: "Heading 2" },
-    { id: "bullet", icon: List, label: "Bullet list" },
-    { id: "number", icon: ListOrdered, label: "Numbered list" },
+    { id: "h1", icon: TextHOne, label: "Heading 1" },
+    { id: "h2", icon: TextHTwo, label: "Heading 2" },
+    { id: "bullet", icon: ListBullets, label: "Bullet list" },
+    { id: "number", icon: ListNumbers, label: "Numbered list" },
   ],
   [
-    { id: "link", icon: Link2, label: "Link" },
+    { id: "link", icon: LinkSimple, label: "Link" },
     { id: "image", icon: Image, label: "Image" },
-    { id: "code", icon: Code2, label: "Code block" },
+    { id: "code", icon: Code, label: "Code block" },
     { id: "table", icon: Table, label: "Table" },
   ],
 ];

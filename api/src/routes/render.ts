@@ -7,6 +7,7 @@ import { apiKeyAuth, jwtAuth } from '../middleware/auth';
 import { renderRateLimit, previewRateLimit } from '../middleware/rate-limit';
 import { noCache } from '../middleware/cache';
 import { zValidator, renderSchema, renderSecureSchema, renderPreviewSchema } from '../lib/validation';
+import { compileLowCodeSpec } from '../lib/low-code';
 import { renderPdf } from '../services/engine';
 import { checkCredits, logRender } from '../services/usage';
 import { resolveUserAssets } from '../services/asset';
@@ -329,8 +330,12 @@ render.post('/secure', apiKeyAuth, renderRateLimit, noCache, zValidator('json', 
 
 // POST /v1/render/preview - Preview render with JWT
 render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', renderPreviewSchema), async (c) => {
-  const { source, files, data } = c.req.valid('json');
+  const { source, low_code_spec, files, data } = c.req.valid('json');
   const { userId } = c.get('auth');
+  const previewSource = source ?? (low_code_spec ? compileLowCodeSpec(low_code_spec) : null);
+  if (!previewSource) {
+    throw new ValidationError('Either source or low_code_spec is required');
+  }
 
   // Resolve assets
   const assets = await resolveUserAssets(userId);
@@ -340,7 +345,7 @@ render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', r
     template: {
       main: 'main.typ',
       files: {
-        'main.typ': source,
+        'main.typ': previewSource,
         ...(files || {}),
       },
     },

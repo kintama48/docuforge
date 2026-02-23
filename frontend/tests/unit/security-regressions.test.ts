@@ -145,23 +145,15 @@ describe('Frontend Security Regressions', () => {
     });
   });
 
-  describe('FE-m4: Modal-based file delete confirmation', () => {
-    test('FileExplorer uses Modal instead of native confirm()', () => {
+  describe('FE-m4: Single-file explorer mode', () => {
+    test('FileExplorer avoids destructive file controls and native confirm()', () => {
       const explorerPath = path.join(srcPath, 'components/editor/FileExplorer.tsx');
       const source = fs.readFileSync(explorerPath, 'utf-8');
 
-      // Delete handler should use state-driven modal, not window.confirm()
-      // The pattern: onClick sets state, Modal renders the confirmation
-      expect(source).toContain('setDeleteTarget(file)');
-      expect(source).toContain('setShowDeleteConfirm(true)');
-
-      // Should have a Modal with the delete confirmation
-      expect(source).toContain('open={showDeleteConfirm}');
-
-
-      // Should use Modal + state for delete confirmation
-      expect(source).toContain('showDeleteConfirm');
-      expect(source).toContain('deleteTarget');
+      expect(source).toContain('setActiveFile("main.typ")');
+      expect(source).toContain('Single-file mode is enabled for a simpler editing flow.');
+      expect(source).not.toContain('window.confirm(');
+      expect(source).not.toContain('setDeleteTarget(');
     });
   });
 

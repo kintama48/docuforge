@@ -3373,6 +3373,24 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
+function resolveInitialLocale(initialLocale?: Locale): Locale {
+  if (typeof window === "undefined") {
+    return initialLocale ?? "en";
+  }
+
+  const { locale: pathLocale } = stripLocalePath(window.location?.pathname ?? "/");
+  const stored = localStorage.getItem("docuforge-locale");
+  const queryLocale = new URLSearchParams(window.location.search).get("lang");
+
+  if (pathLocale) return pathLocale;
+  if (queryLocale) return normalizeLocale(queryLocale);
+  if (stored) return normalizeLocale(stored);
+  if (!initialLocale && typeof navigator !== "undefined") {
+    return normalizeLocale(navigator.language);
+  }
+  return initialLocale ?? "en";
+}
+
 export function I18nProvider({
   children,
   initialLocale,
@@ -3380,33 +3398,7 @@ export function I18nProvider({
   children: ReactNode;
   initialLocale?: Locale;
 }) {
-  const [locale, setLocale] = useState<Locale>(initialLocale ?? "en");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const { locale: pathLocale } = stripLocalePath(
-      window.location?.pathname ?? "/"
-    );
-    const stored = localStorage.getItem("docuforge-locale");
-    const queryLocale = new URLSearchParams(window.location.search).get("lang");
-
-    let nextLocale: Locale | null = null;
-    if (pathLocale) {
-      nextLocale = pathLocale;
-    } else if (queryLocale) {
-      nextLocale = normalizeLocale(queryLocale);
-    } else if (stored) {
-      nextLocale = normalizeLocale(stored);
-    } else if (!initialLocale && typeof navigator !== "undefined") {
-      nextLocale = normalizeLocale(navigator.language);
-    } else if (initialLocale) {
-      nextLocale = initialLocale;
-    }
-
-    if (nextLocale && nextLocale !== locale) {
-      setLocale(nextLocale);
-    }
-  }, [initialLocale]);
+  const [locale, setLocale] = useState<Locale>(() => resolveInitialLocale(initialLocale));
 
   useEffect(() => {
     if (typeof window === "undefined") return;

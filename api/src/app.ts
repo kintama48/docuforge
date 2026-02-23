@@ -22,6 +22,7 @@ import {
 
 let sentryInitialized = false;
 let renderWorkerInitialized = false;
+let ragInitStarted = false;
 
 export function createApp() {
   // Initialize Sentry once on first app creation
@@ -72,7 +73,8 @@ export function createApp() {
   app.route('/v1/webhooks', webhooksRoute);
 
   // Initialize RAG vector store (non-blocking, logs warning on failure)
-  if (env.RAG_ENABLED) {
+  if (env.RAG_ENABLED && !ragInitStarted) {
+    ragInitStarted = true;
     initVectorStore().catch((err) => {
       console.warn('RAG vector store initialization failed:', err.message);
       console.warn('AI features will work without documentation context');

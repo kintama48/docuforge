@@ -60,6 +60,7 @@ export const templateVersions = sqliteTable(
     source: text('source').notNull(),
     files: text('files', { mode: 'json' }).$type<Record<string, string> | null>(),
     defaults: text('defaults', { mode: 'json' }).$type<Record<string, unknown> | null>(),
+    lowCodeSpec: text('low_code_spec', { mode: 'json' }).$type<Record<string, unknown> | null>(),
     commitMessage: text('commit_message'),
     createdAt: integer('created_at').notNull(),
   },

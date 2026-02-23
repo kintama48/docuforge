@@ -28,6 +28,7 @@ const envSchema = z.object({
   STRIPE_DEV_PRICE_ID: z.string().min(1),
   STRIPE_STARTER_PRICE_ID: z.string().min(1),
   STRIPE_PRO_PRICE_ID: z.string().min(1),
+  BILLING_PROVIDER: z.enum(['stripe', 'paddle', 'lemonsqueezy']).default('stripe'),
 
   // AI
   AI_ENABLED: z.coerce.boolean().default(true),
@@ -54,6 +55,16 @@ const envSchema = z.object({
   // Webhooks
   WEBHOOK_TIMEOUT_MS: z.coerce.number().default(5000),
   WEBHOOK_MAX_PER_USER: z.coerce.number().default(10),
+
+  // Render queue
+  REDIS_URL: z.string().url().default('redis://127.0.0.1:6379'),
+  RENDER_QUEUE_ENABLED: z.coerce.boolean().default(false),
+  RENDER_QUEUE_NAME: z.string().min(1).default('docuforge-render-jobs'),
+  RENDER_QUEUE_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  RENDER_QUEUE_ATTEMPTS: z.coerce.number().int().positive().default(3),
+  RENDER_QUEUE_BACKOFF_MS: z.coerce.number().int().nonnegative().default(750),
+  RENDER_QUEUE_RESULT_TTL_SECONDS: z.coerce.number().int().positive().default(3600),
+  RENDER_QUEUE_AUTO_START_WORKER: z.coerce.boolean().default(false),
 
   // RAG
   RAG_ENABLED: z.coerce.boolean().default(true),

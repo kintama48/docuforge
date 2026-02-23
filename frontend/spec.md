@@ -234,7 +234,7 @@ docuforge-console/
 | `tailwindcss` + `@tailwindcss/typography` | Styling |
 | `class-variance-authority` | Shadcn variant helper |
 | `clsx` + `tailwind-merge` | Class merging (`cn()`) |
-| `lucide-react` | Icons |
+| `@phosphor-icons/react` | Icons |
 | `zod` | Form validation schemas |
 | `react-hook-form` + `@hookform/resolvers` | Form handling |
 | `sonner` | Toast notifications |

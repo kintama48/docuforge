@@ -130,7 +130,7 @@ async function validateApiKey(rawKey: string): Promise<AuthContext> {
     .where(eq(schema.apiKeys.keyHash, matchedHash))
     .execute()
     .catch((err) => {
-      console.error('Failed to update API key metadata:', err);
+      console.error('Failed to update API key last_used_at:', err);
     });
 
   return { userId: keyRecord.userId, planTier: keyRecord.planTier as PlanTier };
