@@ -27,6 +27,8 @@ import type { TemplateVersionSummary } from "@/src/lib/api-types";
 import { useEditorStore } from "@/src/stores/editor";
 import { useI18n } from "@/src/lib/i18n";
 
+type EditorTab = "preview" | "data" | "diag" | "api" | "blocks";
+
 export default function EditorPage() {
   const { messages } = useI18n();
   const params = useParams<{ id: string }>();
@@ -71,9 +73,7 @@ export default function EditorPage() {
     previewRenderRef.current = previewRender.mutate;
   }, [previewRender.mutate]);
 
-  const [activeTab, setActiveTab] = useState<
-    "preview" | "data" | "diag" | "api" | "blocks"
-  >("preview");
+  const [activeTab, setActiveTab] = useState<EditorTab>("preview");
   const [showSidebar, setShowSidebar] = useState(true);
   const [autoRender, setAutoRender] = useState(true);
   const [showAi, setShowAi] = useState(false);
@@ -103,13 +103,11 @@ export default function EditorPage() {
     return () => clearTimeout(handle);
   }, [rateLimitUntil, setRateLimitUntil]);
 
-  useEffect(() => {
-    if (blockMode) {
-      setActiveTab((prev) => (prev === "blocks" ? prev : "blocks"));
-      return;
-    }
-    setActiveTab((prev) => (prev === "blocks" ? "preview" : prev));
-  }, [blockMode]);
+  const normalizeTab = (tab: EditorTab): EditorTab => {
+    if (!blockMode && tab === "blocks") return "preview";
+    return tab;
+  };
+  const effectiveActiveTab = normalizeTab(activeTab);
 
   useEffect(() => {
     if (!autoRender) return;
@@ -229,7 +227,10 @@ export default function EditorPage() {
     onToggleSidebar: () => setShowSidebar((prev) => !prev),
     onToggleAutoRender: () => setAutoRender((prev) => !prev),
     onToggleActiveTab: (newTab) => {
-      setActiveTab((prev) => (prev === newTab ? "preview" : newTab));
+      setActiveTab((prev) => {
+        const nextTab = normalizeTab(newTab);
+        return normalizeTab(prev) === nextTab ? "preview" : nextTab;
+      });
     },
     onOpenPublish: () => setShowPublish(true),
     onOpenAi: () => setShowAi((prev) => !prev),
@@ -294,13 +295,13 @@ export default function EditorPage() {
           }
           onOpenBlocks={() => {
             setShowRightPane(true);
-            setActiveTab("blocks");
+            setActiveTab(normalizeTab("blocks"));
           }}
         />
         <div className="min-h-0 flex-1">
           <EditorLayout
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
+            activeTab={effectiveActiveTab}
+            onTabChange={(tab) => setActiveTab(normalizeTab(tab))}
             showSidebar={showSidebar}
             showRightPane={showRightPane}
             onOpenAi={() => setShowAi((prev) => !prev)}

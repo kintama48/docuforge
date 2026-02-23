@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   cloneLowCodeSpec,
   createLowCodeBlock,
@@ -26,18 +26,15 @@ export function LowCodeBlocksPanel() {
   const setLowCodeSpec = useEditorStore((state) => state.setLowCodeSpec);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  useEffect(() => {
-    if (!lowCodeSpec) return;
-    const nextIndex = Math.max(0, Math.min(selectedIndex, lowCodeSpec.blocks.length - 1));
-    if (nextIndex !== selectedIndex) {
-      setSelectedIndex(nextIndex);
-    }
+  const safeSelectedIndex = useMemo(() => {
+    if (!lowCodeSpec) return 0;
+    return Math.max(0, Math.min(selectedIndex, lowCodeSpec.blocks.length - 1));
   }, [lowCodeSpec, selectedIndex]);
 
   const selectedBlock = useMemo(() => {
     if (!lowCodeSpec) return null;
-    return lowCodeSpec.blocks[selectedIndex] ?? null;
-  }, [lowCodeSpec, selectedIndex]);
+    return lowCodeSpec.blocks[safeSelectedIndex] ?? null;
+  }, [lowCodeSpec, safeSelectedIndex]);
 
   if (!lowCodeSpec) {
     return (
@@ -61,17 +58,17 @@ export function LowCodeBlocksPanel() {
   const removeSelected = () => {
     if (lowCodeSpec.blocks.length <= 1) return;
     apply((draft) => {
-      draft.blocks.splice(selectedIndex, 1);
+      draft.blocks.splice(safeSelectedIndex, 1);
     });
-    setSelectedIndex((current) => Math.max(0, current - 1));
+    setSelectedIndex((current) => Math.max(0, Math.min(current - 1, lowCodeSpec.blocks.length - 2)));
   };
 
   const moveSelected = (direction: -1 | 1) => {
-    const targetIndex = selectedIndex + direction;
+    const targetIndex = safeSelectedIndex + direction;
     if (targetIndex < 0 || targetIndex >= lowCodeSpec.blocks.length) return;
     apply((draft) => {
-      const current = draft.blocks[selectedIndex]!;
-      draft.blocks[selectedIndex] = draft.blocks[targetIndex]!;
+      const current = draft.blocks[safeSelectedIndex]!;
+      draft.blocks[safeSelectedIndex] = draft.blocks[targetIndex]!;
       draft.blocks[targetIndex] = current;
     });
     setSelectedIndex(targetIndex);
@@ -79,7 +76,7 @@ export function LowCodeBlocksPanel() {
 
   const updateSelected = (updater: (draft: LowCodeSpec["blocks"][number]) => void) => {
     apply((draft) => {
-      const block = draft.blocks[selectedIndex];
+      const block = draft.blocks[safeSelectedIndex];
       if (!block) return;
       updater(block);
     });
@@ -109,7 +106,7 @@ export function LowCodeBlocksPanel() {
             key={`${block.type}-${index}`}
             onClick={() => setSelectedIndex(index)}
             className={`rounded-md border px-2 py-2 text-left text-xs ${
-              selectedIndex === index
+              safeSelectedIndex === index
                 ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--ink)]"
                 : "border-[var(--line)] text-[var(--muted)] hover:border-[var(--line-hover)] hover:text-[var(--ink)]"
             }`}
@@ -122,14 +119,14 @@ export function LowCodeBlocksPanel() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => moveSelected(-1)}
-          disabled={selectedIndex === 0}
+          disabled={safeSelectedIndex === 0}
           className="rounded-md border border-[var(--line)] px-2 py-1 text-xs text-[var(--ink)] disabled:opacity-50"
         >
           Move up
         </button>
         <button
           onClick={() => moveSelected(1)}
-          disabled={selectedIndex === lowCodeSpec.blocks.length - 1}
+          disabled={safeSelectedIndex === lowCodeSpec.blocks.length - 1}
           className="rounded-md border border-[var(--line)] px-2 py-1 text-xs text-[var(--ink)] disabled:opacity-50"
         >
           Move down

@@ -213,6 +213,24 @@ export const samplePreviewRequests = {
     source: 'x'.repeat(200 * 1024), // 200KB, over 100KB limit
     data: {},
   },
+  lowCode: {
+    low_code_spec: {
+      version: 1,
+      blocks: [
+        {
+          type: 'header',
+          props: {
+            title: '{{invoice.title}}',
+          },
+        },
+      ],
+    },
+    data: {
+      invoice: {
+        title: 'Invoice #1001',
+      },
+    },
+  },
 };
 
 /**

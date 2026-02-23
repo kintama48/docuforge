@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import type * as Monaco from "monaco-editor";
 import { useEditorStore } from "@/src/stores/editor";
 
 export type FormatAction =
@@ -17,18 +18,10 @@ export type FormatAction =
   | "code"
   | "table";
 
-type MonacoRange = {
-  startLineNumber: number;
-  startColumn: number;
-  endLineNumber: number;
-  endColumn: number;
-};
-
-type MonacoPosition = { lineNumber: number; column: number };
+type MonacoRange = Monaco.IRange;
+type MonacoPosition = Monaco.IPosition;
 
 function getStartPosition(range: MonacoRange) {
-  const start = (range as any).getStartPosition?.();
-  if (start) return start as MonacoPosition;
   return { lineNumber: range.startLineNumber, column: range.startColumn };
 }
 
@@ -55,7 +48,7 @@ function positionAtOffset(
 export function useMonacoFormatting() {
   const editor = useEditorStore((state) => state.editorInstance);
   const monaco = useEditorStore((state) => state.monacoInstance);
-  const commandEditorRef = useRef<any>(null);
+  const commandEditorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
 
   const replaceRange = useCallback(
     (
@@ -96,9 +89,8 @@ export function useMonacoFormatting() {
 
       const text = model.getValueInRange(selection);
       const isEmpty =
-        (selection as any).isEmpty?.() ??
-        (selection.startLineNumber === selection.endLineNumber &&
-          selection.startColumn === selection.endColumn);
+        selection.startLineNumber === selection.endLineNumber &&
+        selection.startColumn === selection.endColumn;
 
       if (isEmpty) {
         const insertText = `${prefix}${suffix}`;

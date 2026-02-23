@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { Queue, Worker, type ConnectionOptions, type JobsOptions } from 'bullmq';
 import { env } from '../config/env';
+import { InternalError, ValidationError } from '../lib/errors';
 import { executeProductionRender } from './render-task';
 
 const RENDER_JOB_NAME = 'render';
@@ -45,6 +46,36 @@ export interface RenderJobStatusResponse {
 
 let queue: Queue | null = null;
 let worker: Worker | null = null;
+
+function assertNonEmptyString(field: string, value: string, maxLength = 256) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new ValidationError(`${field} is required`);
+  }
+  if (trimmed.length > maxLength) {
+    throw new ValidationError(`${field} exceeds maximum length (${maxLength})`);
+  }
+}
+
+function assertRenderQueuePayloadData(data: unknown) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new ValidationError('Render queue payload data must be a JSON object');
+  }
+}
+
+function decodeQueuedPdf(base64: string): Buffer {
+  if (!base64 || base64.trim().length === 0) {
+    throw new InternalError('Render result is unavailable');
+  }
+  if (!/^[A-Za-z0-9+/=\r\n]+$/.test(base64)) {
+    throw new InternalError('Render result is corrupted');
+  }
+  const pdf = Buffer.from(base64, 'base64');
+  if (pdf.length === 0) {
+    throw new InternalError('Render result is unavailable');
+  }
+  return pdf;
+}
 
 function createRedisConnection(): ConnectionOptions {
   const url = new URL(env.REDIS_URL);
@@ -110,6 +141,8 @@ export function shouldAutoStartRenderWorker() {
 }
 
 export function buildRenderJobId(userId: string, idempotencyKey: string): string {
+  assertNonEmptyString('userId', userId);
+  assertNonEmptyString('idempotencyKey', idempotencyKey);
   const hash = createHash('sha256')
     .update(`${userId}:${idempotencyKey}`)
     .digest('hex');
@@ -117,6 +150,7 @@ export function buildRenderJobId(userId: string, idempotencyKey: string): string
 }
 
 export async function enqueueRenderJob(input: EnqueueRenderJobInput): Promise<EnqueueRenderJobResult> {
+  assertRenderQueuePayloadData(input.data);
   const q = getQueue();
   const jobId = buildRenderJobId(input.userId, input.idempotencyKey);
 
@@ -206,9 +240,19 @@ export async function getRenderJobPdf(
     };
   }
 
+  let pdf: Buffer;
+  try {
+    pdf = decodeQueuedPdf(result.pdfBase64);
+  } catch (error) {
+    return {
+      status: 'failed',
+      error: error instanceof Error ? error.message : 'Render result is unavailable',
+    };
+  }
+
   return {
     status: 'completed',
-    pdf: Buffer.from(result.pdfBase64, 'base64'),
+    pdf,
     renderLogId: result.renderLogId,
     durationMs: result.durationMs,
   };
@@ -220,10 +264,16 @@ export function startRenderQueueWorker() {
   worker = new Worker(
     env.RENDER_QUEUE_NAME,
     async (job) => {
+      const userId = String(job.data.userId ?? '').trim();
+      const templateId = String(job.data.templateId ?? '').trim();
+      assertNonEmptyString('userId', userId);
+      assertNonEmptyString('templateId', templateId);
+      assertRenderQueuePayloadData(job.data.data);
+
       const result = await executeProductionRender({
-        userId: job.data.userId,
-        templateId: job.data.templateId,
-        data: job.data.data,
+        userId,
+        templateId,
+        data: job.data.data as Record<string, unknown>,
         // Safety check at execution time prevents queued races from over-consuming credits.
         checkCreditsBeforeRender: true,
       });

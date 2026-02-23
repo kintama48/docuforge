@@ -26,16 +26,16 @@ export function DocuMasterWidget({
   const [prompt, setPrompt] = useState("");
   const [lastSnapshot, setLastSnapshot] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showHint, setShowHint] = useState(false);
+  const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
-    setShowHint(true);
+    if (!showHint) return;
     const timer = setTimeout(() => {
       setShowHint(false);
     }, 10_000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [showHint]);
 
   const dismissHint = () => {
     setShowHint(false);

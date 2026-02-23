@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutGrid, Settings } from "lucide-react";
+import { FileText, GearSix, SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/src/lib/utils";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+  { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
   { href: "/editor", label: "Editor", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: GearSix },
 ];
 
 export function Sidebar() {
@@ -40,7 +40,7 @@ export function Sidebar() {
                   : "text-[var(--muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]"
               )}
             >
-              <Icon size={16} />
+              <Icon className="h-4 w-4" />
               {item.label}
             </Link>
           );

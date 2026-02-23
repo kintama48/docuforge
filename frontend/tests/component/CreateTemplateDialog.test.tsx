@@ -7,7 +7,7 @@ import { getGuidedTemplatePreset } from "@/src/lib/low-code";
 
 const createMutate = vi.fn();
 const forkMutate = vi.fn();
-let templatesData = {
+const templatesData = {
   templates: [
     {
       id: "tpl_official",

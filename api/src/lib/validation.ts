@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { zValidator as honoZValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
+import { lowCodeSpecSchema } from './low-code';
 
 /**
  * Custom zValidator that returns 422 for validation errors (per spec section 6.3)
@@ -54,27 +55,51 @@ export const renderSchema = renderBaseSchema.extend({
 
 export const renderSecureSchema = renderBaseSchema;
 
+const SOURCE_OR_LOW_CODE_REQUIRED = 'Either source or low_code_spec is required';
+
+const sourceFieldSchema = (maxBytes: number, message: string) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== 'string') return value;
+      return value.trim().length > 0 ? value : undefined;
+    },
+    z.string().max(maxBytes, message).optional()
+  );
+
+function hasSourceOrLowCode(input: { source?: string; low_code_spec?: unknown }) {
+  return typeof input.source === 'string' || input.low_code_spec !== undefined;
+}
+
 export const renderPreviewSchema = z.object({
-  source: z.string().min(1).max(102400, 'Source must be under 100KB'),
+  source: sourceFieldSchema(102400, 'Source must be under 100KB'),
+  low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   data: z.record(z.unknown()).optional().default({}),
+}).refine(hasSourceOrLowCode, {
+  message: SOURCE_OR_LOW_CODE_REQUIRED,
 });
 
 // Template schemas
 export const createTemplateSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
-  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
+  source: sourceFieldSchema(1048576, 'Source must be under 1MB'),
+  low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   defaults: z.record(z.unknown()).optional(),
   commit_message: z.string().max(200).optional(),
+}).refine(hasSourceOrLowCode, {
+  message: SOURCE_OR_LOW_CODE_REQUIRED,
 });
 
 export const publishVersionSchema = z.object({
-  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
+  source: sourceFieldSchema(1048576, 'Source must be under 1MB'),
+  low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   defaults: z.record(z.unknown()).optional(),
   commit_message: z.string().max(200).optional(),
+}).refine(hasSourceOrLowCode, {
+  message: SOURCE_OR_LOW_CODE_REQUIRED,
 });
 
 export const updateTemplateSchema = z

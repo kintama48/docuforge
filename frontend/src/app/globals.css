@@ -222,6 +222,13 @@ body {
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
   }
 
+  .phosphor-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: middle;
+    line-height: 1;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -238,6 +245,78 @@ body {
   .page-pad {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border: 1px solid transparent;
+    border-radius: 0.65rem;
+    padding: 0.72rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--accent), white 20%);
+    outline-offset: 2px;
+  }
+
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0.58rem 0.95rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff !important;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-strong);
+    border-color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background-color: var(--surface);
+    border-color: var(--line);
+    color: var(--ink) !important;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--line-hover);
+    background-color: var(--surface-2);
+  }
+
+  .btn-inverse {
+    background-color: var(--inverse-ink);
+    border-color: var(--inverse-ink);
+    color: var(--inverse-bg) !important;
+  }
+
+  .btn-inverse:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-inverse {
+    background-color: transparent;
+    border-color: var(--inverse-line);
+    color: var(--inverse-ink) !important;
+  }
+
+  .btn-outline-inverse:hover {
+    border-color: var(--inverse-ink);
+    background-color: var(--inverse-surface);
   }
 
   .page-background {

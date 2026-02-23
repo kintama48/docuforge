@@ -49,11 +49,13 @@ CREATE TABLE IF NOT EXISTS template_versions (
   source TEXT NOT NULL,
   files TEXT,
   defaults TEXT,
+  low_code_spec TEXT,
   commit_message TEXT,
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_template_versions_template ON template_versions(template_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_template_versions_unique ON template_versions(template_id, version_number);
+ALTER TABLE template_versions ADD COLUMN low_code_spec TEXT;
 
 -- Assets table
 CREATE TABLE IF NOT EXISTS assets (
@@ -136,7 +138,15 @@ export async function runMigrations() {
     .filter((s) => s.length > 0);
 
   for (const statement of statements) {
-    await client.execute(statement);
+    try {
+      await client.execute(statement);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('duplicate column name: low_code_spec')) {
+        continue;
+      }
+      throw error;
+    }
   }
 
   console.log('Migrations completed successfully');
