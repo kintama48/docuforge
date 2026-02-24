@@ -60,6 +60,10 @@ export default async function DocsPage() {
   const securityCapabilities = getSecurityCapabilities();
   const mcpTools = getMcpTools();
   const mcpLinks = getMcpLinks();
+  const productionBaseUrl = content.baseUrlsProd
+    .replace(/^prod\s*:?\s*/i, "")
+    .trim();
+  const overviewCards = content.overview.cards.slice(1);
   const extraNav = [
     { id: "security", label: securityMcpCopy.securityTitle },
     { id: "mcp", label: securityMcpCopy.mcpTitle },
@@ -77,7 +81,7 @@ export default async function DocsPage() {
           <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">
             {content.title}
           </h1>
-          <p className="mt-4 text-pretty text-base text-[var(--muted)]">
+          <p className="font-script mt-4 text-pretty text-base leading-relaxed text-[var(--muted)]">
             {content.subtitle}
           </p>
         </div>
@@ -113,8 +117,7 @@ export default async function DocsPage() {
                 <p className="font-semibold text-[var(--ink)]">
                   {content.baseUrlsTitle}
                 </p>
-                <p className="mt-2">{content.baseUrlsDev}</p>
-                <p className="mt-1">{content.baseUrlsProd}</p>
+                <p className="mt-2">{productionBaseUrl}</p>
               </div>
             </div>
           </aside>
@@ -128,7 +131,7 @@ export default async function DocsPage() {
                 {content.overview.body}
               </p>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {content.overview.cards.map((item) => (
+                {overviewCards.map((item) => (
                   <div
                     key={item.title}
                     className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
@@ -399,13 +402,13 @@ Authorization: Bearer <token>`}</CodeBlock>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={consoleUrl}
-                    className="inline-flex items-center justify-center rounded-md bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)]"
+                    className="btn btn-primary"
                   >
                     {content.cta.primary}
                   </Link>
                   <Link
                     href={localePath("/")}
-                    className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--ink)]"
+                    className="btn btn-secondary"
                   >
                     {content.cta.secondary}
                   </Link>

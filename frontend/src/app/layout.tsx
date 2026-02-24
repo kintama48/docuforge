@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
+  Exo,
   IBM_Plex_Mono,
-  IBM_Plex_Sans,
-  Space_Grotesk,
+  Lobster_Two,
+  Orbitron,
 } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
@@ -11,22 +12,29 @@ import { locales, normalizeLocale, type Locale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const plexSans = IBM_Plex_Sans({
+const exo = Exo({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const plexMono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+});
+
+const orbitron = Orbitron({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const lobsterTwo = Lobster_Two({
+  variable: "--font-script",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
 });
 
 const marketingUrl =
@@ -167,7 +175,7 @@ export default async function RootLayout({
         <meta name="darkreader-lock" />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
+        className={`${exo.variable} ${plexMono.variable} ${orbitron.variable} ${lobsterTwo.variable} antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Providers initialLocale={initialLocale}>{children}</Providers>

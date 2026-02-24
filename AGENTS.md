@@ -69,6 +69,7 @@
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 - **Proof Over Hope**: Enforce correctness with assertions; use tests where assertions can't reach.
 - **Icon Consistency**: Use Phosphor icons as the default icon library on product surfaces unless explicitly overridden.
+- **Session Security**: Keep auth flows persistent and secure: expose logout in authenticated surfaces, sanitize redirect targets, and verify security headers/caching behavior after auth changes.
 
 # Communication Efficiency
 - **Conserve Tokens**: Use only the tokens necessary to complete the task.

@@ -4,6 +4,8 @@
  * FE-C1: useEffect must not include previewRender in dependencies (infinite loop risk)
  * FE-C2: localStorage token storage must be documented
  * FE-C3: Monaco editor types must not use 'any'
+ * FE-C4: redirect params must be sanitized to internal paths
+ * FE-C5: authenticated shell must expose an explicit logout action
  */
 import { describe, test, expect } from 'vitest';
 import * as fs from 'fs';
@@ -74,6 +76,28 @@ describe('Frontend Security Regressions', () => {
 
       // Should have typed refs
       expect(source).toContain('useRef<MonacoEditor');
+    });
+  });
+
+  describe('FE-C4: redirect sanitization', () => {
+    test('redirect sanitizer rejects external redirects', () => {
+      const redirectPath = path.join(srcPath, 'lib/redirect.ts');
+      const source = fs.readFileSync(redirectPath, 'utf-8');
+
+      expect(source).toContain('sanitizeAppRedirect');
+      expect(source).toContain("startsWith(\"//\")");
+      expect(source).toContain("includes(\"\\\\\")");
+    });
+  });
+
+  describe('FE-C5: explicit logout control', () => {
+    test('TopBar includes logout action in authenticated shell', () => {
+      const topBarPath = path.join(srcPath, 'components/layout/TopBar.tsx');
+      const source = fs.readFileSync(topBarPath, 'utf-8');
+
+      expect(source).toContain('Log out');
+      expect(source).toContain('useAuthStore');
+      expect(source).toContain('logout');
     });
   });
 

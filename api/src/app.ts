@@ -45,18 +45,44 @@ export function createApp() {
     cors({
       origin: allowedOrigins,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Idempotency-Key', 'X-Idempotency-Key'],
-      credentials: true,
+      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Preview-Session', 'Idempotency-Key', 'X-Idempotency-Key'],
+      credentials: false,
       maxAge: 86400,
     })
   );
   app.use('*', compress());
   app.use('*', requestLogger);
 
-  // Vary header for correct caching of authenticated + compressed responses
   app.use('*', async (c, next) => {
     await next();
-    c.header('Vary', 'Authorization, X-API-Key, Accept-Encoding');
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('Referrer-Policy', 'no-referrer');
+    c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+    if (env.NODE_ENV === 'production') {
+      const forwardedProto = c.req.header('x-forwarded-proto');
+      const protocol = forwardedProto ?? new URL(c.req.url).protocol.replace(':', '');
+      if (protocol === 'https') {
+        c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+      }
+    }
+  });
+
+  // Vary header for correct caching of authenticated + compressed responses.
+  // Preserve any existing values from CORS middleware (e.g. Origin).
+  app.use('*', async (c, next) => {
+    await next();
+    const existing = c.res.headers.get('Vary');
+    const values = new Set(
+      (existing ? existing.split(',') : [])
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    );
+    values.add('Authorization');
+    values.add('X-API-Key');
+    values.add('Accept-Encoding');
+    c.header('Vary', Array.from(values).join(', '));
   });
 
   // Error handler

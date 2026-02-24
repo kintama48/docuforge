@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --font-body: "IBM Plex Sans", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
+  --font-body: "Exo", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
-  --font-display: "Space Grotesk", "IBM Plex Sans", "Noto Sans",
-    "Noto Sans Arabic", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", sans-serif;
+  --font-display: "Orbitron", "Exo", "Noto Sans", "Noto Sans Arabic",
+    "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    system-ui, sans-serif;
+  --font-heading: "Orbitron", "Exo", "Noto Sans", "Noto Sans Arabic",
+    "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    system-ui, sans-serif;
+  --font-script: "Lobster Two", "Exo", "Noto Sans", cursive;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   --bg: #f6f4f0;
   --surface: #ffffff;
@@ -212,6 +216,24 @@ body {
 
   .font-display {
     font-family: var(--font-display), var(--font-body), sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-script {
+    font-family: var(--font-script), var(--font-body), cursive;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  h1 {
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+    letter-spacing: -0.02em;
   }
 
   .font-body {

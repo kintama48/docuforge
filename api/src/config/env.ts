@@ -77,6 +77,16 @@ const envSchema = z.object({
   STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
   PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
+
+  // Public preview hardening
+  PUBLIC_PREVIEW_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(1800),
+  PUBLIC_PREVIEW_MAX_RENDERS_PER_SESSION: z.coerce.number().int().positive().default(30),
+  PUBLIC_PREVIEW_MAX_SESSIONS: z.coerce.number().int().positive().default(10000),
+  PUBLIC_PREVIEW_IP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(60),
+  PUBLIC_PREVIEW_SESSION_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(12),
+  PUBLIC_PREVIEW_SESSION_CREATE_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(20),
+  PUBLIC_PREVIEW_ALLOWED_ORIGINS: z.string().optional(),
+  PUBLIC_PREVIEW_WATERMARK_LABEL: z.string().min(4).max(120).default('DOCUFORGE PUBLIC PREVIEW · NOT FOR PRODUCTION'),
 });
 
 export type Env = z.infer<typeof envSchema>;

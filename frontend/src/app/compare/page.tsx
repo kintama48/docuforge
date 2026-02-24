@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { normalizeLocale } from "@/src/lib/i18n-config";
-import { ContentCollectionPage } from "@/src/app/components/content-hub-page";
+import { SiteFooter } from "@/src/app/components/site-footer";
+import { SiteHeader } from "@/src/app/components/site-header";
 import {
   getCollectionMeta,
-  getContentHubCopy,
   listContent,
 } from "@/src/lib/content-hub";
+import { CompareShowcase } from "@/src/app/compare/compare-showcase";
 
 export async function generateMetadata(): Promise<Metadata> {
   const headerList = await headers();
@@ -33,18 +34,12 @@ export default async function CompareIndexPage() {
   const headerList = await headers();
   const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
   const docs = listContent("compare", locale);
-  const meta = getCollectionMeta("compare", locale);
-  const copy = getContentHubCopy(locale);
 
   return (
-    <ContentCollectionPage
-      locale={locale}
-      collection="compare"
-      title={meta.title}
-      label={meta.label}
-      description={meta.description}
-      docs={docs}
-      readMoreLabel={copy.readMore}
-    />
+    <div className="min-h-screen page-background">
+      <SiteHeader />
+      <CompareShowcase locale={locale} docs={docs} />
+      <SiteFooter />
+    </div>
   );
 }

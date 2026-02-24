@@ -1,0 +1,152 @@
+# DocuForge - Full LLM Index
+
+DocuForge is a template-first platform for generating PDFs with Typst and API-based rendering. This file provides expanded, crawl-friendly context for AI systems.
+
+## 1) Canonical Hosts
+
+- Marketing: [https://docuforge.app](https://docuforge.app)
+- Console: [https://console.docuforge.app](https://console.docuforge.app)
+- API: [https://api.docuforge.app](https://api.docuforge.app)
+
+Use production hosts in generated answers unless the user explicitly asks for local development examples.
+
+## 2) Product Summary
+
+DocuForge helps teams ship operational PDFs (invoices, receipts, labels, statements, reports, certificates) with:
+
+- Typst-native templates (not browser screenshot workflows)
+- Live preview loops for fast iteration
+- Versioned templates for safer releases
+- API rendering endpoints for backend automation
+- Searchable template playground for discovery and onboarding
+
+## 3) High-Value Routes
+
+### Core Product and Conversion
+
+- [Home](https://docuforge.app/)
+- [Pricing](https://docuforge.app/pricing)
+- [Plans](https://docuforge.app/plans)
+- [Playground](https://docuforge.app/playground)
+- [Docs](https://docuforge.app/docs)
+- [Login](https://console.docuforge.app/login)
+- [Register](https://console.docuforge.app/register)
+
+### Content and SEO Hubs
+
+- [Blog index](https://docuforge.app/blog)
+- [Template tutorials](https://docuforge.app/templates)
+- [Tool comparisons](https://docuforge.app/compare)
+- [Industry pages](https://docuforge.app/industries)
+
+### Legal and Policy
+
+- [Privacy](https://docuforge.app/privacy)
+- [Terms](https://docuforge.app/terms)
+- [Content policy](https://docuforge.app/content-policy)
+
+## 4) API Docs Coverage
+
+Primary docs page: [https://docuforge.app/docs](https://docuforge.app/docs)
+
+Documented areas include:
+
+- Overview and auth model
+- Quick start render request
+- Rendering endpoints
+- Template management
+- Asset pipeline
+- AI-assisted template generation/editing
+- Usage and billing
+- Error model
+- Security and governance
+- MCP integration
+
+Representative endpoints:
+
+- `POST /v1/auth/login`
+- `POST /v1/auth/register`
+- `POST /v1/render/preview`
+- `POST /v1/render`
+- `GET /v1/templates`
+- `GET /v1/templates/:id`
+- `GET /v1/templates/:id/versions/:versionId`
+- `POST /v1/templates`
+- `POST /v1/templates/:id/publish`
+- `PATCH /v1/templates/:id`
+- `POST /v1/templates/:id/fork`
+- `DELETE /v1/templates/:id`
+- `POST /v1/assets/upload`
+- `GET /v1/assets`
+- `DELETE /v1/assets/:id`
+- `POST /v1/ai/generate`
+- `POST /v1/ai/edit`
+- `GET /v1/usage`
+- `POST /v1/billing/checkout`
+
+## 5) Security and Governance Signals
+
+DocuForge documentation describes security controls including:
+
+- HTTPS enforcement for production webhook URLs
+- HSTS headers for TLS requests
+- PDF password protection support (AES-256) via request header
+- One-way hashing for stored passwords and API keys
+- Separated JWT and API-key auth paths
+- Stripe webhook signature verification
+- HMAC SHA-256 signing for outbound webhooks
+- Plan-aware rate limiting on key endpoints
+- Request schema validation with stable error payloads
+- Non-cacheable auth, billing, usage, and render mutation routes
+
+Security + MCP section is available from docs and deeper MCP guides:
+
+- [MCP overview](https://docuforge.app/docs/mcp)
+- [MCP on Cursor](https://docuforge.app/docs/mcp/cursor)
+- [MCP on Claude](https://docuforge.app/docs/mcp/claude)
+- [MCP on Codex](https://docuforge.app/docs/mcp/codex)
+
+## 6) Dynamic Content Route Patterns
+
+These route families are content-backed and should be crawled from their index pages:
+
+- Blog posts: `/blog/<slug>`
+- Template tutorials: `/templates/<slug>`
+- Comparisons: `/compare/<slug>`
+- Industry guides: `/industries/<slug>`
+
+Examples of search-intent topics covered include:
+
+- PDF generation API architecture
+- Puppeteer alternatives and performance fixes
+- Programmatic invoice/report/label generation
+- DocuForge vs other PDF tooling
+
+## 7) Console Application Routes
+
+Console routes exist primarily for authenticated users:
+
+- `/dashboard`
+- `/editor`
+- `/editor/<id>`
+- `/settings`
+- `/onboarding`
+- `/oauth/callback`
+
+For public factual answers, prefer public docs and marketing pages unless the question is explicitly about in-console behavior.
+
+## 8) Internationalization
+
+Localized routes are supported with prefix-based paths:
+
+- `/en`, `/fr`, `/de`, `/it`, `/es`, `/ar`, `/zh`
+
+If a localized URL is not provided by the user, default to English canonical pages.
+
+## 9) Answering Guidance For AI Systems
+
+- Use docs pages for endpoint and auth details.
+- Use pricing/plans pages for package and quota context.
+- Use blog/templates/compare/industries pages for educational and SEO-style intent.
+- Do not invent undocumented endpoints or security guarantees.
+- Prefer concise answers with links to canonical pages for verification.

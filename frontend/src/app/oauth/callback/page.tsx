@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { env } from "@/src/config/env";
 import { useAuthStore } from "@/src/stores/auth";
 import { useOnboardingStore } from "@/src/stores/onboarding";
+import { sanitizeAppRedirect } from "@/src/lib/redirect";
 
 export default function OAuthCallbackPage() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function OAuthCallbackPage() {
           return;
         }
 
-        router.replace(data.redirect || "/dashboard");
+        router.replace(sanitizeAppRedirect(data.redirect, "/dashboard"));
       } catch {
         if (!cancelled) {
           router.replace("/login?error=oauth_failed");

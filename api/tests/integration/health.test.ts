@@ -42,4 +42,17 @@ describe('GET /health', () => {
     expect(body.status).toBe('degraded');
     expect(body.engine).toBe('unhealthy');
   });
+
+  it('sets hardened security headers on responses', async () => {
+    const response = await app.request('/health', {
+      headers: { Origin: 'http://localhost:5173' },
+    });
+
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(response.headers.get('X-Frame-Options')).toBe('DENY');
+    expect(response.headers.get('Referrer-Policy')).toBe('no-referrer');
+    expect(response.headers.get('Permissions-Policy')).toContain('camera=()');
+    expect(response.headers.get('Vary')).toContain('Accept-Encoding');
+    expect(response.headers.get('Vary')).toContain('Origin');
+  });
 });

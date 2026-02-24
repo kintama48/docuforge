@@ -11,10 +11,21 @@ import { compileLowCodeSpec } from '../lib/low-code';
 import { renderPdf } from '../services/engine';
 import { checkCredits, logRender } from '../services/usage';
 import { resolveUserAssets } from '../services/asset';
-import { NotFoundError, LimitExceededError, ValidationError } from '../lib/errors';
+import { NotFoundError, LimitExceededError, UnauthorizedError, ValidationError } from '../lib/errors';
 import { env } from '../config/env';
 import { dispatchWebhookEvent } from '../services/webhook';
 import type { EnginePayload } from '../types';
+import {
+  assertPublicPreviewSourceSize,
+  assertTrustedPublicPreviewOrigin,
+  consumePublicPreviewSessionQuota,
+  createPublicPreviewSession,
+  enforcePublicPreviewIpRateLimit,
+  enforcePublicPreviewSessionCreationRateLimit,
+  enforcePublicPreviewSessionRateLimit,
+  getPublicPreviewClientFingerprint,
+  getPublicPreviewSessionOrThrow,
+} from '../services/public-preview';
 
 const render = new Hono();
 type PasswordProtectionMode = 'none' | 'client_blind' | 'server_ephemeral_legacy';
@@ -55,6 +66,27 @@ function computeTemplateFingerprint(
   }
 
   return hasher.digest('hex');
+}
+
+function applyPublicPreviewWatermark(source: string): string {
+  const label = env.PUBLIC_PREVIEW_WATERMARK_LABEL.replace(/"/g, '\\"');
+  const snippet = `#let __docuforge_public_preview_label = "${label}"
+#show: doc => {
+  set page(
+    footer: context [
+      #align(center)[
+        #text(size: 8pt, fill: rgb("#9ca3af"))[
+          #__docuforge_public_preview_label
+        ]
+      ]
+    ]
+  )
+  doc
+}`;
+
+  const merged = `${snippet}\n\n${source}`;
+  assertPublicPreviewSourceSize(merged);
+  return merged;
 }
 
 // POST /v1/render - Production render with API key
@@ -324,6 +356,89 @@ render.post('/secure', apiKeyAuth, renderRateLimit, noCache, zValidator('json', 
   c.header('X-Pdf-Encrypted', 'aes256');
   c.header('X-Pdf-Protection-Mode', 'server_ephemeral_legacy');
   c.header('X-Pdf-Protection-Legacy', 'true');
+
+  return c.body(result.pdf);
+});
+
+// POST /v1/render/public/session - Issue a short-lived public preview session
+render.post('/public/session', noCache, async (c) => {
+  assertTrustedPublicPreviewOrigin(c);
+  const client = getPublicPreviewClientFingerprint(c);
+  const rate = enforcePublicPreviewSessionCreationRateLimit(client.ip);
+  const session = createPublicPreviewSession(client);
+
+  c.header('X-RateLimit-Limit', String(rate.limit));
+  c.header('X-RateLimit-Remaining', String(rate.remaining));
+  c.header('X-RateLimit-Reset', String(Math.ceil(rate.resetAt / 1000)));
+
+  return c.json(
+    {
+      session_id: session.sessionId,
+      expires_at: session.expiresAt,
+      remaining_renders: session.remainingRenders,
+      watermark: env.PUBLIC_PREVIEW_WATERMARK_LABEL,
+    },
+    201
+  );
+});
+
+// POST /v1/render/public/preview - Public preview render (session protected, watermarked)
+render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema), async (c) => {
+  assertTrustedPublicPreviewOrigin(c);
+
+  const sessionId = c.req.header('X-Preview-Session');
+  if (!sessionId) {
+    throw new UnauthorizedError('X-Preview-Session header is required');
+  }
+
+  const client = getPublicPreviewClientFingerprint(c);
+  const session = getPublicPreviewSessionOrThrow(sessionId, client);
+  const ipRate = enforcePublicPreviewIpRateLimit(client.ip);
+  const sessionRate = enforcePublicPreviewSessionRateLimit(session.sessionId);
+  const quota = consumePublicPreviewSessionQuota(session.sessionId);
+
+  const { source, low_code_spec, files, data } = c.req.valid('json');
+  const previewSource = source ?? (low_code_spec ? compileLowCodeSpec(low_code_spec) : null);
+  if (!previewSource) {
+    throw new ValidationError('Either source or low_code_spec is required');
+  }
+
+  const watermarkedSource = applyPublicPreviewWatermark(previewSource);
+
+  const payload: EnginePayload = {
+    template: {
+      main: 'main.typ',
+      files: {
+        'main.typ': watermarkedSource,
+        ...(files || {}),
+      },
+    },
+    data: data || {},
+    assets: [],
+    options: {
+      timeout_ms: env.ENGINE_TIMEOUT_MS,
+      cache: {
+        cacheable: false,
+      },
+    },
+  };
+
+  const result = await renderPdf(payload);
+  const renderId = `pub_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+  c.header('Content-Type', 'application/pdf');
+  c.header('Content-Disposition', 'inline; filename="preview.public.pdf"');
+  c.header('X-Render-Duration', String(result.durationMs));
+  c.header('X-Render-Id', renderId);
+  c.header('X-Public-Preview', 'true');
+  c.header('X-Pdf-Watermarked', 'true');
+  c.header('X-Preview-Watermark-Label', env.PUBLIC_PREVIEW_WATERMARK_LABEL);
+  c.header('X-Preview-Session-Expires-At', quota.expiresAt);
+  c.header('X-Preview-Session-Remaining-Renders', String(quota.remainingRenders));
+  c.header('X-RateLimit-Limit', String(sessionRate.limit));
+  c.header('X-RateLimit-Remaining', String(sessionRate.remaining));
+  c.header('X-RateLimit-Reset', String(Math.ceil(sessionRate.resetAt / 1000)));
+  c.header('X-Preview-IP-RateLimit-Remaining', String(ipRate.remaining));
 
   return c.body(result.pdf);
 });

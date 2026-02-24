@@ -91,4 +91,27 @@ describe('POST /v1/auth/login', () => {
     // Same message for security - do not reveal whether email exists
     expect(body.message).toBe('Invalid email or password');
   });
+
+  it('rejects login from untrusted browser origin', async () => {
+    await createTestUser(ctx.db, {
+      email: sampleUsers.valid.email,
+      password: sampleUsers.valid.password,
+    });
+
+    const response = await app.request('/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://evil.example',
+      },
+      body: JSON.stringify({
+        email: sampleUsers.valid.email,
+        password: sampleUsers.valid.password,
+      }),
+    });
+
+    expect(response.status).toBe(403);
+    const body = await response.json();
+    expect(body.error).toBe('forbidden');
+  });
 });

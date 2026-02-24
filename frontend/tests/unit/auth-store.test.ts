@@ -1,5 +1,15 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { useAuthStore } from "@/src/stores/auth";
+import {
+  getJwtExpiryMs,
+  isJwtExpired,
+  useAuthStore,
+} from "@/src/stores/auth";
+
+function buildUnsignedJwt(expUnix: number) {
+  const encode = (value: object) =>
+    btoa(JSON.stringify(value)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return `${encode({ alg: "none", typ: "JWT" })}.${encode({ exp: expUnix })}.signature`;
+}
 
 describe("auth store", () => {
   beforeEach(() => {
@@ -60,5 +70,21 @@ describe("auth store", () => {
     expect(useAuthStore.getState().hasHydrated).toBe(false);
     useAuthStore.getState().setHasHydrated(true);
     expect(useAuthStore.getState().hasHydrated).toBe(true);
+  });
+
+  it("treats expired JWTs as unauthenticated", () => {
+    const expired = buildUnsignedJwt(Math.floor(Date.now() / 1000) - 60);
+
+    expect(getJwtExpiryMs(expired)).not.toBeNull();
+    expect(isJwtExpired(expired)).toBe(true);
+
+    useAuthStore.getState().login(expired, {
+      id: "usr",
+      email: "test@docuforge.dev",
+      plan: "free",
+    });
+
+    expect(useAuthStore.getState().token).toBeNull();
+    expect(useAuthStore.getState().isAuthenticated()).toBe(false);
   });
 });

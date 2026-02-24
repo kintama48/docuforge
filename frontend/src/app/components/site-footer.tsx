@@ -20,7 +20,7 @@ export function SiteFooter() {
             <div className="flex items-center gap-3">
               <BrandLogo className="h-10 w-10 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-1.5" />
               <div className="flex flex-col leading-none">
-                <span className="font-display text-[1.3rem] tracking-tight text-[var(--ink)]">
+                <span className="text-[1.15rem] font-semibold tracking-tight text-[var(--ink)]">
                   DocuForge
                 </span>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">

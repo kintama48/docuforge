@@ -22,9 +22,7 @@ async function parseError(response: Response): Promise<ApiError> {
 function handleStatus(response: Response, error: ApiError) {
   if (response.status === 401) {
     useAuthStore.getState().logout();
-    if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
-      window.location.href = "/login";
-    }
+    return;
   }
   if (response.status === 402) {
     toast.error("Upgrade required to continue.");
