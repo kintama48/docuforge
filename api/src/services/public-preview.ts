@@ -279,10 +279,12 @@ export function assertPublicPreviewSourceSize(source: string): void {
   }
 }
 
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   const now = nowMs();
   purgeExpiredSessions(now);
   purgeExpiredRateEntries(ipLimiter, now);
   purgeExpiredRateEntries(sessionLimiter, now);
   purgeExpiredRateEntries(sessionCreationLimiter, now);
 }, 60_000);
+
+cleanupInterval.unref?.();

@@ -402,6 +402,9 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
   if (!previewSource) {
     throw new ValidationError('Either source or low_code_spec is required');
   }
+  if (files && Object.keys(files).length > 0) {
+    throw new ValidationError('Public preview does not support auxiliary template files');
+  }
 
   const watermarkedSource = applyPublicPreviewWatermark(previewSource);
 
@@ -410,7 +413,6 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
       main: 'main.typ',
       files: {
         'main.typ': watermarkedSource,
-        ...(files || {}),
       },
     },
     data: data || {},

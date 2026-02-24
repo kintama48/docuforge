@@ -147,4 +147,37 @@ describe('POST /v1/render/public/*', () => {
     expect(lastRequest?.body?.template?.files?.['main.typ']).toContain('DOCUFORGE PUBLIC PREVIEW');
     expect(lastRequest?.body?.template?.files?.['main.typ']).toContain('sys.inputs');
   });
+
+  it('rejects auxiliary files on public preview endpoint', async () => {
+    const sessionResponse = await app.request('/v1/render/public/session', {
+      method: 'POST',
+      headers: {
+        Origin: 'http://localhost:5173',
+        'CF-Connecting-IP': '203.0.113.7',
+        'User-Agent': 'playground-test-agent',
+      },
+    });
+    const sessionPayload = await sessionResponse.json();
+
+    const response = await app.request('/v1/render/public/preview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'http://localhost:5173',
+        'CF-Connecting-IP': '203.0.113.7',
+        'User-Agent': 'playground-test-agent',
+        'X-Preview-Session': sessionPayload.session_id,
+      },
+      body: JSON.stringify({
+        ...samplePreviewRequests.valid,
+        files: {
+          'helper.typ': '#let x = 1',
+        },
+      }),
+    });
+
+    expect(response.status).toBe(422);
+    const body = await response.json();
+    expect(body.error).toBe('validation_error');
+  });
 });
