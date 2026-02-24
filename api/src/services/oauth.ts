@@ -7,22 +7,63 @@ export type OAuthProvider = 'google' | 'microsoft' | 'github';
 // 2. State is not shared across multiple instances (sticky sessions required)
 // For multi-instance deployments, replace with Redis or database-backed storage.
 const STATE_TTL_MS = 10 * 60 * 1000;
+const STATE_CLEANUP_INTERVAL_MS = 60 * 1000;
+const MAX_STATE_STORE_SIZE = 2048;
 const stateStore = new Map<
   string,
   { provider: OAuthProvider; redirect: string | null; createdAt: number }
 >();
 
+const SAFE_REDIRECT_BASE = 'https://docuforge.local';
+
+export function sanitizeRedirectPath(redirect?: string | null): string | null {
+  if (!redirect) return null;
+  const normalized = redirect.trim();
+  if (!normalized || !normalized.startsWith('/')) return null;
+  if (normalized.startsWith('//') || normalized.includes('\\')) return null;
+
+  try {
+    const parsed = new URL(normalized, SAFE_REDIRECT_BASE);
+    if (parsed.origin !== SAFE_REDIRECT_BASE) return null;
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+function pruneExpiredStates(now = Date.now()) {
+  for (const [key, value] of stateStore.entries()) {
+    if (now - value.createdAt > STATE_TTL_MS) {
+      stateStore.delete(key);
+    }
+  }
+}
+
+function enforceStateStoreLimit() {
+  while (stateStore.size >= MAX_STATE_STORE_SIZE) {
+    const oldestKey = stateStore.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    stateStore.delete(oldestKey);
+  }
+}
+
 export function createOAuthState(provider: OAuthProvider, redirect?: string | null) {
+  const now = Date.now();
+  pruneExpiredStates(now);
+  enforceStateStoreLimit();
+
   const state = crypto.randomUUID();
+  const safeRedirect = sanitizeRedirectPath(redirect);
   stateStore.set(state, {
     provider,
-    redirect: redirect || null,
-    createdAt: Date.now(),
+    redirect: safeRedirect,
+    createdAt: now,
   });
   return state;
 }
 
 export function consumeOAuthState(state: string) {
+  pruneExpiredStates();
   const record = stateStore.get(state);
   if (!record) return null;
   stateStore.delete(state);
@@ -31,6 +72,11 @@ export function consumeOAuthState(state: string) {
   }
   return record;
 }
+
+const cleanupHandle = setInterval(() => {
+  pruneExpiredStates();
+}, STATE_CLEANUP_INTERVAL_MS);
+cleanupHandle.unref?.();
 
 function getRedirectUri(provider: OAuthProvider) {
   return `${env.API_URL}/v1/auth/oauth/${provider}/callback`;

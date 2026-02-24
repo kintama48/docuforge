@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
@@ -15,6 +16,7 @@ import {
   createOAuthState,
   exchangeOAuthCode,
   fetchOAuthProfile,
+  sanitizeRedirectPath,
   type OAuthProvider,
 } from '../services/oauth';
 import { createExchangeCode, consumeExchangeCode } from '../services/oauth-exchange';
@@ -25,13 +27,28 @@ const auth = new Hono();
 auth.use('*', noCache);
 
 const oauthProviders: OAuthProvider[] = ['google', 'microsoft', 'github'];
+const trustedBrowserOrigins = new Set([new URL(env.APP_URL).origin]);
+if (env.NODE_ENV === 'development') {
+  trustedBrowserOrigins.add('http://localhost:5173');
+  trustedBrowserOrigins.add('http://127.0.0.1:5173');
+  trustedBrowserOrigins.add('http://localhost:3000');
+}
 
 function isValidProvider(provider: string): provider is OAuthProvider {
   return oauthProviders.includes(provider as OAuthProvider);
 }
 
+function assertTrustedBrowserOrigin(c: Context) {
+  const origin = c.req.header('Origin');
+  if (!origin) return;
+  if (!trustedBrowserOrigins.has(origin)) {
+    throw new ForbiddenError('Cross-origin auth request blocked');
+  }
+}
+
 // POST /v1/auth/register
 auth.post('/register', zValidator('json', registerSchema), async (c) => {
+  assertTrustedBrowserOrigin(c);
   const { email, password } = c.req.valid('json');
   const db = getDb();
   const now = Date.now();
@@ -98,6 +115,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
 
 // POST /v1/auth/login
 auth.post('/login', zValidator('json', loginSchema), async (c) => {
+  assertTrustedBrowserOrigin(c);
   const { email, password } = c.req.valid('json');
   const db = getDb();
 
@@ -258,6 +276,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
 
 // POST /v1/auth/oauth/exchange - Exchange OAuth code for credentials
 auth.post('/oauth/exchange', async (c) => {
+  assertTrustedBrowserOrigin(c);
   const body = await c.req.json().catch(() => ({}));
   const code = body.code;
 
@@ -283,8 +302,9 @@ auth.post('/oauth/exchange', async (c) => {
     response.api_key = data.apiKey;
   }
 
-  if (data.redirect) {
-    response.redirect = data.redirect;
+  const safeRedirect = sanitizeRedirectPath(data.redirect);
+  if (safeRedirect) {
+    response.redirect = safeRedirect;
   }
 
   return c.json(response);

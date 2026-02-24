@@ -133,4 +133,19 @@ describe('POST /v1/auth/register', () => {
     const body = await response.json();
     expect(body.user.plan).toBe('free');
   });
+
+  it('rejects register from untrusted browser origin', async () => {
+    const response = await app.request('/v1/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://evil.example',
+      },
+      body: JSON.stringify(sampleUsers.valid),
+    });
+
+    expect(response.status).toBe(403);
+    const body = await response.json();
+    expect(body.error).toBe('forbidden');
+  });
 });

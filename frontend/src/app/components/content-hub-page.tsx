@@ -221,25 +221,26 @@ export function ContentCollectionPage({
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {docs.map((doc) => (
-            <article
+            <Link
               key={`${doc.collection}:${doc.slug}`}
-              className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6"
+              href={withLocale(`/${collection}/${doc.slug}`, locale)}
+              className="group block rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition duration-300 hover:-translate-y-1 hover:border-[var(--line-hover)] hover:shadow-[var(--shadow)]"
             >
-              <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                {doc.category}
-              </p>
-              <h2 className="mt-2 text-xl font-semibold text-[var(--ink)]">{doc.title}</h2>
-              <p className="mt-3 text-sm text-[var(--muted)]">{doc.excerpt}</p>
-              <div className="mt-4 flex items-center justify-between text-xs text-[var(--muted)]">
-                <span>{doc.updatedAt}</span>
-                <Link
-                  href={withLocale(`/${collection}/${doc.slug}`, locale)}
-                  className="font-semibold hover:text-[var(--ink)]"
-                >
-                  {readMoreLabel}
-                </Link>
-              </div>
-            </article>
+              <article className="flex h-full flex-col">
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                  {doc.category}
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-[var(--ink)]">{doc.title}</h2>
+                <p className="mt-3 text-sm text-[var(--muted)]">{doc.excerpt}</p>
+                <div className="mt-auto flex items-center justify-between pt-4 text-xs text-[var(--muted)]">
+                  <span>{doc.updatedAt}</span>
+                  <span className="inline-flex items-center gap-1 font-semibold text-[var(--ink)]">
+                    {readMoreLabel}
+                    <span className="transition group-hover:translate-x-0.5" aria-hidden="true">→</span>
+                  </span>
+                </div>
+              </article>
+            </Link>
           ))}
         </div>
       </main>

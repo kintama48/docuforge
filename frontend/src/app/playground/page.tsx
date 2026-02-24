@@ -12,17 +12,17 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Typst Playground | DocuForge",
     description:
-      "Test Typst templates live with DocuForge. Paste source and JSON data, run preview requests, and validate document output before shipping.",
+      "Browse starter templates for invoices and logistics docs, then edit Typst + JSON and run live previews.",
     openGraph: {
       title: "DocuForge Playground",
       description:
-        "Live Typst template testing for programmatic PDF generation workflows.",
+        "Searchable template starters with live Typst editing and preview.",
       images: [`/og/${locale}`],
     },
     twitter: {
       title: "DocuForge Playground",
       description:
-        "Live Typst template testing for programmatic PDF generation workflows.",
+        "Searchable template starters with live Typst editing and preview.",
       images: [`/og/${locale}`],
     },
   };

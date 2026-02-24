@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { SignOut } from "@phosphor-icons/react";
 import { useAuthStore } from "@/src/stores/auth";
 import { ThemeToggle } from "@/src/app/components/theme-toggle";
 
 export function TopBar() {
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <header className="flex items-center justify-between border-b border-[var(--line)] bg-[var(--surface-2)] px-6 py-4">
@@ -22,10 +24,19 @@ export function TopBar() {
         <ThemeToggle />
         <Link
           href="/docs"
-          className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--ink)] transition hover:border-[var(--line-hover)]"
+          className="btn btn-secondary btn-sm"
         >
           Docs
         </Link>
+        <button
+          type="button"
+          onClick={logout}
+          className="btn btn-secondary btn-sm"
+          aria-label="Log out"
+        >
+          <SignOut className="h-4 w-4" aria-hidden="true" />
+          Log out
+        </button>
       </div>
     </header>
   );

@@ -39,7 +39,7 @@ export function SiteHeader() {
         <Link href={localePath("/")} className="flex shrink-0 items-center gap-3">
           <BrandLogo className="h-10 w-10 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-1.5 shadow-sm" priority />
           <span className="flex flex-col leading-none">
-            <span className="font-display text-[1.38rem] tracking-tight text-[var(--ink)]">
+            <span className="text-[1.2rem] font-semibold tracking-tight text-[var(--ink)]">
               DocuForge
             </span>
             <span className="hidden text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)] md:block">

@@ -40,6 +40,46 @@ type AuthState = {
   isAuthenticated: () => boolean;
 };
 
+function decodeBase64Url(input: string): string | null {
+  try {
+    const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+
+    if (typeof atob === "function") {
+      return atob(padded);
+    }
+    if (typeof Buffer !== "undefined") {
+      return Buffer.from(padded, "base64").toString("utf-8");
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function getJwtExpiryMs(token: string): number | null {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const payloadRaw = decodeBase64Url(parts[1]);
+  if (!payloadRaw) return null;
+
+  try {
+    const payload = JSON.parse(payloadRaw) as { exp?: unknown };
+    if (typeof payload.exp !== "number" || !Number.isFinite(payload.exp)) {
+      return null;
+    }
+    return payload.exp * 1000;
+  } catch {
+    return null;
+  }
+}
+
+export function isJwtExpired(token: string, nowMs = Date.now()): boolean {
+  const expiryMs = getJwtExpiryMs(token);
+  if (expiryMs === null) return false;
+  return nowMs >= expiryMs;
+}
+
 const storage =
   typeof window !== "undefined"
     ? createJSONStorage(() => localStorage)
@@ -52,7 +92,13 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       hasHydrated: process.env.NODE_ENV === "test",
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      login: (token, user) => set({ token, user }),
+      login: (token, user) => {
+        if (isJwtExpired(token)) {
+          set({ token: null, user: null });
+          return;
+        }
+        set({ token, user });
+      },
       logout: () => {
         set({ token: null, user: null });
         if (typeof window !== "undefined") {
@@ -63,12 +109,23 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       updateUser: (user) => set({ user }),
-      isAuthenticated: () => Boolean(get().token),
+      isAuthenticated: () => {
+        const token = get().token;
+        if (!token) return false;
+        if (isJwtExpired(token)) {
+          set({ token: null, user: null });
+          return false;
+        }
+        return true;
+      },
     }),
     {
       name: "docuforge-auth",
       storage,
       onRehydrateStorage: () => (state) => {
+        if (state?.token && isJwtExpired(state.token)) {
+          state.logout();
+        }
         state?.setHasHydrated(true);
       },
       partialize: (state) => ({ token: state.token, user: state.user }),

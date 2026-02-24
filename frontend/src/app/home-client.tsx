@@ -9,7 +9,8 @@ import {
   Database,
   FilePdf,
   Gauge,
-  GitBranch,
+  Key,
+  LockKey,
   RocketLaunch,
   ShieldCheck,
   Sparkle,
@@ -27,6 +28,7 @@ import {
   getSecurityCapabilities,
 } from "@/src/lib/security-mcp-content";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
+import { getHomeBenchmarkModel } from "@/src/lib/benchmark-report";
 
 const featureIcons = [BracketsCurly, TerminalWindow, Stack, Gauge, Database, RocketLaunch] as const;
 const featureTags = [
@@ -38,6 +40,41 @@ const featureTags = [
   "Rust throughput",
 ] as const;
 const workflowIcons = [Code, FilePdf, RocketLaunch] as const;
+const securityIcons = [Key, LockKey, ShieldCheck] as const;
+const switchPainPoints = [
+  {
+    title: "Latency spikes",
+    problem: "Browser startup and page rendering inflate tail latency.",
+    solution: "Typst-native rendering keeps queue times more stable.",
+  },
+  {
+    title: "Memory pressure",
+    problem: "Chrome workers consume large memory slices at scale.",
+    solution: "Lower runtime footprint improves throughput per instance.",
+  },
+  {
+    title: "Template drift",
+    problem: "HTML print hacks increase maintenance and regressions.",
+    solution: "Versioned Typst templates keep structure explicit.",
+  },
+] as const;
+const ctaHighlights = [
+  {
+    icon: Gauge,
+    title: "Fast render path",
+    body: "Built for predictable latency under load.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Security built in",
+    body: "TLS in transit plus hardened auth defaults.",
+  },
+  {
+    icon: Stack,
+    title: "Versioned templates",
+    body: "Ship safely with stable template releases.",
+  },
+] as const;
 
 function compactCopy(text: string, maxSentences = 1) {
   const chunks = text
@@ -53,8 +90,9 @@ export default function Home() {
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   const featuredPosts = listContent("blog", locale).slice(0, 3);
-  const securityHighlights = getSecurityCapabilities().slice(0, 4);
+  const securityHighlights = getSecurityCapabilities().slice(0, 3);
   const mcpTools = getMcpTools().slice(0, 6);
+  const homeBenchmark = getHomeBenchmarkModel();
 
   return (
     <div className="min-h-screen page-background">
@@ -82,10 +120,10 @@ export default function Home() {
                 </h1>
 
                 <p
-                  className="mt-5 max-w-xl text-pretty text-lg text-[var(--muted)] fade-up"
+                  className="font-script mt-5 max-w-xl text-pretty text-lg leading-relaxed text-[var(--muted)] fade-up"
                   style={{ animationDelay: "180ms" }}
                 >
-                  {compactCopy(messages.hero.subtitle, 2)}
+                  {compactCopy(messages.hero.subtitle, 1)}
                 </p>
 
                 <div
@@ -105,7 +143,7 @@ export default function Home() {
                   className="mt-8 grid gap-3 sm:grid-cols-3 fade-up"
                   style={{ animationDelay: "340ms" }}
                 >
-                  {messages.hero.stats.map((item) => (
+                  {messages.hero.stats.slice(0, 2).map((item) => (
                     <div
                       key={item.label}
                       className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4"
@@ -173,7 +211,7 @@ export default function Home() {
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
-                    {mcpTools.slice(0, 4).map((tool) => (
+                    {mcpTools.slice(0, 3).map((tool) => (
                       <span
                         key={tool}
                         className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--ink)]"
@@ -189,6 +227,79 @@ export default function Home() {
                   Queue healthy
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-pad border-y border-[var(--line)] bg-[var(--surface)]">
+          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+            <div className="grid gap-8 xl:grid-cols-[1fr_520px]">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Why teams migrate
+                </p>
+                <h2 className="mt-3 max-w-2xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                  Replace browser PDF bottlenecks with a predictable render pipeline.
+                </h2>
+                <p className="mt-4 max-w-2xl text-pretty text-base text-[var(--muted)]">
+                  Same documents, fewer moving parts. Keep template quality high while reducing render overhead.
+                </p>
+
+                <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                  {switchPainPoints.map((item) => (
+                    <article
+                      key={item.title}
+                      className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-5"
+                    >
+                      <h3 className="text-base font-semibold text-[var(--ink)]">{item.title}</h3>
+                      <p className="mt-2 text-sm text-[var(--bad)]">{item.problem}</p>
+                      <p className="mt-2 text-sm text-[var(--good)]">{item.solution}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <aside className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                      Benchmark snapshot
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-[var(--ink)]">
+                      {homeBenchmark.title}
+                    </p>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">
+                      {new Date(homeBenchmark.generatedAt).toLocaleDateString("en-US")} · {homeBenchmark.source}
+                    </p>
+                  </div>
+                  <Gauge className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  {homeBenchmark.rows.map((item) => (
+                    <div key={item.label}>
+                      <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                        <span>{item.label}</span>
+                        <span>DocuForge {item.docuforgeLabel}</span>
+                      </div>
+                      <div className="h-7 overflow-hidden rounded-md border border-[var(--line)] bg-[var(--surface-2)]">
+                        <div
+                          className="h-full bg-[var(--accent)]"
+                          style={{ width: `${item.widthPercent}%` }}
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-[var(--muted)]">
+                        {homeBenchmark.baselineName}: {item.baselineLabel}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <Link href={localePath("/compare")} className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]">
+                  Open full comparison
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </aside>
             </div>
           </div>
         </section>
@@ -210,7 +321,7 @@ export default function Home() {
             </div>
 
             <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {messages.features.items.map((item, index) => {
+              {messages.features.items.slice(0, 4).map((item, index) => {
                 const Icon = featureIcons[index % featureIcons.length];
                 const tag = featureTags[index % featureTags.length];
                 return (
@@ -283,17 +394,20 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="api" className="section-pad scroll-mt-24 bg-[var(--ink)] text-white">
+        <section
+          id="api"
+          className="section-pad scroll-mt-24 bg-[var(--inverse-bg)] text-[var(--inverse-ink)]"
+        >
           <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-6 xl:grid-cols-[1.08fr_0.92fr] xl:px-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
                 Security, API and MCP
               </p>
-              <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-white sm:text-5xl">
-                Secure automation that stays programmable.
+              <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--inverse-ink)] sm:text-5xl">
+                Ship sensitive PDFs without security drag.
               </h2>
-              <p className="mt-4 max-w-2xl text-base text-white/75">
-                Auth, rate limits, webhook signing, and MCP tool access are built in from day one.
+              <p className="mt-4 max-w-2xl text-base text-[var(--inverse-muted)]">
+                Protect customer documents by default and keep audit conversations short. DocuForge gives teams secure delivery controls without slowing down shipping velocity.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -306,38 +420,45 @@ export default function Home() {
               </div>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {securityHighlights.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-xl border border-white/15 bg-white/5 p-4 text-sm text-white/80"
-                  >
-                    <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/10">
-                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                {securityHighlights.map((item, index) => {
+                  const Icon = securityIcons[index % securityIcons.length];
+                  return (
+                    <div
+                      key={item}
+                      className="rounded-xl border border-[var(--inverse-line)] bg-[var(--inverse-surface)] p-4 text-sm text-[var(--inverse-muted)]"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[var(--inverse-line)] bg-[color-mix(in_oklab,var(--accent),black_72%)] text-[var(--inverse-ink)]">
+                          <Icon className="phosphor-icon h-3.5 w-3.5" aria-hidden="true" weight="fill" />
+                        </div>
+                        <p className="text-sm leading-relaxed text-[var(--inverse-muted)]">
+                          {compactCopy(item, 1)}
+                        </p>
+                      </div>
                     </div>
-                    {compactCopy(item, 1)}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+            <div className="rounded-2xl border border-[var(--inverse-line)] bg-[var(--inverse-surface)] p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
                 <TerminalWindow className="h-4 w-4" aria-hidden="true" />
                 Render quick start
               </div>
-              <pre className="mt-4 overflow-x-auto rounded-xl bg-black/35 p-4 text-xs text-white/90">
-                <code>{`curl -X POST "$DOCUFORGE_API_URL/v1/render/preview" \\
-  -H "Authorization: Bearer $DOCUFORGE_API_KEY" \\
+              <pre className="mt-4 overflow-x-auto rounded-xl bg-[var(--inverse-code-bg)] p-4 text-xs text-[var(--inverse-ink)]">
+                <code>{`curl -X POST "$DOCUFORGE_API_URL/v1/render" \\
+  -H "X-API-Key: $DOCUFORGE_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{ "source": "...", "data": { "invoice_id": "1234" } }' \\
-  --output preview.pdf`}</code>
+  -d '{ "template_id": "tpl_123", "data": { "invoice_id": "1234" } }' \\
+  --output invoice.pdf`}</code>
               </pre>
 
               <div className="mt-5 flex flex-wrap gap-2">
                 {mcpTools.map((tool) => (
                   <span
                     key={tool}
-                    className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white/85"
+                    className="inline-flex items-center gap-1 rounded-full border border-[var(--inverse-line)] bg-[var(--inverse-surface)] px-3 py-1 text-xs text-[var(--inverse-muted)]"
                   >
                     <Sparkle className="h-3.5 w-3.5" aria-hidden="true" />
                     {tool}
@@ -374,10 +495,9 @@ export default function Home() {
                     {post.category}
                   </p>
                   <h3 className="mt-3 text-xl font-semibold text-[var(--ink)]">{post.title}</h3>
-                  <p className="mt-3 text-sm text-[var(--muted)]">{compactCopy(post.excerpt, 1)}</p>
                   <Link
                     href={localePath(`/blog/${post.slug}`)}
-                    className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]"
                   >
                     Read
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -390,34 +510,48 @@ export default function Home() {
 
         <section className="section-pad">
           <div className="mx-auto w-full max-w-[1200px] px-6 xl:px-8">
-            <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8 text-center shadow-[var(--shadow)] sm:p-10">
-              <h2 className="text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
-                {messages.cta.title}
-              </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base text-[var(--muted)]">
-                {compactCopy(messages.cta.subtitle, 1)}
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link href={localePath("/docs")} className="btn btn-primary">
-                  {messages.cta.ctaDocs}
-                </Link>
-                <Link href={consoleUrl} className="btn btn-secondary">
-                  {messages.cta.ctaConsole}
-                </Link>
+            <div className="relative overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8 shadow-[var(--shadow)] sm:p-10 lg:p-12">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -right-14 -top-20 h-52 w-52 rounded-full bg-[var(--accent-soft)] blur-3xl opacity-70" />
+                <div className="absolute -left-16 -bottom-20 h-48 w-48 rounded-full bg-[color-mix(in_oklab,var(--accent),transparent_88%)] blur-3xl" />
               </div>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-                <span className="inline-flex items-center gap-1">
-                  <Gauge className="h-4 w-4" aria-hidden="true" />
-                  Fast renders
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <GitBranch className="h-4 w-4" aria-hidden="true" />
-                  Versioned templates
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                  Production-safe API
-                </span>
+
+              <div className="relative mx-auto max-w-3xl text-center">
+                <p className="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Production-ready workflow
+                </p>
+                <h2 className="mt-5 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                  {messages.cta.title}
+                </h2>
+                <p className="font-script mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted)]">
+                  {compactCopy(messages.cta.subtitle, 1)}
+                </p>
+                <div className="mt-7 flex flex-wrap justify-center gap-3">
+                  <Link href={localePath("/docs")} className="btn btn-primary">
+                    {messages.cta.ctaDocs}
+                  </Link>
+                  <Link href={consoleUrl} className="btn btn-secondary">
+                    {messages.cta.ctaConsole}
+                  </Link>
+                </div>
+              </div>
+
+              <div className="relative mt-8 grid gap-3 sm:grid-cols-3">
+                {ctaHighlights.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <article
+                      key={item.title}
+                      className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-left"
+                    >
+                      <div className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)]">
+                        <Icon className="phosphor-icon h-3.5 w-3.5" aria-hidden="true" weight="duotone" />
+                      </div>
+                      <h3 className="mt-3 text-sm font-semibold text-[var(--ink)]">{item.title}</h3>
+                      <p className="mt-1 text-xs text-[var(--muted)]">{item.body}</p>
+                    </article>
+                  );
+                })}
               </div>
             </div>
           </div>

@@ -145,7 +145,9 @@ const copyByLocale: Record<Locale, SecurityAndMcpCopy> = {
 };
 
 const securityCapabilities = [
-  "API keys are hashed at rest and never returned after creation.",
+  "Customer documents stay protected in transit and at rest, so teams can clear security reviews without custom hardening work.",
+  "Password-protected delivery is built in for regulated workflows, keeping finance and legal PDFs safe to share.",
+  "Credentials are protected by default, reducing leak risk and shrinking breach blast radius.",
   "JWT and API-key auth paths are isolated by endpoint intent.",
   "Stripe webhook signatures are verified before billing events are processed.",
   "Outbound webhooks are signed with HMAC SHA-256 and retried with backoff.",

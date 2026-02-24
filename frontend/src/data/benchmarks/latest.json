@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-02-24T12:42:57.630Z",
+  "source": "measured",
+  "scenario": {
+    "id": "invoice_3_page",
+    "title": "3-page invoice render",
+    "description": "Equivalent invoice payload rendered with comparable visual complexity across engines."
+  },
+  "iterations": 25,
+  "coldStartIterations": 8,
+  "methodology": {
+    "summary": "Measured on local machine with the same fixture payload. Speed and cold-start use p50/p95/p99 percentiles.",
+    "command": "cd frontend && bun run bench:competitors"
+  },
+  "tools": [
+    {
+      "id": "docuforge",
+      "name": "DocuForge",
+      "available": true,
+      "samples": 25,
+      "version": "engine-local",
+      "speedMs": {
+        "mean": 0.792,
+        "p50": 0.492,
+        "p95": 0.613,
+        "p99": 0.713
+      },
+      "coldStartMs": {
+        "mean": 236.07,
+        "p50": 236.054,
+        "p95": 238.307,
+        "p99": 238.307
+      },
+      "peakMemoryMb": {
+        "mean": 16.96,
+        "p50": 16.953,
+        "p95": 16.984,
+        "p99": 16.984
+      }
+    },
+    {
+      "id": "puppeteer",
+      "name": "Puppeteer",
+      "available": true,
+      "samples": 25,
+      "speedMs": {
+        "mean": 55.384,
+        "p50": 51.099,
+        "p95": 57.329,
+        "p99": 66.687
+      },
+      "coldStartMs": {
+        "mean": 469.783,
+        "p50": 466.983,
+        "p95": 477.223,
+        "p99": 477.223
+      },
+      "peakMemoryMb": {
+        "mean": 913.257,
+        "p50": 903.609,
+        "p95": 903.609,
+        "p99": 903.609
+      }
+    },
+    {
+      "id": "wkhtmltopdf",
+      "name": "wkhtmltopdf",
+      "available": false,
+      "reasonUnavailable": "wkhtmltopdf command not found"
+    },
+    {
+      "id": "weasyprint",
+      "name": "WeasyPrint",
+      "available": false,
+      "reasonUnavailable": "weasyprint command not found"
+    }
+  ]
+}

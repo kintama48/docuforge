@@ -6,6 +6,7 @@ import { api } from "@/src/lib/api";
 import type { LoginResponse, RegisterResponse } from "@/src/lib/api-types";
 import { useAuthStore } from "@/src/stores/auth";
 import { useOnboardingStore } from "@/src/stores/onboarding";
+import { sanitizeAppRedirect } from "@/src/lib/redirect";
 
 type LoginPayload = { email: string; password: string };
 type RegisterPayload = { email: string; password: string };
@@ -13,7 +14,7 @@ type RegisterPayload = { email: string; password: string };
 export function useLogin() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams?.get("redirect") || "/dashboard";
+  const redirect = sanitizeAppRedirect(searchParams?.get("redirect"), "/dashboard");
 
   return useMutation({
     mutationFn: (payload: LoginPayload) =>

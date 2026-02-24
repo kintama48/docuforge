@@ -267,6 +267,30 @@ const blogSpecs: BlogSpec[] = [
       "A safer template strategy for regulated tax output with strong version control and traceability.",
     keyword: "document automation API",
   },
+  {
+    slug: "best-pdf-generation-library-2026",
+    category: "pain",
+    title: "Best PDF Generation Library in 2026: What Actually Holds Up in Production",
+    excerpt:
+      "A practical evaluation framework for choosing a PDF stack when reliability, speed, and maintenance all matter.",
+    keyword: "best PDF generation library 2026",
+  },
+  {
+    slug: "how-to-automate-report-generation-with-an-api",
+    category: "programmatic",
+    title: "How to Automate Report Generation with an API",
+    excerpt:
+      "Design a report pipeline with template versioning, queue-safe rendering, and predictable API contracts.",
+    keyword: "automate report generation API",
+  },
+  {
+    slug: "puppeteer-pdf-slow-performance-fix",
+    category: "pain",
+    title: "Puppeteer PDF Slow Performance Fix: Practical Steps That Work",
+    excerpt:
+      "A bottleneck-first approach to reducing Puppeteer PDF latency, with migration options when tuning is not enough.",
+    keyword: "Puppeteer PDF slow performance fix",
+  },
 ];
 
 type TemplateSpec = {
@@ -983,29 +1007,193 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
   const title = normalizeTitle(locale, spec);
   const metaTitle = `${title} | DocuForge`;
   const metaDescription = `${spec.excerpt} Learn implementation patterns, code examples, and rollout guidance for ${spec.keyword}.`;
-  const intro = `Teams searching for ${spec.keyword} usually hit the same problem: they can generate a PDF, but the workflow is hard to operate once real volume arrives. This guide focuses on the implementation details that matter in production: stable templates, predictable API contracts, and low-friction debugging. Instead of generic advice, you will see practical patterns you can apply immediately, including baseline request structures, rollout checkpoints, and tradeoffs between speed and flexibility. If your goal is reliable document automation with fewer moving parts, this article gives you a direct path.`;
+  const intro = `If you are evaluating ${spec.keyword}, the core challenge is rarely generating one PDF. The real problem is shipping and operating the workflow when traffic increases, templates evolve, and incidents need fast diagnosis. This guide focuses on production behavior: predictable templates, queue-safe rendering, and secure API usage with clear failure modes.`;
 
-  const quickAnswer = `Use a template-first workflow with explicit versioning and strict request validation. Keep preview and production render paths separate, then automate document generation with idempotent backend jobs.`;
-  const takeaways = [
-    "Model each document type as a template with a stable data contract.",
-    "Keep preview rendering separate from production rendering to reduce risk.",
-    "Use internal links, canonical metadata, and structured snippets for stronger SEO and GEO visibility.",
-    "Expose one clear CTA to docs or playground to reduce conversion friction.",
-  ];
+  const profileByCategory: Record<
+    BlogSpec["category"],
+    {
+      quickAnswer: string;
+      implementationTitle: string;
+      implementationParagraphs: string[];
+      takeaways: string[];
+      valueProps: string[];
+      faq: ContentFaq[];
+    }
+  > = {
+    foundation: {
+      quickAnswer:
+        "Use a Typst template contract, keep preview and production paths separate, and make version promotion explicit.",
+      implementationTitle: "Architecture baseline",
+      implementationParagraphs: [
+        "Treat each document family as a versioned template with a stable JSON schema. This prevents layout drift and keeps changes reviewable.",
+        "Use preview rendering for iteration and production rendering for published versions only. That split avoids accidental draft leakage.",
+      ],
+      takeaways: [
+        "Deterministic Typst templates are easier to reason about than browser-rendered print CSS.",
+        "Versioned publish flow keeps document behavior auditable.",
+        "Typed responses and stable error payloads reduce debugging time.",
+        "Queue-friendly render routes keep throughput predictable under load.",
+      ],
+      valueProps: [
+        "Rust + Typst engine avoids headless browser overhead in production.",
+        "Clear API contract for auth, render, usage, and template lifecycle.",
+        "Security controls include hashed API keys and signed webhook events.",
+      ],
+      faq: [
+        {
+          question: "How should we start migrating existing PDF workflows?",
+          answer:
+            "Move one high-volume document first, lock the data contract, and run both systems in parallel until render parity is verified.",
+        },
+        {
+          question: "What usually breaks first in production?",
+          answer:
+            "Unversioned template edits and weak payload validation. Put both under explicit release and schema checks.",
+        },
+      ],
+    },
+    pain: {
+      quickAnswer:
+        "Remove browser rendering from the hot path, stabilize template inputs, and run rendering behind retry-aware queues.",
+      implementationTitle: "Bottleneck-first fix strategy",
+      implementationParagraphs: [
+        "Profile p50/p95 render latency and separate CPU-bound rendering from request orchestration. Browser startup and CSS layout variability are frequent latency multipliers.",
+        "Adopt idempotent job processing with bounded retries and observable failure codes so incidents can be triaged quickly.",
+      ],
+      takeaways: [
+        "Latency problems usually come from runtime variability, not template complexity.",
+        "Queue retry policy should be explicit, bounded, and observable.",
+        "Use separate preview and production routes to contain blast radius.",
+        "Treat render failures as typed events, not generic logs.",
+      ],
+      valueProps: [
+        "Predictable Typst rendering reduces variance compared with browser-based pipelines.",
+        "Usage limits and rate controls are enforced at API boundaries.",
+        "Structured errors make fallback and retry logic straightforward.",
+      ],
+      faq: [
+        {
+          question: "Can we keep Puppeteer and still improve performance?",
+          answer:
+            "Yes, with pooling and caching, but beyond a threshold operational cost and variance often remain high; measure against a deterministic alternative.",
+        },
+        {
+          question: "What metrics should we track first?",
+          answer:
+            "Track p50/p95 render duration, failure rate by error code, and queue retry depth per document type.",
+        },
+      ],
+    },
+    tutorial: {
+      quickAnswer:
+        "Start with one practical template, wire JSON inputs to stable fields, and move the same payload from preview to production.",
+      implementationTitle: "Implementation flow",
+      implementationParagraphs: [
+        "Define the template input schema before writing layout logic. This keeps your API payload stable as the design evolves.",
+        "Use published template versions in production and keep fast preview loops for authoring. This gives velocity without sacrificing change control.",
+      ],
+      takeaways: [
+        "Schema-first templates reduce regression risk during design edits.",
+        "Preview loops should be fast; production renders should be repeatable.",
+        "Small reusable template fragments beat copy-paste document blocks.",
+        "Keep code examples close to real production payloads.",
+      ],
+      valueProps: [
+        "Template versioning and publish workflow are built into the platform.",
+        "Playground and docs map directly to the same API render contract.",
+        "Typed endpoints keep integration logic consistent across teams.",
+      ],
+      faq: [
+        {
+          question: "Should template logic include business rules?",
+          answer:
+            "Keep heavy business rules in backend payload preparation; templates should focus on deterministic presentation.",
+        },
+        {
+          question: "How do we reduce template drift over time?",
+          answer:
+            "Use reusable snippets, version every release, and run sample payload regression previews before publishing.",
+        },
+      ],
+    },
+    "use-case": {
+      quickAnswer:
+        "Model each use case with a dedicated template contract, then standardize payload mapping from upstream systems.",
+      implementationTitle: "Use-case pattern",
+      implementationParagraphs: [
+        "Keep branding and tenant-specific values in data, not forked layouts. This preserves consistency while supporting customization.",
+        "Design a minimal document schema and transform source events into it at ingestion boundaries. Stable schemas simplify multi-team ownership.",
+      ],
+      takeaways: [
+        "One template family per document intent scales better than per-customer forks.",
+        "Normalization layers prevent upstream system changes from breaking layout logic.",
+        "Webhooks and retries should be signed and auditable.",
+        "Security and compliance requirements should be encoded in routing and key scope.",
+      ],
+      valueProps: [
+        "API-key and JWT paths are separated by endpoint intent.",
+        "Webhook signatures and HTTPS validation are enforced in production paths.",
+        "Version promotion supports controlled rollout across customer segments.",
+      ],
+      faq: [
+        {
+          question: "How do we handle per-customer branding without template sprawl?",
+          answer:
+            "Store brand variables in payload data and keep the underlying template shared per document class.",
+        },
+        {
+          question: "What is the safest rollout strategy?",
+          answer:
+            "Publish new versions behind a subset of traffic, compare outputs, then promote globally once parity checks pass.",
+        },
+      ],
+    },
+    programmatic: {
+      quickAnswer:
+        "Treat rendering as a backend job pipeline: idempotent requests, queue control, and deterministic templates.",
+      implementationTitle: "Production automation pattern",
+      implementationParagraphs: [
+        "Feed render jobs through queues partitioned by document type or priority. This prevents a noisy workload from starving critical documents.",
+        "Attach stable idempotency keys per business document event so retries do not create duplicate outputs.",
+      ],
+      takeaways: [
+        "Queue partitioning and idempotency are mandatory at scale.",
+        "Template version IDs should be explicit in production render events.",
+        "Monitor usage and quotas by plan and document family.",
+        "Keep failure handling deterministic with typed error branches.",
+      ],
+      valueProps: [
+        "Render API is queue-friendly with predictable request/response envelopes.",
+        "Usage and billing endpoints support operational visibility.",
+        "No headless Chrome dependency in the main render engine path.",
+      ],
+      faq: [
+        {
+          question: "How do we avoid duplicate documents on retries?",
+          answer:
+            "Use business-event idempotency keys and persist render outcomes before acknowledging queue completion.",
+        },
+        {
+          question: "What should we put in dead-letter queues?",
+          answer:
+            "Jobs with non-retryable schema/template failures and jobs that exceeded bounded retry policy.",
+        },
+      ],
+    },
+  };
+
+  const profile = profileByCategory[spec.category];
 
   const blocks: ContentBlock[] = [
     {
       kind: "paragraph",
       title: copy.quickAnswerTitle,
-      paragraphs: [quickAnswer],
+      paragraphs: [profile.quickAnswer],
     },
     {
       kind: "paragraph",
-      title: "Implementation pattern",
-      paragraphs: [
-        "Start with one template per document family, not one template per customer. Keep dynamic data in JSON and rendering logic in Typst. This keeps change control simple and makes debugging deterministic.",
-        "For batch generation, enqueue requests by document type so failures are isolated and retries stay targeted. Monitor render duration, error rates, and monthly quota consumption.",
-      ],
+      title: profile.implementationTitle,
+      paragraphs: profile.implementationParagraphs,
     },
     {
       kind: "code",
@@ -1016,7 +1204,12 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
     {
       kind: "list",
       title: copy.keyTakeawaysTitle,
-      items: takeaways,
+      items: profile.takeaways,
+    },
+    {
+      kind: "list",
+      title: "Why teams choose DocuForge for this workflow",
+      items: profile.valueProps,
     },
     {
       kind: "links",
@@ -1025,21 +1218,10 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
         { href: "/docs", title: "DocuForge API docs" },
         { href: "/docs#security", title: "Security controls and governance" },
         { href: "/docs#mcp", title: "MCP integration docs" },
+        { href: "/templates/invoice", title: "Invoice template tutorial" },
+        { href: "/templates/shipping-label", title: "Shipping label template tutorial" },
         { href: "/playground", title: "Template playground" },
       ],
-    },
-  ];
-
-  const faq: ContentFaq[] = [
-    {
-      question: "What is the best way to start with programmatic PDF generation?",
-      answer:
-        "Start with one high-frequency document (usually invoices or receipts), define its JSON input contract, and automate from there.",
-    },
-    {
-      question: "How do I keep templates maintainable as features grow?",
-      answer:
-        "Use versioned templates, avoid copy-paste layout logic, and keep each template focused on one document intent.",
     },
   ];
 
@@ -1054,7 +1236,6 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
     intro,
     keywords: [spec.keyword, ...coreKeywords],
     blocks,
-    faq,
     ctaTitle: copy.cta.title,
     ctaBody: copy.cta.body,
     ctaPrimaryLabel: copy.cta.primary,
@@ -1062,8 +1243,9 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
     ctaSecondaryLabel: copy.cta.secondary,
     ctaSecondaryHref: "/playground",
     related: [],
-    updatedAt: "2026-02-19",
+    updatedAt: "2026-02-24",
     priority: Boolean(spec.priority),
+    faq: profile.faq,
   };
 }
 

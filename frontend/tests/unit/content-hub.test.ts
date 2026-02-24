@@ -13,11 +13,11 @@ describe("content hub", () => {
     const compare = listContent("compare", "en");
     const industries = listContent("industries", "en");
 
-    expect(blog.length).toBe(18);
+    expect(blog.length).toBe(21);
     expect(templates.length).toBe(15);
     expect(compare.length).toBe(7);
     expect(industries.length).toBe(7);
-    expect(listAllContentPaths().length).toBe(47);
+    expect(listAllContentPaths().length).toBe(50);
   });
 
   it("returns localized content for every supported locale", () => {
