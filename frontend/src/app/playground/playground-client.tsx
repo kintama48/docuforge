@@ -686,6 +686,10 @@ export default function PlaygroundClient() {
             </Link>
           </div>
 
+          <p className="mt-3 text-xs text-[var(--muted)]">
+            Public preview is session-based and watermarked automatically. No login required.
+          </p>
+
           {error ? (
             <p className="mt-4 rounded-md border border-[color-mix(in_oklab,var(--bad),white_45%)] bg-[color-mix(in_oklab,var(--bad),transparent_90%)] px-3 py-2 text-sm text-[var(--bad)]">
               {error}
@@ -699,15 +703,6 @@ export default function PlaygroundClient() {
         </section>
 
         <section className="space-y-6">
-          <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Request summary
-            </p>
-            <pre className="mt-3 overflow-x-auto rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-xs text-[var(--ink)]">
-              <code>{payloadPreview}</code>
-            </pre>
-          </div>
-
           <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
               <FilePdf className="h-4 w-4 phosphor-icon" aria-hidden="true" />
@@ -726,6 +721,15 @@ export default function PlaygroundClient() {
               </div>
             )}
           </div>
+
+          <details className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+            <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+              Advanced payload (for developers)
+            </summary>
+            <pre className="mt-3 overflow-x-auto rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-xs text-[var(--ink)]">
+              <code>{payloadPreview}</code>
+            </pre>
+          </details>
         </section>
       </div>
     </div>
