@@ -3,8 +3,12 @@ export type PlanTier = 'free' | 'dev' | 'starter' | 'pro';
 export interface User {
   id: string;
   email: string;
+  emailCanonical: string;
+  emailVerifiedAt: number | null;
   passwordHash: string;
   stripeCustomerId: string | null;
+  signupFingerprintHash: string | null;
+  signupIpHash: string | null;
   planTier: PlanTier;
   planRenders: number;
   createdAt: number;

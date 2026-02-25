@@ -1,6 +1,18 @@
 import { nanoid } from 'nanoid';
 
-export type IdPrefix = 'usr' | 'key' | 'tpl' | 'ver' | 'ast' | 'log' | 'req' | 'oau' | 'whk' | 'dlv';
+export type IdPrefix =
+  | 'usr'
+  | 'key'
+  | 'tpl'
+  | 'ver'
+  | 'ast'
+  | 'log'
+  | 'req'
+  | 'oau'
+  | 'whk'
+  | 'dlv'
+  | 'otp'
+  | 'pin';
 
 export function generateId(prefix: IdPrefix): string {
   return `${prefix}_${nanoid(21)}`;
@@ -44,4 +56,12 @@ export function generateWebhookId(): string {
 
 export function generateDeliveryId(): string {
   return generateId('dlv');
+}
+
+export function generateOtpChallengeId(): string {
+  return generateId('otp');
+}
+
+export function generatePinId(): string {
+  return generateId('pin');
 }

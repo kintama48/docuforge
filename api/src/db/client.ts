@@ -50,14 +50,24 @@ export async function initTestDb() {
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
+      email_canonical TEXT UNIQUE NOT NULL,
+      email_verified_at INTEGER,
       password_hash TEXT NOT NULL,
       stripe_customer_id TEXT,
+      signup_fingerprint_hash TEXT,
+      signup_ip_hash TEXT,
       plan_tier TEXT NOT NULL DEFAULT 'free',
       plan_renders INTEGER NOT NULL DEFAULT 1000,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
   `);
+
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_users_email_canonical ON users(email_canonical)`);
+  await db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_users_signup_fp_created ON users(signup_fingerprint_hash, created_at)`
+  );
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_users_signup_ip_created ON users(signup_ip_hash, created_at)`);
 
   await db.run(sql`
     CREATE TABLE IF NOT EXISTS api_keys (
@@ -150,6 +160,47 @@ export async function initTestDb() {
   await db.run(
     sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_oauth_provider_user ON oauth_accounts(provider, provider_user_id)`
   );
+
+  await db.run(sql`
+    CREATE TABLE IF NOT EXISTS auth_otp_challenges (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      purpose TEXT NOT NULL,
+      email TEXT NOT NULL,
+      code_hash TEXT NOT NULL,
+      expires_at INTEGER NOT NULL,
+      resend_available_at INTEGER NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      max_attempts INTEGER NOT NULL DEFAULT 5,
+      sent_count INTEGER NOT NULL DEFAULT 1,
+      consumed_at INTEGER,
+      metadata TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `);
+  await db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_auth_otp_user_purpose ON auth_otp_challenges(user_id, purpose)`
+  );
+  await db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_auth_otp_active ON auth_otp_challenges(purpose, consumed_at, expires_at)`
+  );
+
+  await db.run(sql`
+    CREATE TABLE IF NOT EXISTS user_pins (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      fingerprint_hash TEXT NOT NULL,
+      ip_hash TEXT,
+      first_seen_at INTEGER NOT NULL,
+      last_seen_at INTEGER NOT NULL,
+      created_at INTEGER NOT NULL
+    )
+  `);
+  await db.run(
+    sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_pins_user_fingerprint ON user_pins(user_id, fingerprint_hash)`
+  );
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_user_pins_fingerprint ON user_pins(fingerprint_hash, last_seen_at)`);
 
   await db.run(sql`
     CREATE TABLE IF NOT EXISTS webhooks (

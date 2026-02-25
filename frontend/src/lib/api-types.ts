@@ -5,11 +5,57 @@ export type User = {
   email: string;
   plan: "free" | "dev" | "starter" | "pro";
 };
+export type ApiKeyReveal = {
+  raw_key: string;
+  prefix: string;
+  name: string;
+  note: string;
+};
+
 export type LoginResponse = { token: string; user: User };
+
+export type OtpChallenge = {
+  challenge_id: string;
+  expires_in_ms: number;
+  resend_after_ms: number;
+};
+
+export type VerificationRequiredResponse = OtpChallenge & {
+  verification_required: true;
+  user?: User;
+};
+
+export type TwoFactorRequiredResponse = OtpChallenge & {
+  two_factor_required: true;
+  user: User;
+};
+
+export type LoginResult = LoginResponse | VerificationRequiredResponse | TwoFactorRequiredResponse;
+
 export type RegisterResponse = {
   token: string;
   user: User;
-  api_key: { raw_key: string; prefix: string; name: string; note: string };
+  api_key: ApiKeyReveal;
+};
+
+export type RegisterResult =
+  | RegisterResponse
+  | (VerificationRequiredResponse & { user: User });
+
+export type VerifyEmailResponse = {
+  email_verified: true;
+  token: string;
+  user: User;
+  api_key?: ApiKeyReveal;
+};
+
+export type VerifyTwoFactorResponse = LoginResponse;
+
+export type ResendChallengeResponse = {
+  sent: true;
+  challenge_id: string;
+  expires_in_ms: number;
+  resend_after_ms: number;
 };
 
 export type Template = {

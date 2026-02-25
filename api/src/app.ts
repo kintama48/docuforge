@@ -45,7 +45,15 @@ export function createApp() {
     cors({
       origin: allowedOrigins,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Preview-Session', 'Idempotency-Key', 'X-Idempotency-Key'],
+      allowHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-API-Key',
+        'X-Preview-Session',
+        'Idempotency-Key',
+        'X-Idempotency-Key',
+        'X-Device-Id',
+      ],
       credentials: false,
       maxAge: 86400,
     })

@@ -7,9 +7,19 @@ import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../lib/api-key'
 import { evictCachedKey } from '../services/key-cache';
 import { createJwt, jwtAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
-import { zValidator, registerSchema, loginSchema, createApiKeySchema } from '../lib/validation';
+import {
+  zValidator,
+  registerSchema,
+  loginSchema,
+  createApiKeySchema,
+  verifyEmailSchema,
+  resendEmailVerificationSchema,
+  verifyTwoFactorSchema,
+  resendTwoFactorSchema,
+} from '../lib/validation';
 import { ConflictError, UnauthorizedError, NotFoundError, ForbiddenError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
+import { sendTransactionalEmail } from '../services/email';
 import {
   buildAuthUrl,
   consumeOAuthState,
@@ -20,6 +30,17 @@ import {
   type OAuthProvider,
 } from '../services/oauth';
 import { createExchangeCode, consumeExchangeCode } from '../services/oauth-exchange';
+import {
+  canonicalizeEmail,
+  createOtpChallenge,
+  enforceSignupAbuseGuards,
+  getAuthFingerprint,
+  getOtpLifetimeMinutes,
+  normalizeEmail,
+  resendOtpChallenge,
+  upsertUserPin,
+  verifyOtpChallenge,
+} from '../services/auth-security';
 
 const auth = new Hono();
 
@@ -46,15 +67,75 @@ function assertTrustedBrowserOrigin(c: Context) {
   }
 }
 
+async function createDefaultApiKey(
+  userId: string,
+  now: number
+): Promise<{ rawKey: string; keyPrefix: string; name: string } | null> {
+  const db = getDb();
+
+  const [existing] = await db
+    .select({ id: schema.apiKeys.id })
+    .from(schema.apiKeys)
+    .where(and(eq(schema.apiKeys.userId, userId), eq(schema.apiKeys.isRevoked, false)));
+
+  if (existing) {
+    return null;
+  }
+
+  const rawKey = generateRawApiKey();
+  const keyHash = hashApiKey(rawKey);
+  const keyPrefix = extractKeyPrefix(rawKey);
+  const keyId = generateApiKeyId();
+  const name = 'Default';
+
+  await db.insert(schema.apiKeys).values({
+    id: keyId,
+    userId,
+    keyHash,
+    keyPrefix,
+    name,
+    createdAt: now,
+    isRevoked: false,
+  });
+
+  return { rawKey, keyPrefix, name };
+}
+
+async function sendEmailVerificationCode(email: string, code: string): Promise<void> {
+  const ttlMinutes = getOtpLifetimeMinutes();
+  await sendTransactionalEmail({
+    to: email,
+    subject: 'Verify your DocuForge email',
+    text: `Your DocuForge verification code is ${code}. It expires in ${ttlMinutes} minute(s).`,
+  });
+}
+
+async function sendLoginCode(email: string, code: string): Promise<void> {
+  const ttlMinutes = getOtpLifetimeMinutes();
+  await sendTransactionalEmail({
+    to: email,
+    subject: 'Your DocuForge login verification code',
+    text: `Your DocuForge login code is ${code}. It expires in ${ttlMinutes} minute(s).`,
+  });
+}
+
 // POST /v1/auth/register
 auth.post('/register', zValidator('json', registerSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
-  const { email, password } = c.req.valid('json');
+  const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
   const now = Date.now();
+  const email = normalizeEmail(rawEmail);
+  const emailCanonical = canonicalizeEmail(email);
+  const fingerprint = getAuthFingerprint(c);
 
-  // Check if email already exists
-  const [existing] = await db.select().from(schema.users).where(eq(schema.users.email, email));
+  await enforceSignupAbuseGuards(fingerprint.fingerprintHash, fingerprint.ipHash, now);
+
+  // Check if email already exists (canonicalized to reduce alias abuse)
+  const [existing] = await db
+    .select()
+    .from(schema.users)
+    .where(eq(schema.users.emailCanonical, emailCanonical));
 
   if (existing) {
     throw new ConflictError('Email already registered');
@@ -68,30 +149,53 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
   await db.insert(schema.users).values({
     id: userId,
     email,
+    emailCanonical,
+    emailVerifiedAt: env.AUTH_EMAIL_VERIFICATION_REQUIRED ? null : now,
     passwordHash,
     planTier: 'free',
     planRenders: getPlanLimit('free'),
+    signupFingerprintHash: fingerprint.fingerprintHash,
+    signupIpHash: fingerprint.ipHash,
     createdAt: now,
     updatedAt: now,
   });
 
-  // Generate first API key
-  const rawKey = generateRawApiKey();
-  const keyHash = hashApiKey(rawKey);
-  const keyPrefix = extractKeyPrefix(rawKey);
-  const keyId = generateApiKeyId();
+  await upsertUserPin(userId, fingerprint.fingerprintHash, fingerprint.ipHash, now);
 
-  await db.insert(schema.apiKeys).values({
-    id: keyId,
-    userId,
-    keyHash,
-    keyPrefix,
-    name: 'Default',
-    createdAt: now,
-    isRevoked: false,
-  });
+  if (env.AUTH_EMAIL_VERIFICATION_REQUIRED) {
+    const challenge = await createOtpChallenge({
+      userId,
+      email,
+      purpose: 'email_verification',
+      metadata: {
+        fingerprint_hash: fingerprint.fingerprintHash,
+        ip_hash: fingerprint.ipHash,
+      },
+    });
 
-  // Generate JWT
+    await sendEmailVerificationCode(email, challenge.code);
+
+    return c.json(
+      {
+        verification_required: true,
+        challenge_id: challenge.challengeId,
+        expires_in_ms: Math.max(0, challenge.expiresAt - now),
+        resend_after_ms: Math.max(0, challenge.resendAvailableAt - now),
+        user: {
+          id: userId,
+          email,
+          plan: 'free',
+        },
+      },
+      202
+    );
+  }
+
+  const defaultKey = await createDefaultApiKey(userId, now);
+  if (!defaultKey) {
+    throw new UnauthorizedError('Unable to provision default API key');
+  }
+
   const token = await createJwt(userId, email);
 
   return c.json(
@@ -103,9 +207,9 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
       },
       token,
       api_key: {
-        raw_key: rawKey,
-        prefix: keyPrefix,
-        name: 'Default',
+        raw_key: defaultKey.rawKey,
+        prefix: defaultKey.keyPrefix,
+        name: defaultKey.name,
         note: 'Save this key — it will not be shown again.',
       },
     },
@@ -116,11 +220,19 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
 // POST /v1/auth/login
 auth.post('/login', zValidator('json', loginSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
-  const { email, password } = c.req.valid('json');
+  const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
+  const email = normalizeEmail(rawEmail);
+  const emailCanonical = canonicalizeEmail(email);
+  const now = Date.now();
+  const fingerprint = getAuthFingerprint(c);
 
   // Find user
-  const [user] = await db.select().from(schema.users).where(eq(schema.users.email, email));
+  let [user] = await db.select().from(schema.users).where(eq(schema.users.emailCanonical, emailCanonical));
+  if (!user) {
+    // Backward compatibility for records created before canonical email support.
+    [user] = await db.select().from(schema.users).where(eq(schema.users.email, email));
+  }
 
   if (!user) {
     throw new UnauthorizedError('Invalid email or password');
@@ -132,6 +244,58 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
     throw new UnauthorizedError('Invalid email or password');
   }
 
+  if (env.AUTH_EMAIL_VERIFICATION_REQUIRED && !user.emailVerifiedAt) {
+    const challenge = await createOtpChallenge({
+      userId: user.id,
+      email: user.email,
+      purpose: 'email_verification',
+      metadata: {
+        fingerprint_hash: fingerprint.fingerprintHash,
+        ip_hash: fingerprint.ipHash,
+      },
+    });
+
+    await sendEmailVerificationCode(user.email, challenge.code);
+
+    return c.json(
+      {
+        verification_required: true,
+        challenge_id: challenge.challengeId,
+        expires_in_ms: Math.max(0, challenge.expiresAt - now),
+        resend_after_ms: Math.max(0, challenge.resendAvailableAt - now),
+      },
+      403
+    );
+  }
+
+  if (env.AUTH_2FA_REQUIRED) {
+    const challenge = await createOtpChallenge({
+      userId: user.id,
+      email: user.email,
+      purpose: 'login_2fa',
+      metadata: {
+        fingerprint_hash: fingerprint.fingerprintHash,
+        ip_hash: fingerprint.ipHash,
+      },
+    });
+
+    await sendLoginCode(user.email, challenge.code);
+
+    return c.json({
+      two_factor_required: true,
+      challenge_id: challenge.challengeId,
+      expires_in_ms: Math.max(0, challenge.expiresAt - now),
+      resend_after_ms: Math.max(0, challenge.resendAvailableAt - now),
+      user: {
+        id: user.id,
+        email: user.email,
+        plan: user.planTier,
+      },
+    });
+  }
+
+  await upsertUserPin(user.id, fingerprint.fingerprintHash, fingerprint.ipHash, now);
+
   // Generate JWT
   const token = await createJwt(user.id, user.email);
 
@@ -142,6 +306,117 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
       email: user.email,
       plan: user.planTier,
     },
+  });
+});
+
+// POST /v1/auth/verify-email - Verify signup email using OTP code
+auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const { challenge_id, code } = c.req.valid('json');
+  const now = Date.now();
+  const verified = await verifyOtpChallenge(challenge_id, 'email_verification', code);
+  const db = getDb();
+
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.id, verified.userId));
+  if (!user) {
+    throw new UnauthorizedError('Invalid verification challenge');
+  }
+
+  if (!user.emailVerifiedAt) {
+    await db
+      .update(schema.users)
+      .set({
+        emailVerifiedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(schema.users.id, user.id));
+  }
+
+  if (typeof verified.metadata?.fingerprint_hash === 'string') {
+    const ipHash = typeof verified.metadata?.ip_hash === 'string' ? verified.metadata.ip_hash : null;
+    await upsertUserPin(user.id, verified.metadata.fingerprint_hash, ipHash, now);
+  }
+
+  const defaultKey = await createDefaultApiKey(user.id, now);
+  const token = await createJwt(user.id, user.email);
+
+  return c.json({
+    email_verified: true,
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      plan: user.planTier,
+    },
+    ...(defaultKey && {
+      api_key: {
+        raw_key: defaultKey.rawKey,
+        prefix: defaultKey.keyPrefix,
+        name: defaultKey.name,
+        note: 'Save this key — it will not be shown again.',
+      },
+    }),
+  });
+});
+
+// POST /v1/auth/resend-verification - Resend signup verification code
+auth.post('/resend-verification', zValidator('json', resendEmailVerificationSchema), async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const { challenge_id } = c.req.valid('json');
+  const now = Date.now();
+  const resent = await resendOtpChallenge(challenge_id, 'email_verification');
+  await sendEmailVerificationCode(resent.email, resent.code);
+
+  return c.json({
+    sent: true,
+    challenge_id: resent.challengeId,
+    expires_in_ms: Math.max(0, resent.expiresAt - now),
+    resend_after_ms: Math.max(0, resent.resendAvailableAt - now),
+  });
+});
+
+// POST /v1/auth/2fa/verify - Verify login OTP code and issue JWT
+auth.post('/2fa/verify', zValidator('json', verifyTwoFactorSchema), async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const { challenge_id, code } = c.req.valid('json');
+  const now = Date.now();
+  const verified = await verifyOtpChallenge(challenge_id, 'login_2fa', code);
+  const db = getDb();
+
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.id, verified.userId));
+  if (!user) {
+    throw new UnauthorizedError('Invalid verification challenge');
+  }
+
+  if (typeof verified.metadata?.fingerprint_hash === 'string') {
+    const ipHash = typeof verified.metadata?.ip_hash === 'string' ? verified.metadata.ip_hash : null;
+    await upsertUserPin(user.id, verified.metadata.fingerprint_hash, ipHash, now);
+  }
+
+  const token = await createJwt(user.id, user.email);
+  return c.json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      plan: user.planTier,
+    },
+  });
+});
+
+// POST /v1/auth/2fa/resend - Resend login OTP code
+auth.post('/2fa/resend', zValidator('json', resendTwoFactorSchema), async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const { challenge_id } = c.req.valid('json');
+  const now = Date.now();
+  const resent = await resendOtpChallenge(challenge_id, 'login_2fa');
+  await sendLoginCode(resent.email, resent.code);
+
+  return c.json({
+    sent: true,
+    challenge_id: resent.challengeId,
+    expires_in_ms: Math.max(0, resent.expiresAt - now),
+    resend_after_ms: Math.max(0, resent.resendAvailableAt - now),
   });
 });
 
@@ -215,8 +490,12 @@ auth.get('/oauth/:provider/callback', async (c) => {
       user = {
         id: userId,
         email: profile.email,
+        emailCanonical: canonicalizeEmail(profile.email),
+        emailVerifiedAt: now,
         passwordHash,
-        billingCustomerId: null,
+        stripeCustomerId: null,
+        signupFingerprintHash: null,
+        signupIpHash: null,
         planTier: 'free',
         planRenders: getPlanLimit('free'),
         createdAt: now,
