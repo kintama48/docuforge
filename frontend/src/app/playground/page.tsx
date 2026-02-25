@@ -10,19 +10,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
 
   return {
-    title: "Typst Playground | DocuForge",
+    title: "PDF Template Gallery | DocuForge Playground",
     description:
-      "Browse starter templates for invoices and logistics docs, then edit Typst + JSON and run live previews.",
+      "Search invoice, freight, certificate, and operations PDF templates. Edit fields and preview instantly in your browser.",
     openGraph: {
-      title: "DocuForge Playground",
+      title: "DocuForge PDF Template Gallery",
       description:
-        "Searchable template starters with live Typst editing and preview.",
+        "Search invoice, freight, certificate, and operations PDF templates. Edit fields and preview instantly.",
       images: [`/og/${locale}`],
     },
     twitter: {
-      title: "DocuForge Playground",
+      title: "DocuForge PDF Template Gallery",
       description:
-        "Searchable template starters with live Typst editing and preview.",
+        "Search invoice, freight, certificate, and operations PDF templates. Edit fields and preview instantly.",
       images: [`/og/${locale}`],
     },
   };

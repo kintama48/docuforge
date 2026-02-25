@@ -12,8 +12,12 @@
     "test:coverage": "NODE_OPTIONS='--max-old-space-size=4096' vitest run --coverage",
     "test:coverage:safe": "NODE_OPTIONS='--max-old-space-size=4096' vitest run --coverage --no-threads",
     "test:e2e": "playwright test",
-    "bench:competitors": "bun run scripts/benchmarks/run-competitor-benchmarks.ts",
-    "bench:competitors:strict": "BENCH_REQUIRE_ALL_TOOLS=1 bun run scripts/benchmarks/run-competitor-benchmarks.ts"
+    "test:load": "bun test ../load-test/tests",
+    "bench:load:smoke": "bash ../load-test/scripts/run-k6-benchmark.sh smoke",
+    "bench:load": "bash ../load-test/scripts/run-k6-benchmark.sh baseline",
+    "bench:load:stress": "bash ../load-test/scripts/run-k6-benchmark.sh stress",
+    "bench:competitors:legacy": "bun run scripts/benchmarks/run-competitor-benchmarks.ts",
+    "bench:competitors:legacy:strict": "BENCH_REQUIRE_ALL_TOOLS=1 bun run scripts/benchmarks/run-competitor-benchmarks.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

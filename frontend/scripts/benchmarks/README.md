@@ -1,41 +1,18 @@
-# Competitor Benchmark Module
+# Legacy Competitor Benchmark Harness
 
-This benchmark harness produces the dataset consumed by:
+This directory contains the legacy local competitor benchmark runner.
 
-- `frontend/src/app/home-client.tsx` (benchmark snapshot card)
-- `frontend/src/app/compare/compare-showcase.tsx` (benchmark charts)
+Preferred path moving forward:
 
-## Run
+- k6 load test suite in `load-test/`
+- run with `cd frontend && npm run bench:load`
 
-```bash
-cd frontend
-bun run bench:competitors
-```
-
-Strict mode (fail if any competitor is missing):
+Legacy commands (still available):
 
 ```bash
 cd frontend
-bun run bench:competitors:strict
+npm run bench:competitors:legacy
+npm run bench:competitors:legacy:strict
 ```
 
-## Output
-
-`frontend/src/data/benchmarks/latest.json`
-
-## Environment knobs
-
-- `BENCH_ITERATIONS` (default: `25`)
-- `BENCH_COLD_START_ITERATIONS` (default: `8`)
-- `BENCH_REQUEST_TIMEOUT_MS` (default: `25000`)
-- `BENCH_ENGINE_BOOT_TIMEOUT_MS` (default: `240000`)
-- `BENCH_SKIP_ENGINE_BUILD` (`1` to skip `cargo build --release` when binary already exists)
-- `BENCH_OUTPUT_JSON` (default: `src/data/benchmarks/latest.json`)
-- `BENCH_REQUIRE_ALL_TOOLS` (`1` to fail when tools are unavailable)
-
-## Tool requirements
-
-- DocuForge engine: Rust toolchain (`cargo`) available locally
-- Puppeteer: install with `cd frontend && bun add -d puppeteer && bun pm trust puppeteer esbuild`
-- wkhtmltopdf: `wkhtmltopdf` command in PATH
-- WeasyPrint: `weasyprint` command in PATH
+The legacy harness remains useful for one-off local side-by-side engine tests, but the primary benchmark source should come from repeatable k6 profiles in `load-test/`.

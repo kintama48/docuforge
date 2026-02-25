@@ -3374,9 +3374,9 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function resolveInitialLocale(initialLocale?: Locale): Locale {
-  if (typeof window === "undefined") {
-    return initialLocale ?? "en";
-  }
+  // Keep client and server first paint aligned to avoid hydration mismatch.
+  if (initialLocale) return initialLocale;
+  if (typeof window === "undefined") return "en";
 
   const { locale: pathLocale } = stripLocalePath(window.location?.pathname ?? "/");
   const stored = localStorage.getItem("docuforge-locale");
@@ -3385,10 +3385,10 @@ function resolveInitialLocale(initialLocale?: Locale): Locale {
   if (pathLocale) return pathLocale;
   if (queryLocale) return normalizeLocale(queryLocale);
   if (stored) return normalizeLocale(stored);
-  if (!initialLocale && typeof navigator !== "undefined") {
+  if (typeof navigator !== "undefined") {
     return normalizeLocale(navigator.language);
   }
-  return initialLocale ?? "en";
+  return "en";
 }
 
 export function I18nProvider({
@@ -3399,6 +3399,25 @@ export function I18nProvider({
   initialLocale?: Locale;
 }) {
   const [locale, setLocale] = useState<Locale>(() => resolveInitialLocale(initialLocale));
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const { locale: pathLocale } = stripLocalePath(window.location?.pathname ?? "/");
+    const queryLocale = new URLSearchParams(window.location.search).get("lang");
+    const stored = localStorage.getItem("docuforge-locale");
+
+    const detected = pathLocale
+      ?? (queryLocale ? normalizeLocale(queryLocale) : null)
+      ?? (stored ? normalizeLocale(stored) : null);
+
+    if (detected && detected !== locale) {
+      const timer = window.setTimeout(() => {
+        setLocale(detected);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, [locale]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
