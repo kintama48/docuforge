@@ -16,3 +16,4 @@
 - Do not ship benchmark sections with hardcoded placeholder metrics; source benchmark UI from a validated report artifact and keep a reproducible runner script in-repo.
 - Visual adjustments must stay scoped: avoid global icon-size shifts when the user asks for local layout polish.
 - For security marketing copy, lead with customer outcomes and risk reduction; avoid exposing low-level headers/protocol internals in hero/value-prop sections.
+- For every new feature request, implement end-to-end across the full stack (backend + frontend + integrations) and include automated tests that validate the complete flow before considering the task done.

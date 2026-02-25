@@ -80,7 +80,11 @@ async function createUser(
   await db.insert(schema.users).values({
     id: userId,
     email: `${userId}@test.com`,
+    emailCanonical: `${userId}@test.com`,
+    emailVerifiedAt: now,
     passwordHash: 'test_hash',
+    signupFingerprintHash: null,
+    signupIpHash: null,
     planTier: opts.planTier || 'free',
     planRenders: opts.planRenders ?? 1000,
     createdAt: now,

@@ -41,6 +41,27 @@ export const createApiKeySchema = z.object({
   name: z.string().min(1).max(100),
 });
 
+const otpCodeSchema = z.string().regex(/^\d{6}$/, 'Verification code must be 6 digits');
+const challengeIdSchema = z.string().min(1, 'challenge_id is required');
+
+export const verifyEmailSchema = z.object({
+  challenge_id: challengeIdSchema,
+  code: otpCodeSchema,
+});
+
+export const resendEmailVerificationSchema = z.object({
+  challenge_id: challengeIdSchema,
+});
+
+export const verifyTwoFactorSchema = z.object({
+  challenge_id: challengeIdSchema,
+  code: otpCodeSchema,
+});
+
+export const resendTwoFactorSchema = z.object({
+  challenge_id: challengeIdSchema,
+});
+
 // Render schemas
 export const passwordProtectionModeSchema = z.enum(['none', 'client_blind']);
 
@@ -221,6 +242,10 @@ export const updateWebhookSchema = z
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type ResendEmailVerificationInput = z.infer<typeof resendEmailVerificationSchema>;
+export type VerifyTwoFactorInput = z.infer<typeof verifyTwoFactorSchema>;
+export type ResendTwoFactorInput = z.infer<typeof resendTwoFactorSchema>;
 export type RenderInput = z.infer<typeof renderSchema>;
 export type RenderSecureInput = z.infer<typeof renderSecureSchema>;
 export type RenderPreviewInput = z.infer<typeof renderPreviewSchema>;
