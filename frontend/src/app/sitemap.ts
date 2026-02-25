@@ -3,6 +3,7 @@ import { env } from "@/src/config/env";
 import { locales } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { listAllContentPaths } from "@/src/lib/content-hub";
+import { listPlaygroundPresetSlugs } from "@/src/app/playground/playground-presets";
 
 function absolute(path: string) {
   const base = env.marketingUrl.endsWith("/")
@@ -34,5 +35,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))
   );
 
-  return [...localizedBase, ...contentRoutes];
+  const playgroundTemplateRoutes = listPlaygroundPresetSlugs().flatMap((slug) =>
+    locales.map((locale) => ({
+      url: absolute(withLocale(`/playground/${slug}`, locale)),
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    }))
+  );
+
+  return [...localizedBase, ...contentRoutes, ...playgroundTemplateRoutes];
 }

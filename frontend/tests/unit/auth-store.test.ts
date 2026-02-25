@@ -38,13 +38,15 @@ describe("auth store", () => {
     expect(useAuthStore.getState().user).toBeNull();
   });
 
-  it("persists to localStorage", () => {
+  it("persists only non-sensitive auth state", () => {
     useAuthStore.getState().login("token", {
       id: "usr",
       email: "test@docuforge.dev",
       plan: "free",
     });
-    expect(localStorage.getItem("docuforge-auth")).toContain("token");
+    const persisted = localStorage.getItem("docuforge-auth") || "";
+    expect(persisted).toContain("test@docuforge.dev");
+    expect(persisted).not.toContain("token");
   });
 
   it("updates user and authentication status", () => {

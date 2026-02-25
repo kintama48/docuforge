@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { renderWithAppProviders } from "../helpers/render-app";
 import { SiteHeader } from "@/src/app/components/site-header";
 
@@ -30,5 +30,24 @@ describe("SiteHeader", () => {
 
     expect(readDocs).toHaveClass("btn", "btn-secondary");
     expect(openConsole).toHaveClass("btn", "btn-primary");
+  });
+
+  it("updates nav links to localized paths on localized routes", async () => {
+    window.history.replaceState({}, "", "/de/playground");
+    renderWithAppProviders(<SiteHeader />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("link", {
+          name: /funktionen/i,
+        })
+      ).toHaveAttribute("href", "/de#features");
+    });
+
+    expect(
+      screen.getByRole("link", {
+        name: /docuforge/i,
+      })
+    ).toHaveAttribute("href", "/de");
   });
 });

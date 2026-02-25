@@ -4,29 +4,31 @@
  * Auth Store - Authentication state management
  *
  * SECURITY NOTE (FE-C2):
- * JWT tokens are stored in localStorage for simplicity and to enable
- * API calls from service workers. This has trade-offs:
+ * Web authentication relies on httpOnly session cookies set by the API.
+ * We keep token state in-memory only for compatibility paths and persist
+ * only minimal non-sensitive user profile data.
+ * This avoids localStorage token persistence, which is XSS-extractable by design.
  *
  * Pros:
  * - Simple implementation
  * - Works with SSR/hydration
- * - Accessible for API requests
+ * - JWT is no longer persisted in browser storage
  *
  * Cons:
- * - Vulnerable to XSS attacks (any JS on page can read the token)
- * - Tokens persist until explicitly cleared
+ * - Cookie auth requires strict CORS + same-site policy alignment
  *
  * Mitigations in place:
  * - Content Security Policy (CSP) headers should be configured
  * - No third-party scripts with write access
- * - Token expiry enforced server-side
+ * - Token expiry and cookie attributes enforced server-side
  *
- * For higher security requirements, consider httpOnly cookies with
- * CSRF protection, but this requires API changes.
+ * CSRF defenses should be kept enabled server-side for cookie-authenticated
+ * mutations (trusted-origin checks + same-site cookie policy).
  */
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { env } from "@/src/config/env";
 import type { User } from "@/src/lib/api-types";
 
 type AuthState = {
@@ -102,6 +104,15 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ token: null, user: null });
         if (typeof window !== "undefined") {
+          void fetch(`${env.apiUrl}/v1/auth/logout`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).catch(() => {
+            // Best effort cookie cleanup; local state is already cleared.
+          });
           localStorage.removeItem("docuforge-auth");
           if (process.env.NODE_ENV !== "test") {
             window.location.href = "/login";
@@ -128,7 +139,7 @@ export const useAuthStore = create<AuthState>()(
         }
         state?.setHasHydrated(true);
       },
-      partialize: (state) => ({ token: state.token, user: state.user }),
+      partialize: (state) => ({ user: state.user }),
     }
   )
 );
