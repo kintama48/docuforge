@@ -9,6 +9,8 @@ export function UsageCard() {
   const used = data?.renders.used ?? 0;
   const limit = data?.renders.limit ?? 0;
   const percent = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  const aiUsed = data?.ai_credits?.used ?? 0;
+  const aiLimit = data?.ai_credits?.limit ?? 0;
 
   return (
     <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
@@ -26,6 +28,9 @@ export function UsageCard() {
       </div>
       <p className="mt-2 text-xs text-[var(--muted-dim)]">
         {percent}% {messages.dashboard.usageSuffix}
+      </p>
+      <p className="mt-3 text-xs text-[var(--muted-dim)]">
+        AI imports: {isLoading ? "—" : `${aiUsed} / ${aiLimit}`}
       </p>
     </div>
   );

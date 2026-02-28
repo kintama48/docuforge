@@ -137,7 +137,7 @@ export function useResendTwoFactor() {
 
 export function isVerificationRequiredResponse(
   data: LoginResult | RegisterResult
-): data is { verification_required: true; challenge_id: string } {
+): data is Extract<LoginResult | RegisterResult, { verification_required: true }> {
   return (
     typeof data === "object" &&
     data !== null &&
@@ -149,7 +149,7 @@ export function isVerificationRequiredResponse(
 
 export function isTwoFactorRequiredResponse(
   data: LoginResult
-): data is { two_factor_required: true; challenge_id: string } {
+): data is Extract<LoginResult, { two_factor_required: true }> {
   return (
     typeof data === "object" &&
     data !== null &&

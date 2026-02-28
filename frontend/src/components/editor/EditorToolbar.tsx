@@ -28,6 +28,7 @@ type EditorToolbarProps = {
   onOpenShortcuts: () => void;
   onOpenSettings: () => void;
   onFork: () => void;
+  onExportImages: () => void;
   onToggleAutoRender: () => void;
   autoRender: boolean;
   isLowCodeMode: boolean;
@@ -42,6 +43,7 @@ export function EditorToolbar({
   onOpenShortcuts,
   onOpenSettings,
   onFork,
+  onExportImages,
   onToggleAutoRender,
   autoRender,
   isLowCodeMode,
@@ -145,6 +147,12 @@ export function EditorToolbar({
           className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)] disabled:opacity-60"
         >
           {messages.editor.downloadPdf}
+        </button>
+        <button
+          onClick={onExportImages}
+          className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
+        >
+          Export images
         </button>
         <button
           onClick={onPublish}

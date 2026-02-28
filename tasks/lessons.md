@@ -17,3 +17,4 @@
 - Visual adjustments must stay scoped: avoid global icon-size shifts when the user asks for local layout polish.
 - For security marketing copy, lead with customer outcomes and risk reduction; avoid exposing low-level headers/protocol internals in hero/value-prop sections.
 - For every new feature request, implement end-to-end across the full stack (backend + frontend + integrations) and include automated tests that validate the complete flow before considering the task done.
+- When the user explicitly asks to simplify import architecture (e.g., no OCR), remove OCR from v1 scope and route converter output + user prompt into the in-house LLM pipeline instead of over-designing.

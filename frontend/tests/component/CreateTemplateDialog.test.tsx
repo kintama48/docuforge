@@ -7,6 +7,8 @@ import { getGuidedTemplatePreset } from "@/src/lib/low-code";
 
 const createMutate = vi.fn();
 const forkMutate = vi.fn();
+const analyzeMutate = vi.fn();
+const createImportedMutate = vi.fn();
 const templatesData = {
   templates: [
     {
@@ -21,12 +23,16 @@ vi.mock("@/src/hooks/use-templates", () => ({
   useTemplates: () => ({ data: templatesData }),
   useCreateTemplate: () => ({ mutate: createMutate, isPending: false }),
   useForkTemplate: () => ({ mutate: forkMutate, isPending: false }),
+  useAnalyzePdfImport: () => ({ mutate: analyzeMutate, isPending: false }),
+  useCreateImportedTemplate: () => ({ mutate: createImportedMutate, isPending: false }),
 }));
 
 describe("CreateTemplateDialog", () => {
   beforeEach(() => {
     createMutate.mockReset();
     forkMutate.mockReset();
+    analyzeMutate.mockReset();
+    createImportedMutate.mockReset();
   });
 
   it("disables create until name is provided", () => {

@@ -1,0 +1,56 @@
+{
+  "name": "renderImage",
+  "displayName": "Render Image",
+  "method": "POST",
+  "path": "/v1/render/image",
+  "headers": {
+    "X-API-Key": "{{connection.api_key}}",
+    "Content-Type": "application/json"
+  },
+  "parameters": [
+    {
+      "name": "template_id",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "format",
+      "type": "string",
+      "required": false,
+      "default": "png"
+    },
+    {
+      "name": "dpi",
+      "type": "number",
+      "required": false,
+      "default": 150
+    },
+    {
+      "name": "quality",
+      "type": "number",
+      "required": false,
+      "default": 90
+    },
+    {
+      "name": "page_numbers",
+      "type": "array",
+      "required": false
+    },
+    {
+      "name": "data",
+      "type": "object",
+      "required": false
+    }
+  ],
+  "body": {
+    "template_id": "{{template_id}}",
+    "format": "{{format}}",
+    "dpi": "{{dpi}}",
+    "quality": "{{quality}}",
+    "page_numbers": "{{page_numbers}}",
+    "data": "{{data}}"
+  },
+  "response": {
+    "type": "bytes"
+  }
+}

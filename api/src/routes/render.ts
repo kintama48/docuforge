@@ -6,7 +6,14 @@ import { getDb, schema } from '../db/client';
 import { apiKeyAuth, jwtAuth } from '../middleware/auth';
 import { renderRateLimit, previewRateLimit } from '../middleware/rate-limit';
 import { noCache } from '../middleware/cache';
-import { zValidator, renderSchema, renderSecureSchema, renderPreviewSchema } from '../lib/validation';
+import {
+  zValidator,
+  renderSchema,
+  renderSecureSchema,
+  renderPreviewSchema,
+  renderImageSchema,
+  renderImagePreviewSchema,
+} from '../lib/validation';
 import { compileLowCodeSpec } from '../lib/low-code';
 import { renderPdf } from '../services/engine';
 import { checkCredits, logRender } from '../services/usage';
@@ -15,6 +22,7 @@ import { NotFoundError, LimitExceededError, UnauthorizedError, ValidationError }
 import { env } from '../config/env';
 import { dispatchWebhookEvent } from '../services/webhook';
 import type { EnginePayload } from '../types';
+import { renderPdfToImages } from '../services/image-render';
 import {
   assertPublicPreviewSourceSize,
   assertTrustedPublicPreviewOrigin,
@@ -216,6 +224,130 @@ render.post('/', apiKeyAuth, renderRateLimit, noCache, zValidator('json', render
   c.header('X-Pdf-Protection-Mode', protectionMode);
 
   return c.body(result.pdf);
+});
+
+// POST /v1/render/image - Production image render with API key
+render.post('/image', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderImageSchema), async (c) => {
+  const { template_id, data, format, dpi, quality, page_numbers } = c.req.valid('json');
+  const { userId } = c.get('auth');
+  const db = getDb();
+
+  const credits = await checkCredits(userId);
+  if (!credits.allowed) {
+    throw new LimitExceededError(`Monthly render limit reached (${credits.used}/${credits.limit})`, {
+      usage: {
+        used: credits.used,
+        limit: credits.limit,
+        plan: credits.plan,
+        resets_at: credits.periodEnd.toISOString(),
+      },
+      upgrade_url: 'https://www.docuforge.app/pricing',
+    });
+  }
+
+  const [template] = await db
+    .select()
+    .from(schema.templates)
+    .where(eq(schema.templates.id, template_id));
+
+  if (!template) {
+    throw new NotFoundError('Template not found');
+  }
+  if (template.userId !== null && template.userId !== userId) {
+    throw new NotFoundError('Template not found');
+  }
+  if (!template.liveVersionId) {
+    throw new NotFoundError('Template has no published version');
+  }
+
+  const [version] = await db
+    .select()
+    .from(schema.templateVersions)
+    .where(eq(schema.templateVersions.id, template.liveVersionId));
+
+  if (!version) {
+    throw new NotFoundError('Template version not found');
+  }
+
+  const assets = await resolveUserAssets(userId);
+  const templateFingerprint = computeTemplateFingerprint(version.id, version.source, version.files || null);
+  const payload: EnginePayload = {
+    template: {
+      main: 'main.typ',
+      files: {
+        'main.typ': version.source,
+        ...(version.files || {}),
+      },
+    },
+    data: data || {},
+    assets,
+    options: {
+      timeout_ms: env.ENGINE_TIMEOUT_MS,
+      cache: {
+        cacheable: true,
+        template_fingerprint: templateFingerprint,
+        version_id: version.id,
+      },
+    },
+  };
+
+  const startedAt = Date.now();
+  let logId: string;
+
+  try {
+    const pdfResult = await renderPdf(payload);
+    const imageResult = await renderPdfToImages(pdfResult.pdf, {
+      format,
+      dpi,
+      quality,
+      page_numbers,
+    });
+
+    logId = await logRender({
+      userId,
+      templateId: template.id,
+      templateVersionId: version.id,
+      status: 'success',
+      durationMs: Date.now() - startedAt,
+    });
+
+    dispatchWebhookEvent(userId, 'render.completed', {
+      render_id: logId,
+      template_id: template.id,
+      template_version_id: version.id,
+      status: 'success',
+      output_format: imageResult.archive ? 'zip' : imageResult.contentType,
+      page_count: imageResult.pageCount,
+      duration_ms: Date.now() - startedAt,
+    }).catch((e) => console.error('Webhook dispatch error:', e));
+
+    c.header('Content-Type', imageResult.contentType);
+    c.header('Content-Disposition', `attachment; filename="${imageResult.filename}"`);
+    c.header('X-Render-Id', logId);
+    c.header('X-Render-Duration', String(Date.now() - startedAt));
+    c.header('X-Image-Page-Count', String(imageResult.pageCount));
+    c.header('X-Image-Archive', imageResult.archive ? 'true' : 'false');
+    c.header('X-Pdf-Protection-Mode', 'none');
+    return c.body(imageResult.body);
+  } catch (err) {
+    const errorLogId = await logRender({
+      userId,
+      templateId: template.id,
+      templateVersionId: version.id,
+      status: 'error',
+      durationMs: 0,
+      errorMessage: err instanceof Error ? err.message : 'Unknown error',
+    });
+
+    dispatchWebhookEvent(userId, 'render.failed', {
+      render_id: errorLogId,
+      template_id: template.id,
+      error: err instanceof Error ? err.message : 'Unknown error',
+      output_format: 'image',
+    }).catch((e) => console.error('Webhook dispatch error:', e));
+
+    throw err;
+  }
 });
 
 // POST /v1/render/secure - Production render with in-memory PDF encryption
@@ -510,5 +642,81 @@ render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', r
 
   return c.body(result.pdf);
 });
+
+// POST /v1/render/preview/image - Preview image render with JWT
+render.post(
+  '/preview/image',
+  jwtAuth,
+  previewRateLimit,
+  noCache,
+  zValidator('json', renderImagePreviewSchema),
+  async (c) => {
+    const { source, low_code_spec, files, data, format, dpi, quality, page_numbers } = c.req.valid('json');
+    const { userId } = c.get('auth');
+    const previewSource = source ?? (low_code_spec ? compileLowCodeSpec(low_code_spec) : null);
+    if (!previewSource) {
+      throw new ValidationError('Either source or low_code_spec is required');
+    }
+
+    const assets = await resolveUserAssets(userId);
+    const payload: EnginePayload = {
+      template: {
+        main: 'main.typ',
+        files: {
+          'main.typ': previewSource,
+          ...(files || {}),
+        },
+      },
+      data: data || {},
+      assets,
+      options: {
+        timeout_ms: env.ENGINE_TIMEOUT_MS,
+        cache: {
+          cacheable: false,
+        },
+      },
+    };
+
+    const startedAt = Date.now();
+    let logId: string;
+
+    try {
+      const pdfResult = await renderPdf(payload);
+      const imageResult = await renderPdfToImages(pdfResult.pdf, {
+        format,
+        dpi,
+        quality,
+        page_numbers,
+      });
+
+      logId = await logRender({
+        userId,
+        templateId: null,
+        templateVersionId: null,
+        status: 'success',
+        durationMs: Date.now() - startedAt,
+      });
+
+      c.header('Content-Type', imageResult.contentType);
+      c.header('Content-Disposition', `attachment; filename="${imageResult.filename}"`);
+      c.header('X-Render-Id', logId);
+      c.header('X-Render-Duration', String(Date.now() - startedAt));
+      c.header('X-Image-Page-Count', String(imageResult.pageCount));
+      c.header('X-Image-Archive', imageResult.archive ? 'true' : 'false');
+      c.header('X-Pdf-Protection-Mode', 'none');
+      return c.body(imageResult.body);
+    } catch (err) {
+      await logRender({
+        userId,
+        templateId: null,
+        templateVersionId: null,
+        status: 'error',
+        durationMs: 0,
+        errorMessage: err instanceof Error ? err.message : 'Unknown error',
+      });
+      throw err;
+    }
+  }
+);
 
 export default render;

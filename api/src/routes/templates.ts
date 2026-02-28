@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { eq, inArray } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
+import { aiRateLimit } from '../middleware/rate-limit';
 import { shortCache, mediumCache, noCache } from '../middleware/cache';
 import { etag } from '../middleware/etag';
 import {
@@ -12,6 +13,8 @@ import {
   updateTemplateSchema,
   forkTemplateSchema,
   listTemplatesQuerySchema,
+  pdfImportAnalyzeSchema,
+  pdfImportCreateSchema,
 } from '../lib/validation';
 import {
   createTemplate,
@@ -23,6 +26,9 @@ import {
   getTemplate,
   getTemplateVersion,
 } from '../services/template';
+import { aiGenerateFromPdfImport } from '../services/ai';
+import { consumeAiCreditOrThrow, updateAiUsageLog } from '../services/ai-usage';
+import { decodePdfBase64, extractPdfText } from '../services/pdf-import';
 
 const templates = new Hono();
 
@@ -286,5 +292,96 @@ templates.delete('/:id', jwtAuth, noCache, async (c) => {
 
   return c.json({ message: 'Template deleted' });
 });
+
+// POST /v1/templates/import/pdf/analyze - Analyze PDF and generate best-effort Typst draft
+templates.post(
+  '/import/pdf/analyze',
+  jwtAuth,
+  aiRateLimit,
+  noCache,
+  zValidator('json', pdfImportAnalyzeSchema),
+  async (c) => {
+    const { userId } = c.get('auth');
+    const data = c.req.valid('json');
+    const usageLogId = await consumeAiCreditOrThrow(userId, 'pdf_import', 1);
+
+    try {
+      const pdfBuffer = decodePdfBase64(data.pdf_base64);
+      const analysis = await extractPdfText(pdfBuffer);
+      const ai = await aiGenerateFromPdfImport({
+        fileName: data.file_name,
+        converterOutput: analysis.extractedText,
+        userPrompt: data.user_prompt,
+      });
+
+      await updateAiUsageLog(usageLogId, {
+        status: 'consumed',
+        tokensUsed: ai.tokensUsed,
+      });
+
+      return c.json({
+        analysis: {
+          source: ai.code,
+          tokens_used: ai.tokensUsed,
+          converter: analysis.converterName,
+          extracted_text_preview: analysis.extractedText.slice(0, 5000),
+          ai_credit_charged: 1,
+          usage_log_id: usageLogId,
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'PDF import analysis failed';
+      await updateAiUsageLog(usageLogId, {
+        status: 'failed',
+        errorMessage: message,
+      });
+      throw error;
+    }
+  }
+);
+
+// POST /v1/templates/import/pdf/create - Create editable template draft from analyzed source
+templates.post(
+  '/import/pdf/create',
+  jwtAuth,
+  noCache,
+  zValidator('json', pdfImportCreateSchema),
+  async (c) => {
+    const { userId } = c.get('auth');
+    const data = c.req.valid('json');
+
+    const { template, version } = await createTemplate({
+      userId,
+      name: data.name,
+      description: data.description,
+      source: data.source,
+      defaults: data.defaults,
+      commitMessage: data.commit_message || 'Imported from PDF',
+    });
+
+    return c.json(
+      {
+        template: {
+          id: template.id,
+          name: template.name,
+          description: template.description,
+          live_version: {
+            id: version.id,
+            version_number: version.versionNumber,
+            source: version.source,
+            files: version.files,
+            defaults: version.defaults,
+            low_code_spec: version.lowCodeSpec,
+            commit_message: version.commitMessage,
+            created_at: version.createdAt,
+          },
+          created_at: template.createdAt,
+          updated_at: template.updatedAt,
+        },
+      },
+      201
+    );
+  }
+);
 
 export default templates;

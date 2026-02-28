@@ -70,6 +70,7 @@
 - **Proof Over Hope**: Enforce correctness with assertions; use tests where assertions can't reach.
 - **Icon Consistency**: Use Phosphor icons as the default icon library on product surfaces unless explicitly overridden.
 - **Session Security**: Keep auth flows persistent and secure: expose logout in authenticated surfaces, sanitize redirect targets, and verify security headers/caching behavior after auth changes.
+- **PDF Import Strategy**: For PDF import, do not add OCR-first complexity unless explicitly requested. Use deterministic converter output plus user input, then run in-house LLM/RAG best-effort reconstruction with a clear user review step.
 
 # Communication Efficiency
 - **Conserve Tokens**: Use only the tokens necessary to complete the task.

@@ -8,6 +8,7 @@ import { DocuMasterWidget } from "@/src/components/editor/DocuMasterWidget";
 import { EditorLayout } from "@/src/components/editor/EditorLayout";
 import { EditorStatusBar } from "@/src/components/editor/EditorStatusBar";
 import { EditorToolbar } from "@/src/components/editor/EditorToolbar";
+import { ImageExportDialog } from "@/src/components/editor/ImageExportDialog";
 import { KeyboardShortcutsModal } from "@/src/components/editor/KeyboardShortcutsModal";
 import { PublishDialog } from "@/src/components/editor/PublishDialog";
 import { TemplateSettingsDialog } from "@/src/components/editor/TemplateSettingsDialog";
@@ -15,7 +16,7 @@ import { VersionHistoryPanel } from "@/src/components/editor/VersionHistoryPanel
 import { useDebounce } from "@/src/hooks/use-debounce";
 import { useEditorCommands } from "@/src/hooks/use-editor-commands";
 import { useKeyboard } from "@/src/hooks/use-keyboard";
-import { usePreviewRender } from "@/src/hooks/use-render";
+import { usePreviewImageRender, usePreviewRender } from "@/src/hooks/use-render";
 import {
   useForkTemplate,
   usePublishVersion,
@@ -65,6 +66,7 @@ export default function EditorPage() {
   const debouncedSource = useDebounce(source, 300);
   const debouncedData = useDebounce(dataString, 300);
   const previewRender = usePreviewRender();
+  const previewImageRender = usePreviewImageRender();
 
   // Store mutate in a ref to avoid recreating the useEffect dependency
   // FE-C1 fix: useMutation returns a new object each render, causing infinite loops
@@ -83,6 +85,7 @@ export default function EditorPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showRightPane, setShowRightPane] = useState(true);
+  const [showImageExport, setShowImageExport] = useState(false);
 
   useEffect(() => {
     if (data?.template) {
@@ -288,6 +291,7 @@ export default function EditorPage() {
           }
           autoRender={autoRender}
           onToggleAutoRender={() => setAutoRender((prev) => !prev)}
+          onExportImages={() => setShowImageExport(true)}
           isLowCodeMode={isLowCodeMode}
           advancedTypstEnabled={advancedTypstEnabled}
           onToggleAdvancedTypst={() =>
@@ -358,6 +362,49 @@ export default function EditorPage() {
           open={showSettings}
           onClose={() => setShowSettings(false)}
           templateId={data.template.id}
+        />
+        <ImageExportDialog
+          open={showImageExport}
+          pending={previewImageRender.isPending}
+          onClose={() => setShowImageExport(false)}
+          onExport={(options) => {
+            const onSuccess = (result: {
+              blob: Blob;
+              filename: string;
+              contentType: string;
+            }) => {
+              const url = URL.createObjectURL(result.blob);
+              const anchor = document.createElement("a");
+              anchor.href = url;
+              anchor.download = result.filename;
+              anchor.click();
+              URL.revokeObjectURL(url);
+              setShowImageExport(false);
+            };
+
+            if (blockMode) {
+              if (!lowCodeSpec) return;
+              previewImageRender.mutate(
+                {
+                  low_code_spec: lowCodeSpec,
+                  data: dataObject,
+                  ...options,
+                },
+                { onSuccess }
+              );
+              return;
+            }
+
+            previewImageRender.mutate(
+              {
+                source,
+                files,
+                data: dataObject,
+                ...options,
+              },
+              { onSuccess }
+            );
+          }}
         />
         <CommandPalette
           open={showCommandPalette}

@@ -14,6 +14,13 @@ type RenderPayload = {
   data: Record<string, unknown>;
 };
 
+type RenderImagePayload = RenderPayload & {
+  format?: "png" | "jpeg";
+  dpi?: number;
+  quality?: number;
+  page_numbers?: number[];
+};
+
 export function usePreviewRender() {
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -70,6 +77,44 @@ export function usePreviewRender() {
           column: 1,
         });
       }
+    },
+  });
+}
+
+function getFilenameFromDisposition(disposition: string | null, fallback: string): string {
+  if (!disposition) return fallback;
+  const match = disposition.match(/filename="([^"]+)"/i);
+  return match?.[1] ?? fallback;
+}
+
+export function usePreviewImageRender() {
+  const controllerRef = useRef<AbortController | null>(null);
+
+  return useMutation({
+    mutationFn: async (payload: RenderImagePayload) => {
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
+      controllerRef.current = new AbortController();
+      const response = await api.postRaw(
+        "/v1/render/preview/image",
+        payload,
+        controllerRef.current.signal
+      );
+      const blob = await response.blob();
+      const filename = getFilenameFromDisposition(
+        response.headers.get("Content-Disposition"),
+        payload.page_numbers && payload.page_numbers.length > 1
+          ? "document-images.zip"
+          : payload.format === "jpeg"
+            ? "document-page-0001.jpg"
+            : "document-page-0001.png"
+      );
+      return {
+        blob,
+        filename,
+        contentType: response.headers.get("Content-Type") || "application/octet-stream",
+      };
     },
   });
 }

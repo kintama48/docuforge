@@ -113,7 +113,9 @@ describe('Templates routes', () => {
     const body = await response.json();
     expect(body.template.live_version.low_code_spec).toBeDefined();
     expect(body.template.live_version.source).toContain('sys.inputs');
-    expect(body.template.live_version.source).toContain('data.invoice.title');
+    expect(body.template.live_version.source).toContain(
+      'data.at("invoice", default: (:)).at("title", default: "Untitled")'
+    );
   });
 
   it('updates template metadata', async () => {
@@ -206,7 +208,9 @@ describe('Templates routes', () => {
     });
     const templateBody = await responseTemplate.json();
     expect(templateBody.template.live_version.low_code_spec).toBeDefined();
-    expect(templateBody.template.live_version.source).toContain('data.invoice.title');
+    expect(templateBody.template.live_version.source).toContain(
+      'data.at("invoice", default: (:)).at("title", default: "Untitled")'
+    );
   });
 
   it('rejects forking private templates owned by others', async () => {

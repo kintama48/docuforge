@@ -1,0 +1,18 @@
+{
+  "name": "DocuForge Render PDF",
+  "method": "POST",
+  "url": "{{DOCUFORGE_BASE_URL}}/v1/render",
+  "headers": {
+    "X-API-Key": "{{DOCUFORGE_API_KEY}}",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "template_id": "tmpl_replace_me",
+    "data": {
+      "name": "Customer"
+    }
+  },
+  "response": {
+    "type": "file"
+  }
+}

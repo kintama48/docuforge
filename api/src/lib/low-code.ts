@@ -89,7 +89,32 @@ function parseMustacheFieldPaths(value: string): string[] {
 }
 
 function toTypstPath(path: string): string {
-  return `data.${path}`;
+  const segments = path.split('.');
+  const [first, ...rest] = segments;
+  if (!first) {
+    return 'data';
+  }
+
+  let expr = `data.at(${quote(first)}, default: (:))`;
+  for (const segment of rest) {
+    expr = `${expr}.at(${quote(segment)}, default: (:))`;
+  }
+  return expr;
+}
+
+function toTypstLookup(path: string, fallback: string): string {
+  const segments = path.split('.');
+  if (segments.length === 0 || !segments[0]) {
+    return fallback;
+  }
+
+  if (segments.length === 1) {
+    return `data.at(${quote(segments[0]!)}, default: ${fallback})`;
+  }
+
+  const parentPath = segments.slice(0, -1).join('.');
+  const leaf = segments[segments.length - 1]!;
+  return `${toTypstPath(parentPath)}.at(${quote(leaf)}, default: ${fallback})`;
 }
 
 function toTypstValue(value: string, fallback = ''): string {
@@ -97,7 +122,7 @@ function toTypstValue(value: string, fallback = ''): string {
   if (!dynamicPath) {
     return quote(value);
   }
-  return `${toTypstPath(dynamicPath)} ?? ${quote(fallback)}`;
+  return toTypstLookup(dynamicPath, quote(fallback));
 }
 
 function sanitizeColor(value: string | undefined, fallback: string): string {
@@ -139,12 +164,12 @@ function blockToTypst(block: LowCodeSpec['blocks'][number]): string {
     : '';
   const colLabels = columns.map((column) => `[${column.toUpperCase()}]`).join(', ');
   const cells = columns
-    .map((column) => `          [#(item.${column} ?? "")]`)
+    .map((column) => `          [#(item.at(${quote(column)}, default: ""))]`)
     .join(',\n');
 
   return [
     titleLine.trimEnd(),
-    `#let _items = ${toTypstPath(itemsPath)} ?? ()`,
+    `#let _items = ${toTypstLookup(itemsPath, '()')}`,
     '#table(',
     `  columns: ${columns.length},`,
     '  inset: 8pt,',
@@ -152,7 +177,7 @@ function blockToTypst(block: LowCodeSpec['blocks'][number]): string {
     `  ${colLabels},`,
     '  .._items.map(item => (',
     cells,
-    '  )),',
+    '  )).flatten(),',
     ')',
     '',
   ]

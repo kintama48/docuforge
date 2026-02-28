@@ -1,0 +1,22 @@
+{
+  "name": "DocuForge Render Image",
+  "method": "POST",
+  "url": "{{DOCUFORGE_BASE_URL}}/v1/render/image",
+  "headers": {
+    "X-API-Key": "{{DOCUFORGE_API_KEY}}",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "template_id": "tmpl_replace_me",
+    "format": "png",
+    "dpi": 150,
+    "quality": 90,
+    "page_numbers": [1],
+    "data": {
+      "name": "Customer"
+    }
+  },
+  "response": {
+    "type": "file"
+  }
+}

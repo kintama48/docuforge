@@ -146,6 +146,25 @@ export async function initTestDb() {
   await db.run(sql`CREATE INDEX IF NOT EXISTS idx_render_logs_usage ON render_logs(user_id, created_at)`);
 
   await db.run(sql`
+    CREATE TABLE IF NOT EXISTS ai_usage_logs (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      feature TEXT NOT NULL,
+      credits_used INTEGER NOT NULL DEFAULT 1,
+      status TEXT NOT NULL DEFAULT 'consumed',
+      tokens_used INTEGER NOT NULL DEFAULT 0,
+      error_message TEXT,
+      created_at INTEGER NOT NULL
+    )
+  `);
+  await db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_user_created ON ai_usage_logs(user_id, created_at)`
+  );
+  await db.run(
+    sql`CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_feature_created ON ai_usage_logs(feature, created_at)`
+  );
+
+  await db.run(sql`
     CREATE TABLE IF NOT EXISTS oauth_accounts (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

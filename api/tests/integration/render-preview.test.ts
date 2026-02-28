@@ -154,7 +154,9 @@ describe('POST /v1/render/preview', () => {
     const lastRequest = ctx.engine.getLastRequest();
     expect(lastRequest).toBeDefined();
     expect(lastRequest!.body?.template?.files?.['main.typ']).toContain('sys.inputs');
-    expect(lastRequest!.body?.template?.files?.['main.typ']).toContain('data.invoice.title');
+    expect(lastRequest!.body?.template?.files?.['main.typ']).toContain(
+      'data.at("invoice", default: (:)).at("title", default: "Untitled")'
+    );
   });
 
   it('works with data parameter', async () => {

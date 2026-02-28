@@ -1,0 +1,14 @@
+{
+  "name": "DocuForgeRenderPdf",
+  "method": "POST",
+  "url": "{{docuforgeBaseUrl}}/v1/render",
+  "headers": {
+    "X-API-Key": "{{docuforgeApiKey}}",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "template_id": "{{templateId}}",
+    "data": "{{payloadData}}"
+  },
+  "responseType": "bytes"
+}
