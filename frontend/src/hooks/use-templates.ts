@@ -132,3 +132,46 @@ export function useTemplateVersion(templateId?: string) {
       ),
   });
 }
+
+export function useAnalyzePdfImport() {
+  return useMutation({
+    mutationFn: (payload: {
+      file_name: string;
+      pdf_base64: string;
+      user_prompt?: string;
+    }) =>
+      api.post<{
+        analysis: {
+          source: string;
+          tokens_used: number;
+          converter: string;
+          extracted_text_preview: string;
+          ai_credit_charged: number;
+          usage_log_id: string;
+        };
+      }>("/v1/templates/import/pdf/analyze", payload),
+  });
+}
+
+export function useCreateImportedTemplate() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: {
+      name: string;
+      description?: string;
+      source: string;
+      defaults?: Record<string, unknown>;
+      commit_message?: string;
+    }) =>
+      api.post<{ template: TemplateDetail }>(
+        "/v1/templates/import/pdf/create",
+        payload
+      ),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+      router.push(`/editor/${data.template.id}`);
+    },
+  });
+}

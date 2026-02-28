@@ -27,7 +27,9 @@ describe('low-code module', () => {
     const compiled = compileLowCodeSpec(spec);
     expect(compiled).toContain('#let data = sys.inputs');
     expect(compiled).toContain('#set page(paper: "a4", margin: 20pt)');
-    expect(compiled).toContain('data.invoice.title');
+    expect(compiled).toContain('data.at("invoice", default: (:)).at("title", default: "Untitled")');
+    expect(compiled).not.toContain('??');
+    expect(compiled).toContain(')).flatten(),');
     expect(compiled).toContain('#table(');
   });
 

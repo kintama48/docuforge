@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   FileCode,
@@ -11,14 +11,13 @@ import {
   Truck,
 } from "@phosphor-icons/react";
 import { env } from "@/src/config/env";
+import { LowCodeBlocksEditor } from "@/src/components/editor/LowCodeBlocksEditor";
+import { useDebounce } from "@/src/hooks/use-debounce";
 import { useI18n } from "@/src/lib/i18n";
-import { useLocalePath } from "@/src/lib/use-locale-path";
 import type { LowCodeSpec } from "@/src/lib/low-code";
+import { useLocalePath } from "@/src/lib/use-locale-path";
 import {
   cloneSpec,
-  getHeaderBlock,
-  getLineItemsBlock,
-  getParagraphBlock,
   getPlaygroundPresetBySlug,
   playgroundPresetCategories,
   playgroundPresets,
@@ -34,6 +33,13 @@ type PublicPreviewSessionResponse = {
   session_id: string;
   expires_at: string;
   remaining_renders: number;
+};
+
+type PreviewInputs = {
+  mode: "low-code" | "typst";
+  source: string;
+  lowCodeSpec: LowCodeSpec;
+  dataJson: string;
 };
 
 function PresetIcon({ kind }: { kind: PlaygroundPreset["icon"] }) {
@@ -66,6 +72,12 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
   const [sessionExpiresAt, setSessionExpiresAt] = useState<string | null>(null);
   const [sessionRemaining, setSessionRemaining] = useState<number | null>(null);
   const [showHint, setShowHint] = useState(true);
+  const requestSequenceRef = useRef(0);
+  const activeAbortRef = useRef<AbortController | null>(null);
+  const runPreviewRef = useRef<(input: PreviewInputs) => void>(() => {});
+  const debouncedSource = useDebounce(source, 350);
+  const debouncedLowCodeSpec = useDebounce(lowCodeSpec, 350);
+  const debouncedDataJson = useDebounce(dataJson, 350);
 
   const activePreset = useMemo(() => {
     return playgroundPresets.find((preset) => preset.id === activePresetId) ?? playgroundPresets[0];
@@ -80,10 +92,6 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
       return [preset.title, preset.description, ...preset.tags].join(" ").toLowerCase().includes(search);
     });
   }, [category, query]);
-
-  const headerBlock = useMemo(() => getHeaderBlock(lowCodeSpec), [lowCodeSpec]);
-  const paragraphBlock = useMemo(() => getParagraphBlock(lowCodeSpec), [lowCodeSpec]);
-  const tableBlock = useMemo(() => getLineItemsBlock(lowCodeSpec), [lowCodeSpec]);
 
   const payloadPreview = useMemo(() => {
     let parsed: unknown;
@@ -123,12 +131,18 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
   }, [pdfUrl]);
 
   useEffect(() => {
+    return () => {
+      activeAbortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
     setShowHint(true);
     const timeout = window.setTimeout(() => setShowHint(false), 3200);
     return () => window.clearTimeout(timeout);
   }, [activePresetId]);
 
-  const startPublicPreviewSession = async (): Promise<string> => {
+  const startPublicPreviewSession = useCallback(async (): Promise<string> => {
     const response = await fetch(`${env.apiUrl}/v1/render/public/session`, {
       method: "POST",
       headers: {
@@ -147,15 +161,15 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
     setSessionExpiresAt(payload.expires_at);
     setSessionRemaining(payload.remaining_renders);
     return payload.session_id;
-  };
+  }, []);
 
   useEffect(() => {
     startPublicPreviewSession().catch((sessionErr) => {
       setError(sessionErr instanceof Error ? sessionErr.message : "Unable to create preview session");
     });
-  }, []);
+  }, [startPublicPreviewSession]);
 
-  const ensurePublicSession = async (): Promise<string> => {
+  const ensurePublicSession = useCallback(async (): Promise<string> => {
     if (sessionId && sessionExpiresAt) {
       const expiresAtMs = Date.parse(sessionExpiresAt);
       if (Number.isFinite(expiresAtMs) && Date.now() < expiresAtMs - 5000) {
@@ -164,7 +178,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
     }
 
     return startPublicPreviewSession();
-  };
+  }, [sessionExpiresAt, sessionId, startPublicPreviewSession]);
 
   const applyPreset = (preset: PlaygroundPreset) => {
     setActivePresetId(preset.id);
@@ -178,37 +192,13 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
     });
   };
 
-  const updateHeader = (patch: { title?: string; subtitle?: string }) => {
-    setLowCodeSpec((previous) => {
-      const next = cloneSpec(previous);
-      const block = getHeaderBlock(next);
-      if (!block) return previous;
-      block.props = { ...block.props, ...patch };
-      return next;
-    });
-  };
+  const runPreview = useCallback(async ({ mode, source, lowCodeSpec, dataJson }: PreviewInputs) => {
+    const requestId = requestSequenceRef.current + 1;
+    requestSequenceRef.current = requestId;
+    activeAbortRef.current?.abort();
+    const abortController = new AbortController();
+    activeAbortRef.current = abortController;
 
-  const updateParagraph = (text: string) => {
-    setLowCodeSpec((previous) => {
-      const next = cloneSpec(previous);
-      const block = getParagraphBlock(next);
-      if (!block) return previous;
-      block.props.text = text;
-      return next;
-    });
-  };
-
-  const updateTableTitle = (title: string) => {
-    setLowCodeSpec((previous) => {
-      const next = cloneSpec(previous);
-      const block = getLineItemsBlock(next);
-      if (!block) return previous;
-      block.props.title = title;
-      return next;
-    });
-  };
-
-  const runPreview = async () => {
     setError(null);
     setIsRunning(true);
 
@@ -232,7 +222,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
               data: parsed,
             };
 
-      const executePreview = async (activeSessionId: string) => {
+      const executePreview = async (activeSessionId: string, signal: AbortSignal) => {
         return fetch(`${env.apiUrl}/v1/render/public/preview`, {
           method: "POST",
           headers: {
@@ -240,15 +230,20 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
             "X-Preview-Session": activeSessionId,
           },
           body: JSON.stringify(requestBody),
+          signal,
         });
       };
 
       let activeSessionId = await ensurePublicSession();
-      let response = await executePreview(activeSessionId);
+      let response = await executePreview(activeSessionId, abortController.signal);
 
       if (response.status === 401 || response.status === 403) {
         activeSessionId = await startPublicPreviewSession();
-        response = await executePreview(activeSessionId);
+        response = await executePreview(activeSessionId, abortController.signal);
+      }
+
+      if (abortController.signal.aborted || requestId !== requestSequenceRef.current) {
+        return;
       }
 
       if (!response.ok) {
@@ -263,6 +258,10 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
       }
 
       const blob = await response.blob();
+      if (abortController.signal.aborted || requestId !== requestSequenceRef.current) {
+        return;
+      }
+
       const nextUrl = URL.createObjectURL(blob);
       setPdfUrl((previous) => {
         if (previous) URL.revokeObjectURL(previous);
@@ -278,11 +277,29 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
       const nextExpiry = response.headers.get("X-Preview-Session-Expires-At");
       if (nextExpiry) setSessionExpiresAt(nextExpiry);
     } catch (err) {
+      if (abortController.signal.aborted || requestId !== requestSequenceRef.current) {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Preview failed");
     } finally {
-      setIsRunning(false);
+      if (requestId === requestSequenceRef.current) {
+        setIsRunning(false);
+      }
     }
-  };
+  }, [ensurePublicSession, startPublicPreviewSession]);
+
+  useEffect(() => {
+    runPreviewRef.current = runPreview;
+  }, [runPreview]);
+
+  useEffect(() => {
+    runPreviewRef.current({
+      mode,
+      source: debouncedSource,
+      lowCodeSpec: debouncedLowCodeSpec,
+      dataJson: debouncedDataJson,
+    });
+  }, [debouncedDataJson, debouncedLowCodeSpec, debouncedSource, mode]);
 
   return (
     <div className="mx-auto w-full max-w-[1460px] px-6 pb-20 pt-10 lg:pt-14">
@@ -399,42 +416,14 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
               </button>
             </div>
 
-            <div className="mt-4 grid gap-3">
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                Title
-                <input
-                  value={headerBlock?.props.title ?? ""}
-                  onChange={(event) => updateHeader({ title: event.target.value })}
-                  className="mt-2 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-                />
-              </label>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                Subtitle
-                <input
-                  value={headerBlock?.props.subtitle ?? ""}
-                  onChange={(event) => updateHeader({ subtitle: event.target.value })}
-                  className="mt-2 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-                />
-              </label>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                Summary
-                <textarea
-                  value={paragraphBlock?.props.text ?? ""}
-                  onChange={(event) => updateParagraph(event.target.value)}
-                  className="mt-2 h-20 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] p-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-                />
-              </label>
-              {tableBlock ? (
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                  Table title
-                  <input
-                    value={tableBlock.props.title ?? ""}
-                    onChange={(event) => updateTableTitle(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-                  />
-                </label>
-              ) : null}
-            </div>
+            {mode === "low-code" ? (
+              <LowCodeBlocksEditor
+                lowCodeSpec={lowCodeSpec}
+                onChange={setLowCodeSpec}
+                className="mt-4 bg-[var(--surface-2)]"
+                title="Template blocks"
+              />
+            ) : null}
 
             <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">JSON data</label>
             <textarea
@@ -494,11 +483,19 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
 
           <div className="mt-4 flex flex-wrap gap-3">
             <button
-              onClick={runPreview}
+              type="button"
+              onClick={() =>
+                runPreview({
+                  mode,
+                  source,
+                  lowCodeSpec,
+                  dataJson,
+                })
+              }
               disabled={isRunning}
               className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isRunning ? "Rendering preview..." : "Render preview"}
+              {isRunning ? "Rendering preview..." : "Render now"}
             </button>
             <Link
               href={localePath("/register")}
@@ -521,14 +518,19 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
           ) : null}
 
           {pdfUrl ? (
-            <iframe
-              src={pdfUrl}
-              title="DocuForge playground preview"
-              className="mt-4 h-[780px] w-full rounded-xl border border-[var(--line)] bg-white"
-            />
+            <div
+              data-testid="playground-preview-frame"
+              className="mt-4 h-[780px] overflow-hidden rounded-xl border border-[var(--line)] bg-white isolate [contain:paint]"
+            >
+              <iframe
+                src={pdfUrl}
+                title="DocuForge playground preview"
+                className="block h-full w-full border-0"
+              />
+            </div>
           ) : (
             <div className="mt-4 flex h-[780px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 text-center text-sm text-[var(--muted)]">
-              Run preview to generate the PDF.
+              {isRunning ? "Rendering preview..." : "Preview renders automatically as you edit."}
             </div>
           )}
 

@@ -91,14 +91,31 @@ function hasSourceOrLowCode(input: { source?: string; low_code_spec?: unknown })
   return typeof input.source === 'string' || input.low_code_spec !== undefined;
 }
 
-export const renderPreviewSchema = z.object({
+const renderPreviewBaseSchema = z.object({
   source: sourceFieldSchema(102400, 'Source must be under 100KB'),
   low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   data: z.record(z.unknown()).optional().default({}),
-}).refine(hasSourceOrLowCode, {
+});
+
+export const renderPreviewSchema = renderPreviewBaseSchema.refine(hasSourceOrLowCode, {
   message: SOURCE_OR_LOW_CODE_REQUIRED,
 });
+
+const imageExportOptionsSchema = z.object({
+  format: z.enum(['png', 'jpeg']).optional().default('png'),
+  dpi: z.coerce.number().int().min(72).max(300).optional().default(150),
+  quality: z.coerce.number().int().min(1).max(100).optional().default(90),
+  page_numbers: z.array(z.coerce.number().int().positive()).min(1).max(25).optional(),
+});
+
+export const renderImageSchema = renderBaseSchema.extend(imageExportOptionsSchema.shape);
+
+export const renderImagePreviewSchema = renderPreviewBaseSchema
+  .extend(imageExportOptionsSchema.shape)
+  .refine(hasSourceOrLowCode, {
+    message: SOURCE_OR_LOW_CODE_REQUIRED,
+  });
 
 // Template schemas
 export const createTemplateSchema = z.object({
@@ -220,6 +237,22 @@ export const aiGenerateSchema = z.object({
   image_base64: z.string().min(1).max(MAX_BASE64_IMAGE_CHARS, 'Image exceeds 10MB limit'),
 });
 
+const MAX_PDF_IMPORT_BASE64_CHARS = 27_000_000; // ~20MB binary
+
+export const pdfImportAnalyzeSchema = z.object({
+  file_name: z.string().min(1).max(255).regex(/\.pdf$/i, 'file_name must end with .pdf'),
+  pdf_base64: z.string().min(1).max(MAX_PDF_IMPORT_BASE64_CHARS, 'PDF exceeds 20MB limit'),
+  user_prompt: z.string().max(2000).optional().default(''),
+});
+
+export const pdfImportCreateSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  source: z.string().min(1).max(1048576),
+  defaults: z.record(z.unknown()).optional(),
+  commit_message: z.string().max(200).optional(),
+});
+
 // Webhook schemas
 export const webhookEvents = ['render.completed', 'render.failed'] as const;
 
@@ -259,5 +292,9 @@ export type ConfirmUploadInput = z.infer<typeof confirmUploadSchema>;
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>;
 export type AiEditInput = z.infer<typeof aiEditSchema>;
 export type AiGenerateInput = z.infer<typeof aiGenerateSchema>;
+export type PdfImportAnalyzeInput = z.infer<typeof pdfImportAnalyzeSchema>;
+export type PdfImportCreateInput = z.infer<typeof pdfImportCreateSchema>;
+export type RenderImageInput = z.infer<typeof renderImageSchema>;
+export type RenderImagePreviewInput = z.infer<typeof renderImagePreviewSchema>;
 export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
 export type UpdateWebhookInput = z.infer<typeof updateWebhookSchema>;

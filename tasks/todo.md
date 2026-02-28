@@ -134,4 +134,78 @@
   - `next build` passed.
   - Benchmark smoke run passed to temp output (`/tmp/docuforge-bench-smoke.json`) with tool-availability diagnostics.
   - Full benchmark run now writes measured `DocuForge + Puppeteer` values into `frontend/src/data/benchmarks/latest.json`; missing tools are explicitly marked unavailable.
-  - Benchmark harness now builds and runs the release engine binary (`target/release/docuforge-engine`) before measurements to avoid `cargo run` overhead in cold-start numbers.
+- Benchmark harness now builds and runs the release engine binary (`target/release/docuforge-engine`) before measurements to avoid `cargo run` overhead in cold-start numbers.
+
+## Playground Rendering Bug Plan (2026-02-26)
+
+- [x] Confirm root cause and patch preview containment in Playground so iframe paint cannot overlap adjacent sections/footer.
+- [x] Add/update component test coverage to lock in bounded preview container behavior.
+- [x] Run targeted frontend tests for Playground and document the verification result.
+
+## Playground Rendering Bug Review (2026-02-26)
+
+- Added a hard-clipped preview frame wrapper around the playground PDF iframe using `overflow-hidden`, `isolate`, and `contain: paint` to prevent cross-section paint bleed.
+- Added a regression assertion in `frontend/tests/component/PlaygroundClient.test.tsx` that requires the bounded preview frame wrapper to exist.
+- Verification: `cd frontend && bun run test:run tests/component/PlaygroundClient.test.tsx` passed (`1 file`, `4 tests`).
+
+## Low-Code -> No-Code Migration Doc Plan (2026-02-26)
+
+- [x] Document current-state constraints in the existing low-code stack and what must remain backward compatible.
+- [x] Define target no-code architecture (document model, layout engine, schema/versioning, collaboration, rendering contract).
+- [x] Provide a phased rollout plan with milestones, risk controls, and measurable success criteria.
+- [x] Add operator-focused verification and rollback strategy for safe migration.
+
+## Low-Code -> No-Code Migration Doc Review (2026-02-26)
+
+- Added blueprint document: `docs/low-code-to-no-code-editor-migration.md`.
+- Document covers:
+  - Current-state analysis grounded in existing code paths.
+  - Target no-code architecture with `NoCodeSpec v2` and compiler pipeline.
+  - Multi-phase delivery plan, migration/compatibility policy, and rollout guardrails.
+  - Verification strategy (goldens, shadow renders, SLO checks) and rollback controls.
+- Verification:
+  - Confirmed document file exists and renders with expected sections (`wc -l` + `sed` spot-check).
+
+## Feature Implementation Plan (2026-02-27)
+
+- [x] Add JPEG/PNG image rendering support (API + backend conversion service) with multi-page export support.
+- [x] Add editor-side image export UX to request image renders and download single-image or ZIP output.
+- [x] Ship no-code integration starters for Make, Bubble, Coda, FlutterFlow, and n8n (render PDF/image actions and webhook-trigger setup docs/artifacts).
+- [x] Implement PDF import flow (upload/analyze/create-draft) using converter output + user prompt + in-house LLM/RAG best-effort.
+- [x] Add AI-credit metering for PDF import and expose AI usage in usage endpoints/UI.
+- [x] Add/expand automated tests for new image rendering and PDF import behaviors.
+
+## Feature Implementation Review (2026-02-27)
+
+- Added image rendering endpoints and conversion pipeline:
+  - `POST /v1/render/image`
+  - `POST /v1/render/preview/image`
+  - service: `api/src/services/image-render.ts` (PNG/JPEG, page selection, ZIP for multi-page).
+- Added editor image export UX with configurable format/quality/DPI and direct download handling:
+  - `frontend/src/components/editor/ImageExportDialog.tsx`
+  - `frontend/src/views/editor/EditorPage.tsx`
+  - `frontend/src/hooks/use-render.ts`
+- Added no-code integration starters and docs for Make, Bubble, Coda, FlutterFlow, and n8n:
+  - `plugins/n8n/*`
+  - `plugins/make/*`
+  - `plugins/bubble/*`
+  - `plugins/coda/*`
+  - `plugins/flutterflow/*`
+  - `docs/integrations/n8n-make-starters.md`
+- Implemented no-OCR PDF import flow using converter output + user prompt + in-house LLM/RAG best effort:
+  - analysis/create routes: `api/src/routes/templates.ts`
+  - converter ingestion: `api/src/services/pdf-import.ts`
+  - AI generation path: `api/src/services/ai.ts`
+  - dashboard flow: `frontend/src/components/dashboard/CreateTemplateDialog.tsx`
+- Added AI credit metering for PDF import and surfaced usage:
+  - `api/src/services/ai-usage.ts`
+  - `api/src/routes/billing.ts`
+  - `frontend/src/components/dashboard/UsageCard.tsx`
+- Added regression/integration coverage:
+  - `api/tests/integration/render-image.test.ts`
+  - `api/tests/integration/template-import.test.ts`
+  - `frontend/tests/component/CreateTemplateDialog.test.tsx`
+  - `frontend/tests/component/editor/EditorToolbar.test.tsx`
+- Verification:
+  - `cd api && bun test tests/integration/render-image.test.ts tests/integration/template-import.test.ts tests/integration/render-preview.test.ts tests/integration/templates-routes.test.ts tests/integration/render-billing-limit.test.ts` (`30 pass, 0 fail`)
+  - `cd frontend && bun run test:run tests/integration/editor-render.test.tsx tests/component/editor/EditorToolbar.test.tsx tests/component/CreateTemplateDialog.test.tsx` (`13 pass, 0 fail`)

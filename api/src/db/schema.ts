@@ -119,6 +119,26 @@ export const renderLogs = sqliteTable(
   (table) => [index('idx_render_logs_usage').on(table.userId, table.createdAt)]
 );
 
+export const aiUsageLogs = sqliteTable(
+  'ai_usage_logs',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    feature: text('feature').notNull(),
+    creditsUsed: integer('credits_used').notNull().default(1),
+    status: text('status').notNull().default('consumed'),
+    tokensUsed: integer('tokens_used').notNull().default(0),
+    errorMessage: text('error_message'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_ai_usage_logs_user_created').on(table.userId, table.createdAt),
+    index('idx_ai_usage_logs_feature_created').on(table.feature, table.createdAt),
+  ]
+);
+
 export const oauthAccounts = sqliteTable(
   'oauth_accounts',
   {
@@ -194,6 +214,8 @@ export type AssetInsert = typeof assets.$inferInsert;
 export type AssetSelect = typeof assets.$inferSelect;
 export type RenderLogInsert = typeof renderLogs.$inferInsert;
 export type RenderLogSelect = typeof renderLogs.$inferSelect;
+export type AiUsageLogInsert = typeof aiUsageLogs.$inferInsert;
+export type AiUsageLogSelect = typeof aiUsageLogs.$inferSelect;
 export type OAuthAccountInsert = typeof oauthAccounts.$inferInsert;
 export type OAuthAccountSelect = typeof oauthAccounts.$inferSelect;
 export type AuthOtpChallengeInsert = typeof authOtpChallenges.$inferInsert;

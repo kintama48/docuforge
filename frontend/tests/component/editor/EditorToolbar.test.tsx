@@ -54,6 +54,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={onOpenSettings}
         onFork={onFork}
         onToggleAutoRender={onToggleAutoRender}
+        onExportImages={() => {}}
         autoRender={true}
         isLowCodeMode={false}
         advancedTypstEnabled={false}
@@ -126,6 +127,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={onOpenSettings}
         onFork={onFork}
         onToggleAutoRender={onToggleAutoRender}
+        onExportImages={() => {}}
         autoRender={false}
         isLowCodeMode={false}
         advancedTypstEnabled={false}
@@ -161,6 +163,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={() => {}}
         onFork={() => {}}
         onToggleAutoRender={() => {}}
+        onExportImages={() => {}}
         autoRender={false}
         isLowCodeMode={false}
         advancedTypstEnabled={false}
@@ -187,6 +190,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={() => {}}
         onFork={() => {}}
         onToggleAutoRender={() => {}}
+        onExportImages={() => {}}
         autoRender={true}
         isLowCodeMode={false}
         advancedTypstEnabled={false}
@@ -209,6 +213,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={() => {}}
         onFork={() => {}}
         onToggleAutoRender={() => {}}
+        onExportImages={() => {}}
         autoRender={false}
         isLowCodeMode={false}
         advancedTypstEnabled={false}
@@ -234,6 +239,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={() => {}}
         onFork={() => {}}
         onToggleAutoRender={() => {}}
+        onExportImages={() => {}}
         autoRender={false}
         isLowCodeMode={true}
         advancedTypstEnabled={false}
@@ -257,6 +263,7 @@ describe("EditorToolbar", () => {
         onOpenSettings={() => {}}
         onFork={() => {}}
         onToggleAutoRender={() => {}}
+        onExportImages={() => {}}
         autoRender={false}
         isLowCodeMode={true}
         advancedTypstEnabled={false}

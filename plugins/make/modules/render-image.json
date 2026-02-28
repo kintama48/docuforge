@@ -1,0 +1,20 @@
+{
+  "name": "Render Images",
+  "method": "POST",
+  "url": "/v1/render/image",
+  "headers": {
+    "X-API-Key": "{{connection.api_key}}",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "template_id": "{{parameters.template_id}}",
+    "format": "{{parameters.format}}",
+    "dpi": "{{parameters.dpi}}",
+    "quality": "{{parameters.quality}}",
+    "page_numbers": "{{parameters.page_numbers}}",
+    "data": "{{parameters.data}}"
+  },
+  "response": {
+    "type": "binary"
+  }
+}

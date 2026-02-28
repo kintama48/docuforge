@@ -1,4 +1,3 @@
-import { runMigrations } from './db/migrate';
 import {
   closeRenderQueueConnections,
   isRenderQueueEnabled,
@@ -9,8 +8,6 @@ if (!isRenderQueueEnabled()) {
   console.error('RENDER_QUEUE_ENABLED must be true to run the render worker');
   process.exit(1);
 }
-
-await runMigrations();
 
 startRenderQueueWorker();
 

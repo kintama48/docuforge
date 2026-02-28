@@ -3,8 +3,7 @@ import { headers } from "next/headers";
 import {
   Exo,
   IBM_Plex_Mono,
-  Lobster_Two,
-  Orbitron,
+  Michroma,
 } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
@@ -24,17 +23,10 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
-const orbitron = Orbitron({
+const michroma = Michroma({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const lobsterTwo = Lobster_Two({
-  variable: "--font-script",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
+  weight: ["400"],
 });
 
 const marketingUrl =
@@ -175,7 +167,7 @@ export default async function RootLayout({
         <meta name="darkreader-lock" />
       </head>
       <body
-        className={`${exo.variable} ${plexMono.variable} ${orbitron.variable} ${lobsterTwo.variable} antialiased`}
+        className={`${exo.variable} ${plexMono.variable} ${michroma.variable} antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Providers initialLocale={initialLocale}>{children}</Providers>

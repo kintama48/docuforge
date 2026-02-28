@@ -73,6 +73,12 @@ export interface AiGenerateResult {
   tokensUsed: number;
 }
 
+export interface AiGenerateFromPdfImportParams {
+  fileName: string;
+  converterOutput: string;
+  userPrompt?: string;
+}
+
 export async function aiEditCode(params: AiEditParams): Promise<AiEditResult> {
   const model = getGeminiModel();
 
@@ -164,6 +170,54 @@ export async function aiGenerateFromImage(params: AiGenerateParams): Promise<AiG
   const content = response.response.text() || '';
   const tokensUsed = response.response.usageMetadata?.totalTokenCount || 0;
 
+  return { code: stripCodeFences(content), tokensUsed };
+}
+
+export async function aiGenerateFromPdfImport(
+  params: AiGenerateFromPdfImportParams
+): Promise<AiGenerateResult> {
+  const model = getGeminiModel();
+
+  let ragContext = '';
+  if (isInitialized()) {
+    const results = await searchDocs('typst invoice table layout forms spacing headers');
+    ragContext = buildRagContext(results);
+  }
+
+  const prompt = `Reconstruct the closest possible Typst template from this extracted PDF text.
+
+File name: ${params.fileName}
+User intent: ${params.userPrompt?.trim() || 'No extra user instructions.'}
+
+Converter output:
+${params.converterOutput || '[No extracted text available from converter.]'}
+
+Requirements:
+- Return valid Typst source only.
+- Prioritize practical editability over pixel-perfect recreation.
+- Use clear sections (header/body/tables/totals) when inferred.
+- If details are missing, generate sensible placeholders using sys.inputs.
+`;
+
+  const response = await model.generateContent({
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: prompt }],
+      },
+    ],
+    systemInstruction:
+      SYSTEM_PROMPT +
+      '\nYou convert extracted PDF text into an editable Typst template. Return only Typst source.' +
+      ragContext,
+    generationConfig: {
+      maxOutputTokens: 4096,
+      temperature: 0.25,
+    },
+  });
+
+  const content = response.response.text() || '';
+  const tokensUsed = response.response.usageMetadata?.totalTokenCount || 0;
   return { code: stripCodeFences(content), tokensUsed };
 }
 

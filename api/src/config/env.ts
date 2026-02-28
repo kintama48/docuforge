@@ -107,6 +107,10 @@ const envSchema = z.object({
   DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
   STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
   PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
+  FREE_MONTHLY_AI_CREDITS: z.coerce.number().default(5),
+  DEV_MONTHLY_AI_CREDITS: z.coerce.number().default(25),
+  STARTER_MONTHLY_AI_CREDITS: z.coerce.number().default(120),
+  PRO_MONTHLY_AI_CREDITS: z.coerce.number().default(600),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
 
   // Public preview hardening

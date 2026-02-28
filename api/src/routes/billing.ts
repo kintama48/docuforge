@@ -7,6 +7,7 @@ import { flexibleAuth, jwtAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
 import { zValidator, createCheckoutSchema } from '../lib/validation';
 import { checkCredits, formatUsageResponse } from '../services/usage';
+import { checkAiCredits, formatAiUsageResponse } from '../services/ai-usage';
 import { ValidationError, InternalError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
 
@@ -44,8 +45,14 @@ export function setStripeClient(client: Stripe | null) {
 // GET /v1/usage - Get usage stats
 billing.get('/usage', flexibleAuth, async (c) => {
   const { userId } = c.get('auth');
-  const credits = await checkCredits(userId);
-  return c.json(formatUsageResponse(credits));
+  const [credits, aiCredits] = await Promise.all([
+    checkCredits(userId),
+    checkAiCredits(userId),
+  ]);
+  return c.json({
+    ...formatUsageResponse(credits),
+    ...formatAiUsageResponse(aiCredits),
+  });
 });
 
 // POST /v1/billing/checkout - Create checkout session

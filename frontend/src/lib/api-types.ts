@@ -102,6 +102,8 @@ export type UsageResponse = {
   plan: string;
   renders: { used: number; limit: number; remaining: number };
   period: { start: string; end: string };
+  ai_credits?: { used: number; limit: number; remaining: number };
+  ai_period?: { start: string; end: string };
 };
 
 export type ApiKey = {

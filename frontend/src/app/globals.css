@@ -3,13 +3,14 @@
 :root {
   --font-body: "Exo", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
-  --font-display: "Orbitron", "Exo", "Noto Sans", "Noto Sans Arabic",
+  --font-display: "Michroma", "Exo", "Noto Sans", "Noto Sans Arabic",
     "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     system-ui, sans-serif;
-  --font-heading: "Orbitron", "Exo", "Noto Sans", "Noto Sans Arabic",
+  --font-heading: "Michroma", "Exo", "Noto Sans", "Noto Sans Arabic",
     "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     system-ui, sans-serif;
-  --font-script: "Lobster Two", "Exo", "Noto Sans", cursive;
+  --font-script: "Exo", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   --bg: #f6f4f0;
   --surface: #ffffff;
@@ -225,9 +226,9 @@ body {
   }
 
   .font-script {
-    font-family: var(--font-script), var(--font-body), cursive;
-    font-style: italic;
-    font-weight: 400;
+    font-family: var(--font-script), var(--font-body), sans-serif;
+    font-style: normal;
+    font-weight: 500;
     letter-spacing: 0.01em;
   }
 

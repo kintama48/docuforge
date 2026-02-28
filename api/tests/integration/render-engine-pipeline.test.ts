@@ -89,6 +89,22 @@ describePipeline('API -> Engine pipeline (real engine)', () => {
     expect(buffer.byteLength).toBeGreaterThan(100);
   });
 
+  it('renders low_code_spec preview through the real engine', async () => {
+    const db = getDb() as any;
+    const user = await createTestUser(db);
+
+    const response = await app.request('/v1/render/preview', {
+      method: 'POST',
+      headers: getAuthHeaders(user, false),
+      body: JSON.stringify(samplePreviewRequests.lowCode),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toBe('application/pdf');
+    const buffer = await response.arrayBuffer();
+    expect(buffer.byteLength).toBeGreaterThan(100);
+  });
+
   it('renders a template through the real engine', async () => {
     const db = getDb() as any;
     const user = await createTestUser(db);
