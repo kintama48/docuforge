@@ -105,7 +105,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "Register or log in to receive a JWT. Include the token in the Authorization header for all protected endpoints.",
       noteToken:
-        "Store tokens securely. The console keeps the JWT in localStorage and redirects to /login when a 401 response is returned.",
+        "Store tokens securely. The console uses a secure session cookie and redirects to /login when a 401 response is returned.",
       noteKeys:
         "Production renders use API keys instead: send the key via the X-API-Key header when calling /v1/render.",
     },
@@ -267,7 +267,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "Inscrivez‑vous ou connectez‑vous pour obtenir un JWT. Incluez ce token dans l’en‑tête Authorization pour tous les endpoints protégés.",
       noteToken:
-        "Stockez les tokens en sécurité. La console conserve le JWT dans localStorage et redirige vers /login lors d’un 401.",
+        "Stockez les tokens en sécurité. La console utilise un cookie de session sécurisé et redirige vers /login lors d’un 401.",
       noteKeys:
         "Les rendus en production utilisent des clés API : envoyez la clé via l’en‑tête X-API-Key pour /v1/render.",
     },
@@ -431,7 +431,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "Registriere dich oder melde dich an, um ein JWT zu erhalten. Sende das Token im Authorization-Header für alle geschützten Endpunkte.",
       noteToken:
-        "Tokens sicher speichern. Die Konsole legt das JWT in localStorage ab und leitet bei 401 zu /login um.",
+        "Tokens sicher speichern. Die Konsole nutzt ein sicheres Session-Cookie und leitet bei 401 zu /login um.",
       noteKeys:
         "Produktive Renderings nutzen API-Keys: sende den Key im X-API-Key-Header an /v1/render.",
     },
@@ -595,7 +595,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "Registrati o accedi per ottenere un JWT. Includi il token nell’header Authorization per tutti gli endpoint protetti.",
       noteToken:
-        "Conserva i token in modo sicuro. La console salva il JWT in localStorage e reindirizza a /login quando riceve un 401.",
+        "Conserva i token in modo sicuro. La console usa un cookie di sessione sicuro e reindirizza a /login quando riceve un 401.",
       noteKeys:
         "I render in produzione usano le API key: invia la chiave nell’header X-API-Key verso /v1/render.",
     },
@@ -759,7 +759,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "Regístrate o inicia sesión para recibir un JWT. Incluye el token en el header Authorization para todos los endpoints protegidos.",
       noteToken:
-        "Guarda los tokens de forma segura. La consola guarda el JWT en localStorage y redirige a /login cuando recibe un 401.",
+        "Guarda los tokens de forma segura. La consola usa una cookie de sesión segura y redirige a /login cuando recibe un 401.",
       noteKeys:
         "Los renders en producción usan API keys: envía la clave en el header X-API-Key a /v1/render.",
     },
@@ -923,7 +923,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "سجّل أو سجّل الدخول للحصول على JWT. أرسل التوكن في ترويسة Authorization لجميع النقاط المحمية.",
       noteToken:
-        "احفظ التوكنات بأمان. الكونسول يخزن JWT في localStorage ويعيد التوجيه إلى /login عند ظهور 401.",
+        "احفظ التوكنات بأمان. الكونسول يستخدم ملف تعريف ارتباط جلسة آمن ويعيد التوجيه إلى /login عند ظهور 401.",
       noteKeys:
         "الرندر في الإنتاج يعتمد مفاتيح API: أرسل المفتاح في ترويسة X-API-Key عند /v1/render.",
     },
@@ -1087,7 +1087,7 @@ const docsContent: Record<Locale, DocsContent> = {
       body:
         "注册或登录以获取 JWT。所有受保护端点都需在 Authorization 头中携带该 token。",
       noteToken:
-        "请安全保存 token。控制台将 JWT 存在 localStorage 中，并在 401 时重定向到 /login。",
+        "请安全保存 token。控制台使用安全的会话 Cookie，并在 401 时重定向到 /login。",
       noteKeys:
         "生产渲染使用 API Key：调用 /v1/render 时通过 X-API-Key 头发送。",
     },

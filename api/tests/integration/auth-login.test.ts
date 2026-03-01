@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { createApp } from '../../src/app';
+import { env } from '../../src/config/env';
 import {
   createTestContext,
   createTestUser,
@@ -48,6 +49,25 @@ describe('POST /v1/auth/login', () => {
     expect(body.user.email).toBe(sampleUsers.valid.email);
     expect(body.user.id).toMatch(/^usr_/);
     expect(body.user.plan).toBeDefined();
+    const setCookie = response.headers.get('Set-Cookie');
+    expect(setCookie).toContain(`${env.AUTH_COOKIE_NAME}=`);
+    expect(setCookie).toContain('HttpOnly');
+  });
+
+  it('clears auth cookie on logout', async () => {
+    const response = await app.request('/v1/auth/logout', {
+      method: 'POST',
+      headers: {
+        Origin: env.APP_URL,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.message).toBe('Logged out');
+    const setCookie = response.headers.get('Set-Cookie');
+    expect(setCookie).toContain(`${env.AUTH_COOKIE_NAME}=`);
+    expect(setCookie).toContain('Max-Age=0');
   });
 
   it('rejects wrong password with 401', async () => {

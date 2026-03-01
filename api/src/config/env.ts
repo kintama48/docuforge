@@ -69,6 +69,10 @@ const envSchema = z.object({
   AUTH_MAX_ACCOUNTS_PER_FINGERPRINT: z.coerce.number().int().positive().default(3),
   AUTH_MAX_SIGNUPS_PER_FINGERPRINT_PER_DAY: z.coerce.number().int().positive().default(3),
   AUTH_MAX_SIGNUPS_PER_IP_PER_DAY: z.coerce.number().int().positive().default(6),
+  AUTH_COOKIE_NAME: z.string().min(1).default('docuforge_session'),
+  AUTH_COOKIE_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+  AUTH_COOKIE_DOMAIN: z.string().optional(),
+  AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('strict'),
 
   // Transactional email
   EMAIL_PROVIDER: z.enum(['mock', 'resend']).default('mock'),
@@ -86,6 +90,11 @@ const envSchema = z.object({
   // Webhooks
   WEBHOOK_TIMEOUT_MS: z.coerce.number().default(5000),
   WEBHOOK_MAX_PER_USER: z.coerce.number().default(10),
+  WEBHOOK_QUEUE_ENABLED: z.coerce.boolean().default(true),
+  WEBHOOK_QUEUE_NAME: z.string().min(1).default('docuforge-webhook-delivery'),
+  WEBHOOK_QUEUE_CONCURRENCY: z.coerce.number().int().positive().default(10),
+  WEBHOOK_QUEUE_ATTEMPTS: z.coerce.number().int().positive().default(3),
+  WEBHOOK_QUEUE_BACKOFF_MS: z.coerce.number().int().positive().default(30000),
 
   // Render queue
   REDIS_URL: z.string().url().default('redis://127.0.0.1:6379'),

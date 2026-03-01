@@ -19,9 +19,11 @@ import {
   shouldAutoStartRenderWorker,
   startRenderQueueWorker,
 } from './services/render-queue';
+import { isWebhookQueueEnabled, startWebhookQueueWorker } from './services/webhook';
 
 let sentryInitialized = false;
 let renderWorkerInitialized = false;
+let webhookWorkerInitialized = false;
 let ragInitStarted = false;
 
 export function createApp() {
@@ -54,7 +56,7 @@ export function createApp() {
         'X-Idempotency-Key',
         'X-Device-Id',
       ],
-      credentials: false,
+      credentials: true,
       maxAge: 86400,
     })
   );
@@ -119,6 +121,12 @@ export function createApp() {
     startRenderQueueWorker();
     renderWorkerInitialized = true;
     console.log('Render queue worker auto-started in API process');
+  }
+
+  if (isWebhookQueueEnabled() && !webhookWorkerInitialized) {
+    startWebhookQueueWorker();
+    webhookWorkerInitialized = true;
+    console.log('Webhook queue worker auto-started in API process');
   }
 
   return app;

@@ -2,6 +2,7 @@ import { ErrorHandler } from 'hono';
 import { AppError } from '../lib/errors';
 import { ZodError } from 'zod';
 import { captureException } from '../lib/sentry';
+import { env } from '../config/env';
 
 export const errorHandler: ErrorHandler = (err, c) => {
   // Handle our custom errors
@@ -31,7 +32,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
   captureException(err);
 
   // Don't leak internal errors in production
-  const message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
+  const message = env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
 
   return c.json(
     {

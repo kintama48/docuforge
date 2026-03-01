@@ -39,11 +39,12 @@ describe('Security Regressions', () => {
 
       // Should use env.JWT_SECRET
       expect(source).toContain('env.JWT_SECRET');
+      expect(source).not.toContain('process.env.JWT_EXPIRY');
     });
   });
 
   describe('API-C2: OAuth Exchange Code Pattern', () => {
-    test('exchange code can be created and consumed once', () => {
+    test('exchange code can be created and consumed once', async () => {
       const data = {
         token: 'jwt-token-123',
         userId: 'usr_abc',
@@ -53,11 +54,11 @@ describe('Security Regressions', () => {
         redirect: '/dashboard',
       };
 
-      const code = createExchangeCode(data);
+      const code = await createExchangeCode(data);
       expect(code).toHaveLength(32);
 
       // First consumption should succeed
-      const result = consumeExchangeCode(code);
+      const result = await consumeExchangeCode(code);
       expect(result).not.toBeNull();
       expect(result?.token).toBe(data.token);
       expect(result?.userId).toBe(data.userId);
@@ -65,12 +66,12 @@ describe('Security Regressions', () => {
       expect(result?.apiKey).toBe(data.apiKey);
 
       // Second consumption should fail (single-use)
-      const secondResult = consumeExchangeCode(code);
+      const secondResult = await consumeExchangeCode(code);
       expect(secondResult).toBeNull();
     });
 
-    test('exchange code is single-use (prevents replay attacks)', () => {
-      const code = createExchangeCode({
+    test('exchange code is single-use (prevents replay attacks)', async () => {
+      const code = await createExchangeCode({
         token: 'token',
         userId: 'user',
         email: 'a@b.com',
@@ -80,15 +81,15 @@ describe('Security Regressions', () => {
       });
 
       // Use it once
-      consumeExchangeCode(code);
+      await consumeExchangeCode(code);
 
       // Attempt replay
-      const replay = consumeExchangeCode(code);
+      const replay = await consumeExchangeCode(code);
       expect(replay).toBeNull();
     });
 
-    test('invalid exchange code returns null', () => {
-      const result = consumeExchangeCode('invalid-code-that-does-not-exist');
+    test('invalid exchange code returns null', async () => {
+      const result = await consumeExchangeCode('invalid-code-that-does-not-exist');
       expect(result).toBeNull();
     });
 

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import { setCookie, deleteCookie } from 'hono/cookie';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
@@ -22,8 +23,8 @@ import { env, getPlanLimit } from '../config/env';
 import { sendTransactionalEmail } from '../services/email';
 import {
   buildAuthUrl,
-  consumeOAuthState,
-  createOAuthState,
+  consumeOAuthStateDistributed,
+  createOAuthStateDistributed,
   exchangeOAuthCode,
   fetchOAuthProfile,
   sanitizeRedirectPath,
@@ -119,6 +120,24 @@ async function sendLoginCode(email: string, code: string): Promise<void> {
   });
 }
 
+function setSessionCookie(c: Context, token: string) {
+  setCookie(c, env.AUTH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.AUTH_COOKIE_SAME_SITE,
+    path: '/',
+    maxAge: env.AUTH_COOKIE_MAX_AGE_SECONDS,
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+function clearSessionCookie(c: Context) {
+  deleteCookie(c, env.AUTH_COOKIE_NAME, {
+    path: '/',
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
 // POST /v1/auth/register
 auth.post('/register', zValidator('json', registerSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
@@ -197,6 +216,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
   }
 
   const token = await createJwt(userId, email);
+  setSessionCookie(c, token);
 
   return c.json(
     {
@@ -298,6 +318,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
 
   // Generate JWT
   const token = await createJwt(user.id, user.email);
+  setSessionCookie(c, token);
 
   return c.json({
     token,
@@ -428,7 +449,7 @@ auth.get('/oauth/:provider', async (c) => {
   }
 
   const redirect = c.req.query('redirect');
-  const state = createOAuthState(provider, redirect);
+  const state = await createOAuthStateDistributed(provider, redirect);
   const url = buildAuthUrl(provider, state);
   return c.redirect(url);
 });
@@ -446,7 +467,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
     return c.redirect(`${env.APP_URL}/login?error=oauth_failed`);
   }
 
-  const stateRecord = consumeOAuthState(state);
+  const stateRecord = await consumeOAuthStateDistributed(state);
   if (!stateRecord || stateRecord.provider !== provider) {
     return c.redirect(`${env.APP_URL}/login?error=oauth_invalid_state`);
   }
@@ -534,7 +555,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
 
     // Create a short-lived exchange code instead of passing sensitive data in URL
     // This prevents tokens from being logged in browser history, server logs, referrer headers
-    const exchangeCode = createExchangeCode({
+    const exchangeCode = await createExchangeCode({
       token,
       userId: user.id,
       email: user.email,
@@ -563,7 +584,7 @@ auth.post('/oauth/exchange', async (c) => {
     throw new UnauthorizedError('Exchange code required');
   }
 
-  const data = consumeExchangeCode(code);
+  const data = await consumeExchangeCode(code);
   if (!data) {
     throw new UnauthorizedError('Invalid or expired exchange code');
   }
@@ -586,7 +607,16 @@ auth.post('/oauth/exchange', async (c) => {
     response.redirect = safeRedirect;
   }
 
+  setSessionCookie(c, data.token);
+
   return c.json(response);
+});
+
+// POST /v1/auth/logout - clear browser session cookie
+auth.post('/logout', async (c) => {
+  assertTrustedBrowserOrigin(c);
+  clearSessionCookie(c);
+  return c.json({ message: 'Logged out' });
 });
 
 // POST /v1/auth/keys - Create new API key

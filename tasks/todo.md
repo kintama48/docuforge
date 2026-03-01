@@ -289,3 +289,26 @@
 - Code review findings captured in delivery notes with severity ordering:
   - P1: full frontend suite is currently red due two existing `PlaygroundClient` test failures (`tests/component/PlaygroundClient.test.tsx`).
   - P2: non-English landing copy still carries Typst-heavy subtitle/engine-stat language even though headlines were updated to deterministic-infrastructure framing (`frontend/src/lib/i18n.tsx`).
+
+## Localization + Playground Stability Plan (2026-03-01, Follow-up)
+
+- [x] Normalize non-English landing subtitle/body copy (hero/features/workflow/cta/footer) to match deterministic-infrastructure positioning while keeping Typst as an engine detail.
+- [x] Fix the two failing Playground component tests so full frontend suite is green.
+- [x] Add/extend regression tests for localization narrative guardrails.
+- [x] Re-run full frontend quality gates (`lint`, full `test:run`, `build`) and record outcomes.
+
+## Localization + Playground Stability Review (2026-03-01, Follow-up)
+
+- Updated non-English landing narrative blocks in `frontend/src/lib/i18n.tsx` for `fr`, `de`, `it`, `es`, `ar`, and `zh`:
+  - Hero subtitle now leads with synchronous production rendering + versioned contracts + practical controls.
+  - Hero engine body keeps a single subtle Typst-under-the-hood mention.
+  - Features/workflow/CTA/footer copy now matches deterministic infrastructure framing and no longer leads with Typst.
+- Hardened Playground tests to remove flaky network assumptions:
+  - `frontend/tests/component/PlaygroundClient.test.tsx` now uses deterministic `fetch` mocks scoped to public preview/session paths.
+  - Restored passing assertions for preview iframe render and low-code block mutation payload flow.
+- Expanded localization regression coverage:
+  - `frontend/tests/unit/i18n.test.tsx` now verifies non-English landing copy keeps Typst only in engine detail while hero/feature/workflow/footer lead narrative stays Typst-free.
+- Verification:
+  - `cd frontend && bun run lint` (pass)
+  - `cd frontend && bun run test:run` (pass: `81 files`, `287 tests`)
+  - `cd frontend && bun run build` (pass)
