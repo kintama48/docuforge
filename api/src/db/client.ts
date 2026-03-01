@@ -2,20 +2,16 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { sql } from 'drizzle-orm';
 import { createClient } from '@libsql/client';
 import * as schema from './schema';
+import { env } from '../config/env';
 
 let dbClient: ReturnType<typeof createClient> | null = null;
 let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export function getDbClient() {
   if (!dbClient) {
-    const url = process.env.DATABASE_URL;
-    if (!url) {
-      throw new Error('DATABASE_URL is required');
-    }
-
     dbClient = createClient({
-      url,
-      authToken: process.env.DATABASE_AUTH_TOKEN,
+      url: env.DATABASE_URL,
+      authToken: env.DATABASE_AUTH_TOKEN,
     });
   }
   return dbClient;

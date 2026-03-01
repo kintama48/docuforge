@@ -66,6 +66,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method,
       headers,
+      credentials: "include",
       body:
         body === undefined
           ? undefined
@@ -126,6 +127,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: "POST",
       headers,
+      credentials: "include",
       body: JSON.stringify(body),
       signal,
     });

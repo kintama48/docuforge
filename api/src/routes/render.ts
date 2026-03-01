@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
@@ -496,8 +496,8 @@ render.post('/secure', apiKeyAuth, renderRateLimit, noCache, zValidator('json', 
 render.post('/public/session', noCache, async (c) => {
   assertTrustedPublicPreviewOrigin(c);
   const client = getPublicPreviewClientFingerprint(c);
-  const rate = enforcePublicPreviewSessionCreationRateLimit(client.ip);
-  const session = createPublicPreviewSession(client);
+  const rate = await enforcePublicPreviewSessionCreationRateLimit(client.ip);
+  const session = await createPublicPreviewSession(client);
 
   c.header('X-RateLimit-Limit', String(rate.limit));
   c.header('X-RateLimit-Remaining', String(rate.remaining));
@@ -524,10 +524,10 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
   }
 
   const client = getPublicPreviewClientFingerprint(c);
-  const session = getPublicPreviewSessionOrThrow(sessionId, client);
-  const ipRate = enforcePublicPreviewIpRateLimit(client.ip);
-  const sessionRate = enforcePublicPreviewSessionRateLimit(session.sessionId);
-  const quota = consumePublicPreviewSessionQuota(session.sessionId);
+  const session = await getPublicPreviewSessionOrThrow(sessionId, client);
+  const ipRate = await enforcePublicPreviewIpRateLimit(client.ip);
+  const sessionRate = await enforcePublicPreviewSessionRateLimit(session.sessionId);
+  const quota = await consumePublicPreviewSessionQuota(session.sessionId);
 
   const { source, low_code_spec, files, data } = c.req.valid('json');
   const previewSource = source ?? (low_code_spec ? compileLowCodeSpec(low_code_spec) : null);
@@ -558,7 +558,7 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
   };
 
   const result = await renderPdf(payload);
-  const renderId = `pub_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const renderId = `pub_${randomUUID()}`;
 
   c.header('Content-Type', 'application/pdf');
   c.header('Content-Disposition', 'inline; filename="preview.public.pdf"');

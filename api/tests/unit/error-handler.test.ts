@@ -6,6 +6,7 @@ import { Hono } from 'hono';
 import { ZodError } from 'zod';
 import { errorHandler } from '../../src/middleware/error-handler';
 import { UnauthorizedError } from '../../src/lib/errors';
+import { reloadEnv } from '../../src/config/env';
 
 describe('error-handler', () => {
   const buildApp = () => {
@@ -58,11 +59,13 @@ describe('error-handler', () => {
   test('hides unknown errors in production', async () => {
     const previous = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
+    reloadEnv();
     const app = buildApp();
     const response = await app.request('/unknown');
     expect(response.status).toBe(500);
     const body = await response.json();
     expect(body.message).toBe('Internal server error');
     process.env.NODE_ENV = previous;
+    reloadEnv();
   });
 });

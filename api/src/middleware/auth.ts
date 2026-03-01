@@ -26,8 +26,7 @@ function getJwtSecret(): Uint8Array {
 }
 
 export async function createJwt(userId: string, email: string): Promise<string> {
-  const expiry = process.env.JWT_EXPIRY || '7d';
-  const expiresIn = parseExpiry(expiry);
+  const expiresIn = parseExpiry(env.JWT_EXPIRY);
 
   return new SignJWT({ sub: userId, email })
     .setProtectedHeader({ alg: 'HS256' })
@@ -39,6 +38,19 @@ export async function createJwt(userId: string, email: string): Promise<string> 
 function parseExpiry(expiry: string): string {
   // Already in correct format for jose (e.g., '7d', '1h')
   return expiry;
+}
+
+function readCookieValue(cookieHeader: string | undefined, cookieName: string): string | null {
+  if (!cookieHeader) return null;
+  const parts = cookieHeader.split(';');
+  for (const part of parts) {
+    const [rawName, ...rest] = part.trim().split('=');
+    if (rawName === cookieName) {
+      const value = rest.join('=');
+      return value ? decodeURIComponent(value) : null;
+    }
+  }
+  return null;
 }
 
 async function verifyJwt(token: string): Promise<JwtPayload> {
@@ -156,11 +168,14 @@ export const apiKeyAuth = createMiddleware(async (c, next) => {
 // Middleware for JWT authentication
 export const jwtAuth = createMiddleware(async (c, next) => {
   const authHeader = c.req.header('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
+  const tokenFromHeader = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const tokenFromCookie = readCookieValue(c.req.header('Cookie'), env.AUTH_COOKIE_NAME);
+  const token = tokenFromHeader || tokenFromCookie;
+
+  if (!token) {
     throw new UnauthorizedError('Bearer token required');
   }
 
-  const token = authHeader.slice(7);
   const auth = await validateJwt(token);
   c.set('auth', auth);
   await next();
@@ -170,6 +185,7 @@ export const jwtAuth = createMiddleware(async (c, next) => {
 export const flexibleAuth = createMiddleware(async (c, next) => {
   const apiKey = c.req.header('X-API-Key');
   const authHeader = c.req.header('Authorization');
+  const cookieToken = readCookieValue(c.req.header('Cookie'), env.AUTH_COOKIE_NAME);
 
   if (apiKey) {
     const auth = await validateApiKey(apiKey);
@@ -177,6 +193,9 @@ export const flexibleAuth = createMiddleware(async (c, next) => {
   } else if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     const auth = await validateJwt(token);
+    c.set('auth', auth);
+  } else if (cookieToken) {
+    const auth = await validateJwt(cookieToken);
     c.set('auth', auth);
   } else {
     throw new UnauthorizedError('Authentication required');

@@ -12,6 +12,19 @@ function HeroTitleDisplay() {
   return <span data-testid="hero-title">{messages.hero.title}</span>;
 }
 
+function LandingCopyDisplay() {
+  const { messages } = useI18n();
+  return (
+    <>
+      <span data-testid="hero-subtitle">{messages.hero.subtitle}</span>
+      <span data-testid="engine-body">{messages.hero.engineBody}</span>
+      <span data-testid="feature-title">{messages.features.items[0]?.title ?? ""}</span>
+      <span data-testid="workflow-body">{messages.workflow.steps[0]?.body ?? ""}</span>
+      <span data-testid="footer-blurb">{messages.footer.blurb}</span>
+    </>
+  );
+}
+
 function renderWithLocale(initialLocale?: any) {
   render(
     <I18nProvider initialLocale={initialLocale}>
@@ -101,6 +114,29 @@ describe("I18nProvider", () => {
         expect(screen.getByTestId("hero-title").textContent).toBeTruthy();
       });
       expect(screen.getByTestId("hero-title").textContent).not.toMatch(/typst/i);
+
+      view.unmount();
+      cleanup();
+    }
+  });
+
+  it("keeps Typst as a non-English engine detail, not a landing lead", async () => {
+    for (const locale of locales.filter((candidate) => candidate !== "en")) {
+      const view = render(
+        <I18nProvider initialLocale={locale}>
+          <LandingCopyDisplay />
+        </I18nProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("hero-subtitle").textContent).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("hero-subtitle").textContent).toMatch(/rust/i);
+      expect(screen.getByTestId("engine-body").textContent).toMatch(/typst/i);
+      expect(screen.getByTestId("feature-title").textContent).not.toMatch(/typst/i);
+      expect(screen.getByTestId("workflow-body").textContent).not.toMatch(/typst/i);
+      expect(screen.getByTestId("footer-blurb").textContent).not.toMatch(/typst/i);
 
       view.unmount();
       cleanup();

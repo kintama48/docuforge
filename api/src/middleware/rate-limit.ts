@@ -8,6 +8,7 @@
 import { createMiddleware } from 'hono/factory';
 import { RateLimitedError } from '../lib/errors';
 import type { PlanTier } from '../types';
+import { withRedis } from '../services/redis';
 
 interface RateLimitEntry {
   count: number;
@@ -47,6 +48,28 @@ function getLimiter(name: string): Map<string, RateLimitEntry> {
   return limiters.get(name)!;
 }
 
+async function incrementDistributedCounter(
+  scope: string,
+  key: string,
+  windowMs: number
+): Promise<{ count: number; resetAt: number } | null> {
+  const now = Date.now();
+  const bucketStart = Math.floor(now / windowMs) * windowMs;
+  const resetAt = bucketStart + windowMs;
+  const redisKey = `rl:${scope}:${key}:${bucketStart}`;
+
+  const count = await withRedis(async (redis) => {
+    const next = await redis.incr(redisKey);
+    if (next === 1) {
+      await redis.pexpire(redisKey, windowMs + 2000);
+    }
+    return next;
+  });
+
+  if (count === null) return null;
+  return { count, resetAt };
+}
+
 export function createRateLimiter(configName: string) {
   const config = RATE_LIMIT_CONFIGS[configName] || RATE_LIMIT_CONFIGS.default;
   const limiter = getLimiter(configName);
@@ -63,23 +86,34 @@ export function createRateLimiter(configName: string) {
     const limit = config.limits[planTier];
     const now = Date.now();
 
-    let entry = limiter.get(key);
+    const distributed = await incrementDistributedCounter(configName, key, config.windowMs);
+    let count: number;
+    let resetAt: number;
 
-    // Reset if window has passed
-    if (!entry || now >= entry.resetAt) {
-      entry = { count: 0, resetAt: now + config.windowMs };
-      limiter.set(key, entry);
+    if (distributed) {
+      count = distributed.count;
+      resetAt = distributed.resetAt;
+    } else {
+      let entry = limiter.get(key);
+
+      // Reset if window has passed
+      if (!entry || now >= entry.resetAt) {
+        entry = { count: 0, resetAt: now + config.windowMs };
+        limiter.set(key, entry);
+      }
+
+      entry.count++;
+      count = entry.count;
+      resetAt = entry.resetAt;
     }
-
-    entry.count++;
 
     // Set rate limit headers
     c.header('X-RateLimit-Limit', String(limit));
-    c.header('X-RateLimit-Remaining', String(Math.max(0, limit - entry.count)));
-    c.header('X-RateLimit-Reset', String(Math.ceil(entry.resetAt / 1000)));
+    c.header('X-RateLimit-Remaining', String(Math.max(0, limit - count)));
+    c.header('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)));
 
-    if (entry.count > limit) {
-      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+    if (count > limit) {
+      const retryAfter = Math.ceil((resetAt - now) / 1000);
       c.header('Retry-After', String(retryAfter));
       throw new RateLimitedError('Rate limit exceeded', retryAfter);
     }
@@ -94,7 +128,7 @@ export const aiRateLimit = createRateLimiter('ai');
 export const defaultRateLimit = createRateLimiter('default');
 
 // Cleanup old entries periodically
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const limiter of limiters.values()) {
     for (const [key, entry] of limiter.entries()) {
@@ -104,3 +138,5 @@ setInterval(() => {
     }
   }
 }, 60 * 1000);
+
+cleanupInterval.unref?.();
