@@ -1,10 +1,15 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import { I18nProvider, useI18n } from "@/src/lib/i18n";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { I18nProvider, locales, useI18n } from "@/src/lib/i18n";
 
 function LocaleDisplay() {
   const { locale } = useI18n();
   return <span data-testid="locale">{locale}</span>;
+}
+
+function HeroTitleDisplay() {
+  const { messages } = useI18n();
+  return <span data-testid="hero-title">{messages.hero.title}</span>;
 }
 
 function renderWithLocale(initialLocale?: any) {
@@ -68,5 +73,37 @@ describe("I18nProvider", () => {
 
   it("throws when used outside provider", () => {
     expect(() => render(<LocaleDisplay />)).toThrow(/useI18n/i);
+  });
+
+  it("uses the critical-path hero headline in English", async () => {
+    render(
+      <I18nProvider initialLocale="en">
+        <HeroTitleDisplay />
+      </I18nProvider>
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId("hero-title").textContent).toBe(
+        "Document infrastructure for the critical path."
+      )
+    );
+  });
+
+  it("does not lead with Typst in localized hero headlines", async () => {
+    for (const locale of locales) {
+      const view = render(
+        <I18nProvider initialLocale={locale}>
+          <HeroTitleDisplay />
+        </I18nProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("hero-title").textContent).toBeTruthy();
+      });
+      expect(screen.getByTestId("hero-title").textContent).not.toMatch(/typst/i);
+
+      view.unmount();
+      cleanup();
+    }
   });
 });

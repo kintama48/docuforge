@@ -32,30 +32,30 @@ import { getHomeBenchmarkModel } from "@/src/lib/benchmark-report";
 
 const featureIcons = [BracketsCurly, TerminalWindow, Stack, Gauge, Database, RocketLaunch] as const;
 const featureTags = [
-  "Typst + Monaco",
-  "Hot preview",
+  "Contract-first templates",
+  "Inline preview",
   "Assets once",
-  "Usage clarity",
+  "Usage visibility",
   "Versioned by default",
-  "Rust throughput",
+  "Rust runtime",
 ] as const;
 const workflowIcons = [Code, FilePdf, RocketLaunch] as const;
 const securityIcons = [Key, LockKey, ShieldCheck] as const;
 const switchPainPoints = [
   {
-    title: "Latency spikes",
-    problem: "Browser startup and page rendering inflate tail latency.",
-    solution: "Typst-native rendering keeps queue times more stable.",
+    title: "Critical-path latency",
+    problem: "Browser startup and page rendering can push documents off the request path.",
+    solution: "Rust execution keeps inline render calls predictable for user-facing flows.",
   },
   {
-    title: "Memory pressure",
-    problem: "Chrome workers consume large memory slices at scale.",
-    solution: "Lower runtime footprint improves throughput per instance.",
+    title: "Operational overhead",
+    problem: "Queue workers, retries, and webhooks add moving parts to simple PDF delivery.",
+    solution: "A synchronous render API removes pipeline complexity for core document paths.",
   },
   {
-    title: "Template drift",
-    problem: "HTML print hacks increase maintenance and regressions.",
-    solution: "Versioned Typst templates keep structure explicit.",
+    title: "Release drift",
+    problem: "Template edits without clear promotion rules create regressions in production.",
+    solution: "Versioned template contracts keep changes explicit and auditable.",
   },
 ] as const;
 const ctaHighlights = [
@@ -93,6 +93,8 @@ export default function Home() {
   const securityHighlights = getSecurityCapabilities().slice(0, 3);
   const mcpTools = getMcpTools().slice(0, 6);
   const homeBenchmark = getHomeBenchmarkModel();
+  const benchmarkSourceLabel =
+    homeBenchmark.source === "measured" ? "Measured run" : "Reference seed";
 
   return (
     <div className="min-h-screen page-background">
@@ -157,6 +159,13 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+
+                <p
+                  className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)] fade-up"
+                  style={{ animationDelay: "380ms" }}
+                >
+                  Powered by Typst under the hood.
+                </p>
               </div>
 
               <div className="relative fade-up" style={{ animationDelay: "180ms" }}>
@@ -168,11 +177,11 @@ export default function Home() {
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                           Workflow canvas
                         </p>
-                        <p className="text-sm font-semibold text-[var(--ink)]">Template to PDF in one loop</p>
+                        <p className="text-sm font-semibold text-[var(--ink)]">Source to PDF in one synchronous path</p>
                       </div>
                     </div>
                     <span className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs font-semibold text-[var(--ink)]">
-                      42ms
+                      Sync-ready
                     </span>
                   </div>
 
@@ -194,7 +203,7 @@ export default function Home() {
                         <Sparkle className="h-4 w-4" aria-hidden="true" />
                       </div>
                       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">Preview</p>
-                      <p className="mt-1 text-sm font-semibold text-[var(--ink)]">Queue + diagnostics</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--ink)]">Inline diagnostics path</p>
                     </div>
 
                     <div className="hidden items-center justify-center sm:flex">
@@ -224,7 +233,7 @@ export default function Home() {
                 </div>
 
                 <div className="absolute -bottom-5 -left-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--ink)] shadow-[var(--shadow)]">
-                  Queue healthy
+                  Critical path stable
                 </div>
               </div>
             </div>
@@ -236,13 +245,13 @@ export default function Home() {
             <div className="grid gap-8 xl:grid-cols-[1fr_520px]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                  Why teams migrate
+                  Why PDF stacks fail in production
                 </p>
                 <h2 className="mt-3 max-w-2xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
-                  Replace browser PDF bottlenecks with a predictable render pipeline.
+                  Design for synchronous execution, not queue-first workarounds.
                 </h2>
                 <p className="mt-4 max-w-2xl text-pretty text-base text-[var(--muted)]">
-                  Same documents, fewer moving parts. Keep template quality high while reducing render overhead.
+                  Treat PDF generation as infrastructure: stable request contracts, predictable runtime behavior, and controlled version promotion.
                 </p>
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -269,8 +278,9 @@ export default function Home() {
                       {homeBenchmark.title}
                     </p>
                     <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                      {new Date(homeBenchmark.generatedAt).toLocaleDateString("en-US")} · {homeBenchmark.source}
+                      {new Date(homeBenchmark.generatedAt).toLocaleDateString("en-US")} · {benchmarkSourceLabel}
                     </p>
+                    <p className="mt-2 text-sm text-[var(--muted)]">{homeBenchmark.scenarioTitle}</p>
                   </div>
                   <Gauge className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
                 </div>
@@ -294,6 +304,8 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+
+                <p className="mt-5 text-xs text-[var(--muted)]">{homeBenchmark.methodologySummary}</p>
 
                 <Link href={localePath("/compare")} className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[var(--ink)] hover:text-[var(--accent)]">
                   Open full comparison

@@ -21,6 +21,8 @@ describe("benchmark report module", () => {
 
     expect(model.rows).toHaveLength(3);
     expect(model.baselineName.length).toBeGreaterThan(0);
+    expect(model.scenarioTitle.length).toBeGreaterThan(0);
+    expect(model.methodologySummary.length).toBeGreaterThan(0);
 
     model.rows.forEach((row) => {
       expect(row.widthPercent).toBeGreaterThanOrEqual(2);

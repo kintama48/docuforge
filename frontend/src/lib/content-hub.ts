@@ -408,18 +408,18 @@ const compareSpecs: CompareSpec[] = [
   {
     slug: "puppeteer",
     target: "Puppeteer",
-    subtitle: "Browser rendering flexibility vs Typst-first throughput and maintenance.",
+    subtitle: "Browser rendering flexibility vs deterministic API throughput and maintenance.",
     priority: true,
   },
   {
     slug: "wkhtmltopdf",
     target: "wkhtmltopdf",
-    subtitle: "Legacy HTML conversion compatibility vs modern template control.",
+    subtitle: "Legacy HTML conversion compatibility vs deterministic template control.",
   },
   {
     slug: "latex",
     target: "LaTeX",
-    subtitle: "Academic-grade typesetting vs API-first developer workflow speed.",
+    subtitle: "Academic-grade typesetting vs API-first production workflow speed.",
   },
   {
     slug: "react-pdf",
@@ -439,7 +439,7 @@ const compareSpecs: CompareSpec[] = [
   {
     slug: "carbone-io",
     target: "Carbone.io",
-    subtitle: "Data-driven document generation vs Typst-native implementation simplicity.",
+    subtitle: "Data-driven document generation vs deterministic implementation simplicity.",
   },
 ];
 
@@ -503,7 +503,7 @@ const copyByLocale: Record<Locale, ContentHubCopy> = {
         label: "Developer blog",
         title: "Guides for PDF generation APIs and document automation",
         description:
-          "Practical implementation guides, architecture comparisons, and scaling patterns for Typst and programmatic PDF generation.",
+          "Practical implementation guides, architecture comparisons, and scaling patterns for programmatic PDF generation.",
       },
       templates: {
         label: "Template tutorials",
@@ -513,9 +513,9 @@ const copyByLocale: Record<Locale, ContentHubCopy> = {
       },
       compare: {
         label: "Comparisons",
-        title: "DocuForge vs other PDF generation tools",
+        title: "Deterministic document pipeline comparisons",
         description:
-          "Direct, implementation-level comparisons to help engineering teams choose the right rendering stack.",
+          "Implementation-level guidance to help engineering teams evaluate deterministic and browser-driven rendering stacks.",
       },
       industries: {
         label: "Industry guides",
@@ -531,8 +531,8 @@ const copyByLocale: Record<Locale, ContentHubCopy> = {
       industry: (industry) => `PDF Generation for ${industry}`,
     },
     cta: {
-      title: "Ship faster with a template-first API",
-      body: "Use the DocuForge playground to test templates live, then move the same payload into production.",
+      title: "Ship faster with deterministic document infrastructure",
+      body: "Use the DocuForge playground to validate templates live, then run the same payloads in production.",
       primary: "Try DocuForge free",
       secondary: "Open playground",
     },

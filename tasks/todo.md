@@ -133,7 +133,7 @@
   - `vitest` passed (`benchmark-report.test.ts`, `content-hub.test.ts`).
   - `next build` passed.
   - Benchmark smoke run passed to temp output (`/tmp/docuforge-bench-smoke.json`) with tool-availability diagnostics.
-  - Full benchmark run now writes measured `DocuForge + Puppeteer` values into `frontend/src/data/benchmarks/latest.json`; missing tools are explicitly marked unavailable.
+- Full benchmark run now writes measured `DocuForge + Puppeteer` values into `frontend/src/data/benchmarks/latest.json`; missing tools are explicitly marked unavailable.
 - Benchmark harness now builds and runs the release engine binary (`target/release/docuforge-engine`) before measurements to avoid `cargo run` overhead in cold-start numbers.
 
 ## Playground Rendering Bug Plan (2026-02-26)
@@ -209,3 +209,83 @@
 - Verification:
   - `cd api && bun test tests/integration/render-image.test.ts tests/integration/template-import.test.ts tests/integration/render-preview.test.ts tests/integration/templates-routes.test.ts tests/integration/render-billing-limit.test.ts` (`30 pass, 0 fail`)
   - `cd frontend && bun run test:run tests/integration/editor-render.test.tsx tests/component/editor/EditorToolbar.test.tsx tests/component/CreateTemplateDialog.test.tsx` (`13 pass, 0 fail`)
+
+## Codebase Hardening + KISS Pass (Current)
+
+- [x] Audit API/frontend/engine/mcp hotspots for security, bottlenecks, and over-complex paths.
+- [x] Remove env access bypasses in auth/error middleware and enforce validated config usage.
+- [x] Harden long-lived timers to avoid process pinning (`unref`) in rate limiting and OAuth exchange stores.
+- [x] Tighten render queue validation and preserve root-cause errors instead of masking enqueue failures.
+- [x] Reduce playground module sprawl by extracting presets/helpers into a dedicated module.
+- [x] Run targeted lint/tests for touched areas and verify no behavior regressions.
+
+## Codebase Hardening + KISS Review (Current)
+
+- Security consistency improved in API middleware:
+  - `api/src/middleware/auth.ts` now uses validated `env.JWT_EXPIRY`.
+  - `api/src/middleware/error-handler.ts` now uses validated `env.NODE_ENV`.
+- Runtime hygiene improved:
+  - `api/src/middleware/rate-limit.ts` cleanup timer now calls `unref()`.
+  - `api/src/services/oauth-exchange.ts` cleanup timer now calls `unref()`.
+- Queue path hardened:
+  - `api/src/services/render-queue.ts` now validates `templateId` before enqueue.
+  - enqueue race fallback preserves original error if no duplicate job is found.
+- Public preview trace ID generation moved from `Math.random()` to `randomUUID()`:
+  - `api/src/routes/render.ts`.
+- Complexity reduced in playground:
+  - extracted preset data + low-code helpers into `frontend/src/app/playground/playground-presets.ts`.
+  - `frontend/src/app/playground/playground-client.tsx` now focuses on orchestration/UI behavior.
+- Verification:
+  - `frontend`: `npm run lint -- src/app/playground/playground-client.tsx src/app/playground/playground-presets.ts` (pass)
+  - `api`: `bun test tests/unit/security-regressions.test.ts tests/unit/render-queue.test.ts tests/integration/render-public-preview.test.ts` (pass)
+
+## Repositioning + Moat Messaging Plan (2026-03-01)
+
+- [x] Update landing-page narrative hierarchy to lead with deterministic document infrastructure + synchronous critical-path value.
+- [x] Rewrite English landing copy in `frontend/src/lib/i18n.tsx` to demote Typst to a subtle engine detail and elevate Rust/synchronous/value-contract messaging.
+- [x] Update landing hardcoded section copy in `frontend/src/app/home-client.tsx` for category framing, defensible proof language, and benchmark context disclosure.
+- [x] Update SEO metadata in `frontend/src/lib/marketing-metadata.ts` to remove Typst-first framing across locales.
+- [x] Reframe top-level compare showcase copy in `frontend/src/app/compare/compare-showcase.tsx` toward category education (deterministic vs browser-driven pipelines).
+- [x] Adjust content-hub compare collection and compare spec subtitles in `frontend/src/lib/content-hub.ts` to align with the new positioning spine.
+- [x] Tighten security marketing bullets in `frontend/src/lib/security-mcp-content.ts` to keep claims practical/defensible (no absolute retention guarantees).
+- [x] Run targeted frontend verification and capture outcomes.
+
+## Repositioning + Moat Messaging Review (2026-03-01)
+
+- Landing messaging now leads with deterministic document infrastructure and synchronous critical-path outcomes.
+- English landing hero/features/workflow/footer copy in `frontend/src/lib/i18n.tsx` is no longer Typst-led; Rust + synchronous + versioned-contract language is now primary.
+- Home page hardcoded narrative in `frontend/src/app/home-client.tsx` now:
+  - reframes migration section to production-failure framing,
+  - includes benchmark scenario + methodology disclosure,
+  - keeps Typst mention subtle (`Powered by Typst under the hood.`).
+- Landing metadata in `frontend/src/lib/marketing-metadata.ts` now uses deterministic infrastructure framing across locales and removes Typst-native positioning from titles/OG alt.
+- Localized landing hero headlines in `frontend/src/lib/i18n.tsx` were updated so top-level pages no longer lead with Typst phrasing.
+- Compare index messaging in `frontend/src/app/compare/compare-showcase.tsx` now uses category education framing instead of competitor-forward headline language.
+- Content-hub compare descriptors in `frontend/src/lib/content-hub.ts` now align with deterministic-pipeline positioning.
+- Security value bullets in `frontend/src/lib/security-mcp-content.ts` were tightened to practical, defensible claims.
+- Verification:
+  - `cd frontend && bun run lint src/app/home-client.tsx src/lib/i18n.tsx src/lib/marketing-metadata.ts src/app/compare/compare-showcase.tsx src/lib/content-hub.ts src/lib/security-mcp-content.ts src/lib/benchmark-report.ts` (pass)
+  - `cd frontend && bun run test:run tests/unit/benchmark-report.test.ts tests/unit/content-hub.test.ts` (pass)
+  - `cd frontend && bun run build` (pass)
+
+## Post-Implementation Quality + Test Expansion + Review Plan (2026-03-01)
+
+- [x] Add comprehensive regression tests for new positioning metadata/copy/model behavior.
+- [x] Run expanded frontend quality gates (lint + targeted tests + full frontend test suite + build).
+- [x] Perform code review pass on all newly implemented positioning changes and document findings.
+
+## Post-Implementation Quality + Test Expansion + Review (2026-03-01)
+
+- Added regression coverage:
+  - `frontend/tests/unit/marketing-metadata.test.ts` (new): validates deterministic-infrastructure framing across locales and reality-based English metadata claims.
+  - `frontend/tests/unit/i18n.test.tsx` updates: validates English critical-path hero headline and ensures localized hero headlines do not lead with Typst wording.
+  - `frontend/tests/unit/content-hub.test.ts` updates: validates compare collection/category messaging is deterministic-pipeline-first.
+  - `frontend/tests/unit/benchmark-report.test.ts` updates: validates benchmark scenario + methodology fields exposed by home benchmark model.
+- Quality gates executed:
+  - `cd frontend && bun run lint` (pass)
+  - `cd frontend && bun run test:run tests/unit/marketing-metadata.test.ts tests/unit/i18n.test.tsx tests/unit/content-hub.test.ts tests/unit/benchmark-report.test.ts` (pass)
+  - `cd frontend && bun run build` (pass)
+  - `cd frontend && bun run test:run` (fails in existing Playground tests: `tests/component/PlaygroundClient.test.tsx`, 2 failures)
+- Code review findings captured in delivery notes with severity ordering:
+  - P1: full frontend suite is currently red due two existing `PlaygroundClient` test failures (`tests/component/PlaygroundClient.test.tsx`).
+  - P2: non-English landing copy still carries Typst-heavy subtitle/engine-stat language even though headlines were updated to deterministic-infrastructure framing (`frontend/src/lib/i18n.tsx`).
