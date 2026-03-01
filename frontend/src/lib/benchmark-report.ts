@@ -73,6 +73,8 @@ export type HomeBenchmarkModel = {
   generatedAt: string;
   source: "measured" | "seed";
   title: string;
+  scenarioTitle: string;
+  methodologySummary: string;
   baselineName: string;
   rows: HomeBenchmarkRow[];
 };
@@ -210,6 +212,8 @@ export function getHomeBenchmarkModel(): HomeBenchmarkModel {
       benchmarkReport.source === "measured"
         ? "Last measured run"
         : "Reference run (replace before launch)",
+    scenarioTitle: benchmarkReport.scenario.title,
+    methodologySummary: benchmarkReport.methodology.summary,
     baselineName: baseline?.name ?? "Competitor unavailable",
     rows: [
       {

@@ -291,67 +291,67 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Developer Console",
-      title: "Typst-native PDF generation that stays out of your way.",
+      title: "Document infrastructure for the critical path.",
       subtitle:
-        "Build and ship PDF workflows with a code-first editor, live preview, and a strict API contract. Simple, fast, and built for developers who hate hidden state.",
+        "Generate production PDFs inline with Rust-powered rendering, versioned template contracts, and practical security controls.",
       engineLabel: "Engine",
       engineBody:
-        "Rust-powered Typst engine (no headless Chrome/Puppeteer). Cheaper, faster, and built to programmatically generate large PDF volumes with Typst-level flexibility.",
+        "Rust-powered rendering engine with no headless browser dependency.",
       ctaDocs: "Read the API docs",
       ctaConsole: "Open the console",
       stats: [
-        { label: "Preview latency", value: "Sub 500ms render pipeline" },
-        { label: "Engine", value: "Rust + Typst, no headless Chrome" },
-        { label: "Delivery", value: "API only, no fluff" },
+        { label: "Render path", value: "Synchronous API responses" },
+        { label: "Runtime", value: "Rust engine, no headless browser" },
+        { label: "Change control", value: "Versioned template contracts" },
       ],
     },
     features: {
       label: "Features",
-      title: "A console built for velocity and clarity.",
+      title: "Infrastructure primitives for document delivery.",
       subtitle:
-        "Every surface is designed to reduce friction. No hidden states, no modal mazes, and no mystery settings.",
+        "Build, validate, and ship templates with explicit contracts and predictable production behavior.",
       items: [
         {
-          title: "Typst-native editor",
-          body: "Write templates with a real Monaco editor, syntax intelligence, and instant diagnostics.",
+          title: "Contract-first editor",
+          body: "Author templates with Monaco, diagnostics, and a direct path from source to runtime output.",
         },
         {
-          title: "Live preview pipeline",
-          body: "Render on save or debounce and keep the last good PDF visible while a new build is in flight.",
+          title: "Synchronous render path",
+          body: "Preview and production routes share the same deterministic rendering core.",
         },
         {
           title: "Asset pipeline",
-          body: "Upload fonts and images once, then insert them straight into your template via snippets.",
+          body: "Upload fonts and images once, then bind them to templates through predictable file references.",
         },
         {
-          title: "Usage control",
-          body: "Track renders, quotas, and API keys in one place with clear limits and upgrade paths.",
+          title: "Operational controls",
+          body: "Track renders, quotas, and API keys with clear limits and observable usage signals.",
         },
         {
-          title: "Team-ready templates",
-          body: "Fork official starters or publish your own versions without reinventing the wheel.",
+          title: "Versioned releases",
+          body: "Publish template versions with explicit promotion so production output stays stable.",
         },
         {
-          title: "Rust-native engine",
-          body: "No headless Chrome. The Rust + Typst engine keeps costs low, throughput high, and makes high-volume programmatic PDFs easy.",
+          title: "Rust execution runtime",
+          body: "No headless browser workers. Keep memory overhead lower and throughput more predictable.",
         },
       ],
     },
     workflow: {
       label: "Workflow",
-      title: "A straight line from template to PDF.",
+      title: "A deterministic path from source to delivery.",
       subtitle:
-        "Follow a three-step flow that mirrors the actual system. Write, test, deploy. The UI stays honest about what is live.",
+        "Follow a three-step release model that mirrors production behavior: author, validate, publish.",
       steps: [
         {
           step: "01",
           title: "Write with structure",
-          body: "Typst templates live beside their data. Use snippets, files, and assets without context switching.",
+          body: "Templates live beside data contracts so schema and layout evolve together.",
         },
         {
           step: "02",
           title: "Preview and validate",
-          body: "See every render in real time with diagnostics that link directly to the line that failed.",
+          body: "Render in real time with diagnostics that point directly to the failing line.",
         },
         {
           step: "03",
@@ -419,7 +419,7 @@ const translations = {
       label: "API",
       title: "One request from render to delivery.",
       subtitle:
-        "The API is designed like the UI: clean inputs, stable outputs, and precise errors that make failures easy to fix.",
+        "Use stable request contracts, synchronous responses, and precise errors that are safe to automate against.",
       ctaDocs: "Explore the docs",
       ctaConsole: "Try the console",
       quickStartLabel: "Quick start",
@@ -461,15 +461,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "Ready to build your PDF workflow?",
+      title: "Ready to simplify your document pipeline?",
       subtitle:
-        "Start with the docs, then open the console when you are ready to ship.",
+        "Start with the API reference, then ship the same payloads through your production path.",
       ctaDocs: "View API docs",
       ctaConsole: "Open console",
     },
     footer: {
       blurb:
-        "Typst-native PDF generation for builders who want speed and clarity from template to render.",
+        "Deterministic document infrastructure for teams that care about runtime behavior, change control, and delivery speed.",
       product: "Product",
       developers: "Developers",
       company: "Company",
@@ -771,7 +771,7 @@ const translations = {
     },
     hero: {
       badge: "Console développeur DocuForge",
-      title: "Génération PDF native Typst qui reste simple.",
+      title: "Infrastructure documentaire pour les chemins critiques.",
       subtitle:
         "Construisez et livrez des workflows PDF avec un éditeur code‑first, un aperçu en direct et un contrat API strict. Simple, rapide, pensé pour les développeurs.",
       engineLabel: "Moteur",
@@ -1251,7 +1251,7 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Entwicklerkonsole",
-      title: "Typst‑native PDF‑Erstellung ohne Umwege.",
+      title: "Dokument-Infrastruktur für den kritischen Pfad.",
       subtitle:
         "Baue und liefere PDF‑Workflows mit einem code‑first Editor, Live‑Preview und einem klaren API‑Vertrag. Schnell, simpel, für Entwickler.",
       engineLabel: "Engine",
@@ -1731,7 +1731,7 @@ const translations = {
     },
     hero: {
       badge: "Console sviluppatori DocuForge",
-      title: "Generazione PDF nativa Typst senza attrito.",
+      title: "Infrastruttura documentale per il percorso critico.",
       subtitle:
         "Crea e rilascia workflow PDF con un editor code‑first, preview live e un contratto API rigoroso. Semplice, veloce, per developer.",
       engineLabel: "Motore",
@@ -2211,7 +2211,7 @@ const translations = {
     },
     hero: {
       badge: "Consola para desarrolladores DocuForge",
-      title: "Generación PDF nativa de Typst sin fricción.",
+      title: "Infraestructura documental para la ruta crítica.",
       subtitle:
         "Crea y entrega flujos PDF con un editor code‑first, vista previa en vivo y un contrato API estricto. Simple y rápido para desarrolladores.",
       engineLabel: "Motor",
@@ -2689,7 +2689,7 @@ const translations = {
     },
     hero: {
       badge: "لوحة مطوري DocuForge",
-      title: "توليد PDF أصلي بـ Typst بدون تعقيد.",
+      title: "بنية مستندات للمسار الحرج.",
       subtitle:
         "ابنِ واصدر تدفقات PDF بمحرر يعتمد على الكود ومعاينة فورية وعقد API واضح. بسيط وسريع للمطورين.",
       engineLabel: "المحرك",
@@ -3161,7 +3161,7 @@ const translations = {
     },
     hero: {
       badge: "DocuForge 开发者控制台",
-      title: "Typst 原生 PDF 生成，干净利落。",
+      title: "面向关键路径的文档基础设施。",
       subtitle:
         "用代码优先的编辑器、实时预览和严格的 API 合同构建并交付 PDF 流程。简单、快速、为开发者而生。",
       engineLabel: "引擎",

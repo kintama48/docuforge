@@ -145,9 +145,9 @@ const copyByLocale: Record<Locale, SecurityAndMcpCopy> = {
 };
 
 const securityCapabilities = [
-  "Customer documents stay protected in transit and at rest, so teams can clear security reviews without custom hardening work.",
-  "Password-protected delivery is built in for regulated workflows, keeping finance and legal PDFs safe to share.",
-  "Credentials are protected by default, reducing leak risk and shrinking breach blast radius.",
+  "TLS transport, authenticated APIs, and hardened defaults help teams clear security reviews without custom hardening projects.",
+  "Password-protected PDF delivery is built in for regulated workflows handling sensitive documents.",
+  "Credential and token handling defaults are designed to reduce leakage risk across render, billing, and webhook paths.",
   "JWT and API-key auth paths are isolated by endpoint intent.",
   "Stripe webhook signatures are verified before billing events are processed.",
   "Outbound webhooks are signed with HMAC SHA-256 and retried with backoff.",

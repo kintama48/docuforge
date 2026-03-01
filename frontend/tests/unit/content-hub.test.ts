@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getCollectionMeta,
   getContentBySlug,
   listAllContentPaths,
   listContent,
@@ -39,5 +40,15 @@ describe("content hub", () => {
     const doc = getContentBySlug("compare", "puppeteer", "en");
     expect(doc?.priority).toBe(true);
     expect(getContentBySlug("blog", "does-not-exist", "en")).toBeNull();
+  });
+
+  it("keeps compare positioning deterministic-pipeline-first", () => {
+    const meta = getCollectionMeta("compare", "en");
+    expect(meta.title).toContain("Deterministic document pipeline");
+
+    const doc = getContentBySlug("compare", "puppeteer", "en");
+    expect(doc).not.toBeNull();
+    expect(doc?.excerpt).toContain("deterministic API throughput");
+    expect(doc?.excerpt).not.toContain("Typst-first");
   });
 });

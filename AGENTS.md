@@ -26,6 +26,7 @@
 - Diff behavior between main and your changes when relevant
 - Ask yourself: "Would a staff engineer approve this?"
 - Run tests, check logs, demonstrate correctness
+- After implementing any notable feature/update, run an explicit quality check, add comprehensive regression tests for the new behavior, and perform a code review pass before finalizing.
 
 ## 5. Demand Elegance (Balanced)
 - For non-trivial changes: pause and ask "Is there a more elegant way?"
