@@ -48,10 +48,9 @@ impl HttpFetcher for ReqwestFetcher {
 
             let status = response.status();
             let content_length = response.content_length();
-            let bytes = response
-                .bytes()
-                .await
-                .map_err(|e| EngineError::AssetFetchFailed(format!("Failed to read body: {}", e)))?;
+            let bytes = response.bytes().await.map_err(|e| {
+                EngineError::AssetFetchFailed(format!("Failed to read body: {}", e))
+            })?;
 
             Ok(FetchResponse {
                 status,
@@ -175,8 +174,7 @@ impl AssetCache {
         if !response.status.is_success() {
             return Err(EngineError::AssetFetchFailed(format!(
                 "HTTP {} from {}",
-                response.status,
-                url
+                response.status, url
             )));
         }
 
@@ -453,7 +451,6 @@ mod tests {
         assert!(result.is_err());
     }
 
-
     #[tokio::test]
     async fn test_get_or_fetch_from_url_success() {
         let cache = AssetCache::new_with_fetcher(
@@ -480,7 +477,6 @@ mod tests {
 
         let hash = AssetCache::compute_hash(bytes.as_ref());
         assert!(cache.get(&hash).is_some());
-
     }
 
     #[tokio::test]

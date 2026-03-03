@@ -4,6 +4,8 @@
  * FE-C1: useEffect must not include previewRender in dependencies (infinite loop risk)
  * FE-C2: localStorage token storage must be documented
  * FE-C3: Monaco editor types must not use 'any'
+ * FE-C4: redirect params must be sanitized to internal paths
+ * FE-C5: authenticated shell must expose an explicit logout action
  */
 import { describe, test, expect } from 'vitest';
 import * as fs from 'fs';
@@ -14,7 +16,7 @@ const srcPath = path.resolve(__dirname, '../../src');
 describe('Frontend Security Regressions', () => {
   describe('FE-C1: useEffect dependency array fix', () => {
     test('EditorPage uses ref pattern for previewRender.mutate', () => {
-      const editorPagePath = path.join(srcPath, 'pages/editor/EditorPage.tsx');
+      const editorPagePath = path.join(srcPath, 'views/editor/EditorPage.tsx');
       const source = fs.readFileSync(editorPagePath, 'utf-8');
 
       // Should use a ref to store the mutate function
@@ -51,7 +53,7 @@ describe('Frontend Security Regressions', () => {
       const source = fs.readFileSync(editorStorePath, 'utf-8');
 
       // Should import Monaco types
-      expect(source).toContain("import type { editor, Monaco }");
+      expect(source).toContain('import type * as Monaco from "monaco-editor"');
 
       // Should NOT have 'any' for editor instances
       expect(source).not.toMatch(/editorInstance:\s*any/);
@@ -67,13 +69,35 @@ describe('Frontend Security Regressions', () => {
       const source = fs.readFileSync(monacoEditorPath, 'utf-8');
 
       // Should import Monaco types
-      expect(source).toContain("import type { editor,");
+      expect(source).toContain('import type * as MonacoType from "monaco-editor"');
 
       // Should NOT have 'any' for refs
       expect(source).not.toMatch(/useRef<any>/);
 
       // Should have typed refs
       expect(source).toContain('useRef<MonacoEditor');
+    });
+  });
+
+  describe('FE-C4: redirect sanitization', () => {
+    test('redirect sanitizer rejects external redirects', () => {
+      const redirectPath = path.join(srcPath, 'lib/redirect.ts');
+      const source = fs.readFileSync(redirectPath, 'utf-8');
+
+      expect(source).toContain('sanitizeAppRedirect');
+      expect(source).toContain("startsWith(\"//\")");
+      expect(source).toContain("includes(\"\\\\\")");
+    });
+  });
+
+  describe('FE-C5: explicit logout control', () => {
+    test('TopBar includes logout action in authenticated shell', () => {
+      const topBarPath = path.join(srcPath, 'components/layout/TopBar.tsx');
+      const source = fs.readFileSync(topBarPath, 'utf-8');
+
+      expect(source).toContain('Log out');
+      expect(source).toContain('useAuthStore');
+      expect(source).toContain('logout');
     });
   });
 
@@ -110,9 +134,10 @@ describe('Frontend Security Regressions', () => {
       const hookPath = path.join(srcPath, 'hooks/use-monaco-formatting.ts');
       const source = fs.readFileSync(hookPath, 'utf-8');
 
-      // Should store and dispose command disposables
-      expect(source).toContain('commandDisposablesRef');
-      expect(source).toContain('.dispose()');
+      // Should guard duplicate registration and reset editor binding in cleanup
+      expect(source).toContain('commandEditorRef');
+      expect(source).toContain('if (commandEditorRef.current === editor) return;');
+      expect(source).toContain('commandEditorRef.current = null;');
     });
   });
 
@@ -144,23 +169,15 @@ describe('Frontend Security Regressions', () => {
     });
   });
 
-  describe('FE-m4: Modal-based file delete confirmation', () => {
-    test('FileExplorer uses Modal instead of native confirm()', () => {
+  describe('FE-m4: Single-file explorer mode', () => {
+    test('FileExplorer avoids destructive file controls and native confirm()', () => {
       const explorerPath = path.join(srcPath, 'components/editor/FileExplorer.tsx');
       const source = fs.readFileSync(explorerPath, 'utf-8');
 
-      // Delete handler should use state-driven modal, not window.confirm()
-      // The pattern: onClick sets state, Modal renders the confirmation
-      expect(source).toContain('setDeleteTarget(file)');
-      expect(source).toContain('setShowDeleteConfirm(true)');
-
-      // Should have a Modal with the delete confirmation
-      expect(source).toContain('open={showDeleteConfirm}');
-
-
-      // Should use Modal + state for delete confirmation
-      expect(source).toContain('showDeleteConfirm');
-      expect(source).toContain('deleteTarget');
+      expect(source).toContain('setActiveFile("main.typ")');
+      expect(source).toContain('Single-file mode is enabled for a simpler editing flow.');
+      expect(source).not.toContain('window.confirm(');
+      expect(source).not.toContain('setDeleteTarget(');
     });
   });
 

@@ -132,4 +132,44 @@ describe("use-templates hooks", () => {
 
     expect(api.get).toHaveBeenCalledWith("/v1/templates/tpl_5/versions/ver_1");
   });
+
+  it("creates template with low_code_spec payload", async () => {
+    vi.mocked(api.post).mockResolvedValue({ template: { id: "tpl_low_code" } } as any);
+    const { result } = renderHook(() => useCreateTemplate(), { wrapper });
+
+    const lowCodeSpec = {
+      version: 1 as const,
+      blocks: [{ type: "header" as const, props: { title: "{{invoice.title}}" } }],
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync({ name: "Guided", low_code_spec: lowCodeSpec });
+    });
+
+    expect(api.post).toHaveBeenCalledWith("/v1/templates", {
+      name: "Guided",
+      low_code_spec: lowCodeSpec,
+    });
+  });
+
+  it("publishes version with low_code_spec payload", async () => {
+    vi.mocked(api.post).mockResolvedValue({ version: { version_number: 3 } } as any);
+    const { result } = renderHook(() => usePublishVersion("tpl_1"), { wrapper });
+
+    const lowCodeSpec = {
+      version: 1 as const,
+      blocks: [{ type: "paragraph" as const, props: { text: "{{invoice.notes}}" } }],
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync({ low_code_spec: lowCodeSpec });
+    });
+
+    expect(api.post).toHaveBeenCalledWith("/v1/templates/tpl_1/publish", {
+      files: undefined,
+      defaults: undefined,
+      commit_message: undefined,
+      low_code_spec: lowCodeSpec,
+    });
+  });
 });

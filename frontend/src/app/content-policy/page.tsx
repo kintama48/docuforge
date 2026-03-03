@@ -99,8 +99,8 @@ export default function ContentPolicyPage() {
           5. Changes to this policy
         </h2>
         <p>
-          We may update this policy from time to time. We will update the "Last
-          updated" date and provide notice when changes are material.
+          We may update this policy from time to time. We will update the &quot;Last
+          updated&quot; date and provide notice when changes are material.
         </p>
       </section>
     </LegalLayout>

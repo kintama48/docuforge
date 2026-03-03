@@ -281,7 +281,11 @@ async fn test_render_with_nested_data() {
     let bytes = response.as_bytes();
     assert!(bytes.starts_with(b"%PDF-"));
     // Should produce a reasonable PDF (more than just headers)
-    assert!(bytes.len() > 1000, "PDF seems too small: {} bytes", bytes.len());
+    assert!(
+        bytes.len() > 1000,
+        "PDF seems too small: {} bytes",
+        bytes.len()
+    );
 }
 
 #[tokio::test]
@@ -348,5 +352,8 @@ async fn test_render_formatted_document() {
     let bytes = response.as_bytes();
     assert!(bytes.starts_with(b"%PDF-"));
     // A formatted document with table should be substantial
-    assert!(bytes.len() > 2000, "PDF seems too small for formatted document");
+    assert!(
+        bytes.len() > 2000,
+        "PDF seems too small for formatted document"
+    );
 }

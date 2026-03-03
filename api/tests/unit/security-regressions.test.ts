@@ -5,6 +5,10 @@
  * API-C2: OAuth credentials must not be passed in URL params
  * API-C3: Asset URLs must use GetObjectCommand (not PutObjectCommand)
  * API-C4: CORS must not allow all origins
+ * API-C5: OAuth redirects must be internal-only
+ * API-C6: Global security headers must be set
+ * API-C7: Webhook targets must reject localhost/private hosts
+ * API-C8: Browser auth endpoints must enforce trusted Origin
  */
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { createExchangeCode, consumeExchangeCode } from '../../src/services/oauth-exchange';
@@ -135,6 +139,45 @@ describe('Security Regressions', () => {
     });
   });
 
+  describe('API-C5: Redirect sanitization', () => {
+    test('OAuth service sanitizes redirect paths', async () => {
+      const source = await Bun.file('src/services/oauth.ts').text();
+      expect(source).toContain('sanitizeRedirectPath');
+      expect(source).toContain("normalized.startsWith('//')");
+      expect(source).toContain("normalized.includes('\\\\')");
+    });
+  });
+
+  describe('API-C6: Security headers middleware', () => {
+    test('app.ts sets hardened response headers', async () => {
+      const source = await Bun.file('src/app.ts').text();
+      expect(source).toContain("X-Content-Type-Options");
+      expect(source).toContain("X-Frame-Options");
+      expect(source).toContain("Referrer-Policy");
+      expect(source).toContain("Permissions-Policy");
+      expect(source).toContain("Strict-Transport-Security");
+    });
+  });
+
+  describe('API-C7: Webhook target safety', () => {
+    test('webhook routes use assertSafeWebhookUrl', async () => {
+      const routeSource = await Bun.file('src/routes/webhooks.ts').text();
+      expect(routeSource).toContain('assertSafeWebhookUrl');
+
+      const helperSource = await Bun.file('src/lib/webhook-url.ts').text();
+      expect(helperSource).toContain('Webhook URL must target a public host');
+    });
+  });
+
+  describe('API-C8: Trusted browser origin check', () => {
+    test('auth routes block untrusted Origin for browser auth flows', async () => {
+      const source = await Bun.file('src/routes/auth.ts').text();
+      expect(source).toContain('assertTrustedBrowserOrigin');
+      expect(source).toContain('Cross-origin auth request blocked');
+      expect(source).toContain("auth.post('/oauth/exchange'");
+    });
+  });
+
   describe('API-M1: OAuth email fallback removed', () => {
     test('OAuth callback must NOT fall back to email matching', async () => {
       const source = await Bun.file('src/routes/auth.ts').text();
@@ -159,11 +202,13 @@ describe('Security Regressions', () => {
     });
   });
 
-  describe('API-m4: Stripe key validation', () => {
-    test('billing.ts uses env.STRIPE_SECRET_KEY (no empty fallback)', async () => {
+  describe('API-m4: Billing provider validation', () => {
+    test('billing route is provider-switched and never falls back to Stripe secret defaults', async () => {
       const source = await Bun.file('src/routes/billing.ts').text();
 
-      // Should NOT have empty string fallback for Stripe key
+      expect(source).toContain('BILLING_PROVIDER');
+      expect(source).toContain("env.BILLING_PROVIDER === 'paddle'");
+      expect(source).toContain("env.BILLING_PROVIDER === 'lemonsqueezy'");
       expect(source).not.toContain("STRIPE_SECRET_KEY || ''");
       expect(source).not.toContain("STRIPE_SECRET_KEY || \"\"");
     });

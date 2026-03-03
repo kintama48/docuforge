@@ -210,9 +210,13 @@ async function createUser(db: TestDb): Promise<string> {
   await db.insert(schema.users).values({
     id: userId,
     email: `${userId}@test.com`,
+    emailCanonical: `${userId}@test.com`,
+    emailVerifiedAt: now,
     passwordHash: 'test_hash',
+    signupFingerprintHash: null,
+    signupIpHash: null,
     planTier: 'free',
-    planRenders: 500,
+    planRenders: 1000,
     createdAt: now,
     updatedAt: now,
   });

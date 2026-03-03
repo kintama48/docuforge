@@ -3,6 +3,11 @@ To install dependencies:
 bun install
 ```
 
+Run migrations explicitly:
+```sh
+bun run db:migrate
+```
+
 To run:
 ```sh
 bun run dev

@@ -4,15 +4,32 @@ import { screen } from "@testing-library/react";
 import { RegisterForm } from "@/src/components/auth/RegisterForm";
 
 const mutate = vi.fn();
+const mutateAsync = vi.fn();
+const reset = vi.fn();
 let registerState = { isPending: false, isError: false, error: null as any };
+const idleMutation = {
+  mutate: vi.fn(),
+  mutateAsync: vi.fn(),
+  reset: vi.fn(),
+  isPending: false,
+  isError: false,
+  error: null as any,
+};
 
 vi.mock("@/src/hooks/use-auth", () => ({
-  useRegister: () => ({ mutate, ...registerState }),
+  useRegister: () => ({ mutate, mutateAsync, reset, ...registerState }),
+  useVerifyEmail: () => idleMutation,
+  useResendEmailVerification: () => idleMutation,
+  isVerificationRequiredResponse: () => false,
+  extractApiErrorMessage: (error: unknown, fallback: string) =>
+    (error as { message?: string } | null)?.message || fallback,
 }));
 
 describe("RegisterForm state handling", () => {
   beforeEach(() => {
     mutate.mockReset();
+    mutateAsync.mockReset();
+    reset.mockReset();
     registerState = { isPending: false, isError: false, error: null };
   });
 

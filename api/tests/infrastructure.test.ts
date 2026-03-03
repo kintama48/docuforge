@@ -51,9 +51,13 @@ describe('Test Infrastructure', () => {
       await db.insert(schema.users).values({
         id: userId,
         email: 'test@example.com',
+        emailCanonical: 'test@example.com',
+        emailVerifiedAt: Date.now(),
         passwordHash: 'hash123',
+        signupFingerprintHash: null,
+        signupIpHash: null,
         planTier: 'free',
-        planRenders: 500,
+        planRenders: 1000,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });

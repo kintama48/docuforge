@@ -9,7 +9,7 @@ use tracing::{info, Level};
 use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::EnvFilter;
 
-use docuforge_engine::cache::AssetCache;
+use docuforge_engine::cache::{AssetCache, TemplateCacheL2};
 use docuforge_engine::config::Config;
 use docuforge_engine::engine::{Compiler, FontLoader};
 use docuforge_engine::server::{create_router, AppState};
@@ -22,16 +22,19 @@ async fn main() {
 
     // Initialize Sentry (must be before tracing so the guard lives for the program's lifetime)
     let _sentry_guard = config.sentry_dsn.as_ref().map(|dsn| {
-        sentry::init((dsn.as_str(), sentry::ClientOptions {
-            release: sentry::release_name!(),
-            environment: Some(
-                std::env::var("SENTRY_ENVIRONMENT")
-                    .unwrap_or_else(|_| "production".into())
-                    .into(),
-            ),
-            traces_sample_rate: 0.1,
-            ..Default::default()
-        }))
+        sentry::init((
+            dsn.as_str(),
+            sentry::ClientOptions {
+                release: sentry::release_name!(),
+                environment: Some(
+                    std::env::var("SENTRY_ENVIRONMENT")
+                        .unwrap_or_else(|_| "production".into())
+                        .into(),
+                ),
+                traces_sample_rate: 0.1,
+                ..Default::default()
+            },
+        ))
     });
 
     // Initialize tracing
@@ -74,8 +77,35 @@ fn build_app(config: &Config) -> (axum::Router, usize) {
     // Create asset cache
     let asset_cache = AssetCache::new(config.asset_cache_size_bytes());
 
+    let template_cache_l2 = if config.template_cache_l2_enabled {
+        if let Some(redis_url) = config.redis_url.as_deref() {
+            match TemplateCacheL2::new(
+                redis_url,
+                config.template_cache_l2_prefix.clone(),
+                config.template_cache_l2_ttl_sec,
+                config.template_cache_l2_connect_timeout_ms,
+                config.template_cache_l2_max_entry_bytes,
+            ) {
+                Ok(cache) => Some(cache),
+                Err(error) => {
+                    tracing::warn!("Redis L2 cache disabled due to init error: {error}");
+                    None
+                }
+            }
+        } else {
+            tracing::warn!(
+                "TEMPLATE_CACHE_L2_ENABLED=true but REDIS_URL is missing; Redis L2 cache disabled"
+            );
+            None
+        }
+    } else {
+        None
+    };
+
     // Create compiler
-    let compiler = Compiler::new(fonts, asset_cache);
+    let compiler = Compiler::new(fonts, asset_cache)
+        .with_template_cache_entries(config.template_cache_entries)
+        .with_template_cache_l2(template_cache_l2);
 
     // Create app state
     let state = AppState::new(compiler, config.clone(), fonts_loaded);

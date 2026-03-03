@@ -17,6 +17,9 @@ describe("PublishDialog", () => {
     pending = false;
     useEditorStore.setState({
       source: "#set page()",
+      lowCodeSpec: null,
+      editorMode: "code",
+      advancedTypstEnabled: false,
       files: {},
       data: {},
       markClean: vi.fn(),
@@ -73,5 +76,37 @@ describe("PublishDialog", () => {
       <PublishDialog open={true} templateId="tpl_1" onClose={() => {}} />
     );
     expect(screen.getByRole("button", { name: /publishing/i })).toBeDisabled();
+  });
+
+  it("publishes low_code_spec in guided mode", () => {
+    useEditorStore.setState({
+      editorMode: "low-code",
+      advancedTypstEnabled: false,
+      lowCodeSpec: {
+        version: 1,
+        blocks: [{ type: "paragraph", props: { text: "{{invoice.notes}}" } }],
+      },
+    } as any);
+
+    renderWithProviders(
+      <PublishDialog open={true} templateId="tpl_1" onClose={() => {}} />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /publish/i }));
+
+    expect(publishMutate).toHaveBeenCalledWith(
+      {
+        id: "tpl_1",
+        source: undefined,
+        low_code_spec: {
+          version: 1,
+          blocks: [{ type: "paragraph", props: { text: "{{invoice.notes}}" } }],
+        },
+        files: undefined,
+        defaults: {},
+        commit_message: undefined,
+      },
+      expect.any(Object)
+    );
   });
 });

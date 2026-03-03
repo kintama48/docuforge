@@ -35,7 +35,7 @@ describe('POST /v1/render - Billing Limits', () => {
   });
 
   it('allows render when under limit', async () => {
-    // User starts with 0 renders, limit is 500
+    // User starts with 0 renders, limit is 1000 on free.
     const response = await app.request('/v1/render', {
       method: 'POST',
       headers: getAuthHeaders(user, true),

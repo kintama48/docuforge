@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import PricingPage from "@/src/pages/pricing/PricingPage";
+import PricingPage from "@/src/views/pricing/PricingPage";
 import { normalizeLocale } from "@/src/lib/i18n-config";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 

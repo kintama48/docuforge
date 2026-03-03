@@ -8,6 +8,7 @@ export function PdfPreview() {
   const { messages } = useI18n();
   const pdfUrl = useEditorStore((state) => state.pdfUrl);
   const renderStatus = useEditorStore((state) => state.renderStatus);
+  const renderError = useEditorStore((state) => state.renderError);
   const pdfScrollTop = useEditorStore((state) => state.pdfScrollTop);
   const setPdfScrollTop = useEditorStore((state) => state.setPdfScrollTop);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -37,8 +38,8 @@ export function PdfPreview() {
   }, [pdfUrl, pdfScrollTop, setPdfScrollTop]);
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-[--line] bg-[--surface]">
-      <div className="flex items-center justify-between border-b border-[--line] px-3 py-2 text-xs text-[--muted]">
+    <div className="flex h-full flex-col rounded-lg border border-[var(--line)] bg-[var(--surface)]">
+      <div className="flex items-center justify-between border-b border-[var(--line)] px-3 py-2 text-xs text-[var(--muted)]">
         <span>{messages.editor.previewTitle}</span>
         <span>
           {renderStatus === "rendering"
@@ -52,15 +53,22 @@ export function PdfPreview() {
             ref={iframeRef}
             title={messages.editor.previewIframeTitle}
             src={pdfUrl}
-            className="h-full w-full"
+            className="relative z-0 h-full w-full"
           />
+        ) : renderError ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-xs text-[var(--muted)]">
+            <p className="font-semibold text-[var(--bad)]">
+              {renderError.file}:{renderError.line}:{renderError.column}
+            </p>
+            <p>{renderError.message}</p>
+          </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-[--muted-dim]">
+          <div className="flex h-full items-center justify-center text-xs text-[var(--muted-dim)]">
             {messages.editor.previewPlaceholder}
           </div>
         )}
         {renderStatus === "rendering" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-xs text-white">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/25 text-xs text-[var(--ink)]">
             {messages.editor.previewRendering}
           </div>
         )}

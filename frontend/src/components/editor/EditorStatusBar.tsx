@@ -14,7 +14,7 @@ export function EditorStatusBar() {
   const cursor = useEditorStore((state) => state.cursorPosition);
 
   return (
-    <footer className="grid grid-cols-3 items-center border-t border-[--line] bg-[--surface-2] px-4 py-2 text-xs text-[--muted]">
+    <footer className="grid grid-cols-3 items-center border-t border-[var(--line)] bg-[var(--surface-2)] px-4 py-2 text-xs text-[var(--muted)]">
       <span>
         {viewingVersion
           ? `${messages.editor.statusViewing}${viewingVersion}`

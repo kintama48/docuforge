@@ -1,15 +1,27 @@
 import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  stripeCustomerId: text('stripe_customer_id'),
-  planTier: text('plan_tier').notNull().default('free'),
-  planRenders: integer('plan_renders').notNull().default(500),
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
-});
+export const users = sqliteTable(
+  'users',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').notNull().unique(),
+    emailCanonical: text('email_canonical').notNull().unique(),
+    emailVerifiedAt: integer('email_verified_at'),
+    passwordHash: text('password_hash').notNull(),
+    stripeCustomerId: text('stripe_customer_id'),
+    signupFingerprintHash: text('signup_fingerprint_hash'),
+    signupIpHash: text('signup_ip_hash'),
+    planTier: text('plan_tier').notNull().default('free'),
+    planRenders: integer('plan_renders').notNull().default(1000),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    index('idx_users_email_canonical').on(table.emailCanonical),
+    index('idx_users_signup_fp_created').on(table.signupFingerprintHash, table.createdAt),
+    index('idx_users_signup_ip_created').on(table.signupIpHash, table.createdAt),
+  ]
+);
 
 export const apiKeys = sqliteTable(
   'api_keys',
@@ -60,6 +72,7 @@ export const templateVersions = sqliteTable(
     source: text('source').notNull(),
     files: text('files', { mode: 'json' }).$type<Record<string, string> | null>(),
     defaults: text('defaults', { mode: 'json' }).$type<Record<string, unknown> | null>(),
+    lowCodeSpec: text('low_code_spec', { mode: 'json' }).$type<Record<string, unknown> | null>(),
     commitMessage: text('commit_message'),
     createdAt: integer('created_at').notNull(),
   },
@@ -106,6 +119,26 @@ export const renderLogs = sqliteTable(
   (table) => [index('idx_render_logs_usage').on(table.userId, table.createdAt)]
 );
 
+export const aiUsageLogs = sqliteTable(
+  'ai_usage_logs',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    feature: text('feature').notNull(),
+    creditsUsed: integer('credits_used').notNull().default(1),
+    status: text('status').notNull().default('consumed'),
+    tokensUsed: integer('tokens_used').notNull().default(0),
+    errorMessage: text('error_message'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_ai_usage_logs_user_created').on(table.userId, table.createdAt),
+    index('idx_ai_usage_logs_feature_created').on(table.feature, table.createdAt),
+  ]
+);
+
 export const oauthAccounts = sqliteTable(
   'oauth_accounts',
   {
@@ -124,6 +157,51 @@ export const oauthAccounts = sqliteTable(
   ]
 );
 
+export const authOtpChallenges = sqliteTable(
+  'auth_otp_challenges',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    purpose: text('purpose').notNull(), // email_verification | login_2fa
+    email: text('email').notNull(),
+    codeHash: text('code_hash').notNull(),
+    expiresAt: integer('expires_at').notNull(),
+    resendAvailableAt: integer('resend_available_at').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    maxAttempts: integer('max_attempts').notNull().default(5),
+    sentCount: integer('sent_count').notNull().default(1),
+    consumedAt: integer('consumed_at'),
+    metadata: text('metadata', { mode: 'json' }).$type<Record<string, unknown> | null>(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    index('idx_auth_otp_user_purpose').on(table.userId, table.purpose),
+    index('idx_auth_otp_active').on(table.purpose, table.consumedAt, table.expiresAt),
+  ]
+);
+
+export const userPins = sqliteTable(
+  'user_pins',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    fingerprintHash: text('fingerprint_hash').notNull(),
+    ipHash: text('ip_hash'),
+    firstSeenAt: integer('first_seen_at').notNull(),
+    lastSeenAt: integer('last_seen_at').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_user_pins_user_fingerprint').on(table.userId, table.fingerprintHash),
+    index('idx_user_pins_fingerprint').on(table.fingerprintHash, table.lastSeenAt),
+  ]
+);
+
 export type UserInsert = typeof users.$inferInsert;
 export type UserSelect = typeof users.$inferSelect;
 export type ApiKeyInsert = typeof apiKeys.$inferInsert;
@@ -136,8 +214,14 @@ export type AssetInsert = typeof assets.$inferInsert;
 export type AssetSelect = typeof assets.$inferSelect;
 export type RenderLogInsert = typeof renderLogs.$inferInsert;
 export type RenderLogSelect = typeof renderLogs.$inferSelect;
+export type AiUsageLogInsert = typeof aiUsageLogs.$inferInsert;
+export type AiUsageLogSelect = typeof aiUsageLogs.$inferSelect;
 export type OAuthAccountInsert = typeof oauthAccounts.$inferInsert;
 export type OAuthAccountSelect = typeof oauthAccounts.$inferSelect;
+export type AuthOtpChallengeInsert = typeof authOtpChallenges.$inferInsert;
+export type AuthOtpChallengeSelect = typeof authOtpChallenges.$inferSelect;
+export type UserPinInsert = typeof userPins.$inferInsert;
+export type UserPinSelect = typeof userPins.$inferSelect;
 
 export const webhooks = sqliteTable(
   'webhooks',

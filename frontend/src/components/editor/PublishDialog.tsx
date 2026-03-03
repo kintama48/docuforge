@@ -21,8 +21,15 @@ export function PublishDialog({ open, templateId, onClose }: PublishDialogProps)
     (state) => state.setPublishedVersion
   );
   const source = useEditorStore((state) => state.source);
+  const lowCodeSpec = useEditorStore((state) => state.lowCodeSpec);
+  const editorMode = useEditorStore((state) => state.editorMode);
+  const advancedTypstEnabled = useEditorStore(
+    (state) => state.advancedTypstEnabled
+  );
   const files = useEditorStore((state) => state.files);
   const defaults = useEditorStore((state) => state.data);
+  const isGuidedPublish =
+    editorMode === "low-code" && !advancedTypstEnabled && lowCodeSpec !== null;
 
   return (
     <Modal
@@ -30,19 +37,19 @@ export function PublishDialog({ open, templateId, onClose }: PublishDialogProps)
       onClose={onClose}
       title={messages.editor.publishDialogTitle}
     >
-      <label className="text-xs text-[--muted]">
+      <label className="text-xs text-[var(--muted)]">
         {messages.editor.commitMessageLabel}
       </label>
       <input
         value={message}
         onChange={(event) => setMessage(event.target.value)}
-        className="mt-2 w-full rounded-md border border-[--line] bg-[--surface-2] px-3 py-2 text-xs text-white"
+        className="mt-2 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--ink)]"
         placeholder={messages.editor.commitMessagePlaceholder}
       />
       <div className="mt-6 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="rounded-md border border-[--line] px-3 py-2 text-xs text-white"
+          className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)]"
         >
           {messages.templateDialog.cancel}
         </button>
@@ -51,8 +58,9 @@ export function PublishDialog({ open, templateId, onClose }: PublishDialogProps)
             publish.mutate(
               {
                 id: templateId,
-                source,
-                files,
+                source: isGuidedPublish ? undefined : source,
+                low_code_spec: isGuidedPublish ? lowCodeSpec : undefined,
+                files: isGuidedPublish ? undefined : files,
                 defaults,
                 commit_message: message || undefined,
               },
@@ -66,7 +74,7 @@ export function PublishDialog({ open, templateId, onClose }: PublishDialogProps)
             );
           }}
           disabled={publish.isPending}
-          className="rounded-md bg-[--accent] px-3 py-2 text-xs font-semibold text-white hover:bg-[--accent-strong] disabled:opacity-60"
+          className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
         >
           {publish.isPending ? messages.editor.publishing : messages.editor.publish}
         </button>

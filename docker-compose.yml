@@ -17,10 +17,14 @@ services:
       DATABASE_URL: file:/data/docuforge.db
       APP_URL: http://localhost:5173
       API_URL: http://localhost:3000
+      REDIS_URL: redis://redis:6379
+      RENDER_QUEUE_ENABLED: "true"
+      RENDER_QUEUE_AUTO_START_WORKER: "true"
     volumes:
       - api-data:/data
     depends_on:
       - engine
+      - redis
 
   frontend:
     build: ./frontend
@@ -33,5 +37,17 @@ services:
     depends_on:
       - api
 
+  mcp-server:
+    build: ./mcp-server
+    ports:
+      - "3200:3200"
+    env_file:
+      - ./mcp-server/.env
+    environment:
+      DOCUFORGE_API_BASE_URL: http://api:3000
+    depends_on:
+      - api
+
 volumes:
   api-data:
+  redis-data:

@@ -1,6 +1,8 @@
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
+import type { ReactNode } from "react";
+
 type LegalLayoutProps = {
   title: string;
   subtitle: string;

@@ -19,14 +19,14 @@ export function AiCreditsIndicator({
       ? Math.max(0, Math.min(100, Math.round((remaining / limit) * 100)))
       : null;
   const resetMinutes = resetAt
-    ? Math.max(0, Math.ceil((resetAt - Date.now()) / 60000))
+    ? Math.max(0, Math.ceil((resetAt - new Date().getTime()) / 60000))
     : null;
   const exhausted = remaining !== null && remaining <= 0;
 
   return (
-    <div className="rounded-xl border border-[#27272a] bg-[#111113] p-4 text-xs text-[#a1a1aa]">
+    <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-xs text-[var(--muted)]">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white">
+        <p className="text-xs font-semibold text-[var(--ink)]">
           {messages.ai.creditsTitle}
         </p>
         <p>
@@ -37,14 +37,14 @@ export function AiCreditsIndicator({
             : messages.ai.creditsChecking}
         </p>
       </div>
-      <div className="mt-2 h-1.5 rounded-full bg-[#1f2937]">
+      <div className="mt-2 h-1.5 rounded-full bg-[var(--surface-2)]">
         <div
-          className="h-1.5 rounded-full bg-[#3b82f6]"
+          className="h-1.5 rounded-full bg-[var(--accent)]"
           style={{ width: `${progress ?? 0}%` }}
         />
       </div>
       {exhausted && resetMinutes !== null && (
-        <p className="mt-2 text-[11px] text-[#f97316]">
+        <p className="mt-2 text-[11px] text-[var(--warn)]">
           {messages.ai.creditsResetIn.replace(
             "{minutes}",
             String(resetMinutes)

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
+  Exo,
   IBM_Plex_Mono,
-  IBM_Plex_Sans,
-  Space_Grotesk,
+  Michroma,
 } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
@@ -11,16 +11,10 @@ import { locales, normalizeLocale, type Locale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const plexSans = IBM_Plex_Sans({
+const exo = Exo({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -29,10 +23,16 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+const michroma = Michroma({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 const marketingUrl =
   process.env.NEXT_PUBLIC_MARKETING_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "https://www.docuforge.app";
+  "https://docuforge.app";
 
 const consoleUrl =
   process.env.NEXT_PUBLIC_CONSOLE_URL || "https://console.docuforge.app";
@@ -121,6 +121,19 @@ export async function generateMetadata(): Promise<Metadata> {
       description: marketingMeta.description,
       images: [ogImage],
     },
+    icons: {
+      icon: [
+        { url: "/favicon.ico" },
+        { url: "/brand/logo-square-32.png", sizes: "32x32", type: "image/png" },
+        {
+          url: "/brand/logo-square-192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+      ],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      shortcut: "/favicon.ico",
+    },
   };
 }
 
@@ -150,8 +163,11 @@ export default async function RootLayout({
 
   return (
     <html lang={initialLocale} dir={dir} suppressHydrationWarning>
+      <head>
+        <meta name="darkreader-lock" />
+      </head>
       <body
-        className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
+        className={`${exo.variable} ${plexMono.variable} ${michroma.variable} antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Providers initialLocale={initialLocale}>{children}</Providers>

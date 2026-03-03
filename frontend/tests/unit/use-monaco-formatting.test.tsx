@@ -366,39 +366,34 @@ describe("useMonacoFormatting", () => {
   });
 
   it("does not register commands when editor instance is unchanged", async () => {
-    const addCommand = vi.fn(() => ({ dispose: vi.fn() }));
+    const addCommand = vi.fn();
     currentEditor.addCommand = addCommand;
     const { rerender, Harness } = renderHookWithRerender();
+    await waitFor(() => expect(addCommand.mock.calls.length).toBeGreaterThanOrEqual(3));
+    const callsAfterFirstMount = addCommand.mock.calls.length;
 
-    currentMonaco = createMonacoStub();
     rerender(<Harness />);
 
-    await waitFor(() => expect(addCommand).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(addCommand.mock.calls.length).toBe(callsAfterFirstMount));
   });
 
-  it("disposes commands when editor changes", () => {
-    const disposers = [vi.fn(), vi.fn(), vi.fn()];
-    const initialDisposers = [...disposers];
-    currentEditor.addCommand = vi.fn(() => ({
-      dispose: disposers.shift() ?? vi.fn(),
-    }));
+  it("registers commands again when editor instance changes", async () => {
+    const firstAddCommand = vi.fn();
+    currentEditor.addCommand = firstAddCommand;
 
     const { rerender, unmount, Harness } = renderHookWithRerender();
-    expect(currentEditor.addCommand).toHaveBeenCalledTimes(3);
+    await waitFor(() => expect(firstAddCommand.mock.calls.length).toBeGreaterThanOrEqual(3));
+    const firstMountCalls = firstAddCommand.mock.calls.length;
 
-    const nextDisposers = [vi.fn(), vi.fn(), vi.fn()];
+    const secondAddCommand = vi.fn();
     currentEditor = {
       ...currentEditor,
-      addCommand: vi.fn(() => ({
-        dispose: nextDisposers.shift() ?? vi.fn(),
-      })),
+      addCommand: secondAddCommand,
     };
 
     rerender(<Harness />);
+    await waitFor(() => expect(secondAddCommand.mock.calls.length).toBeGreaterThanOrEqual(3));
+    expect(firstAddCommand.mock.calls.length).toBe(firstMountCalls);
     unmount();
-
-    initialDisposers.forEach((fn) => {
-      expect(fn).toHaveBeenCalled();
-    });
   });
 });

@@ -16,10 +16,13 @@ type UseEditorCommandsOptions = {
   showSidebar: boolean;
   autoRender: boolean;
   readOnly: boolean;
+  isLowCodeMode: boolean;
   onToggleRightPane: () => void;
   onToggleSidebar: () => void;
   onToggleAutoRender: () => void;
-  onToggleActiveTab: (newTab: "preview" | "data" | "diag") => void;
+  onToggleActiveTab: (
+    newTab: "preview" | "data" | "diag" | "api" | "blocks"
+  ) => void;
   onOpenPublish: () => void;
   onOpenAi: () => void;
   onOpenHistory: () => void;
@@ -109,6 +112,22 @@ export function useEditorCommands(options: UseEditorCommandsOptions): CommandIte
         onSelect: () => options.onToggleActiveTab("diag"),
       },
       {
+        id: "api-tab",
+        label: "Open API curl panel",
+        group: messages.editor.commandEditor,
+        onSelect: () => options.onToggleActiveTab("api"),
+      },
+      ...(options.isLowCodeMode
+        ? [
+            {
+              id: "blocks-tab",
+              label: "Open guided blocks",
+              group: messages.editor.commandEditor,
+              onSelect: () => options.onToggleActiveTab("blocks"),
+            },
+          ]
+        : []),
+      {
         id: "auto-render",
         label: options.autoRender
           ? messages.editor.commandDisableAutoRender
@@ -151,19 +170,7 @@ export function useEditorCommands(options: UseEditorCommandsOptions): CommandIte
   }, [
     router,
     messages,
-    options.showRightPane,
-    options.showSidebar,
-    options.autoRender,
-    options.readOnly,
-    options.onToggleRightPane,
-    options.onToggleSidebar,
-    options.onToggleAutoRender,
-    options.onToggleActiveTab,
-    options.onOpenPublish,
-    options.onOpenAi,
-    options.onOpenHistory,
-    options.onOpenShortcuts,
-    options.onEditCurrent,
-    templatesQuery.data?.templates,
+    options,
+    templatesQuery.data,
   ]);
 }

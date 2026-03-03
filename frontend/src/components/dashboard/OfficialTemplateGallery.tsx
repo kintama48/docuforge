@@ -12,7 +12,7 @@ export function OfficialTemplateGallery() {
 
   if (officialTemplates.length === 0) {
     return (
-      <p className="text-sm text-[#71717a]">
+      <p className="text-sm text-[var(--muted-dim)]">
         {messages.dashboard.officialTemplatesEmpty}
       </p>
     );
@@ -23,10 +23,10 @@ export function OfficialTemplateGallery() {
       {officialTemplates.map((template) => (
         <div
           key={template.id}
-          className="min-w-[220px] rounded-2xl border border-[#27272a] bg-[#111113] p-4"
+          className="min-w-[220px] rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4"
         >
-          <p className="text-sm font-semibold text-white">{template.name}</p>
-          <p className="mt-2 text-xs text-[#71717a]">
+          <p className="text-sm font-semibold text-[var(--ink)]">{template.name}</p>
+          <p className="mt-2 text-xs text-[var(--muted-dim)]">
             {template.description || messages.dashboard.officialTemplateDescription}
           </p>
           <button
@@ -36,7 +36,7 @@ export function OfficialTemplateGallery() {
                 name: `${template.name} Copy`,
               })
             }
-            className="mt-4 w-full rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
+            className="mt-4 w-full rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
           >
             {messages.dashboard.forkTemplate}
           </button>

@@ -88,11 +88,15 @@ describe("MonacoEditor", () => {
       files: {},
       data: {},
       readOnly: false,
+      editorMode: "code",
+      lowCodeSpec: null,
+      advancedTypstEnabled: false,
       renderError: { message: "Bad", file: "main.typ", line: 2, column: 1 },
       setEditorInstance: vi.fn(),
       setCursorPosition: vi.fn(),
       setSource: vi.fn(),
       setFileContent: vi.fn(),
+      detachFromLowCode: vi.fn(),
     } as any);
   });
 
@@ -146,8 +150,9 @@ describe("MonacoEditor", () => {
   });
 
   it("disposes completion provider on re-mount", () => {
-    const { rerender } = renderWithProviders(<MonacoEditor />);
-    rerender(<MonacoEditor />);
+    const first = renderWithProviders(<MonacoEditor />);
+    first.unmount();
+    renderWithProviders(<MonacoEditor />);
     expect(completionDispose).toHaveBeenCalled();
   });
 
@@ -171,5 +176,20 @@ describe("MonacoEditor", () => {
     useEditorStore.setState({ setSource } as any);
     renderWithProviders(<MonacoEditor />);
     expect(setSource).toHaveBeenCalledWith("");
+  });
+
+  it("detaches from low-code mode on direct Typst edits", () => {
+    const detachFromLowCode = vi.fn();
+    useEditorStore.setState({
+      editorMode: "low-code",
+      lowCodeSpec: { version: 1, blocks: [{ type: "paragraph", props: { text: "x" } }] },
+      advancedTypstEnabled: true,
+      detachFromLowCode,
+      setSource: vi.fn(),
+    } as any);
+
+    renderWithProviders(<MonacoEditor />);
+
+    expect(detachFromLowCode).toHaveBeenCalledTimes(1);
   });
 });

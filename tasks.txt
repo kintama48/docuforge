@@ -1,0 +1,8 @@
+1. bucket setup and bucket limits enforcement
+2. LLM integration and qa
+3. ci/cd pipeline with github actions and tests
+4. oauth validation, email verification, password reset, etc. flows
+5. sentry setup and error monitoring
+6. db recovery and backup
+7. load tests and high-quality templates (search for some and replicate via AI)
+8. payment gateway setup

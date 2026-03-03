@@ -1,0 +1,29 @@
+{
+  "name": "renderPdf",
+  "displayName": "Render PDF",
+  "method": "POST",
+  "path": "/v1/render",
+  "headers": {
+    "X-API-Key": "{{connection.api_key}}",
+    "Content-Type": "application/json"
+  },
+  "parameters": [
+    {
+      "name": "template_id",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "data",
+      "type": "object",
+      "required": false
+    }
+  ],
+  "body": {
+    "template_id": "{{template_id}}",
+    "data": "{{data}}"
+  },
+  "response": {
+    "type": "bytes"
+  }
+}

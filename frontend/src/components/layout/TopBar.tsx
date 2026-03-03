@@ -1,29 +1,42 @@
 "use client";
 
 import Link from "next/link";
+import { SignOut } from "@phosphor-icons/react";
 import { useAuthStore } from "@/src/stores/auth";
+import { ThemeToggle } from "@/src/app/components/theme-toggle";
 
 export function TopBar() {
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
-    <header className="flex items-center justify-between border-b border-[#27272a] bg-[#0f1117] px-6 py-4">
+    <header className="flex items-center justify-between border-b border-[var(--line)] bg-[var(--surface-2)] px-6 py-4">
       <div>
-        <p className="text-sm text-[#a1a1aa]">Welcome back</p>
-        <p className="text-base font-semibold text-white">
+        <p className="text-sm text-[var(--muted)]">Welcome back</p>
+        <p className="text-base font-semibold text-[var(--ink)]">
           {user?.email || "developer@docuforge.dev"}
         </p>
       </div>
       <div className="flex items-center gap-3">
-        <span className="rounded-full border border-[#27272a] bg-[#111113] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#a1a1aa]">
+        <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
           {user?.plan || "free"} plan
         </span>
+        <ThemeToggle />
         <Link
           href="/docs"
-          className="rounded-md border border-[#27272a] px-3 py-2 text-sm text-white transition hover:border-[#3f3f46]"
+          className="btn btn-secondary btn-sm"
         >
           Docs
         </Link>
+        <button
+          type="button"
+          onClick={logout}
+          className="btn btn-secondary btn-sm"
+          aria-label="Log out"
+        >
+          <SignOut className="h-4 w-4" aria-hidden="true" />
+          Log out
+        </button>
       </div>
     </header>
   );

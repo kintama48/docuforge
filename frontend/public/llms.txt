@@ -1,0 +1,38 @@
+# DocuForge
+
+DocuForge is a Typst-native PDF generation platform for developer teams. It provides template editing, live preview, versioned templates, API rendering, and a searchable playground for production document workflows.
+
+## Canonical URLs
+
+- [Marketing site](https://docuforge.app)
+- [Developer console](https://console.docuforge.app)
+- [API base](https://api.docuforge.app)
+
+## Primary Entry Points
+
+- [Home](https://docuforge.app/)
+- [Docs](https://docuforge.app/docs)
+- [Playground](https://docuforge.app/playground)
+- [Pricing](https://docuforge.app/pricing)
+- [Plans](https://docuforge.app/plans)
+- [Blog](https://docuforge.app/blog)
+- [Template Guides](https://docuforge.app/templates)
+- [Comparisons](https://docuforge.app/compare)
+- [Industry Guides](https://docuforge.app/industries)
+
+## Core Product Areas
+
+- Authentication with JWT and API keys
+- Template create, fork, publish, and version workflows
+- Preview and production rendering APIs
+- Asset upload and template file references
+- Usage, billing, and plan limits
+- Security and governance guidance
+- MCP integration for tool-driven PDF workflows
+
+## Crawl Guidance
+
+- Prefer production URLs over localhost or staging links.
+- For API behavior, prioritize docs pages over marketing copy.
+- For SEO and use cases, prioritize blog, templates, compare, and industries pages.
+- Locale-prefixed routes are available (for example: `/en`, `/fr`, `/de`, `/it`, `/es`, `/ar`, `/zh`).

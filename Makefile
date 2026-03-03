@@ -1,4 +1,4 @@
-.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
+.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
 
 help:
 	@echo "DocuForge commands:"
@@ -11,7 +11,11 @@ help:
 	@echo "  make test-api       - Run API tests"
 	@echo "  make test-api-pipeline - Run API->engine pipeline tests (engine must be running)"
 	@echo "  make test-frontend  - Run frontend unit/integration tests"
+	@echo "  make test-mcp       - Run MCP server tests"
+	@echo "  make validate-mcp-registry - Validate MCP server.json against MCP Registry schema"
 	@echo "  make test-e2e       - Run frontend Playwright tests"
+	@echo "  make install-mcp    - Install MCP server dependencies"
+	@echo "  make dev-mcp        - Run MCP server locally"
 	@echo ""
 	@echo ""
 	@echo "  make install-plugins  - Install Zapier + Shopify plugin deps"
@@ -38,6 +42,7 @@ env:
 install:
 	cd api && bun install
 	cd frontend && bun install
+	cd mcp-server && bun install
 
 dev: env
 	@trap 'kill 0' INT TERM EXIT; \
@@ -54,6 +59,7 @@ test:
 	cd engine && cargo test
 	cd api && bun test
 	cd frontend && bun run test:run
+	cd mcp-server && bun test
 
 test-api:
 	cd api && bun test
@@ -69,6 +75,18 @@ test-engine:
 
 test-e2e:
 	cd frontend && bun run test:e2e
+
+install-mcp:
+	cd mcp-server && bun install
+
+dev-mcp:
+	cd mcp-server && bun run dev
+
+test-mcp:
+	cd mcp-server && bun test
+
+validate-mcp-registry:
+	cd mcp-server && bun run validate:registry
 
 docker-up:
 	docker compose up --build

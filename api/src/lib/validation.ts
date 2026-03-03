@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { zValidator as honoZValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
+import { lowCodeSpecSchema } from './low-code';
 
 /**
  * Custom zValidator that returns 422 for validation errors (per spec section 6.3)
@@ -40,33 +41,103 @@ export const createApiKeySchema = z.object({
   name: z.string().min(1).max(100),
 });
 
+const otpCodeSchema = z.string().regex(/^\d{6}$/, 'Verification code must be 6 digits');
+const challengeIdSchema = z.string().min(1, 'challenge_id is required');
+
+export const verifyEmailSchema = z.object({
+  challenge_id: challengeIdSchema,
+  code: otpCodeSchema,
+});
+
+export const resendEmailVerificationSchema = z.object({
+  challenge_id: challengeIdSchema,
+});
+
+export const verifyTwoFactorSchema = z.object({
+  challenge_id: challengeIdSchema,
+  code: otpCodeSchema,
+});
+
+export const resendTwoFactorSchema = z.object({
+  challenge_id: challengeIdSchema,
+});
+
 // Render schemas
-export const renderSchema = z.object({
+export const passwordProtectionModeSchema = z.enum(['none', 'client_blind']);
+
+const renderBaseSchema = z.object({
   template_id: z.string().min(1, 'template_id is required'),
   data: z.record(z.unknown()).optional().default({}),
 });
 
-export const renderPreviewSchema = z.object({
-  source: z.string().min(1).max(102400, 'Source must be under 100KB'),
+export const renderSchema = renderBaseSchema.extend({
+  password_protection_mode: passwordProtectionModeSchema.optional().default('none'),
+});
+
+export const renderSecureSchema = renderBaseSchema;
+
+const SOURCE_OR_LOW_CODE_REQUIRED = 'Either source or low_code_spec is required';
+
+const sourceFieldSchema = (maxBytes: number, message: string) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== 'string') return value;
+      return value.trim().length > 0 ? value : undefined;
+    },
+    z.string().max(maxBytes, message).optional()
+  );
+
+function hasSourceOrLowCode(input: { source?: string; low_code_spec?: unknown }) {
+  return typeof input.source === 'string' || input.low_code_spec !== undefined;
+}
+
+const renderPreviewBaseSchema = z.object({
+  source: sourceFieldSchema(102400, 'Source must be under 100KB'),
+  low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   data: z.record(z.unknown()).optional().default({}),
 });
+
+export const renderPreviewSchema = renderPreviewBaseSchema.refine(hasSourceOrLowCode, {
+  message: SOURCE_OR_LOW_CODE_REQUIRED,
+});
+
+const imageExportOptionsSchema = z.object({
+  format: z.enum(['png', 'jpeg']).optional().default('png'),
+  dpi: z.coerce.number().int().min(72).max(300).optional().default(150),
+  quality: z.coerce.number().int().min(1).max(100).optional().default(90),
+  page_numbers: z.array(z.coerce.number().int().positive()).min(1).max(25).optional(),
+});
+
+export const renderImageSchema = renderBaseSchema.extend(imageExportOptionsSchema.shape);
+
+export const renderImagePreviewSchema = renderPreviewBaseSchema
+  .extend(imageExportOptionsSchema.shape)
+  .refine(hasSourceOrLowCode, {
+    message: SOURCE_OR_LOW_CODE_REQUIRED,
+  });
 
 // Template schemas
 export const createTemplateSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
-  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
+  source: sourceFieldSchema(1048576, 'Source must be under 1MB'),
+  low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   defaults: z.record(z.unknown()).optional(),
   commit_message: z.string().max(200).optional(),
+}).refine(hasSourceOrLowCode, {
+  message: SOURCE_OR_LOW_CODE_REQUIRED,
 });
 
 export const publishVersionSchema = z.object({
-  source: z.string().min(1).max(1048576, 'Source must be under 1MB'),
+  source: sourceFieldSchema(1048576, 'Source must be under 1MB'),
+  low_code_spec: lowCodeSpecSchema.optional(),
   files: z.record(z.string().max(102400)).optional(),
   defaults: z.record(z.unknown()).optional(),
   commit_message: z.string().max(200).optional(),
+}).refine(hasSourceOrLowCode, {
+  message: SOURCE_OR_LOW_CODE_REQUIRED,
 });
 
 export const updateTemplateSchema = z
@@ -148,7 +219,7 @@ export const confirmUploadSchema = z.object({
 
 // Billing schemas
 export const createCheckoutSchema = z.object({
-  plan: z.enum(['starter', 'pro']),
+  plan: z.enum(['dev', 'starter', 'pro']),
 });
 
 // AI schemas
@@ -164,6 +235,22 @@ const MAX_BASE64_IMAGE_CHARS = 13_700_000;
 
 export const aiGenerateSchema = z.object({
   image_base64: z.string().min(1).max(MAX_BASE64_IMAGE_CHARS, 'Image exceeds 10MB limit'),
+});
+
+const MAX_PDF_IMPORT_BASE64_CHARS = 27_000_000; // ~20MB binary
+
+export const pdfImportAnalyzeSchema = z.object({
+  file_name: z.string().min(1).max(255).regex(/\.pdf$/i, 'file_name must end with .pdf'),
+  pdf_base64: z.string().min(1).max(MAX_PDF_IMPORT_BASE64_CHARS, 'PDF exceeds 20MB limit'),
+  user_prompt: z.string().max(2000).optional().default(''),
+});
+
+export const pdfImportCreateSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  source: z.string().min(1).max(1048576),
+  defaults: z.record(z.unknown()).optional(),
+  commit_message: z.string().max(200).optional(),
 });
 
 // Webhook schemas
@@ -188,7 +275,12 @@ export const updateWebhookSchema = z
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type ResendEmailVerificationInput = z.infer<typeof resendEmailVerificationSchema>;
+export type VerifyTwoFactorInput = z.infer<typeof verifyTwoFactorSchema>;
+export type ResendTwoFactorInput = z.infer<typeof resendTwoFactorSchema>;
 export type RenderInput = z.infer<typeof renderSchema>;
+export type RenderSecureInput = z.infer<typeof renderSecureSchema>;
 export type RenderPreviewInput = z.infer<typeof renderPreviewSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
 export type PublishVersionInput = z.infer<typeof publishVersionSchema>;
@@ -200,5 +292,9 @@ export type ConfirmUploadInput = z.infer<typeof confirmUploadSchema>;
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>;
 export type AiEditInput = z.infer<typeof aiEditSchema>;
 export type AiGenerateInput = z.infer<typeof aiGenerateSchema>;
+export type PdfImportAnalyzeInput = z.infer<typeof pdfImportAnalyzeSchema>;
+export type PdfImportCreateInput = z.infer<typeof pdfImportCreateSchema>;
+export type RenderImageInput = z.infer<typeof renderImageSchema>;
+export type RenderImagePreviewInput = z.infer<typeof renderImagePreviewSchema>;
 export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
 export type UpdateWebhookInput = z.infer<typeof updateWebhookSchema>;

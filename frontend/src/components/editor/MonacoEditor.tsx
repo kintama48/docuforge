@@ -2,26 +2,34 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { editor, Monaco as MonacoType } from "monaco-editor";
+import type * as MonacoType from "monaco-editor";
 import { useEditorStore } from "@/src/stores/editor";
 import { registerTypstCompletions, registerTypstLanguage } from "@/src/lib/typst";
 import { useAssets } from "@/src/hooks/use-assets";
 import { buildTypstDecorations } from "@/src/lib/typst-decorations";
+import { useTheme } from "@/src/lib/theme";
 
 // FE-C3 fix: Use proper Monaco types instead of 'any'
-type MonacoEditor = editor.IStandaloneCodeEditor;
+type MonacoEditor = MonacoType.editor.IStandaloneCodeEditor;
 
 const Monaco = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 export function MonacoEditor() {
+  const { resolvedTheme } = useTheme();
   const activeFile = useEditorStore((state) => state.activeFile);
   const source = useEditorStore((state) => state.source);
   const files = useEditorStore((state) => state.files);
   const data = useEditorStore((state) => state.data);
   const readOnly = useEditorStore((state) => state.readOnly);
+  const editorMode = useEditorStore((state) => state.editorMode);
+  const lowCodeSpec = useEditorStore((state) => state.lowCodeSpec);
+  const advancedTypstEnabled = useEditorStore(
+    (state) => state.advancedTypstEnabled
+  );
   const renderError = useEditorStore((state) => state.renderError);
   const setEditorInstance = useEditorStore((state) => state.setEditorInstance);
   const setCursorPosition = useEditorStore((state) => state.setCursorPosition);
+  const detachFromLowCode = useEditorStore((state) => state.detachFromLowCode);
   const editorRef = useRef<MonacoEditor | null>(null);
   const monacoRef = useRef<typeof MonacoType | null>(null);
   const cursorListenerRef = useRef<{ dispose: () => void } | null>(null);
@@ -33,6 +41,8 @@ export function MonacoEditor() {
   const { data: assets } = useAssets();
 
   const value = activeFile === "main.typ" ? source : files[activeFile] || "";
+  const monacoTheme =
+    resolvedTheme === "dark" ? "docuforge-dark" : "docuforge-light";
   const dataKeys = useMemo(() => Object.keys(data || {}), [data]);
   const assetNames = assets?.assets?.map((asset) => asset.name) || [];
 
@@ -89,7 +99,7 @@ export function MonacoEditor() {
     <Monaco
       height="100%"
       language="typst"
-      theme="docuforge-dark"
+      theme={monacoTheme}
       value={value}
       beforeMount={(monaco) => {
         registerTypstLanguage(monaco);
@@ -118,6 +128,13 @@ export function MonacoEditor() {
         if (readOnly) return;
         const nextValue = val ?? "";
         if (activeFile === "main.typ") {
+          if (
+            editorMode === "low-code" &&
+            advancedTypstEnabled &&
+            lowCodeSpec !== null
+          ) {
+            detachFromLowCode();
+          }
           setSource(nextValue);
         } else {
           setFileContent(activeFile, nextValue);
