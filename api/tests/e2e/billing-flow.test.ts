@@ -3,7 +3,7 @@
  *
  * Tests the billing upgrade journey:
  * 1. Register as free user
- * 2. Fill render_logs to simulate 500 renders (use fillRenderLogs helper)
+ * 2. Fill render_logs to simulate 1000 renders (use fillRenderLogs helper)
  * 3. POST /v1/render -> Expect 402 Payment Required
  * 4. Simulate Stripe webhook (checkout.session.completed, plan=starter)
  * 5. Verify plan_tier updated to "starter"
@@ -88,8 +88,8 @@ describe('E2E: Billing Flow', () => {
     const { template } = await createTemplateResponse.json();
     const templateId = template.id;
 
-    // Step 2: Fill render logs to simulate 500 renders (at the free limit)
-    await fillRenderLogs(db, userId, 500, 'success');
+    // Step 2: Fill render logs to simulate 1000 renders (at the free limit)
+    await fillRenderLogs(db, userId, 1000, 'success');
 
     // Verify usage is at limit
     const usageResponse = await fetch(`${baseUrl}/v1/usage`, {
@@ -99,8 +99,8 @@ describe('E2E: Billing Flow', () => {
 
     expect(usageResponse.status).toBe(200);
     const usageData = await usageResponse.json();
-    expect(usageData.renders.used).toBe(500);
-    expect(usageData.renders.limit).toBe(500);
+    expect(usageData.renders.used).toBe(1000);
+    expect(usageData.renders.limit).toBe(1000);
     expect(usageData.renders.remaining).toBe(0);
 
     // Step 3: Attempt to render - should fail with 402
@@ -122,8 +122,8 @@ describe('E2E: Billing Flow', () => {
     expect(blockedData.error).toBe('limit_exceeded');
     expect(blockedData.message).toContain('Monthly render limit reached');
     expect(blockedData.usage).toBeDefined();
-    expect(blockedData.usage.used).toBe(500);
-    expect(blockedData.usage.limit).toBe(500);
+    expect(blockedData.usage.used).toBe(1000);
+    expect(blockedData.usage.limit).toBe(1000);
     expect(blockedData.usage.plan).toBe('free');
     expect(blockedData.upgrade_url).toBe('https://www.docuforge.app/pricing');
 
@@ -181,7 +181,7 @@ describe('E2E: Billing Flow', () => {
     const newUsageData = await newUsageResponse.json();
     expect(newUsageData.plan).toBe('starter');
     expect(newUsageData.renders.limit).toBe(10000);
-    expect(newUsageData.renders.remaining).toBe(9500);
+    expect(newUsageData.renders.remaining).toBe(9000);
 
     // Step 6: Render should now succeed
     const successRenderResponse = await fetch(`${baseUrl}/v1/render`, {
@@ -275,7 +275,7 @@ describe('E2E: Billing Flow', () => {
 
     const usageData = await usageResponse.json();
     expect(usageData.renders.used).toBe(123);
-    expect(usageData.renders.remaining).toBe(377);
+    expect(usageData.renders.remaining).toBe(877);
     expect(usageData.plan).toBe('free');
   });
 
@@ -309,7 +309,7 @@ describe('E2E: Billing Flow', () => {
     const { template } = await createTemplateResponse.json();
 
     // Max out renders
-    await fillRenderLogs(db, user.id, 500, 'success');
+    await fillRenderLogs(db, user.id, 1000, 'success');
 
     // Try to render
     const renderResponse = await fetch(`${baseUrl}/v1/render`, {

@@ -51,12 +51,26 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.DATABASE_URL = ':memory:';
   process.env.JWT_SECRET = TEST_JWT_SECRET;
   process.env.JWT_EXPIRY = '1h';
+  process.env.AUTH_EMAIL_VERIFICATION_REQUIRED = 'false';
+  process.env.AUTH_2FA_REQUIRED = 'false';
+  process.env.AUTH_OTP_TTL_MS = '600000';
+  process.env.AUTH_OTP_RESEND_COOLDOWN_MS = '30000';
+  process.env.AUTH_OTP_MAX_ATTEMPTS = '5';
+  process.env.AUTH_OTP_MAX_SENDS = '5';
+  // Keep abuse guards enabled in tests but high enough to avoid cross-test interference.
+  process.env.AUTH_MAX_ACCOUNTS_PER_FINGERPRINT = '100';
+  process.env.AUTH_MAX_SIGNUPS_PER_FINGERPRINT_PER_DAY = '100';
+  process.env.AUTH_MAX_SIGNUPS_PER_IP_PER_DAY = '200';
+  process.env.EMAIL_PROVIDER = 'mock';
+  process.env.EMAIL_FROM = 'noreply@test.docuforge.local';
   process.env.ENGINE_TIMEOUT_MS = '5000';
-  process.env.FREE_MONTHLY_LIMIT = '500';
+  process.env.FREE_MONTHLY_LIMIT = '1000';
+  process.env.DEV_MONTHLY_LIMIT = '3000';
   process.env.STARTER_MONTHLY_LIMIT = '10000';
   process.env.PRO_MONTHLY_LIMIT = '50000';
   process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret_12345';
   process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
+  process.env.STRIPE_DEV_PRICE_ID = 'price_dev_test';
   process.env.STRIPE_STARTER_PRICE_ID = 'price_starter_test';
   process.env.STRIPE_PRO_PRICE_ID = 'price_pro_test';
   process.env.R2_ENDPOINT = 'https://fake.r2.cloudflarestorage.com';
@@ -145,7 +159,9 @@ export async function createTestUser(
   const email = options.email || `test-${userId}@example.com`;
   const password = options.password || 'testpassword123';
   const planTier = options.planTier || 'free';
-  const planRenders = options.planRenders ?? (planTier === 'pro' ? 50000 : planTier === 'starter' ? 10000 : 500);
+  const planRenders =
+    options.planRenders ??
+    (planTier === 'pro' ? 50000 : planTier === 'starter' ? 10000 : planTier === 'dev' ? 3000 : 1000);
 
   // Hash password
   const passwordHash = await Bun.password.hash(password);
@@ -154,8 +170,12 @@ export async function createTestUser(
   await db.insert(schema.users).values({
     id: userId,
     email,
+    emailCanonical: email.toLowerCase(),
+    emailVerifiedAt: now,
     passwordHash,
     stripeCustomerId: options.stripeCustomerId || null,
+    signupFingerprintHash: null,
+    signupIpHash: null,
     planTier,
     planRenders,
     createdAt: now,
@@ -483,7 +503,8 @@ export async function updateUserPlan(
   planTier: PlanTier,
   planRenders?: number
 ): Promise<void> {
-  const renders = planRenders ?? (planTier === 'pro' ? 50000 : planTier === 'starter' ? 10000 : 500);
+  const renders =
+    planRenders ?? (planTier === 'pro' ? 50000 : planTier === 'starter' ? 10000 : planTier === 'dev' ? 3000 : 1000);
 
   await db
     .update(schema.users)

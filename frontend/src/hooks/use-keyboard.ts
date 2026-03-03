@@ -15,7 +15,10 @@ type Shortcut = {
 // re-attached on every render when the caller passes an inline array.
 export function useKeyboard(shortcuts: Shortcut[], enabled = true) {
   const shortcutsRef = useRef(shortcuts);
-  shortcutsRef.current = shortcuts;
+
+  useEffect(() => {
+    shortcutsRef.current = shortcuts;
+  }, [shortcuts]);
 
   useEffect(() => {
     if (!enabled) return;

@@ -1,25 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --font-body: "IBM Plex Sans", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
+  --font-body: "Exo", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
-  --font-display: "Space Grotesk", "IBM Plex Sans", "Noto Sans",
-    "Noto Sans Arabic", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", sans-serif;
+  --font-display: "Michroma", "Exo", "Noto Sans", "Noto Sans Arabic",
+    "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    system-ui, sans-serif;
+  --font-heading: "Michroma", "Exo", "Noto Sans", "Noto Sans Arabic",
+    "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    system-ui, sans-serif;
+  --font-script: "Exo", "Noto Sans", "Noto Sans Arabic", "Noto Sans SC",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   --bg: #f6f4f0;
   --surface: #ffffff;
   --surface-2: #f1eee9;
+  --surface-hover: #ede9e2;
+  --surface-active: #e5e0d8;
   --ink: #0f1115;
+  --ink-strong: #0f1115;
   --muted: #5d5b57;
+  --muted-dim: #7a7874;
   --line: #d8d3cc;
   --line-hover: #c2bdb5;
   --accent: #0b5fff;
   --accent-strong: #0849c1;
   --accent-soft: #e7efff;
+  --inverse-bg: #0f1115;
+  --inverse-ink: #ffffff;
+  --inverse-muted: rgba(255, 255, 255, 0.72);
+  --inverse-line: rgba(255, 255, 255, 0.18);
+  --inverse-surface: rgba(255, 255, 255, 0.06);
+  --inverse-code-bg: rgba(0, 0, 0, 0.42);
   --good: #1e9e5a;
   --warn: #b45309;
   --bad: #b42318;
+  --bad-hover: #9f230f;
+  --bad-strong: #7f1d1d;
   --shadow: 0 26px 80px rgba(15, 17, 21, 0.18);
 }
 
@@ -30,6 +47,7 @@
   --surface-hover: #14161d;
   --surface-active: #1a1a1f;
   --ink: #f4f4f5;
+  --ink-strong: #0b0d12;
   --muted: #a1a1aa;
   --muted-dim: #71717a;
   --line: #27272a;
@@ -37,6 +55,12 @@
   --accent: #3b82f6;
   --accent-strong: #2563eb;
   --accent-soft: #1f2937;
+  --inverse-bg: #05070d;
+  --inverse-ink: #f8fafc;
+  --inverse-muted: rgba(248, 250, 252, 0.72);
+  --inverse-line: rgba(248, 250, 252, 0.2);
+  --inverse-surface: rgba(248, 250, 252, 0.08);
+  --inverse-code-bg: rgba(0, 0, 0, 0.5);
   --good: #22c55e;
   --warn: #f59e0b;
   --bad: #ef4444;
@@ -96,9 +120,11 @@ body {
   text-align: left;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 ::selection {
@@ -165,8 +191,50 @@ a {
 }
 
 @layer utilities {
+  /*
+   * Keep outlined controls visible by default, but only for full-border rounded controls.
+   * Use exact class token matching to avoid catching border-* utility variants.
+   */
+  button[class~="border"]:is([class~="rounded-md"], [class~="rounded-lg"], [class~="rounded-xl"], [class~="rounded-2xl"]):not([class*="bg-"]),
+  a[class~="border"]:is([class~="rounded-md"], [class~="rounded-lg"], [class~="rounded-xl"], [class~="rounded-2xl"]):not([class*="bg-"]) {
+    background-color: var(--surface);
+  }
+
+  /*
+   * Keep CTA contrast stable even when browser extensions mutate link colors.
+   */
+  a[class*="bg-[var(--accent)]"],
+  button[class*="bg-[var(--accent)]"],
+  a[class*="bg-[#3b82f6]"],
+  button[class*="bg-[#3b82f6]"] {
+    color: #fff !important;
+  }
+
+  a[class*="bg-white"],
+  button[class*="bg-white"] {
+    color: #0f1115 !important;
+  }
+
   .font-display {
     font-family: var(--font-display), var(--font-body), sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-script {
+    font-family: var(--font-script), var(--font-body), sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  h1 {
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+    letter-spacing: -0.02em;
   }
 
   .font-body {
@@ -175,6 +243,13 @@ a {
 
   .font-mono {
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  }
+
+  .phosphor-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: middle;
+    line-height: 1;
   }
 
   .text-balance {
@@ -193,6 +268,78 @@ a {
   .page-pad {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border: 1px solid transparent;
+    border-radius: 0.65rem;
+    padding: 0.72rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+      color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--accent), white 20%);
+    outline-offset: 2px;
+  }
+
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0.58rem 0.95rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff !important;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-strong);
+    border-color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background-color: var(--surface);
+    border-color: var(--line);
+    color: var(--ink) !important;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--line-hover);
+    background-color: var(--surface-2);
+  }
+
+  .btn-inverse {
+    background-color: var(--inverse-ink);
+    border-color: var(--inverse-ink);
+    color: var(--inverse-bg) !important;
+  }
+
+  .btn-inverse:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-inverse {
+    background-color: transparent;
+    border-color: var(--inverse-line);
+    color: var(--inverse-ink) !important;
+  }
+
+  .btn-outline-inverse:hover {
+    border-color: var(--inverse-ink);
+    background-color: var(--inverse-surface);
   }
 
   .page-background {

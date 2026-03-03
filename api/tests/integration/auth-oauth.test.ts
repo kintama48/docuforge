@@ -127,6 +127,101 @@ describe('OAuth routes', () => {
     expect(user).toBeDefined();
   });
 
+  it('drops unsafe redirect targets from oauth exchange payload', async () => {
+    unregisters.push(
+      registerFetchHandler('https://github.com', async (request) => {
+        const url = new URL(request.url);
+        if (url.pathname === '/login/oauth/access_token') {
+          return new Response(JSON.stringify({ access_token: 'gh-token' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response('{}', { status: 404 });
+      })
+    );
+    unregisters.push(
+      registerFetchHandler('https://api.github.com', async (request) => {
+        const url = new URL(request.url);
+        if (url.pathname === '/user') {
+          return new Response(JSON.stringify({ id: 77, email: 'safe@example.com', login: 'safe' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response('{}', { status: 404 });
+      })
+    );
+
+    const start = await app.request('/v1/auth/oauth/github?redirect=https://evil.example/path');
+    const location = start.headers.get('Location');
+    const url = new URL(location!);
+    const state = url.searchParams.get('state');
+
+    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    expect(callback.status).toBe(302);
+    const callbackUrl = new URL(callback.headers.get('Location')!);
+    const exchangeCode = callbackUrl.searchParams.get('code');
+    expect(exchangeCode).toBeTruthy();
+
+    const exchangeResponse = await app.request('/v1/auth/oauth/exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: exchangeCode }),
+    });
+    expect(exchangeResponse.status).toBe(200);
+
+    const exchangeBody = await exchangeResponse.json();
+    expect(exchangeBody.redirect).toBeUndefined();
+  });
+
+  it('rejects oauth exchange from untrusted browser origin', async () => {
+    unregisters.push(
+      registerFetchHandler('https://github.com', async (request) => {
+        const url = new URL(request.url);
+        if (url.pathname === '/login/oauth/access_token') {
+          return new Response(JSON.stringify({ access_token: 'gh-token' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response('{}', { status: 404 });
+      })
+    );
+    unregisters.push(
+      registerFetchHandler('https://api.github.com', async (request) => {
+        const url = new URL(request.url);
+        if (url.pathname === '/user') {
+          return new Response(JSON.stringify({ id: 91, email: 'origin@example.com', login: 'origin' }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return new Response('{}', { status: 404 });
+      })
+    );
+
+    const start = await app.request('/v1/auth/oauth/github?redirect=/dashboard');
+    const location = start.headers.get('Location');
+    const url = new URL(location!);
+    const state = url.searchParams.get('state');
+
+    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    const callbackUrl = new URL(callback.headers.get('Location')!);
+    const exchangeCode = callbackUrl.searchParams.get('code');
+    expect(exchangeCode).toBeTruthy();
+
+    const exchangeResponse = await app.request('/v1/auth/oauth/exchange', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://evil.example',
+      },
+      body: JSON.stringify({ code: exchangeCode }),
+    });
+    expect(exchangeResponse.status).toBe(403);
+  });
+
   it('fails oauth when email matches existing user without oauth account', async () => {
     const db = getDb();
     const existing = await createTestUser(db, { email: 'existing@example.com' });

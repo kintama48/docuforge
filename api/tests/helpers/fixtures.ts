@@ -213,13 +213,32 @@ export const samplePreviewRequests = {
     source: 'x'.repeat(200 * 1024), // 200KB, over 100KB limit
     data: {},
   },
+  lowCode: {
+    low_code_spec: {
+      version: 1,
+      blocks: [
+        {
+          type: 'header',
+          props: {
+            title: '{{invoice.title}}',
+          },
+        },
+      ],
+    },
+    data: {
+      invoice: {
+        title: 'Invoice #1001',
+      },
+    },
+  },
 };
 
 /**
  * Plan limits for testing billing.
  */
 export const planLimits = {
-  free: 500,
+  free: 1000,
+  dev: 3000,
   starter: 10000,
   pro: 50000,
 };
@@ -230,6 +249,7 @@ export const planLimits = {
 export const stripeTestData = {
   customerId: 'cus_test123',
   subscriptionId: 'sub_test456',
+  devPriceId: 'price_dev_test',
   starterPriceId: 'price_starter_test',
   proPriceId: 'price_pro_test',
 };

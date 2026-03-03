@@ -9,23 +9,28 @@ export function UsageCard() {
   const used = data?.renders.used ?? 0;
   const limit = data?.renders.limit ?? 0;
   const percent = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  const aiUsed = data?.ai_credits?.used ?? 0;
+  const aiLimit = data?.ai_credits?.limit ?? 0;
 
   return (
-    <div className="rounded-2xl border border-[#27272a] bg-[#111113] p-5">
-      <p className="text-xs uppercase tracking-[0.2em] text-[#71717a]">
+    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+      <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted-dim)]">
         {messages.dashboard.usageLabel}
       </p>
-      <p className="mt-3 text-2xl font-semibold text-white">
+      <p className="mt-3 text-2xl font-semibold text-[var(--ink)]">
         {isLoading ? "—" : `${used} / ${limit}`}
       </p>
-      <div className="mt-4 h-2 w-full rounded-full bg-[#1f2937]">
+      <div className="mt-4 h-2 w-full rounded-full bg-[var(--surface-active)]">
         <div
-          className="h-2 rounded-full bg-[#3b82f6]"
+          className="h-2 rounded-full bg-[var(--accent)]"
           style={{ width: `${percent}%` }}
         />
       </div>
-      <p className="mt-2 text-xs text-[#71717a]">
+      <p className="mt-2 text-xs text-[var(--muted-dim)]">
         {percent}% {messages.dashboard.usageSuffix}
+      </p>
+      <p className="mt-3 text-xs text-[var(--muted-dim)]">
+        AI imports: {isLoading ? "—" : `${aiUsed} / ${aiLimit}`}
       </p>
     </div>
   );

@@ -36,6 +36,13 @@ afterEach(() => {
 });
 
 describe('oauth', () => {
+  test('sanitizeRedirectPath rejects unsafe redirects', () => {
+    expect(oauth.sanitizeRedirectPath('/dashboard?tab=usage')).toBe('/dashboard?tab=usage');
+    expect(oauth.sanitizeRedirectPath('https://evil.example')).toBeNull();
+    expect(oauth.sanitizeRedirectPath('//evil.example')).toBeNull();
+    expect(oauth.sanitizeRedirectPath('javascript:alert(1)')).toBeNull();
+  });
+
   test('createOAuthState and consumeOAuthState', () => {
     const state = oauth.createOAuthState('google', '/dashboard');
     const record = oauth.consumeOAuthState(state);
@@ -44,6 +51,13 @@ describe('oauth', () => {
 
     const missing = oauth.consumeOAuthState(state);
     expect(missing).toBeNull();
+  });
+
+  test('createOAuthState drops unsafe redirect targets', () => {
+    const state = oauth.createOAuthState('google', 'https://evil.example');
+    const record = oauth.consumeOAuthState(state);
+    expect(record?.provider).toBe('google');
+    expect(record?.redirect).toBeNull();
   });
 
   test('consumeOAuthState expires old state', () => {
@@ -55,6 +69,17 @@ describe('oauth', () => {
     const record = oauth.consumeOAuthState(state);
     expect(record).toBeNull();
     Date.now = realNow;
+  });
+
+  test('createOAuthState evicts oldest entries when state store is full', () => {
+    const first = oauth.createOAuthState('google', '/first');
+
+    for (let i = 0; i < 2100; i++) {
+      oauth.createOAuthState('google', `/next-${i}`);
+    }
+
+    const evicted = oauth.consumeOAuthState(first);
+    expect(evicted).toBeNull();
   });
 
   test('buildAuthUrl includes provider parameters', () => {

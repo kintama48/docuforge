@@ -99,6 +99,20 @@ describe('Billing checkout and webhook', () => {
     expect(record?.stripeCustomerId).toBe('cus_test');
   });
 
+  it('creates checkout session for dev plan', async () => {
+    const user = await createTestUser(getDb() as any);
+
+    const response = await app.request('/v1/billing/checkout', {
+      method: 'POST',
+      headers: getAuthHeaders(user, false),
+      body: JSON.stringify({ plan: 'dev' }),
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.checkout_url).toBe('https://checkout.test/session');
+  });
+
   it('returns internal error when user is missing', async () => {
     const token = await createTestJwt('usr_missing', 'missing@example.com');
 
@@ -210,6 +224,26 @@ describe('Billing checkout and webhook', () => {
 
     const [updated] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
     expect(updated?.planTier).toBe('pro');
+
+    const devUpdateEvent = {
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          customer: 'cus_sub',
+          items: { data: [{ price: { id: process.env.STRIPE_DEV_PRICE_ID } }] },
+        },
+      },
+    };
+
+    const devUpdateResponse = await app.request('/v1/billing/webhook', {
+      method: 'POST',
+      headers: { 'stripe-signature': 'sig' },
+      body: JSON.stringify(devUpdateEvent),
+    });
+    expect(devUpdateResponse.status).toBe(200);
+
+    const [devUpdated] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
+    expect(devUpdated?.planTier).toBe('dev');
 
     const deleteEvent = {
       type: 'customer.subscription.deleted',

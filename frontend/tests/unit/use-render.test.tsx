@@ -202,4 +202,29 @@ describe("usePreviewRender", () => {
     expect(signals.length).toBeGreaterThanOrEqual(2);
     expect(signals[0].aborted).toBe(true);
   });
+
+  it("supports low_code_spec payloads", async () => {
+    postRaw.mockResolvedValue(
+      new Response(new Blob(["pdf"]), {
+        status: 200,
+        headers: { "X-Render-Duration": "7" },
+      })
+    );
+
+    const { result } = renderHook(() => usePreviewRender(), { wrapper });
+    const lowCodeSpec = {
+      version: 1 as const,
+      blocks: [{ type: "paragraph" as const, props: { text: "Hello" } }],
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync({ low_code_spec: lowCodeSpec, data: {} });
+    });
+
+    expect(postRaw).toHaveBeenCalledWith(
+      "/v1/render/preview",
+      { low_code_spec: lowCodeSpec, data: {} },
+      expect.any(AbortSignal)
+    );
+  });
 });

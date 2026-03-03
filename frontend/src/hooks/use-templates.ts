@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/lib/api";
 import type { Template, TemplateDetail, TemplateVersion } from "@/src/lib/api-types";
+import type { LowCodeSpec } from "@/src/lib/low-code";
 
 type TemplatesResponse = {
   templates: Template[];
@@ -35,7 +36,8 @@ export function useCreateTemplate() {
     mutationFn: (payload: {
       name: string;
       description?: string | null;
-      source: string;
+      source?: string;
+      low_code_spec?: LowCodeSpec;
       files?: Record<string, string>;
       defaults?: Record<string, unknown>;
     }) => api.post<{ template: TemplateDetail }>("/v1/templates", payload),
@@ -51,20 +53,30 @@ export function usePublishVersion(defaultId?: string) {
   return useMutation({
     mutationFn: (payload: {
       id?: string;
-      source: string;
+      source?: string;
+      low_code_spec?: LowCodeSpec;
       files?: Record<string, string>;
       defaults?: Record<string, unknown>;
       commit_message?: string;
-    }) =>
-      api.post<{ version: { version_number: number } }>(
+    }) => {
+      const requestBody: Record<string, unknown> = {
+        files: payload.files,
+        defaults: payload.defaults,
+        commit_message: payload.commit_message,
+      };
+
+      if (payload.source !== undefined) {
+        requestBody.source = payload.source;
+      }
+      if (payload.low_code_spec !== undefined) {
+        requestBody.low_code_spec = payload.low_code_spec;
+      }
+
+      return api.post<{ version: { version_number: number } }>(
         `/v1/templates/${payload.id || defaultId}/publish`,
-        {
-          source: payload.source,
-          files: payload.files,
-          defaults: payload.defaults,
-          commit_message: payload.commit_message,
-        }
-      ),
+        requestBody
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["template", defaultId] });
       queryClient.invalidateQueries({ queryKey: ["templates"] });
@@ -118,5 +130,48 @@ export function useTemplateVersion(templateId?: string) {
       api.get<{ version: TemplateVersion }>(
         `/v1/templates/${templateId}/versions/${versionId}`
       ),
+  });
+}
+
+export function useAnalyzePdfImport() {
+  return useMutation({
+    mutationFn: (payload: {
+      file_name: string;
+      pdf_base64: string;
+      user_prompt?: string;
+    }) =>
+      api.post<{
+        analysis: {
+          source: string;
+          tokens_used: number;
+          converter: string;
+          extracted_text_preview: string;
+          ai_credit_charged: number;
+          usage_log_id: string;
+        };
+      }>("/v1/templates/import/pdf/analyze", payload),
+  });
+}
+
+export function useCreateImportedTemplate() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: {
+      name: string;
+      description?: string;
+      source: string;
+      defaults?: Record<string, unknown>;
+      commit_message?: string;
+    }) =>
+      api.post<{ template: TemplateDetail }>(
+        "/v1/templates/import/pdf/create",
+        payload
+      ),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+      router.push(`/editor/${data.template.id}`);
+    },
   });
 }

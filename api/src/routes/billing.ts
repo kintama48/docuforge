@@ -7,6 +7,7 @@ import { flexibleAuth, jwtAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
 import { zValidator, createCheckoutSchema } from '../lib/validation';
 import { checkCredits, formatUsageResponse } from '../services/usage';
+import { checkAiCredits, formatAiUsageResponse } from '../services/ai-usage';
 import { ValidationError, InternalError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
 
@@ -18,6 +19,17 @@ billing.use('*', noCache);
 let stripeClient: Stripe | null = null;
 
 function getStripe(): Stripe {
+  if (env.BILLING_PROVIDER === 'paddle') {
+    throw new InternalError('Paddle billing provider is not enabled in this deployment');
+  }
+  if (env.BILLING_PROVIDER === 'lemonsqueezy') {
+    throw new InternalError('Lemon Squeezy billing provider is not enabled in this deployment');
+  }
+
+  if (env.BILLING_PROVIDER !== 'stripe') {
+    throw new InternalError(`Unsupported billing provider: ${env.BILLING_PROVIDER}`);
+  }
+
   if (!stripeClient) {
     stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-01-27.acacia',
@@ -33,8 +45,14 @@ export function setStripeClient(client: Stripe | null) {
 // GET /v1/usage - Get usage stats
 billing.get('/usage', flexibleAuth, async (c) => {
   const { userId } = c.get('auth');
-  const credits = await checkCredits(userId);
-  return c.json(formatUsageResponse(credits));
+  const [credits, aiCredits] = await Promise.all([
+    checkCredits(userId),
+    checkAiCredits(userId),
+  ]);
+  return c.json({
+    ...formatUsageResponse(credits),
+    ...formatAiUsageResponse(aiCredits),
+  });
 });
 
 // POST /v1/billing/checkout - Create checkout session
@@ -64,8 +82,12 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
   }
 
   // Get price ID
-  const priceId =
-    plan === 'pro' ? env.STRIPE_PRO_PRICE_ID : env.STRIPE_STARTER_PRICE_ID;
+  const priceByPlan: Record<'dev' | 'starter' | 'pro', string> = {
+    dev: env.STRIPE_DEV_PRICE_ID,
+    starter: env.STRIPE_STARTER_PRICE_ID,
+    pro: env.STRIPE_PRO_PRICE_ID,
+  };
+  const priceId = priceByPlan[plan];
 
   if (!priceId) {
     throw new InternalError('Price not configured');
@@ -109,7 +131,7 @@ billing.post('/billing/webhook', async (c) => {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
-      const plan = session.metadata?.plan as 'starter' | 'pro' | undefined;
+      const plan = session.metadata?.plan as 'dev' | 'starter' | 'pro' | undefined;
 
       if (userId && plan) {
         await db
@@ -137,6 +159,8 @@ billing.post('/billing/webhook', async (c) => {
         plan = 'pro';
       } else if (priceId === env.STRIPE_STARTER_PRICE_ID) {
         plan = 'starter';
+      } else if (priceId === env.STRIPE_DEV_PRICE_ID) {
+        plan = 'dev';
       }
 
       await db

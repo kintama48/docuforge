@@ -1,10 +1,10 @@
+use crate::models::response::{ErrorResponse, ErrorSpan};
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
 use thiserror::Error;
-use crate::models::response::{ErrorResponse, ErrorSpan};
 
 #[derive(Debug, Error)]
 pub enum EngineError {
@@ -24,6 +24,9 @@ pub enum EngineError {
     #[error("Render timeout: exceeded {0}ms limit")]
     Timeout(u64),
 
+    #[error("PDF encryption failed: {0}")]
+    EncryptionFailed(String),
+
     #[error("Internal error: {0}")]
     Internal(String),
 }
@@ -31,7 +34,12 @@ pub enum EngineError {
 impl IntoResponse for EngineError {
     fn into_response(self) -> Response {
         // Report server-side errors to Sentry (no-op if Sentry is not initialized)
-        if matches!(self, EngineError::Internal(_) | EngineError::AssetFetchFailed(_)) {
+        if matches!(
+            self,
+            EngineError::Internal(_)
+                | EngineError::AssetFetchFailed(_)
+                | EngineError::EncryptionFailed(_)
+        ) {
             sentry::capture_error(&self);
         }
 
@@ -65,6 +73,13 @@ impl IntoResponse for EngineError {
                 StatusCode::REQUEST_TIMEOUT,
                 "timeout",
                 format!("Render exceeded {}ms limit", ms),
+                None,
+                None,
+            ),
+            EngineError::EncryptionFailed(msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "encryption_failed",
+                msg.clone(),
                 None,
                 None,
             ),
@@ -128,6 +143,12 @@ mod tests {
     #[test]
     fn test_internal_response() {
         let response = EngineError::Internal("boom".to_string()).into_response();
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn test_encryption_failed_response() {
+        let response = EngineError::EncryptionFailed("encrypt failed".to_string()).into_response();
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     }
 }

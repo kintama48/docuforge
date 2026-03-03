@@ -24,19 +24,19 @@ interface RateLimitConfig {
 const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   render: {
     windowMs: 60 * 1000, // 1 minute
-    limits: { free: 10, starter: 60, pro: 200 },
+    limits: { free: 10, dev: 30, starter: 60, pro: 200 },
   },
   preview: {
     windowMs: 60 * 1000,
-    limits: { free: 30, starter: 30, pro: 30 },
+    limits: { free: 30, dev: 30, starter: 30, pro: 30 },
   },
   ai: {
     windowMs: 60 * 60 * 1000, // 1 hour
-    limits: { free: 5, starter: 20, pro: 50 },
+    limits: { free: 5, dev: 10, starter: 20, pro: 50 },
   },
   default: {
     windowMs: 60 * 1000,
-    limits: { free: 60, starter: 60, pro: 60 },
+    limits: { free: 60, dev: 60, starter: 60, pro: 60 },
   },
 };
 

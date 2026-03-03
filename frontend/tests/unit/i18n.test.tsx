@@ -53,6 +53,14 @@ describe("I18nProvider", () => {
     await waitFor(() => expect(screen.getByTestId("locale").textContent).toBe("zh"));
   });
 
+  it("renders with initial locale first, then syncs to localized path", async () => {
+    window.history.replaceState({}, "", "/de/playground");
+    renderWithLocale("en");
+
+    expect(screen.getByTestId("locale").textContent).toBe("en");
+    await waitFor(() => expect(screen.getByTestId("locale").textContent).toBe("de"));
+  });
+
   it("sets document direction for rtl locales", async () => {
     renderWithLocale("ar");
     await waitFor(() => expect(document.documentElement.dir).toBe("rtl"));

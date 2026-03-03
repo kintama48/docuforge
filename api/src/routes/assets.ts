@@ -7,7 +7,12 @@ import { shortCache, noCache } from '../middleware/cache';
 import { etag } from '../middleware/etag';
 import { zValidator, requestUploadUrlSchema, confirmUploadSchema } from '../lib/validation';
 import { generateAssetId } from '../lib/id';
-import { generateUploadUrl, verifyAssetExists, deleteAssetFromR2 } from '../services/asset';
+import {
+  generateUploadUrl,
+  verifyAssetExists,
+  deleteAssetFromR2,
+  invalidateResolvedAssetCache,
+} from '../services/asset';
 import { NotFoundError, ValidationError } from '../lib/errors';
 
 const assets = new Hono();
@@ -75,6 +80,7 @@ assets.post('/', jwtAuth, noCache, zValidator('json', confirmUploadSchema), asyn
     }
 
     const [updated] = await db.select().from(schema.assets).where(eq(schema.assets.id, existing.id));
+    invalidateResolvedAssetCache(userId);
 
     return c.json({
       asset: {
@@ -111,6 +117,7 @@ assets.post('/', jwtAuth, noCache, zValidator('json', confirmUploadSchema), asyn
     hash: data.hash,
     createdAt: now,
   });
+  invalidateResolvedAssetCache(userId);
 
   return c.json(
     {
@@ -164,6 +171,7 @@ assets.delete('/:id', jwtAuth, noCache, async (c) => {
 
   // Delete from database
   await db.delete(schema.assets).where(eq(schema.assets.id, assetId));
+  invalidateResolvedAssetCache(userId);
 
   return c.json({ message: 'Asset deleted' });
 });

@@ -44,13 +44,20 @@ describe('E2E: Full Render Flow', () => {
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
+        email_canonical TEXT UNIQUE NOT NULL,
+        email_verified_at INTEGER,
         password_hash TEXT NOT NULL,
         stripe_customer_id TEXT,
+        signup_fingerprint_hash TEXT,
+        signup_ip_hash TEXT,
         plan_tier TEXT NOT NULL DEFAULT 'free',
-        plan_renders INTEGER NOT NULL DEFAULT 500,
+        plan_renders INTEGER NOT NULL DEFAULT 1000,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       );
+      CREATE INDEX IF NOT EXISTS idx_users_email_canonical ON users(email_canonical);
+      CREATE INDEX IF NOT EXISTS idx_users_signup_fp_created ON users(signup_fingerprint_hash, created_at);
+      CREATE INDEX IF NOT EXISTS idx_users_signup_ip_created ON users(signup_ip_hash, created_at);
       CREATE TABLE IF NOT EXISTS api_keys (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -78,6 +85,7 @@ describe('E2E: Full Render Flow', () => {
         source TEXT NOT NULL,
         files TEXT,
         defaults TEXT,
+        low_code_spec TEXT,
         commit_message TEXT,
         created_at INTEGER NOT NULL
       );
@@ -101,6 +109,59 @@ describe('E2E: Full Render Flow', () => {
         error_message TEXT,
         created_at INTEGER NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS auth_otp_challenges (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        purpose TEXT NOT NULL,
+        email TEXT NOT NULL,
+        code_hash TEXT NOT NULL,
+        expires_at INTEGER NOT NULL,
+        resend_available_at INTEGER NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        max_attempts INTEGER NOT NULL DEFAULT 5,
+        sent_count INTEGER NOT NULL DEFAULT 1,
+        consumed_at INTEGER,
+        metadata TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_auth_otp_user_purpose ON auth_otp_challenges(user_id, purpose);
+      CREATE INDEX IF NOT EXISTS idx_auth_otp_active ON auth_otp_challenges(purpose, consumed_at, expires_at);
+      CREATE TABLE IF NOT EXISTS user_pins (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        fingerprint_hash TEXT NOT NULL,
+        ip_hash TEXT,
+        first_seen_at INTEGER NOT NULL,
+        last_seen_at INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_user_pins_user_fingerprint ON user_pins(user_id, fingerprint_hash);
+      CREATE INDEX IF NOT EXISTS idx_user_pins_fingerprint ON user_pins(fingerprint_hash, last_seen_at);
+      CREATE TABLE IF NOT EXISTS webhooks (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        url TEXT NOT NULL,
+        events TEXT NOT NULL,
+        secret TEXT NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_webhooks_user ON webhooks(user_id);
+      CREATE TABLE IF NOT EXISTS webhook_deliveries (
+        id TEXT PRIMARY KEY,
+        webhook_id TEXT NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
+        event TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        status TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        last_attempt_at INTEGER,
+        next_retry_at INTEGER,
+        response_code INTEGER,
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_webhook ON webhook_deliveries(webhook_id);
+      CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_status ON webhook_deliveries(status, next_retry_at);
     `);
     sqlite.close();
 
@@ -242,8 +303,8 @@ describe('E2E: Full Render Flow', () => {
     expect(usageData.plan).toBe('free');
     expect(usageData.renders).toBeDefined();
     expect(usageData.renders.used).toBe(1);
-    expect(usageData.renders.limit).toBe(500);
-    expect(usageData.renders.remaining).toBe(499);
+    expect(usageData.renders.limit).toBe(1000);
+    expect(usageData.renders.remaining).toBe(999);
     expect(usageData.period).toBeDefined();
     expect(usageData.period.start).toBeDefined();
     expect(usageData.period.end).toBeDefined();
@@ -306,7 +367,7 @@ describe('E2E: Full Render Flow', () => {
 
     const usageData = await usageResponse.json();
     expect(usageData.renders.used).toBe(3);
-    expect(usageData.renders.remaining).toBe(497);
+    expect(usageData.renders.remaining).toBe(997);
   });
 
   test('render fails without valid API key', async () => {

@@ -59,39 +59,37 @@ const snippets = [
 ];
 
 export function registerTypstLanguage(monaco: typeof Monaco) {
-  if (monaco.languages.getLanguages().some((lang) => lang.id === "typst")) {
-    return;
+  if (!monaco.languages.getLanguages().some((lang) => lang.id === "typst")) {
+    monaco.languages.register({ id: "typst" });
+
+    monaco.languages.setMonarchTokensProvider("typst", {
+      keywords,
+      builtins,
+      tokenizer: {
+        root: [
+          [/\/\/.*$/, "comment"],
+          [/\/\*/, "comment", "@comment"],
+          [/#(set|let|show|import|include|if|else|for|while|return)/, "keyword"],
+          [/#(table|image|text|page|align|grid|stack|columns|rect|circle|line)/, "type"],
+          [/#(heading|link|emph|strong|underline|strike|super|sub)/, "type"],
+          [/#(raw|quote|cite|ref|figure|counter|state|datetime|sys)/, "type"],
+          [/= .+$/, "markup.heading"],
+          [/\*[^*]+\*/, "markup.bold"],
+          [/_[^_]+_/, "markup.italic"],
+          [/`[^`]+`/, "markup.code"],
+          [/".*?"/, "string"],
+          [/\b\d+(\.\d+)?(em|cm|pt|%|in)?\b/, "number"],
+          [/\$[^$]+\$/, "metatag"],
+          [/sys\.inputs/, "variable.predefined"],
+        ],
+        comment: [
+          [/[^\/*]+/, "comment"],
+          ["\\*/", "comment", "@pop"],
+          [/[\/*]/, "comment"],
+        ],
+      },
+    });
   }
-
-  monaco.languages.register({ id: "typst" });
-
-  monaco.languages.setMonarchTokensProvider("typst", {
-    keywords,
-    builtins,
-    tokenizer: {
-      root: [
-        [/\/\/.*$/, "comment"],
-        [/\/\*/, "comment", "@comment"],
-        [/#(set|let|show|import|include|if|else|for|while|return)/, "keyword"],
-        [/#(table|image|text|page|align|grid|stack|columns|rect|circle|line)/, "type"],
-        [/#(heading|link|emph|strong|underline|strike|super|sub)/, "type"],
-        [/#(raw|quote|cite|ref|figure|counter|state|datetime|sys)/, "type"],
-        [/= .+$/, "markup.heading"],
-        [/\*[^*]+\*/, "markup.bold"],
-        [/_[^_]+_/, "markup.italic"],
-        [/`[^`]+`/, "markup.code"],
-        [/".*?"/, "string"],
-        [/\b\d+(\.\d+)?(em|cm|pt|%|in)?\b/, "number"],
-        [/\$[^$]+\$/, "metatag"],
-        [/sys\.inputs/, "variable.predefined"],
-      ],
-      comment: [
-        [/[^\/*]+/, "comment"],
-        ["\\*/", "comment", "@pop"],
-        [/[\/*]/, "comment"],
-      ],
-    },
-  });
 
   monaco.editor.defineTheme("docuforge-dark", {
     base: "vs-dark",
@@ -110,6 +108,28 @@ export function registerTypstLanguage(monaco: typeof Monaco) {
     colors: {
       "editor.background": "#0f1117",
       "editor.foreground": "#c9d1d9",
+    },
+  });
+
+  monaco.editor.defineTheme("docuforge-light", {
+    base: "vs",
+    inherit: true,
+    rules: [
+      { token: "comment", foreground: "6b7280" },
+      { token: "keyword", foreground: "b91c1c" },
+      { token: "type", foreground: "1d4ed8" },
+      { token: "string", foreground: "1e40af" },
+      { token: "number", foreground: "c2410c" },
+      { token: "markup.heading", foreground: "7c3aed" },
+      { token: "markup.bold", foreground: "111827", fontStyle: "bold" },
+      { token: "markup.italic", foreground: "111827", fontStyle: "italic" },
+      { token: "variable.predefined", foreground: "b45309", fontStyle: "bold" },
+    ],
+    colors: {
+      "editor.background": "#ffffff",
+      "editor.foreground": "#111827",
+      "editorLineNumber.foreground": "#9ca3af",
+      "editorLineNumber.activeForeground": "#4b5563",
     },
   });
 }
@@ -154,8 +174,20 @@ export function registerTypstCompletions(
 
   // FE-M6 fix: Return the disposable so callers can clean up
   return monaco.languages.registerCompletionItemProvider("typst", {
-    provideCompletionItems: () => ({
-      suggestions: [...completions, ...assetItems, ...dataItems],
-    }),
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position);
+      const range: Monaco.IRange = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      return {
+        suggestions: [...completions, ...assetItems, ...dataItems].map((item) => ({
+          ...item,
+          range,
+        })),
+      };
+    },
   });
 }

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../helpers/render";
-import SettingsPage from "@/src/pages/settings/SettingsPage";
+import SettingsPage from "@/src/views/settings/SettingsPage";
 import { useAuthStore } from "@/src/stores/auth";
 
 vi.mock("next/navigation", () => ({

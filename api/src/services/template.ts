@@ -1,14 +1,16 @@
 import { eq, and, sql, or, isNull } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { generateTemplateId, generateVersionId } from '../lib/id';
-import { ConflictError, NotFoundError, ForbiddenError } from '../lib/errors';
+import { ConflictError, NotFoundError, ForbiddenError, ValidationError } from '../lib/errors';
 import type { TemplateSelect, TemplateVersionSelect } from '../db/schema';
+import { compileLowCodeSpec, lowCodeSpecSchema, type LowCodeSpec } from '../lib/low-code';
 
 export interface CreateTemplateParams {
   userId: string;
   name: string;
-  description?: string;
-  source: string;
+  description?: string | null;
+  source?: string;
+  lowCodeSpec?: LowCodeSpec;
   files?: Record<string, string>;
   defaults?: Record<string, unknown>;
   commitMessage?: string;
@@ -17,7 +19,8 @@ export interface CreateTemplateParams {
 export interface PublishVersionParams {
   templateId: string;
   userId: string;
-  source: string;
+  source?: string;
+  lowCodeSpec?: LowCodeSpec;
   files?: Record<string, string>;
   defaults?: Record<string, unknown>;
   commitMessage?: string;
@@ -30,12 +33,41 @@ export interface UpdateTemplateParams {
   description?: string | null;
 }
 
+function resolveSource(input: { source?: string; lowCodeSpec?: LowCodeSpec }): {
+  source: string;
+  lowCodeSpec: Record<string, unknown> | null;
+} {
+  if (input.source && input.source.trim().length > 0) {
+    const normalizedSpec = input.lowCodeSpec
+      ? (lowCodeSpecSchema.parse(input.lowCodeSpec) as unknown as Record<string, unknown>)
+      : null;
+    return {
+      source: input.source,
+      lowCodeSpec: normalizedSpec,
+    };
+  }
+
+  if (input.lowCodeSpec) {
+    const normalizedSpec = lowCodeSpecSchema.parse(input.lowCodeSpec);
+    return {
+      source: compileLowCodeSpec(normalizedSpec),
+      lowCodeSpec: normalizedSpec as unknown as Record<string, unknown>,
+    };
+  }
+
+  throw new ValidationError('Either source or low_code_spec is required');
+}
+
 export async function createTemplate(params: CreateTemplateParams): Promise<{
   template: TemplateSelect;
   version: TemplateVersionSelect;
 }> {
   const db = getDb();
   const now = Date.now();
+  const resolved = resolveSource({
+    source: params.source,
+    lowCodeSpec: params.lowCodeSpec,
+  });
 
   // Check name uniqueness
   const [existing] = await db
@@ -50,12 +82,16 @@ export async function createTemplate(params: CreateTemplateParams): Promise<{
   const templateId = generateTemplateId();
   const versionId = generateVersionId();
 
+  const normalizedDescription = params.description?.trim()
+    ? params.description.trim()
+    : null;
+
   // Create template
   await db.insert(schema.templates).values({
     id: templateId,
     userId: params.userId,
     name: params.name,
-    description: params.description || null,
+    description: normalizedDescription,
     liveVersionId: versionId,
     isPublic: false,
     createdAt: now,
@@ -67,9 +103,10 @@ export async function createTemplate(params: CreateTemplateParams): Promise<{
     id: versionId,
     templateId,
     versionNumber: 1,
-    source: params.source,
+    source: resolved.source,
     files: params.files || null,
     defaults: params.defaults || null,
+    lowCodeSpec: resolved.lowCodeSpec,
     commitMessage: params.commitMessage || 'Initial version',
     createdAt: now,
   });
@@ -83,6 +120,10 @@ export async function createTemplate(params: CreateTemplateParams): Promise<{
 export async function publishVersion(params: PublishVersionParams): Promise<TemplateVersionSelect> {
   const db = getDb();
   const now = Date.now();
+  const resolved = resolveSource({
+    source: params.source,
+    lowCodeSpec: params.lowCodeSpec,
+  });
 
   // Verify ownership
   const [template] = await db.select().from(schema.templates).where(eq(schema.templates.id, params.templateId));
@@ -109,9 +150,10 @@ export async function publishVersion(params: PublishVersionParams): Promise<Temp
     id: versionId,
     templateId: params.templateId,
     versionNumber: newVersionNumber,
-    source: params.source,
+    source: resolved.source,
     files: params.files || null,
     defaults: params.defaults || null,
+    lowCodeSpec: resolved.lowCodeSpec,
     commitMessage: params.commitMessage || null,
     createdAt: now,
   });
@@ -166,6 +208,7 @@ export async function forkTemplate(
     name: newName,
     description: sourceTemplate.description || undefined,
     source: sourceVersion.source,
+    lowCodeSpec: sourceVersion.lowCodeSpec as LowCodeSpec | undefined,
     files: sourceVersion.files || undefined,
     defaults: sourceVersion.defaults || undefined,
     commitMessage: `Forked from ${sourceTemplate.name}`,

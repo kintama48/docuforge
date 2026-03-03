@@ -33,6 +33,7 @@ const envSchema = z.object({
   // Stripe
   STRIPE_SECRET_KEY: z.string().min(1),
   STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  STRIPE_DEV_PRICE_ID: z.string().min(1),
   STRIPE_STARTER_PRICE_ID: z.string().min(1),
   STRIPE_PRO_PRICE_ID: z.string().min(1),
 
@@ -45,7 +46,8 @@ const envSchema = z.object({
   JWT_EXPIRY: z.string().default('7d'),
 
   // Limits
-  FREE_MONTHLY_LIMIT: z.coerce.number().default(500),
+  FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
+  DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
   STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
   PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
@@ -63,6 +65,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -83,6 +86,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -100,7 +104,8 @@ describe('env', () => {
         expect(result.data.ENGINE_TIMEOUT_MS).toBe(5000);
         expect(result.data.AI_MODEL).toBe('gemini-2.5-flash');
         expect(result.data.JWT_EXPIRY).toBe('7d');
-        expect(result.data.FREE_MONTHLY_LIMIT).toBe(500);
+        expect(result.data.FREE_MONTHLY_LIMIT).toBe(1000);
+        expect(result.data.DEV_MONTHLY_LIMIT).toBe(3000);
         expect(result.data.STARTER_MONTHLY_LIMIT).toBe(10000);
         expect(result.data.PRO_MONTHLY_LIMIT).toBe(50000);
         expect(result.data.MAX_UPLOAD_SIZE_MB).toBe(10);
@@ -116,6 +121,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -141,6 +147,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -165,6 +172,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -189,6 +197,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -232,6 +241,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -250,6 +260,7 @@ describe('env', () => {
     test('coerces limit values from strings', () => {
       const envWithStringLimits = {
         FREE_MONTHLY_LIMIT: '1000',
+        DEV_MONTHLY_LIMIT: '3000',
         STARTER_MONTHLY_LIMIT: '20000',
         PRO_MONTHLY_LIMIT: '100000',
         DATABASE_URL: 'file:./test.db',
@@ -260,6 +271,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -271,6 +283,7 @@ describe('env', () => {
 
       if (result.success) {
         expect(result.data.FREE_MONTHLY_LIMIT).toBe(1000);
+        expect(result.data.DEV_MONTHLY_LIMIT).toBe(3000);
         expect(result.data.STARTER_MONTHLY_LIMIT).toBe(20000);
         expect(result.data.PRO_MONTHLY_LIMIT).toBe(100000);
       }
@@ -286,6 +299,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -313,6 +327,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -337,6 +352,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',
@@ -362,6 +378,7 @@ describe('env', () => {
         R2_PUBLIC_URL: 'https://assets.test.com',
         STRIPE_SECRET_KEY: 'sk_test_abc',
         STRIPE_WEBHOOK_SECRET: 'whsec_abc',
+        STRIPE_DEV_PRICE_ID: 'price_dev',
         STRIPE_STARTER_PRICE_ID: 'price_starter',
         STRIPE_PRO_PRICE_ID: 'price_pro',
         GEMINI_API_KEY: 'test-gemini-abc',

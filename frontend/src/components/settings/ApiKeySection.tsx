@@ -24,7 +24,7 @@ export function ApiKeySection() {
   const [newKey, setNewKey] = useState<string | null>(null);
   const [keyName, setKeyName] = useState("");
 
-  const keys = data?.keys || [];
+  const keys = useMemo(() => data?.keys || [], [data?.keys]);
   const keyPrefix = keys[0]?.prefix || "docu_live_...";
 
   const formattedKeys = useMemo(
@@ -43,27 +43,31 @@ export function ApiKeySection() {
   );
 
   return (
-    <section className="rounded-2xl border border-[#27272a] bg-[#111113] p-6">
+    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">
             {messages.settings.apiKeysTitle}
           </h2>
-          <p className="mt-1 text-xs text-[#71717a]">
+          <p className="mt-1 text-xs text-[var(--muted-dim)]">
             {messages.settings.apiKeysSubtitle}
           </p>
         </div>
         <button
           onClick={() => setOpenCreateKey(true)}
-          className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
+          className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)]"
         >
           {messages.settings.createNewKey}
         </button>
       </div>
+      <p className="mt-3 text-xs text-[var(--muted)]">
+        Key prefixes are identifiers only. Use the full secret key for API
+        requests.
+      </p>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-left text-xs text-[#a1a1aa]">
-          <thead className="text-[11px] uppercase tracking-[0.18em] text-[#71717a]">
+        <table className="w-full text-left text-xs text-[var(--muted)]">
+          <thead className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted-dim)]">
             <tr>
               <th className="py-2">{messages.settings.keyNameLabel}</th>
               <th className="py-2">{messages.settings.keyPrefix}</th>
@@ -98,7 +102,7 @@ export function ApiKeySection() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-6 text-center text-[#71717a]">
+                <td colSpan={5} className="py-6 text-center text-[var(--muted-dim)]">
                   {messages.settings.noKeys}
                 </td>
               </tr>
@@ -112,19 +116,19 @@ export function ApiKeySection() {
         onClose={() => setOpenCreateKey(false)}
         title={messages.settings.createKeyTitle}
       >
-        <label className="text-xs text-[#a1a1aa]">
+        <label className="text-xs text-[var(--muted)]">
           {messages.settings.keyNameLabel}
         </label>
         <input
           value={keyName}
           onChange={(event) => setKeyName(event.target.value)}
-          className="mt-2 w-full rounded-md border border-[#27272a] bg-[#0f1117] px-3 py-2 text-xs text-white"
+          className="mt-2 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--ink)]"
           placeholder={messages.settings.keyNamePlaceholder}
         />
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={() => setOpenCreateKey(false)}
-            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white"
+            className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)]"
           >
             {messages.settings.cancel}
           </button>
@@ -143,7 +147,7 @@ export function ApiKeySection() {
               );
             }}
             disabled={!keyName.trim()}
-            className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb] disabled:opacity-60"
+            className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)] disabled:opacity-60"
           >
             {messages.settings.create}
           </button>
@@ -156,10 +160,10 @@ export function ApiKeySection() {
         dismissable={false}
         title={messages.settings.saveKeyTitle}
       >
-        <p className="text-xs text-[#a1a1aa]">
+        <p className="text-xs text-[var(--muted)]">
           {messages.settings.saveKeyBody}
         </p>
-        <div className="mt-3 rounded-lg border border-[#27272a] bg-[#0f1117] px-3 py-2 font-mono text-xs text-white">
+        <div className="mt-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 font-mono text-xs text-[var(--ink)]">
           {newKey || keyPrefix}
         </div>
         <div className="mt-4 flex items-center justify-between">
@@ -170,13 +174,13 @@ export function ApiKeySection() {
                 toast.success(messages.settings.apiKeyCopied);
               }
             }}
-            className="rounded-md border border-[#27272a] px-3 py-2 text-xs text-white hover:border-[#3f3f46]"
+            className="rounded-md border border-[var(--line)] px-3 py-2 text-xs text-[var(--ink)] hover:border-[var(--line-hover)]"
           >
             {messages.settings.copy}
           </button>
           <button
             onClick={() => setNewKey(null)}
-            className="rounded-md bg-[#3b82f6] px-3 py-2 text-xs font-semibold text-white hover:bg-[#2563eb]"
+            className="rounded-md bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--accent-strong)]"
           >
             {messages.settings.savedKey}
           </button>

@@ -1,0 +1,16 @@
+{
+  "name": "Render PDF",
+  "method": "POST",
+  "url": "/v1/render",
+  "headers": {
+    "X-API-Key": "{{connection.api_key}}",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "template_id": "{{parameters.template_id}}",
+    "data": "{{parameters.data}}"
+  },
+  "response": {
+    "type": "binary"
+  }
+}

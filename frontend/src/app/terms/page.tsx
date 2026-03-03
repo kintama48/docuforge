@@ -126,7 +126,7 @@ export default function TermsPage() {
           8. Disclaimers
         </h2>
         <p>
-          The service is provided on an "as is" and "as available" basis. We
+          The service is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We
           disclaim all warranties, express or implied, including fitness for a
           particular purpose and non-infringement.
         </p>
@@ -169,8 +169,8 @@ export default function TermsPage() {
           12. Changes to these terms
         </h2>
         <p>
-          We may update these terms from time to time. We will update the "Last
-          updated" date and, when appropriate, provide additional notice.
+          We may update these terms from time to time. We will update the &quot;Last
+          updated&quot; date and, when appropriate, provide additional notice.
         </p>
       </section>
 

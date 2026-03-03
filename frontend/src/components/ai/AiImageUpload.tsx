@@ -11,14 +11,14 @@ export function AiImageUpload({ disabled, onUpload }: AiImageUploadProps) {
   const { messages } = useI18n();
   return (
     <div className="mt-3">
-      <label className="text-xs text-[#a1a1aa]">
+      <label className="text-xs text-[var(--muted)]">
         {messages.ai.uploadScreenshot}
       </label>
       <input
         type="file"
         accept=".png,.jpg,.jpeg"
         aria-label={messages.ai.uploadScreenshot}
-        className="mt-2 w-full text-xs text-[#a1a1aa]"
+        className="mt-2 w-full text-xs text-[var(--muted)] file:mr-3 file:rounded-md file:border file:border-[var(--line)] file:bg-[var(--surface)] file:px-3 file:py-1 file:text-xs file:text-[var(--ink)]"
         onChange={async (event) => {
           const file = event.target.files?.[0];
           if (!file) return;

@@ -31,18 +31,17 @@ function resolveTheme(theme: ThemeMode): ResolvedTheme {
   return theme === "system" ? getSystemTheme() : theme;
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(
-    resolveTheme("system")
-  );
+function getInitialTheme(): ThemeMode {
+  if (typeof window === "undefined") return "system";
+  const stored = localStorage.getItem("docuforge-theme");
+  return stored === "light" || stored === "dark" || stored === "system"
+    ? stored
+    : "system";
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem("docuforge-theme") as ThemeMode | null;
-    if (stored === "light" || stored === "dark" || stored === "system") {
-      setTheme(stored);
-    }
-  }, []);
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");

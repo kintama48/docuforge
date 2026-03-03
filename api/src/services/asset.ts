@@ -6,6 +6,14 @@ import { env } from '../config/env';
 import type { EngineAsset } from '../types';
 
 let s3Client: S3Client | null = null;
+const ASSET_CACHE_TTL_MS = 30_000;
+
+type AssetCacheEntry = {
+  expiresAt: number;
+  assets: EngineAsset[];
+};
+
+const resolvedAssetCache = new Map<string, AssetCacheEntry>();
 
 function getS3Client(): S3Client {
   if (!s3Client) {
@@ -25,7 +33,29 @@ export function setS3Client(client: S3Client | null) {
   s3Client = client;
 }
 
+export function clearResolvedAssetCache() {
+  resolvedAssetCache.clear();
+}
+
+export function invalidateResolvedAssetCache(userId: string) {
+  resolvedAssetCache.delete(userId);
+}
+
+export function getResolvedAssetCacheSize() {
+  return resolvedAssetCache.size;
+}
+
+function cloneAssets(assets: EngineAsset[]): EngineAsset[] {
+  return assets.map((asset) => ({ ...asset }));
+}
+
 export async function resolveUserAssets(userId: string): Promise<EngineAsset[]> {
+  const now = Date.now();
+  const cached = resolvedAssetCache.get(userId);
+  if (cached && cached.expiresAt > now) {
+    return cloneAssets(cached.assets);
+  }
+
   const db = getDb();
 
   const assets = await db
@@ -38,6 +68,10 @@ export async function resolveUserAssets(userId: string): Promise<EngineAsset[]> 
     .where(eq(schema.assets.userId, userId));
 
   if (assets.length === 0) {
+    resolvedAssetCache.set(userId, {
+      expiresAt: now + ASSET_CACHE_TTL_MS,
+      assets: [],
+    });
     return [];
   }
 
@@ -62,6 +96,11 @@ export async function resolveUserAssets(userId: string): Promise<EngineAsset[]> 
       };
     })
   );
+
+  resolvedAssetCache.set(userId, {
+    expiresAt: now + ASSET_CACHE_TTL_MS,
+    assets: cloneAssets(resolvedAssets),
+  });
 
   return resolvedAssets;
 }

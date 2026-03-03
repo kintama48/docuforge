@@ -7,6 +7,15 @@ import { useAuthStore } from "@/src/stores/auth";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+function isLoginVerificationChallenge(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const payload = error as Record<string, unknown>;
+  return (
+    payload.verification_required === true &&
+    typeof payload.challenge_id === "string"
+  );
+}
+
 async function parseError(response: Response): Promise<ApiError> {
   try {
     const data = (await response.json()) as ApiError;
@@ -22,9 +31,7 @@ async function parseError(response: Response): Promise<ApiError> {
 function handleStatus(response: Response, error: ApiError) {
   if (response.status === 401) {
     useAuthStore.getState().logout();
-    if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
-      window.location.href = "/login";
-    }
+    return;
   }
   if (response.status === 402) {
     toast.error("Upgrade required to continue.");
@@ -69,6 +76,15 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await parseError(response);
+      // Auth hardening flow: login may return 403 with a verification challenge.
+      // This is a successful next-step response, not a terminal API error.
+      if (
+        path === "/v1/auth/login" &&
+        response.status === 403 &&
+        isLoginVerificationChallenge(error)
+      ) {
+        return error as T;
+      }
       handleStatus(response, error);
       throw error;
     }

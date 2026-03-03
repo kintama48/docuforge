@@ -5,8 +5,9 @@ import { flexibleAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
 import { zValidator, createWebhookSchema, updateWebhookSchema } from '../lib/validation';
 import { generateWebhookId } from '../lib/id';
-import { NotFoundError, ValidationError, LimitExceededError } from '../lib/errors';
+import { NotFoundError, LimitExceededError } from '../lib/errors';
 import { env } from '../config/env';
+import { assertSafeWebhookUrl } from '../lib/webhook-url';
 
 const webhooks = new Hono();
 
@@ -18,11 +19,7 @@ webhooks.post('/', flexibleAuth, zValidator('json', createWebhookSchema), async 
   const { url, events } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
-
-  // Enforce HTTPS in production
-  if (env.NODE_ENV === 'production' && !url.startsWith('https://')) {
-    throw new ValidationError('Webhook URL must use HTTPS');
-  }
+  const normalizedUrl = assertSafeWebhookUrl(url, env.NODE_ENV !== 'production');
 
   // Check webhook limit per user
   const existing = await db
@@ -44,7 +41,7 @@ webhooks.post('/', flexibleAuth, zValidator('json', createWebhookSchema), async 
   await db.insert(schema.webhooks).values({
     id,
     userId,
-    url,
+    url: normalizedUrl,
     events,
     secret,
     isActive: true,
@@ -53,7 +50,7 @@ webhooks.post('/', flexibleAuth, zValidator('json', createWebhookSchema), async 
 
   // Return with secret visible (only on creation)
   return c.json({
-    data: { id, url, events, secret, is_active: true, created_at: new Date(now).toISOString() },
+    data: { id, url: normalizedUrl, events, secret, is_active: true, created_at: new Date(now).toISOString() },
   }, 201);
 });
 
@@ -142,14 +139,12 @@ webhooks.patch('/:id', flexibleAuth, zValidator('json', updateWebhookSchema), as
   if (!webhook) {
     throw new NotFoundError('Webhook not found');
   }
-
-  // Enforce HTTPS in production
-  if (body.url && env.NODE_ENV === 'production' && !body.url.startsWith('https://')) {
-    throw new ValidationError('Webhook URL must use HTTPS');
-  }
+  const normalizedUrl = body.url !== undefined
+    ? assertSafeWebhookUrl(body.url, env.NODE_ENV !== 'production')
+    : undefined;
 
   const updates: Record<string, unknown> = {};
-  if (body.url !== undefined) updates.url = body.url;
+  if (normalizedUrl !== undefined) updates.url = normalizedUrl;
   if (body.events !== undefined) updates.events = body.events;
   if (body.is_active !== undefined) updates.isActive = body.is_active;
 
@@ -161,7 +156,7 @@ webhooks.patch('/:id', flexibleAuth, zValidator('json', updateWebhookSchema), as
   return c.json({
     data: {
       id: webhook.id,
-      url: body.url ?? webhook.url,
+      url: normalizedUrl ?? webhook.url,
       events: body.events ?? webhook.events,
       is_active: body.is_active ?? webhook.isActive,
       created_at: new Date(webhook.createdAt).toISOString(),

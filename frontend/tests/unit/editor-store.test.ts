@@ -279,4 +279,66 @@ describe("editor store", () => {
     useEditorStore.getState().insertSnippet("snippet");
     expect(executeEdits).not.toHaveBeenCalled();
   });
+
+  it("loads low-code templates into guided mode", () => {
+    useEditorStore.getState().loadTemplate({
+      id: "tpl_guided",
+      name: "Guided",
+      description: null,
+      is_official: false,
+      live_version: {
+        id: "ver_guided",
+        version_number: 1,
+        source: "#set page()",
+        files: null,
+        defaults: { invoice: { title: "Invoice" } },
+        low_code_spec: {
+          version: 1,
+          blocks: [{ type: "header", props: { title: "{{invoice.title}}" } }],
+        },
+        commit_message: "Guided",
+        created_at: 0,
+      },
+      versions: [],
+      created_at: 0,
+      updated_at: 0,
+    } as any);
+
+    const state = useEditorStore.getState();
+    expect(state.editorMode).toBe("low-code");
+    expect(state.lowCodeSpec).not.toBeNull();
+    expect(state.advancedTypstEnabled).toBe(false);
+  });
+
+  it("setLowCodeSpec tracks dirty state against saved snapshot", () => {
+    useEditorStore.getState().setLowCodeSpec({
+      version: 1,
+      blocks: [{ type: "paragraph", props: { text: "one" } }],
+    } as any);
+    useEditorStore.getState().markClean();
+    useEditorStore.getState().setLowCodeSpec({
+      version: 1,
+      blocks: [{ type: "paragraph", props: { text: "two" } }],
+    } as any);
+
+    const state = useEditorStore.getState();
+    expect(state.editorMode).toBe("low-code");
+    expect(state.isDirty).toBe(true);
+  });
+
+  it("detachFromLowCode switches to code mode and preserves advanced editing", () => {
+    useEditorStore.getState().setLowCodeSpec({
+      version: 1,
+      blocks: [{ type: "paragraph", props: { text: "one" } }],
+    } as any);
+    useEditorStore.getState().markClean();
+
+    useEditorStore.getState().detachFromLowCode();
+    const state = useEditorStore.getState();
+
+    expect(state.editorMode).toBe("code");
+    expect(state.lowCodeSpec).toBeNull();
+    expect(state.advancedTypstEnabled).toBe(true);
+    expect(state.isDirty).toBe(true);
+  });
 });
