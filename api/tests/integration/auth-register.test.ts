@@ -1,5 +1,5 @@
 /**
- * Integration tests for POST /v1/auth/register endpoint.
+ * Integration tests for POST /console/auth/register endpoint.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { createApp } from '../../src/app';
@@ -9,7 +9,7 @@ import {
   sampleUsers,
 } from '../setup';
 
-describe('POST /v1/auth/register', () => {
+describe('POST /console/auth/register', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
 
@@ -23,7 +23,7 @@ describe('POST /v1/auth/register', () => {
   });
 
   it('registers new user and returns 201 with token and API key', async () => {
-    const response = await app.request('/v1/auth/register', {
+    const response = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.valid),
@@ -47,7 +47,7 @@ describe('POST /v1/auth/register', () => {
 
   it('returns API key only once (not shown on subsequent login)', async () => {
     // Register
-    const registerResponse = await app.request('/v1/auth/register', {
+    const registerResponse = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.valid),
@@ -59,7 +59,7 @@ describe('POST /v1/auth/register', () => {
     expect(rawKey).toBeDefined();
 
     // Login
-    const loginResponse = await app.request('/v1/auth/login', {
+    const loginResponse = await app.request('/console/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -76,7 +76,7 @@ describe('POST /v1/auth/register', () => {
 
   it('rejects duplicate email with 409 Conflict', async () => {
     // Register first user
-    const firstResponse = await app.request('/v1/auth/register', {
+    const firstResponse = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.valid),
@@ -84,7 +84,7 @@ describe('POST /v1/auth/register', () => {
     expect(firstResponse.status).toBe(201);
 
     // Try to register with same email
-    const secondResponse = await app.request('/v1/auth/register', {
+    const secondResponse = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.valid),
@@ -96,7 +96,7 @@ describe('POST /v1/auth/register', () => {
   });
 
   it('rejects weak password with 422', async () => {
-    const response = await app.request('/v1/auth/register', {
+    const response = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.weakPassword),
@@ -109,7 +109,7 @@ describe('POST /v1/auth/register', () => {
   });
 
   it('rejects invalid email with 422', async () => {
-    const response = await app.request('/v1/auth/register', {
+    const response = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.invalidEmail),
@@ -122,7 +122,7 @@ describe('POST /v1/auth/register', () => {
   });
 
   it('creates user as free tier', async () => {
-    const response = await app.request('/v1/auth/register', {
+    const response = await app.request('/console/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sampleUsers.valid),
@@ -135,7 +135,7 @@ describe('POST /v1/auth/register', () => {
   });
 
   it('rejects register from untrusted browser origin', async () => {
-    const response = await app.request('/v1/auth/register', {
+    const response = await app.request('/console/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

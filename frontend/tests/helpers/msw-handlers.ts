@@ -2,43 +2,48 @@ import { http, HttpResponse } from "msw";
 import { fixtures } from "./fixtures";
 
 export const handlers = [
-  http.post("http://localhost:3000/v1/auth/login", async () =>
+  http.post("http://localhost:3000/console/auth/login", async () =>
     HttpResponse.json({
       token: fixtures.token,
       user: fixtures.user,
     })
   ),
-  http.post("http://localhost:3000/v1/auth/register", async () =>
+  http.post("http://localhost:3000/console/auth/register", async () =>
     HttpResponse.json({
       token: fixtures.token,
       user: fixtures.user,
       api_key: fixtures.apiKey,
     })
   ),
-  http.get("http://localhost:3000/v1/templates", async () =>
+  http.post("http://localhost:3000/console/auth/logout", async () =>
+    HttpResponse.json({
+      message: "Logged out",
+    })
+  ),
+  http.get("http://localhost:3000/console/templates", async () =>
     HttpResponse.json({
       templates: fixtures.templates,
       pagination: { page: 1, limit: 20, total: 1 },
     })
   ),
-  http.post("http://localhost:3000/v1/templates", async () =>
+  http.post("http://localhost:3000/console/templates", async () =>
     HttpResponse.json({
       template: fixtures.templateDetail,
     })
   ),
-  http.get("http://localhost:3000/v1/templates/:id", async () =>
+  http.get("http://localhost:3000/console/templates/:id", async () =>
     HttpResponse.json({
       template: fixtures.templateDetail,
     })
   ),
   http.get(
-    "http://localhost:3000/v1/templates/:id/versions/:versionId",
+    "http://localhost:3000/console/templates/:id/versions/:versionId",
     async () =>
       HttpResponse.json({
         version: fixtures.templateVersionDetail,
       })
   ),
-  http.post("http://localhost:3000/v1/templates/:id/publish", async () =>
+  http.post("http://localhost:3000/console/templates/:id/publish", async () =>
     HttpResponse.json({
       version: {
         id: "ver_2",
@@ -48,10 +53,10 @@ export const handlers = [
       },
     })
   ),
-  http.post("http://localhost:3000/v1/templates/:id/fork", async () =>
+  http.post("http://localhost:3000/console/templates/:id/fork", async () =>
     HttpResponse.json({ template: fixtures.templateDetail })
   ),
-  http.patch("http://localhost:3000/v1/templates/:id", async ({ request }) => {
+  http.patch("http://localhost:3000/console/templates/:id", async ({ request }) => {
     const body = (await request.json()) as { name?: string; description?: string | null };
     return HttpResponse.json({
       template: {
@@ -64,38 +69,38 @@ export const handlers = [
       },
     });
   }),
-  http.delete("http://localhost:3000/v1/templates/:id", async () =>
+  http.delete("http://localhost:3000/console/templates/:id", async () =>
     new HttpResponse(null, { status: 204 })
   ),
-  http.post(/.*\/v1\/render\/preview$/, async () =>
+  http.post(/.*\/console\/render\/preview$/, async () =>
     new HttpResponse(new Blob(["%PDF-1.4 test"], { type: "application/pdf" }), {
       headers: {
         "X-Render-Duration": "42",
       },
     })
   ),
-  http.get("http://localhost:3000/v1/usage", async () =>
+  http.get("http://localhost:3000/console/usage", async () =>
     HttpResponse.json(fixtures.usage)
   ),
-  http.get("http://localhost:3000/v1/auth/keys", async () =>
+  http.get("http://localhost:3000/console/auth/keys", async () =>
     HttpResponse.json({ keys: fixtures.apiKeys })
   ),
-  http.post("http://localhost:3000/v1/auth/keys", async () =>
+  http.post("http://localhost:3000/console/auth/keys", async () =>
     HttpResponse.json({ raw_key: fixtures.apiKey.raw_key, prefix: fixtures.apiKey.prefix })
   ),
-  http.delete("http://localhost:3000/v1/auth/keys/:id", async () =>
+  http.delete("http://localhost:3000/console/auth/keys/:id", async () =>
     new HttpResponse(null, { status: 204 })
   ),
-  http.get("http://localhost:3000/v1/assets", async () =>
+  http.get("http://localhost:3000/console/assets", async () =>
     HttpResponse.json({ assets: fixtures.assets })
   ),
-  http.post("http://localhost:3000/v1/ai/edit", async () =>
+  http.post("http://localhost:3000/console/ai/edit", async () =>
     HttpResponse.json({ code: "#set page()", tokens_used: 120 })
   ),
-  http.post("http://localhost:3000/v1/ai/generate", async () =>
+  http.post("http://localhost:3000/console/ai/generate", async () =>
     HttpResponse.json({ code: "#set page()", tokens_used: 120 })
   ),
-  http.post("http://localhost:3000/v1/billing/checkout", async () =>
+  http.post("http://localhost:3000/console/billing/checkout", async () =>
     HttpResponse.json({ checkout_url: "https://checkout.example.com" })
   ),
 ];

@@ -55,6 +55,12 @@
   - Edge cases involving time, randomness, external systems, serialization, permissions
 - Never add tests that merely duplicate what strong assertions already guarantee
 
+## 8. Repo-Wide Assertion Hardening Policy
+- For core stacks (`api`, `frontend`, `mcp-server`, `engine`, `load-test`), enforce typed fail-fast assertions in runtime/source code.
+- Runtime/source code must not introduce TypeScript non-null assertions (`!`), `as any`, or `as unknown as`.
+- Production Rust code must not introduce `panic!`, `unwrap()`, or `expect()` in non-test paths; return typed errors instead.
+- Keep assertion enforcement strict and blocking in CI for runtime/source files; tests may use pragmatic patterns when needed.
+
 # Task Management
 1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
 2. **Verify Plan**: Check in before starting implementation
@@ -69,9 +75,11 @@
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 - **Proof Over Hope**: Enforce correctness with assertions; use tests where assertions can't reach.
+- **API Boundary Contract**: Dashboard API must live under `/console/*` with cookie-session-only auth, while consumer API remains under `/v1/*`.
 - **Icon Consistency**: Use Phosphor icons as the default icon library on product surfaces unless explicitly overridden.
 - **Session Security**: Keep auth flows persistent and secure: expose logout in authenticated surfaces, sanitize redirect targets, and verify security headers/caching behavior after auth changes.
 - **PDF Import Strategy**: For PDF import, do not add OCR-first complexity unless explicitly requested. Use deterministic converter output plus user input, then run in-house LLM/RAG best-effort reconstruction with a clear user review step.
+- **Consumer-Only API Docs**: Public API documentation should only include consumer-facing `/v1/*` endpoints; do not document `/console/*` routes or console-only endpoints.
 
 # Communication Efficiency
 - **Conserve Tokens**: Use only the tokens necessary to complete the task.

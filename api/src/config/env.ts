@@ -60,6 +60,7 @@ const envSchema = z.object({
   // Auth
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRY: z.string().default('7d'),
+  AUTH_ACCESS_TOKEN_EXPIRY: z.string().default('15m'),
   AUTH_EMAIL_VERIFICATION_REQUIRED: envBoolean.default(process.env.NODE_ENV === 'test' ? false : true),
   AUTH_2FA_REQUIRED: envBoolean.default(process.env.NODE_ENV === 'test' ? false : true),
   AUTH_OTP_TTL_MS: z.coerce.number().int().positive().default(10 * 60 * 1000),
@@ -71,6 +72,8 @@ const envSchema = z.object({
   AUTH_MAX_SIGNUPS_PER_IP_PER_DAY: z.coerce.number().int().positive().default(6),
   AUTH_COOKIE_NAME: z.string().min(1).default('docuforge_session'),
   AUTH_COOKIE_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+  AUTH_REFRESH_COOKIE_NAME: z.string().min(1).default('docuforge_refresh'),
+  AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 3),
   AUTH_COOKIE_DOMAIN: z.string().optional(),
   AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('strict'),
 

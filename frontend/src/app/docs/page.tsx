@@ -68,6 +68,12 @@ export default async function DocsPage() {
     { id: "security", label: securityMcpCopy.securityTitle },
     { id: "mcp", label: securityMcpCopy.mcpTitle },
   ];
+  const publicNav = content.nav.filter(
+    (item) => !["templates", "assets", "ai", "usage"].includes(item.id)
+  );
+  const consumerRenderEndpoints = content.render.endpoints.filter(
+    (item) => !item.endpoint.includes("/render/preview")
+  );
 
   return (
     <div className="min-h-screen page-background">
@@ -93,7 +99,7 @@ export default async function DocsPage() {
                 {content.navLabel}
               </p>
               <nav className="mt-4 flex flex-col gap-3 text-[var(--muted)]">
-                {content.nav.map((item) => (
+                {publicNav.map((item) => (
                   <Link
                     key={item.id}
                     href={`#${item.id}`}
@@ -150,18 +156,9 @@ export default async function DocsPage() {
                 {content.auth.title}
               </h2>
               <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.auth.body}
-              </p>
-              <CodeBlock>{`POST /v1/auth/login
-POST /v1/auth/register
-
-Authorization: Bearer <token>`}</CodeBlock>
-              <p className="mt-4 text-sm text-[var(--muted)]">
-                {content.auth.noteToken}
-              </p>
-              <p className="mt-3 text-sm text-[var(--muted)]">
                 {content.auth.noteKeys}
               </p>
+              <CodeBlock>{`X-API-Key: docu_live_your_api_key`}</CodeBlock>
             </section>
 
             <section id="quick-start">
@@ -169,13 +166,13 @@ Authorization: Bearer <token>`}</CodeBlock>
                 {content.quickStart.title}
               </h2>
               <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.quickStart.body}
+                Render a production PDF from a published template ID and JSON data.
               </p>
-              <CodeBlock>{`curl -X POST "$DOCUFORGE_API_URL/v1/render/preview" \\
-  -H "Authorization: Bearer $DOCUFORGE_API_KEY" \\
+              <CodeBlock>{`curl -X POST "$DOCUFORGE_API_URL/v1/render" \\
+  -H "X-API-Key: $DOCUFORGE_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{ "source": "...", "files": {}, "data": { "invoice_id": "1234" } }' \\
-  --output preview.pdf`}</CodeBlock>
+  -d '{ "template_id": "tpl_live_123", "data": { "invoice_id": "1234" } }' \\
+  --output document.pdf`}</CodeBlock>
             </section>
 
             <section id="render">
@@ -183,10 +180,10 @@ Authorization: Bearer <token>`}</CodeBlock>
                 {content.render.title}
               </h2>
               <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.render.body}
+                Production rendering endpoints are available under the consumer API surface.
               </p>
               <div className="mt-6 grid gap-4">
-                {content.render.endpoints.map((item) => (
+                {consumerRenderEndpoints.map((item) => (
                   <div
                     key={item.endpoint}
                     className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5"
@@ -197,94 +194,6 @@ Authorization: Bearer <token>`}</CodeBlock>
                     <p className="mt-2 text-sm text-[var(--muted)]">
                       {item.description}
                     </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section id="templates">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
-                {content.templates.title}
-              </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.templates.body}
-              </p>
-              <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                {content.templates.endpoints.map((item) => (
-                  <div
-                    key={item.endpoint}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
-                  >
-                    <p className="font-semibold text-[var(--ink)]">
-                      {item.endpoint}
-                    </p>
-                    <p className="mt-2">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section id="assets">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
-                {content.assets.title}
-              </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.assets.body}
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {content.assets.endpoints.map((item) => (
-                  <div
-                    key={item.endpoint}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
-                  >
-                    <p className="font-semibold text-[var(--ink)]">
-                      {item.endpoint}
-                    </p>
-                    <p className="mt-2">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section id="ai">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
-                {content.ai.title}
-              </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.ai.body}
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {content.ai.endpoints.map((item) => (
-                  <div
-                    key={item.endpoint}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
-                  >
-                    <p className="font-semibold text-[var(--ink)]">
-                      {item.endpoint}
-                    </p>
-                    <p className="mt-2">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section id="usage">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
-                {content.usage.title}
-              </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
-                {content.usage.body}
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {content.usage.endpoints.map((item) => (
-                  <div
-                    key={item.endpoint}
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm text-[var(--muted)]"
-                  >
-                    <p className="font-semibold text-[var(--ink)]">
-                      {item.endpoint}
-                    </p>
-                    <p className="mt-2">{item.description}</p>
                   </div>
                 ))}
               </div>
@@ -306,7 +215,11 @@ Authorization: Bearer <token>`}</CodeBlock>
                     <p className="text-sm font-semibold text-[var(--ink)]">
                       {item.title}
                     </p>
-                    <p className="mt-2 text-[var(--muted)]">{item.body}</p>
+                    <p className="mt-2 text-[var(--muted)]">
+                      {item.title.startsWith("401")
+                        ? "Missing or invalid API key."
+                        : item.body}
+                    </p>
                   </div>
                 ))}
               </div>

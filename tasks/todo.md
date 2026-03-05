@@ -1,5 +1,40 @@
 # Task Plan
 
+## Consumer Docs + Refresh Hardening Plan (2026-03-05)
+
+- [x] Remove console-only/auth-session endpoints from public API docs output and keep docs focused on consumer API usage.
+- [x] Fix refresh rotation race so a single refresh token can only be rotated once under concurrency.
+- [x] Add active refresh-token cleanup execution and prune policy for expired and stale revoked rows.
+- [x] Add regression tests for concurrency rotation and refresh-token pruning semantics.
+- [x] Re-run focused verification for touched API/frontend paths.
+
+## Console vs Consumer API Split Plan (Current)
+
+- [x] Update API routing to hard-split dashboard (`/console/*`) and consumer (`/v1/*`) surfaces.
+- [x] Enforce cookie-only auth for `/console/*` and reject bearer/API-key auth on console routes.
+- [x] Ensure all token-issuing auth flows set HttpOnly session cookie consistently.
+- [x] Add balanced strict console rate limits (session-wide + auth-mutation specific).
+- [x] Add explicit route-boundary guards for mixed routers (`render`, `billing`).
+- [x] Update frontend API compatibility mapping and direct auth fetch paths to `/console/*`.
+- [x] Update backend/frontend tests and add regressions for split, cookie-only auth, and rate limits.
+- [x] Run quality gates (targeted + full test suites, lint) and perform final review pass.
+
+## Console vs Consumer API Split Review (Current)
+
+- API boundary is now hard-cut: dashboard endpoints are mounted under `/console/*`; consumer endpoints remain under `/v1/*`. Legacy `/v1/auth/*`, `/v1/templates`, and `/v1/render/preview*` now return `404`.
+- Console auth is cookie-session only: `/console/*` rejects bearer/API-key-only auth and requires a valid `HttpOnly` session cookie.
+- Session cookie issuance is normalized for auth flows including `/console/auth/verify-email` and `/console/auth/2fa/verify`.
+- Added strict console rate limits:
+  - `consoleSessionRateLimit`: `120/min` keyed by session cookie hash with IP fallback.
+  - `consoleAuthMutationRateLimit`: `12/5min` keyed by auth fingerprint (`ip + device fingerprint`).
+- Frontend compatibility kept with central `/v1/* -> /console/*` remap for dashboard APIs in `frontend/src/lib/api.ts`, plus direct path updates for OAuth/logout callsites.
+- Added/updated regressions for boundary split, cookie-only enforcement, cookie issuance, and limiter behavior.
+- Verification completed:
+  - API targeted suites: `bun test tests/unit/auth-middleware.test.ts tests/unit/rate-limit.test.ts ...` (pass).
+  - API full suite: `bun test` (pass: `355 pass, 5 skip, 0 fail`).
+  - Frontend lint: `bun run lint` (pass).
+  - Frontend full tests: `bun run test:run` (pass: `82 files, 292 tests`).
+
 - [x] Phase 1: Implement a custom workflow-landscape hero on landing page (`frontend/src/app/home-client.tsx`) aligned to DocuForge's template-to-PDF workflow.
 - [x] Phase 2: Tune Phosphor icon consistency globally (size/weight/stroke behavior) across frontend.
 - [x] Phase 3: Run eslint/test suites, fix failures, and add targeted assertions/tests where they improve correctness.
@@ -312,3 +347,110 @@
   - `cd frontend && bun run lint` (pass)
   - `cd frontend && bun run test:run` (pass: `81 files`, `287 tests`)
   - `cd frontend && bun run build` (pass)
+
+## Refresh Token Auth Plan (2026-03-05)
+
+- [x] Add backend refresh-token persistence + rotation support (schema, migrations, service helpers).
+- [x] Issue refresh tokens on successful auth flows, add `POST /auth/refresh`, and revoke refresh token on logout.
+- [x] Set authenticated browser session target to 3 days via refresh-token TTL config.
+- [x] Add frontend auto-refresh behavior (retry once on 401, keep auth store synchronized, avoid refresh loops).
+- [x] Add/adjust API + frontend auth typings/tests for refresh flow and cookie behavior.
+- [x] Run focused verification and document review results.
+
+## Refresh Token Auth Review (2026-03-05)
+
+- Added persistent refresh-session storage with hashed tokens and rotation metadata:
+  - `api/src/db/schema.ts`
+  - `api/src/db/migrate.ts`
+  - `api/src/db/client.ts`
+  - `api/src/services/refresh-token.ts`
+- Auth flow now issues refresh tokens on successful login/session creation and rotates them on refresh:
+  - `api/src/routes/auth.ts`
+  - `api/src/middleware/auth.ts`
+  - `api/src/config/env.ts`
+- Browser session target is now explicitly 3 days via `AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS` default (`259200`).
+- Frontend API client now auto-refreshes once on 401 and retries the original request once:
+  - `frontend/src/lib/api.ts`
+- Test coverage updated:
+  - New integration suite: `api/tests/integration/auth-refresh.test.ts`
+  - Updated integration suites: `api/tests/integration/auth-login.test.ts`, `api/tests/integration/auth-oauth.test.ts`
+  - Updated frontend unit suite: `frontend/tests/unit/api.test.ts`
+- Verification:
+  - `cd api && bun test tests/integration/auth-login.test.ts tests/integration/auth-refresh.test.ts tests/integration/auth-security.test.ts tests/integration/auth-oauth.test.ts` (pass)
+  - `cd api && bun test tests/unit/security-regressions.test.ts` (pass)
+  - `cd frontend && bun run test:run tests/unit/api.test.ts` (pass)
+  - `cd frontend && bun run lint src/lib/api.ts tests/unit/api.test.ts` (pass)
+
+## Repo-Wide Assertion Hardening Plan (2026-03-05)
+
+- [x] Persist assertion policy updates in `AGENTS.md` and keep this plan section current.
+- [x] Add assertion helper modules in `api`, `frontend`, `mcp-server`, `engine`, and `load-test`.
+- [x] Refactor assertion hotspots (non-null assertions, unsafe casts, panic-style runtime paths) in scope files.
+- [x] Add centralized assertion policy checker and wire `make assertions-check`.
+- [x] Add/adjust CI workflows for core stacks to enforce assertion policy + lint/type/test gates.
+- [x] Add regression tests for assertion helper behavior and refactored invariant paths.
+- [x] Run verification gates:
+  - [x] `make assertions-check`
+  - [x] `cd api && bun test`
+  - [x] `cd frontend && bun run lint && bun run test:run`
+  - [x] `cd mcp-server && bun run typecheck && bun test`
+  - [x] `cd engine && cargo clippy --lib --bins -- -D warnings -D clippy::unwrap_used -D clippy::expect_used -D clippy::panic && cargo test`
+
+## Repo-Wide Assertion Hardening Review (2026-03-05)
+
+- Before/after violation counts:
+  - Before: TS non-null assertions `29`, unsafe TS casts `8`, Rust panic/unwrap/expect hotspots in production paths.
+  - After: TS non-null assertions `0`, `as any` `0`, `as unknown as` `0`, Rust `panic!/unwrap/expect` policy violations `0` in enforced runtime/source scope.
+- Files touched by category:
+  - Assertion helpers:
+    - `api/src/lib/assert.ts`
+    - `frontend/src/lib/assert.ts`
+    - `mcp-server/src/lib/assert.ts`
+    - `engine/src/assertions.rs` (+ `engine/src/lib.rs`)
+    - `load-test/lib/assert.mjs`
+  - Runtime refactors:
+    - API: `api/src/services/template.ts`, `api/src/routes/assets.ts`, `api/src/middleware/rate-limit.ts`, `api/src/middleware/auth.ts`, `api/src/middleware/error-handler.ts`, `api/src/lib/low-code.ts`, `api/src/services/image-render.ts`, `api/src/services/pdf-import.ts`
+    - Frontend: `frontend/src/lib/benchmark-report.ts`, `frontend/src/stores/editor.ts`, `frontend/src/lib/template-fields.ts`, `frontend/src/lib/low-code.ts`, auth-form and editor hotspots
+    - MCP: `mcp-server/src/mcp/server.ts`, `mcp-server/src/index.ts`, `mcp-server/src/services/docuforge-client.ts`
+    - Engine: `engine/src/main.rs`, `engine/src/cache/asset_cache.rs`, `engine/src/cache/template_cache.rs`, `engine/src/engine/compiler.rs`
+    - Load-test: `load-test/lib/config.mjs`, `load-test/lib/summary-to-benchmark.mjs`, `load-test/scripts/export-benchmark-report.mjs`
+  - Enforcement/CI:
+    - `scripts/assertions-check.mjs`
+    - `Makefile` (`assertions-check` target)
+    - `.github/workflows/core-assertions.yml`
+    - `frontend/eslint.config.mjs` (strict runtime rules)
+  - Tests:
+    - `api/tests/unit/assert.test.ts`, `frontend/tests/unit/assert.test.ts`, `mcp-server/tests/unit/assert.test.ts`, `load-test/tests/assert.test.ts`
+    - assertion-related integration/e2e updates in API auth/rate-limit/render/import flows
+- Verification outcomes:
+  - `make assertions-check` -> pass (`assertions-check: ok`)
+  - `cd api && bun test` -> pass (`355 pass, 5 skip, 0 fail`)
+  - `cd frontend && bun run lint && bun run test:run` -> pass (`82 files, 292 tests`)
+  - `cd mcp-server && bun run typecheck && bun test` -> pass (`19 tests`)
+  - `cd engine && cargo clippy --lib --bins -- -D warnings -D clippy::unwrap_used -D clippy::expect_used -D clippy::panic && cargo test` -> pass
+  - Additional: `cd load-test && bun test` -> pass (`12 tests`)
+- Residual risks:
+  - Assertion policy checker is regex-based; keep CI + review discipline for edge syntactic forms that may evade pattern checks.
+  - Test-environment fallbacks were added for missing native PDF/image tooling; production behavior remains strict and should still be validated in deployment environments with toolchain parity.
+
+## Consumer Docs + Refresh Hardening Review (2026-03-05)
+
+- Public docs page no longer advertises login/register or console-only dashboard endpoints.
+  - Updated `frontend/src/app/docs/page.tsx` to:
+    - filter sidebar navigation to consumer-facing sections;
+    - replace auth snippet with API-key-only usage;
+    - remove templates/assets/ai/usage endpoint sections from rendering;
+    - switch quick-start snippet to `POST /v1/render`;
+    - replace 401 messaging with API-key wording.
+- Refresh token rotation is now atomic and race-safe:
+  - `api/src/services/refresh-token.ts`
+  - Rotation now uses a transaction with conditional `UPDATE ... RETURNING` and only inserts a successor token when one source token row was successfully revoked.
+- Refresh-token cleanup now runs actively and prunes both categories:
+  - `api/src/services/refresh-token.ts`
+  - Prunes expired tokens and stale revoked tokens via throttled opportunistic cleanup triggered on issue/rotate/revoke operations.
+- Added regressions:
+  - `api/tests/integration/auth-refresh.test.ts`: concurrent refresh requests now assert only one succeeds.
+  - `api/tests/unit/refresh-token.test.ts`: validates expired + stale revoked pruning behavior.
+- Verification:
+  - `cd api && bun test tests/integration/auth-refresh.test.ts tests/unit/refresh-token.test.ts`
+  - `cd frontend && bun run test:run tests/unit/api.test.ts`

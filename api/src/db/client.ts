@@ -218,6 +218,22 @@ export async function initTestDb() {
   await db.run(sql`CREATE INDEX IF NOT EXISTS idx_user_pins_fingerprint ON user_pins(fingerprint_hash, last_seen_at)`);
 
   await db.run(sql`
+    CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash TEXT UNIQUE NOT NULL,
+      expires_at INTEGER NOT NULL,
+      last_used_at INTEGER,
+      revoked_at INTEGER,
+      replaced_by_token_hash TEXT,
+      created_at INTEGER NOT NULL
+    )
+  `);
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_user ON auth_refresh_tokens(user_id)`);
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_expires ON auth_refresh_tokens(expires_at)`);
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_revoked ON auth_refresh_tokens(revoked_at)`);
+
+  await db.run(sql`
     CREATE TABLE IF NOT EXISTS webhooks (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

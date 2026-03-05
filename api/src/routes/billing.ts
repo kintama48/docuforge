@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
@@ -8,7 +9,7 @@ import { noCache } from '../middleware/cache';
 import { zValidator, createCheckoutSchema } from '../lib/validation';
 import { checkCredits, formatUsageResponse } from '../services/usage';
 import { checkAiCredits, formatAiUsageResponse } from '../services/ai-usage';
-import { ValidationError, InternalError } from '../lib/errors';
+import { ValidationError, InternalError, NotFoundError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
 
 const billing = new Hono();
@@ -42,8 +43,22 @@ export function setStripeClient(client: Stripe | null) {
   stripeClient = client;
 }
 
+async function requireConsoleBillingPath(c: Context, next: () => Promise<void>) {
+  if (!c.req.path.startsWith('/console/')) {
+    throw new NotFoundError('Not found');
+  }
+  await next();
+}
+
+async function requireConsumerBillingPath(c: Context, next: () => Promise<void>) {
+  if (!c.req.path.startsWith('/v1/')) {
+    throw new NotFoundError('Not found');
+  }
+  await next();
+}
+
 // GET /v1/usage - Get usage stats
-billing.get('/usage', flexibleAuth, async (c) => {
+billing.get('/usage', requireConsoleBillingPath, flexibleAuth, async (c) => {
   const { userId } = c.get('auth');
   const [credits, aiCredits] = await Promise.all([
     checkCredits(userId),
@@ -56,7 +71,12 @@ billing.get('/usage', flexibleAuth, async (c) => {
 });
 
 // POST /v1/billing/checkout - Create checkout session
-billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSchema), async (c) => {
+billing.post(
+  '/billing/checkout',
+  requireConsoleBillingPath,
+  jwtAuth,
+  zValidator('json', createCheckoutSchema),
+  async (c) => {
   const { plan } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
@@ -107,7 +127,7 @@ billing.post('/billing/checkout', jwtAuth, zValidator('json', createCheckoutSche
 });
 
 // POST /v1/billing/webhook - Stripe webhook
-billing.post('/billing/webhook', async (c) => {
+billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
   const stripe = getStripe();
   const signature = c.req.header('stripe-signature');
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;

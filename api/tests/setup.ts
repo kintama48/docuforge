@@ -21,7 +21,8 @@ import { hashApiKey, generateRawApiKey, extractKeyPrefix } from '../src/lib/api-
 import type { PlanTier } from '../src/types';
 import { resetDb, initTestDb, getDb, schema as dbSchema } from '../src/db/client';
 import { createApp } from '../src/app';
-import { reloadEnv } from '../src/config/env';
+import { env, reloadEnv } from '../src/config/env';
+import { resetRateLimitersForTests } from '../src/middleware/rate-limit';
 
 // Re-export helpers for convenience
 export { createTestDatabase, closeTestDatabase, type TestDb, schema } from './helpers/db';
@@ -51,6 +52,8 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.DATABASE_URL = ':memory:';
   process.env.JWT_SECRET = TEST_JWT_SECRET;
   process.env.JWT_EXPIRY = '1h';
+  process.env.AUTH_ACCESS_TOKEN_EXPIRY = '15m';
+  process.env.AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS = '259200';
   process.env.AUTH_EMAIL_VERIFICATION_REQUIRED = 'false';
   process.env.AUTH_2FA_REQUIRED = 'false';
   process.env.AUTH_OTP_TTL_MS = '600000';
@@ -58,9 +61,9 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.AUTH_OTP_MAX_ATTEMPTS = '5';
   process.env.AUTH_OTP_MAX_SENDS = '5';
   // Keep abuse guards enabled in tests but high enough to avoid cross-test interference.
-  process.env.AUTH_MAX_ACCOUNTS_PER_FINGERPRINT = '100';
-  process.env.AUTH_MAX_SIGNUPS_PER_FINGERPRINT_PER_DAY = '100';
-  process.env.AUTH_MAX_SIGNUPS_PER_IP_PER_DAY = '200';
+  process.env.AUTH_MAX_ACCOUNTS_PER_FINGERPRINT = '10000';
+  process.env.AUTH_MAX_SIGNUPS_PER_FINGERPRINT_PER_DAY = '10000';
+  process.env.AUTH_MAX_SIGNUPS_PER_IP_PER_DAY = '20000';
   process.env.EMAIL_PROVIDER = 'mock';
   process.env.EMAIL_FROM = 'noreply@test.docuforge.local';
   process.env.ENGINE_TIMEOUT_MS = '5000';
@@ -86,6 +89,7 @@ export function setupTestEnv(engineUrl?: string): void {
   }
 
   reloadEnv();
+  resetRateLimitersForTests();
 }
 
 /**
@@ -100,6 +104,8 @@ export async function createTestContext(engineConfig?: MockEngineConfig): Promis
 
   // Reset and initialize the global database for tests
   // This ensures the real app uses the same in-memory database
+  resetRateLimitersForTests();
+  resetDb();
   await initTestDb();
   const db = getDb() as unknown as TestDb;
 
@@ -118,6 +124,7 @@ export async function createTestContext(engineConfig?: MockEngineConfig): Promis
     cleanup: async () => {
       await engine.stop();
       closeTestDatabase(sqlite);
+      resetRateLimitersForTests();
       resetDb();
     },
   };
@@ -529,6 +536,7 @@ export function getAuthHeaders(user: TestUser, useApiKey = true): Record<string,
   }
   return {
     Authorization: `Bearer ${user.jwt}`,
+    Cookie: `${env.AUTH_COOKIE_NAME}=${encodeURIComponent(user.jwt)}`,
     'Content-Type': 'application/json',
   };
 }

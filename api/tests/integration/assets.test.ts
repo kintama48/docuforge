@@ -46,7 +46,7 @@ describe('Assets API', () => {
   });
 
   it('issues upload URL', async () => {
-    const response = await app.request('/v1/assets/upload-url', {
+    const response = await app.request('/console/assets/upload-url', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -66,7 +66,7 @@ describe('Assets API', () => {
 
   it('confirms upload and creates asset', async () => {
     const assetId = 'asset_test_1';
-    const response = await app.request('/v1/assets', {
+    const response = await app.request('/console/assets', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -100,7 +100,7 @@ describe('Assets API', () => {
       createdAt: Date.now(),
     });
 
-    const response = await app.request('/v1/assets', {
+    const response = await app.request('/console/assets', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -118,7 +118,7 @@ describe('Assets API', () => {
 
   it('rejects confirm when asset is missing in storage', async () => {
     shouldExist = false;
-    const response = await app.request('/v1/assets', {
+    const response = await app.request('/console/assets', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -146,7 +146,7 @@ describe('Assets API', () => {
       createdAt: Date.now(),
     });
 
-    const response = await app.request('/v1/assets', {
+    const response = await app.request('/console/assets', {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });
@@ -171,7 +171,7 @@ describe('Assets API', () => {
       createdAt: Date.now(),
     });
 
-    const response = await app.request(`/v1/assets/${assetId}`, {
+    const response = await app.request(`/console/assets/${assetId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(user, false),
     });
@@ -184,7 +184,7 @@ describe('Assets API', () => {
   });
 
   it('returns 404 for missing assets', async () => {
-    const response = await app.request('/v1/assets/asset_unknown', {
+    const response = await app.request('/console/assets/asset_unknown', {
       method: 'DELETE',
       headers: getAuthHeaders(user, false),
     });

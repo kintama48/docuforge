@@ -70,20 +70,33 @@ pub struct AssetCache {
 }
 
 impl AssetCache {
-    /// Create a new asset cache with the given max size in bytes.
-    pub fn new(max_size_bytes: u64) -> Self {
-        let cache = Cache::builder()
+    fn build_cache(max_size_bytes: u64) -> Cache<String, Bytes> {
+        Cache::builder()
             .max_capacity(max_size_bytes)
             .weigher(|_key: &String, value: &Bytes| -> u32 {
                 // Weight by byte size, capped at u32::MAX
                 value.len().min(u32::MAX as usize) as u32
             })
-            .build();
+            .build()
+    }
 
-        let client = reqwest::Client::builder()
+    fn build_http_client() -> Result<reqwest::Client, EngineError> {
+        reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(30))
             .build()
-            .expect("Failed to create HTTP client");
+            .map_err(|e| EngineError::Internal(format!("Failed to create HTTP client: {}", e)))
+    }
+
+    /// Create a new asset cache with the given max size in bytes.
+    pub fn new(max_size_bytes: u64) -> Self {
+        let cache = Self::build_cache(max_size_bytes);
+        let client = match Self::build_http_client() {
+            Ok(client) => client,
+            Err(err) => {
+                warn!(%err, "Falling back to default reqwest client");
+                reqwest::Client::new()
+            }
+        };
 
         Self {
             cache: Arc::new(cache),
@@ -91,14 +104,18 @@ impl AssetCache {
         }
     }
 
+    pub fn try_new(max_size_bytes: u64) -> Result<Self, EngineError> {
+        let cache = Self::build_cache(max_size_bytes);
+        let client = Self::build_http_client()?;
+        Ok(Self {
+            cache: Arc::new(cache),
+            fetcher: Arc::new(ReqwestFetcher { client }),
+        })
+    }
+
     #[cfg(test)]
     fn new_with_fetcher(max_size_bytes: u64, fetcher: Arc<dyn HttpFetcher>) -> Self {
-        let cache = Cache::builder()
-            .max_capacity(max_size_bytes)
-            .weigher(|_key: &String, value: &Bytes| -> u32 {
-                value.len().min(u32::MAX as usize) as u32
-            })
-            .build();
+        let cache = Self::build_cache(max_size_bytes);
 
         Self {
             cache: Arc::new(cache),

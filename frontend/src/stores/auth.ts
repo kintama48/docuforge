@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ token: null, user: null });
         if (typeof window !== "undefined") {
-          void fetch(`${env.apiUrl}/v1/auth/logout`, {
+          void fetch(`${env.apiUrl}/console/auth/logout`, {
             method: "POST",
             credentials: "include",
             headers: {

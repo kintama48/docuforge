@@ -23,12 +23,14 @@ function setOAuthEnv() {
 
 describe('OAuth routes', () => {
   let app: ReturnType<typeof createApp>;
+  let deviceId: string;
 
   beforeEach(async () => {
     setupTestEnv('http://127.0.0.1:3001');
     setOAuthEnv();
     await initTestDb();
     app = createApp();
+    deviceId = `auth-oauth-${crypto.randomUUID()}`;
   });
 
   afterEach(() => {
@@ -40,12 +42,12 @@ describe('OAuth routes', () => {
   });
 
   it('rejects unsupported providers', async () => {
-    const response = await app.request('/v1/auth/oauth/unknown');
+    const response = await app.request('/console/auth/oauth/unknown');
     expect(response.status).toBe(404);
   });
 
   it('redirects to provider and returns oauth_failed when missing code', async () => {
-    const start = await app.request('/v1/auth/oauth/github?redirect=/dashboard');
+    const start = await app.request('/console/auth/oauth/github?redirect=/dashboard');
     expect(start.status).toBe(302);
     const location = start.headers.get('Location');
     expect(location).toBeTruthy();
@@ -54,19 +56,19 @@ describe('OAuth routes', () => {
     const state = url.searchParams.get('state');
     expect(state).toBeTruthy();
 
-    const callback = await app.request(`/v1/auth/oauth/github/callback?state=${state}`);
+    const callback = await app.request(`/console/auth/oauth/github/callback?state=${state}`);
     expect(callback.status).toBe(302);
     const callbackLocation = callback.headers.get('Location');
     expect(callbackLocation).toContain('/login?error=oauth_failed');
   });
 
   it('rejects invalid oauth state', async () => {
-    const start = await app.request('/v1/auth/oauth/google?redirect=/dashboard');
+    const start = await app.request('/console/auth/oauth/google?redirect=/dashboard');
     const location = start.headers.get('Location');
     const url = new URL(location!);
     const state = url.searchParams.get('state');
 
-    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    const callback = await app.request(`/console/auth/oauth/github/callback?code=code&state=${state}`);
     expect(callback.status).toBe(302);
     const callbackLocation = callback.headers.get('Location');
     expect(callbackLocation).toContain('/login?error=oauth_invalid_state');
@@ -98,12 +100,12 @@ describe('OAuth routes', () => {
       })
     );
 
-    const start = await app.request('/v1/auth/oauth/github?redirect=/dashboard');
+    const start = await app.request('/console/auth/oauth/github?redirect=/dashboard');
     const location = start.headers.get('Location');
     const url = new URL(location!);
     const state = url.searchParams.get('state');
 
-    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    const callback = await app.request(`/console/auth/oauth/github/callback?code=code&state=${state}`);
     expect(callback.status).toBe(302);
     const callbackLocation = callback.headers.get('Location');
     expect(callbackLocation).toContain('/oauth/callback');
@@ -113,9 +115,12 @@ describe('OAuth routes', () => {
     const exchangeCode = callbackUrl.searchParams.get('code');
     expect(exchangeCode).toBeTruthy();
 
-    const exchangeResponse = await app.request('/v1/auth/oauth/exchange', {
+    const exchangeResponse = await app.request('/console/auth/oauth/exchange', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': deviceId,
+      },
       body: JSON.stringify({ code: exchangeCode }),
     });
     expect(exchangeResponse.status).toBe(200);
@@ -153,20 +158,23 @@ describe('OAuth routes', () => {
       })
     );
 
-    const start = await app.request('/v1/auth/oauth/github?redirect=https://evil.example/path');
+    const start = await app.request('/console/auth/oauth/github?redirect=https://evil.example/path');
     const location = start.headers.get('Location');
     const url = new URL(location!);
     const state = url.searchParams.get('state');
 
-    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    const callback = await app.request(`/console/auth/oauth/github/callback?code=code&state=${state}`);
     expect(callback.status).toBe(302);
     const callbackUrl = new URL(callback.headers.get('Location')!);
     const exchangeCode = callbackUrl.searchParams.get('code');
     expect(exchangeCode).toBeTruthy();
 
-    const exchangeResponse = await app.request('/v1/auth/oauth/exchange', {
+    const exchangeResponse = await app.request('/console/auth/oauth/exchange', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': deviceId,
+      },
       body: JSON.stringify({ code: exchangeCode }),
     });
     expect(exchangeResponse.status).toBe(200);
@@ -201,21 +209,22 @@ describe('OAuth routes', () => {
       })
     );
 
-    const start = await app.request('/v1/auth/oauth/github?redirect=/dashboard');
+    const start = await app.request('/console/auth/oauth/github?redirect=/dashboard');
     const location = start.headers.get('Location');
     const url = new URL(location!);
     const state = url.searchParams.get('state');
 
-    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    const callback = await app.request(`/console/auth/oauth/github/callback?code=code&state=${state}`);
     const callbackUrl = new URL(callback.headers.get('Location')!);
     const exchangeCode = callbackUrl.searchParams.get('code');
     expect(exchangeCode).toBeTruthy();
 
-    const exchangeResponse = await app.request('/v1/auth/oauth/exchange', {
+    const exchangeResponse = await app.request('/console/auth/oauth/exchange', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Origin: 'https://evil.example',
+        'X-Device-Id': deviceId,
       },
       body: JSON.stringify({ code: exchangeCode }),
     });
@@ -254,12 +263,12 @@ describe('OAuth routes', () => {
       })
     );
 
-    const start = await app.request('/v1/auth/oauth/github?redirect=/dashboard');
+    const start = await app.request('/console/auth/oauth/github?redirect=/dashboard');
     const location = start.headers.get('Location');
     const url = new URL(location!);
     const state = url.searchParams.get('state');
 
-    const callback = await app.request(`/v1/auth/oauth/github/callback?code=code&state=${state}`);
+    const callback = await app.request(`/console/auth/oauth/github/callback?code=code&state=${state}`);
     expect(callback.status).toBe(302);
     const callbackLocation = callback.headers.get('Location');
     expect(callbackLocation).toContain('/login?error=oauth_failed');

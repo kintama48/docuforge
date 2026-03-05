@@ -4,6 +4,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { env } from './config/env';
 import { createLogger } from './lib/logger';
+import { invariant } from './lib/assert';
 import { ArtifactStore } from './mcp/artifact-store';
 import { createDocuForgeMcpServer } from './mcp/server';
 import { DocuForgeClient } from './services/docuforge-client';
@@ -87,6 +88,20 @@ function sendSessionError(res: Response, message: string): void {
   });
 }
 
+function readMcpSessionId(req: Request): string | null {
+  const headerValue = req.headers['mcp-session-id'];
+  if (typeof headerValue === 'string' && headerValue.trim().length > 0) {
+    return headerValue;
+  }
+  if (Array.isArray(headerValue)) {
+    const first = headerValue[0];
+    if (typeof first === 'string' && first.trim().length > 0) {
+      return first;
+    }
+  }
+  return null;
+}
+
 app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
@@ -98,7 +113,7 @@ app.get('/health', (_req, res) => {
 
 app.post('/mcp', requireMcpAuth, async (req, res) => {
   const traceId = randomUUID();
-  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  const sessionId = readMcpSessionId(req);
 
   try {
     let transport: StreamableHTTPServerTransport;
@@ -116,6 +131,7 @@ app.post('/mcp', requireMcpAuth, async (req, res) => {
       const transportInstance = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (newSessionId) => {
+          invariant(newSessionId.trim().length > 0, 'Initialized session id must be non-empty');
           sessions[newSessionId] = {
             transport: transportInstance,
           };
@@ -165,7 +181,7 @@ app.post('/mcp', requireMcpAuth, async (req, res) => {
 });
 
 app.get('/mcp', requireMcpAuth, async (req, res) => {
-  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  const sessionId = readMcpSessionId(req);
   if (!sessionId || !sessions[sessionId]) {
     sendSessionError(res, 'Bad Request: No valid session ID provided');
     return;
@@ -175,7 +191,7 @@ app.get('/mcp', requireMcpAuth, async (req, res) => {
 });
 
 app.delete('/mcp', requireMcpAuth, async (req, res) => {
-  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  const sessionId = readMcpSessionId(req);
   if (!sessionId || !sessions[sessionId]) {
     sendSessionError(res, 'Bad Request: No valid session ID provided');
     return;

@@ -4,12 +4,13 @@
  * Tests the template versioning journey:
  * 1. Create template with source "Hello v1"
  * 2. Render -> Verify mock engine receives "Hello v1"
- * 3. POST /v1/templates/:id/publish with source "Hello v2"
+ * 3. POST /console/templates/:id/publish with source "Hello v2"
  * 4. Render -> Verify mock engine receives "Hello v2"
- * 5. GET /v1/templates/:id -> Verify both versions in history
+ * 5. GET /console/templates/:id -> Verify both versions in history
  */
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'bun:test';
 import { createApp } from '../../src/app';
+import { env } from '../../src/config/env';
 import {
   createMockEngine,
   createTestServer,
@@ -24,9 +25,24 @@ describe('E2E: Versioning Flow', () => {
   let baseUrl: string;
   let server: ReturnType<typeof createTestServer>;
 
+  function sessionCookie(token: string): string {
+    return `${env.AUTH_COOKIE_NAME}=${encodeURIComponent(token)}`;
+  }
+
+  function authMutationHeaders(seed: string): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'X-Device-Id': `versioning-${seed}-${crypto.randomUUID()}`,
+      'User-Agent': `versioning/${seed}`,
+      'Accept-Language': 'en-US',
+      'X-Forwarded-For': '198.51.100.52',
+    };
+  }
+
   beforeAll(async () => {
     engine = createMockEngine();
     setupTestEnv(engine.url);
+    resetDb();
 
     // Initialize the global database for tests
     await initTestDb();
@@ -48,9 +64,9 @@ describe('E2E: Versioning Flow', () => {
 
   test('complete versioning journey from v1 to v2', async () => {
     // Register user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('journey'),
       body: JSON.stringify({
         email: 'versioning-test@example.com',
         password: 'securepassword123',
@@ -65,11 +81,11 @@ describe('E2E: Versioning Flow', () => {
     // Step 1: Create template with source "Hello v1"
     const v1Source = '#set page(paper: "a4")\nHello v1';
 
-    const createResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
+        Cookie: sessionCookie(jwt),
       },
       body: JSON.stringify({
         name: 'Versioned Template',
@@ -114,11 +130,11 @@ describe('E2E: Versioning Flow', () => {
     // Step 3: Publish new version with source "Hello v2"
     const v2Source = '#set page(paper: "a4")\nHello v2';
 
-    const publishResponse = await fetch(`${baseUrl}/v1/templates/${templateId}/publish`, {
+    const publishResponse = await fetch(`${baseUrl}/console/templates/${templateId}/publish`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
+        Cookie: sessionCookie(jwt),
       },
       body: JSON.stringify({
         source: v2Source,
@@ -159,10 +175,10 @@ describe('E2E: Versioning Flow', () => {
     expect(render2Request!.body!.template.files['main.typ']).not.toContain('Hello v1');
 
     // Step 5: Get template and verify both versions in history
-    const getResponse = await fetch(`${baseUrl}/v1/templates/${templateId}`, {
+    const getResponse = await fetch(`${baseUrl}/console/templates/${templateId}`, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${jwt}`,
+        Cookie: sessionCookie(jwt),
       },
     });
 
@@ -210,9 +226,9 @@ describe('E2E: Versioning Flow', () => {
 
   test('multiple versions maintain complete history', async () => {
     // Register user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('multi'),
       body: JSON.stringify({
         email: 'multi-version@example.com',
         password: 'securepassword123',
@@ -223,11 +239,11 @@ describe('E2E: Versioning Flow', () => {
     const jwt = token;
 
     // Create initial template
-    const createResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
+        Cookie: sessionCookie(jwt),
       },
       body: JSON.stringify({
         name: 'Multi Version Template',
@@ -241,11 +257,11 @@ describe('E2E: Versioning Flow', () => {
 
     // Publish 4 more versions (total 5)
     for (let i = 2; i <= 5; i++) {
-      const publishResponse = await fetch(`${baseUrl}/v1/templates/${templateId}/publish`, {
+      const publishResponse = await fetch(`${baseUrl}/console/templates/${templateId}/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwt}`,
+          Cookie: sessionCookie(jwt),
         },
         body: JSON.stringify({
           source: `#set page(paper: "a4")\nVersion ${i}`,
@@ -259,9 +275,9 @@ describe('E2E: Versioning Flow', () => {
     }
 
     // Get template and verify all 5 versions
-    const getResponse = await fetch(`${baseUrl}/v1/templates/${templateId}`, {
+    const getResponse = await fetch(`${baseUrl}/console/templates/${templateId}`, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${jwt}` },
+      headers: { Cookie: sessionCookie(jwt) },
     });
 
     const templateData = await getResponse.json();
@@ -291,9 +307,9 @@ describe('E2E: Versioning Flow', () => {
 
   test('version with files is properly passed to engine', async () => {
     // Register user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('files'),
       body: JSON.stringify({
         email: 'files-version@example.com',
         password: 'securepassword123',
@@ -303,11 +319,11 @@ describe('E2E: Versioning Flow', () => {
     const { api_key, token } = await registerResponse.json();
 
     // Create template with files
-    const createResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Cookie: sessionCookie(token),
       },
       body: JSON.stringify({
         name: 'Template With Files',
@@ -343,11 +359,11 @@ describe('E2E: Versioning Flow', () => {
     expect(request!.body!.template.files['utils.typ']).toBe('#let greet(name) = [Hello, #name!]');
 
     // Update with new files
-    const publishResponse = await fetch(`${baseUrl}/v1/templates/${template.id}/publish`, {
+    const publishResponse = await fetch(`${baseUrl}/console/templates/${template.id}/publish`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Cookie: sessionCookie(token),
       },
       body: JSON.stringify({
         source: '#import "utils.typ": greet\n#import "header.typ": header\n#header\n#greet("World")',
@@ -384,9 +400,9 @@ describe('E2E: Versioning Flow', () => {
   });
 
   test('cannot publish to non-existent template', async () => {
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('missing-template'),
       body: JSON.stringify({
         email: 'no-template@example.com',
         password: 'securepassword123',
@@ -395,11 +411,11 @@ describe('E2E: Versioning Flow', () => {
 
     const { token } = await registerResponse.json();
 
-    const publishResponse = await fetch(`${baseUrl}/v1/templates/tpl_nonexistent/publish`, {
+    const publishResponse = await fetch(`${baseUrl}/console/templates/tpl_nonexistent/publish`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Cookie: sessionCookie(token),
       },
       body: JSON.stringify({
         source: '#set page(paper: "a4")\nTest',
@@ -412,9 +428,9 @@ describe('E2E: Versioning Flow', () => {
 
   test('cannot publish to another users template', async () => {
     // Register first user and create template
-    const register1Response = await fetch(`${baseUrl}/v1/auth/register`, {
+    const register1Response = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('owner'),
       body: JSON.stringify({
         email: 'owner@example.com',
         password: 'securepassword123',
@@ -423,11 +439,11 @@ describe('E2E: Versioning Flow', () => {
 
     const { token: ownerToken } = await register1Response.json();
 
-    const createResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${ownerToken}`,
+        Cookie: sessionCookie(ownerToken),
       },
       body: JSON.stringify({
         name: 'Owners Template',
@@ -439,9 +455,9 @@ describe('E2E: Versioning Flow', () => {
     const { template } = await createResponse.json();
 
     // Register second user
-    const register2Response = await fetch(`${baseUrl}/v1/auth/register`, {
+    const register2Response = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('attacker'),
       body: JSON.stringify({
         email: 'attacker@example.com',
         password: 'securepassword123',
@@ -451,11 +467,11 @@ describe('E2E: Versioning Flow', () => {
     const { token: attackerToken } = await register2Response.json();
 
     // Try to publish to owner's template
-    const publishResponse = await fetch(`${baseUrl}/v1/templates/${template.id}/publish`, {
+    const publishResponse = await fetch(`${baseUrl}/console/templates/${template.id}/publish`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${attackerToken}`,
+        Cookie: sessionCookie(attackerToken),
       },
       body: JSON.stringify({
         source: '#set page(paper: "a4")\nMalicious content',

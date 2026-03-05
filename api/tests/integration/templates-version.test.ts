@@ -1,11 +1,11 @@
 /**
- * Integration test for GET /v1/templates/:id/versions/:versionId
+ * Integration test for GET /console/templates/:id/versions/:versionId
  */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { createApp } from '../../src/app';
-import { createTestContext, createTestUser, createTestTemplate, type TestContext } from '../setup';
+import { createTestContext, createTestUser, createTestTemplate, getAuthHeaders, type TestContext } from '../setup';
 
-describe('GET /v1/templates/:id/versions/:versionId', () => {
+describe('GET /console/templates/:id/versions/:versionId', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
 
@@ -24,9 +24,9 @@ describe('GET /v1/templates/:id/versions/:versionId', () => {
       source: '#set page()\nHello',
     });
 
-    const response = await app.request(`/v1/templates/${template.id}/versions/${template.versionId}`, {
+    const response = await app.request(`/console/templates/${template.id}/versions/${template.versionId}`, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${user.jwt}` },
+      headers: getAuthHeaders(user, false),
     });
 
     expect(response.status).toBe(200);

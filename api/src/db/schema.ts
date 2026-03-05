@@ -202,6 +202,27 @@ export const userPins = sqliteTable(
   ]
 );
 
+export const authRefreshTokens = sqliteTable(
+  'auth_refresh_tokens',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: integer('expires_at').notNull(),
+    lastUsedAt: integer('last_used_at'),
+    revokedAt: integer('revoked_at'),
+    replacedByTokenHash: text('replaced_by_token_hash'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_auth_refresh_tokens_user').on(table.userId),
+    index('idx_auth_refresh_tokens_expires').on(table.expiresAt),
+    index('idx_auth_refresh_tokens_revoked').on(table.revokedAt),
+  ]
+);
+
 export type UserInsert = typeof users.$inferInsert;
 export type UserSelect = typeof users.$inferSelect;
 export type ApiKeyInsert = typeof apiKeys.$inferInsert;
@@ -222,6 +243,8 @@ export type AuthOtpChallengeInsert = typeof authOtpChallenges.$inferInsert;
 export type AuthOtpChallengeSelect = typeof authOtpChallenges.$inferSelect;
 export type UserPinInsert = typeof userPins.$inferInsert;
 export type UserPinSelect = typeof userPins.$inferSelect;
+export type AuthRefreshTokenInsert = typeof authRefreshTokens.$inferInsert;
+export type AuthRefreshTokenSelect = typeof authRefreshTokens.$inferSelect;
 
 export const webhooks = sqliteTable(
   'webhooks',

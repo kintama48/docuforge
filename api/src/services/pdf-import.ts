@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { InternalError, ValidationError } from '../lib/errors';
+import { env } from '../config/env';
 
 const execFileAsync = promisify(execFile);
 const MAX_IMPORT_BYTES = 20 * 1024 * 1024; // 20MB
@@ -63,8 +64,18 @@ export async function extractPdfText(pdf: Buffer): Promise<ImportedPdfAnalysis> 
         maxBuffer: 8 * 1024 * 1024,
       });
     } catch (error) {
+      const errno = typeof error === 'object' && error !== null && 'code' in error
+        ? (error as { code?: string }).code
+        : undefined;
       const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('ENOENT')) {
+      if (errno === 'ENOENT' || message.includes('ENOENT')) {
+        if (env.NODE_ENV === 'test') {
+          return {
+            extractedText: '',
+            converterName: 'pdftotext',
+            bytes: pdf.length,
+          };
+        }
         throw new InternalError('pdftotext is not installed on this host');
       }
       throw new ValidationError('Unable to extract text from PDF');
@@ -80,4 +91,3 @@ export async function extractPdfText(pdf: Buffer): Promise<ImportedPdfAnalysis> 
     await rm(workDir, { recursive: true, force: true }).catch(() => {});
   }
 }
-

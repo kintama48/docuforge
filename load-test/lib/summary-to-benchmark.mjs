@@ -1,17 +1,12 @@
 import { readFileSync } from "node:fs";
+import { invariant, assertPresent } from "./assert.mjs";
 
 const TOOL_ORDER = ["docuforge", "puppeteer", "wkhtmltopdf", "weasyprint"];
-
-function invariant(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
 
 export function metricValues(summary, metricName) {
   const metric = summary?.metrics?.[metricName];
   invariant(metric && typeof metric === "object", `Missing k6 metric: ${metricName}`);
-  const values = metric.values || {};
+  const values = assertPresent(metric.values, `${metricName}.values is missing`);
 
   const avg = Number(values.avg);
   const p95 = Number(values["p(95)"]);

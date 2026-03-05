@@ -26,6 +26,17 @@ export interface ApiKey {
   isRevoked: boolean;
 }
 
+export interface AuthRefreshToken {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: number;
+  lastUsedAt: number | null;
+  revokedAt: number | null;
+  replacedByTokenHash: string | null;
+  createdAt: number;
+}
+
 export interface Template {
   id: string;
   userId: string | null;
