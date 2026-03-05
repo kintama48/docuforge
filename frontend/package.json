@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 5173",
-    "build": "next build",
+    "build": "next build --webpack",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
@@ -23,14 +26,14 @@
     "@hookform/resolvers": "^5.2.2",
     "@monaco-editor/react": "^4.7.0",
     "@phosphor-icons/react": "^2.1.10",
-    "@sentry/nextjs": "^9.5.0",
+    "@sentry/nextjs": "^10.42.0",
     "@tanstack/react-query": "^5.66.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "monaco-editor": "^0.52.0",
-    "next": "16.1.4",
+    "next": "^16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-dropzone": "^14.3.0",
@@ -42,6 +45,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.17.1",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
@@ -53,13 +57,14 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9",
-    "eslint-config-next": "16.1.4",
+    "eslint-config-next": "^16.1.6",
     "jsdom": "^25.0.1",
     "msw": "2.7.0",
     "puppeteer": "^24.37.5",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^4.65.0"
   },
   "ignoreScripts": [
     "sharp",
