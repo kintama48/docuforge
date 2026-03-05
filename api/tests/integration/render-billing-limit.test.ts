@@ -150,9 +150,9 @@ describe('POST /v1/render - Billing Limits', () => {
     expect(response.status).toBe(200);
 
     // Verify usage only counts current month
-    const usageResponse = await app.request('/v1/usage', {
+    const usageResponse = await app.request('/console/usage', {
       method: 'GET',
-      headers: getAuthHeaders(user, true),
+      headers: getAuthHeaders(user, false),
     });
     const usage = await usageResponse.json();
 
@@ -177,9 +177,9 @@ describe('POST /v1/render - Billing Limits', () => {
     expect(response.status).toBe(200);
 
     // Check usage - should only count the successful render
-    const usageResponse = await app.request('/v1/usage', {
+    const usageResponse = await app.request('/console/usage', {
       method: 'GET',
-      headers: getAuthHeaders(user, true),
+      headers: getAuthHeaders(user, false),
     });
     const usage = await usageResponse.json();
     expect(usage.renders.used).toBe(1);

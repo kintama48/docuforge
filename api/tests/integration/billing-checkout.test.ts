@@ -82,7 +82,7 @@ describe('Billing checkout and webhook', () => {
   it('creates checkout session and stores stripe customer', async () => {
     const user = await createTestUser(getDb() as any);
 
-    const response = await app.request('/v1/billing/checkout', {
+    const response = await app.request('/console/billing/checkout', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ plan: 'starter' }),
@@ -102,7 +102,7 @@ describe('Billing checkout and webhook', () => {
   it('creates checkout session for dev plan', async () => {
     const user = await createTestUser(getDb() as any);
 
-    const response = await app.request('/v1/billing/checkout', {
+    const response = await app.request('/console/billing/checkout', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ plan: 'dev' }),
@@ -116,10 +116,10 @@ describe('Billing checkout and webhook', () => {
   it('returns internal error when user is missing', async () => {
     const token = await createTestJwt('usr_missing', 'missing@example.com');
 
-    const response = await app.request('/v1/billing/checkout', {
+    const response = await app.request('/console/billing/checkout', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Cookie: `${env.AUTH_COOKIE_NAME}=${encodeURIComponent(token)}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ plan: 'starter' }),
@@ -139,7 +139,7 @@ describe('Billing checkout and webhook', () => {
       .set({ stripeCustomerId: 'cus_existing' })
       .where(eq(schema.users.id, user.id));
 
-    const response = await app.request('/v1/billing/checkout', {
+    const response = await app.request('/console/billing/checkout', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ plan: 'starter' }),

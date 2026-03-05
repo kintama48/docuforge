@@ -45,7 +45,7 @@ describe('PDF import flow', () => {
   it('analyzes PDF, consumes AI credit, and creates template draft', async () => {
     const pdfBase64 = Buffer.from(MINIMAL_PDF).toString('base64');
 
-    const analyzeResponse = await app.request('/v1/templates/import/pdf/analyze', {
+    const analyzeResponse = await app.request('/console/templates/import/pdf/analyze', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -67,7 +67,7 @@ describe('PDF import flow', () => {
     expect(usageLogs.length).toBe(1);
     expect(usageLogs[0]?.creditsUsed).toBe(1);
 
-    const createResponse = await app.request('/v1/templates/import/pdf/create', {
+    const createResponse = await app.request('/console/templates/import/pdf/create', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -82,7 +82,7 @@ describe('PDF import flow', () => {
     expect(createBody.template.name).toBe('Imported Invoice Draft');
     expect(createBody.template.live_version.source).toContain('Imported Draft');
 
-    const usageResponse = await app.request('/v1/usage', {
+    const usageResponse = await app.request('/console/usage', {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });

@@ -168,7 +168,7 @@ const cleanupHandle = setInterval(() => {
 cleanupHandle.unref?.();
 
 function getRedirectUri(provider: OAuthProvider) {
-  return `${env.API_URL}/v1/auth/oauth/${provider}/callback`;
+  return `${env.API_URL}/console/auth/oauth/${provider}/callback`;
 }
 
 function requireConfig(value: string | undefined, label: string) {

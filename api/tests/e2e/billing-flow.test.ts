@@ -22,6 +22,7 @@ import {
   type MockEngine,
 } from '../setup';
 import { resetDb, initTestDb, getDb, schema } from '../../src/db/client';
+import { env } from '../../src/config/env';
 import { eq } from 'drizzle-orm';
 
 describe('E2E: Billing Flow', () => {
@@ -31,9 +32,24 @@ describe('E2E: Billing Flow', () => {
   let baseUrl: string;
   let server: ReturnType<typeof createTestServer>;
 
+  function sessionCookie(token: string): string {
+    return `${env.AUTH_COOKIE_NAME}=${encodeURIComponent(token)}`;
+  }
+
+  function authMutationHeaders(seed: string): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'X-Device-Id': `billing-${seed}-${crypto.randomUUID()}`,
+      'User-Agent': `billing/${seed}`,
+      'Accept-Language': 'en-US',
+      'X-Forwarded-For': '198.51.100.53',
+    };
+  }
+
   beforeAll(async () => {
     engine = createMockEngine();
     setupTestEnv(engine.url);
+    resetDb();
 
     // Initialize the global database for tests
     await initTestDb();
@@ -52,9 +68,9 @@ describe('E2E: Billing Flow', () => {
 
   test('free user hits limit, upgrades via Stripe, and can render again', async () => {
     // Step 1: Register as free user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('upgrade-flow'),
       body: JSON.stringify({
         email: 'billing-test@example.com',
         password: 'securepassword123',
@@ -71,11 +87,11 @@ describe('E2E: Billing Flow', () => {
     expect(registerData.user.plan).toBe('free');
 
     // Create a template for rendering
-    const createTemplateResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createTemplateResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
+        Cookie: sessionCookie(jwt),
       },
       body: JSON.stringify({
         name: 'Billing Test Template',
@@ -92,9 +108,9 @@ describe('E2E: Billing Flow', () => {
     await fillRenderLogs(db, userId, 1000, 'success');
 
     // Verify usage is at limit
-    const usageResponse = await fetch(`${baseUrl}/v1/usage`, {
+    const usageResponse = await fetch(`${baseUrl}/console/usage`, {
       method: 'GET',
-      headers: { 'X-API-Key': apiKey },
+      headers: { Cookie: sessionCookie(jwt) },
     });
 
     expect(usageResponse.status).toBe(200);
@@ -173,9 +189,9 @@ describe('E2E: Billing Flow', () => {
     expect(updatedUser.stripeCustomerId).toBe(stripeCustomerId);
 
     // Verify usage endpoint reflects new limit
-    const newUsageResponse = await fetch(`${baseUrl}/v1/usage`, {
+    const newUsageResponse = await fetch(`${baseUrl}/console/usage`, {
       method: 'GET',
-      headers: { 'X-API-Key': apiKey },
+      headers: { Cookie: sessionCookie(jwt) },
     });
 
     const newUsageData = await newUsageResponse.json();
@@ -252,25 +268,25 @@ describe('E2E: Billing Flow', () => {
 
   test('usage endpoint shows correct remaining renders', async () => {
     // Register user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('usage-check'),
       body: JSON.stringify({
         email: 'usage-check@example.com',
         password: 'securepassword123',
       }),
     });
 
-    const { user, api_key } = await registerResponse.json();
+    const { user, token } = await registerResponse.json();
 
     // Add some renders
     await fillRenderLogs(db, user.id, 123, 'success');
     // Add some failed renders (should not count)
     await fillRenderLogs(db, user.id, 50, 'error');
 
-    const usageResponse = await fetch(`${baseUrl}/v1/usage`, {
+    const usageResponse = await fetch(`${baseUrl}/console/usage`, {
       method: 'GET',
-      headers: { 'X-API-Key': api_key.raw_key },
+      headers: { Cookie: sessionCookie(token) },
     });
 
     const usageData = await usageResponse.json();
@@ -281,9 +297,9 @@ describe('E2E: Billing Flow', () => {
 
   test('402 response includes period reset information', async () => {
     // Register user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('period-check'),
       body: JSON.stringify({
         email: 'period-test@example.com',
         password: 'securepassword123',
@@ -293,11 +309,11 @@ describe('E2E: Billing Flow', () => {
     const { user, api_key, token } = await registerResponse.json();
 
     // Create template
-    const createTemplateResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createTemplateResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Cookie: sessionCookie(token),
       },
       body: JSON.stringify({
         name: 'Period Test',

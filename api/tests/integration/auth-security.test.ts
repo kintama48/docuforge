@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { createApp } from '../../src/app';
-import { reloadEnv } from '../../src/config/env';
+import { env, reloadEnv } from '../../src/config/env';
 import { clearMockEmails, listMockEmails } from '../../src/services/email';
 import { createTestContext, type TestContext } from '../setup';
 
@@ -15,11 +15,19 @@ function extractOtpCode(text: string): string {
 describe('Auth security flows', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
+  let authMutationHeaders: Record<string, string>;
 
   beforeEach(async () => {
     ctx = await createTestContext();
     app = createApp();
     clearMockEmails();
+    authMutationHeaders = {
+      'Content-Type': 'application/json',
+      'X-Device-Id': `auth-security-${crypto.randomUUID()}`,
+      'User-Agent': 'auth-security-suite',
+      'Accept-Language': 'en-US',
+      'X-Forwarded-For': '198.51.100.40',
+    };
   });
 
   afterEach(async () => {
@@ -34,9 +42,9 @@ describe('Auth security flows', () => {
     process.env.EMAIL_PROVIDER = 'mock';
     reloadEnv();
 
-    const registerResponse = await app.request('/v1/auth/register', {
+    const registerResponse = await app.request('/console/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         email: 'secure-user@example.com',
         password: 'securepassword123',
@@ -52,9 +60,9 @@ describe('Auth security flows', () => {
     expect(verificationEmail).toBeDefined();
     const verificationCode = extractOtpCode(verificationEmail!.text);
 
-    const verifyEmailResponse = await app.request('/v1/auth/verify-email', {
+    const verifyEmailResponse = await app.request('/console/auth/verify-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: registerBody.challenge_id,
         code: verificationCode,
@@ -62,14 +70,15 @@ describe('Auth security flows', () => {
     });
 
     expect(verifyEmailResponse.status).toBe(200);
+    expect(verifyEmailResponse.headers.get('Set-Cookie')).toContain(`${env.AUTH_COOKIE_NAME}=`);
     const verifyEmailBody = await verifyEmailResponse.json();
     expect(verifyEmailBody.email_verified).toBe(true);
     expect(verifyEmailBody.token).toBeDefined();
     expect(verifyEmailBody.api_key?.raw_key).toMatch(/^docu_live_/);
 
-    const loginResponse = await app.request('/v1/auth/login', {
+    const loginResponse = await app.request('/console/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         email: 'secure-user@example.com',
         password: 'securepassword123',
@@ -81,9 +90,9 @@ describe('Auth security flows', () => {
     expect(loginBody.two_factor_required).toBe(true);
     expect(loginBody.challenge_id).toMatch(/^otp_/);
 
-    const resendTooSoon = await app.request('/v1/auth/2fa/resend', {
+    const resendTooSoon = await app.request('/console/auth/2fa/resend', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: loginBody.challenge_id,
       }),
@@ -92,9 +101,9 @@ describe('Auth security flows', () => {
 
     await Bun.sleep(220);
 
-    const resendOk = await app.request('/v1/auth/2fa/resend', {
+    const resendOk = await app.request('/console/auth/2fa/resend', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: loginBody.challenge_id,
       }),
@@ -105,9 +114,9 @@ describe('Auth security flows', () => {
     expect(secondFactorEmail).toBeDefined();
     const secondFactorCode = extractOtpCode(secondFactorEmail!.text);
 
-    const verify2faResponse = await app.request('/v1/auth/2fa/verify', {
+    const verify2faResponse = await app.request('/console/auth/2fa/verify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: loginBody.challenge_id,
         code: secondFactorCode,
@@ -115,6 +124,7 @@ describe('Auth security flows', () => {
     });
 
     expect(verify2faResponse.status).toBe(200);
+    expect(verify2faResponse.headers.get('Set-Cookie')).toContain(`${env.AUTH_COOKIE_NAME}=`);
     const verify2faBody = await verify2faResponse.json();
     expect(verify2faBody.token).toBeDefined();
     expect(verify2faBody.user.email).toBe('secure-user@example.com');
@@ -135,7 +145,7 @@ describe('Auth security flows', () => {
       'X-Forwarded-For': '203.0.113.10',
     };
 
-    const firstRegister = await app.request('/v1/auth/register', {
+    const firstRegister = await app.request('/console/auth/register', {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -145,7 +155,7 @@ describe('Auth security flows', () => {
     });
     expect(firstRegister.status).toBe(201);
 
-    const secondRegister = await app.request('/v1/auth/register', {
+    const secondRegister = await app.request('/console/auth/register', {
       method: 'POST',
       headers,
       body: JSON.stringify({

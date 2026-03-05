@@ -1,3 +1,5 @@
+import { assertPresent } from "@/src/lib/assert";
+
 const DATA_AT_PATTERN = /data\.at\(\s*["'`]([^"'`]+)["'`]/g;
 const DATA_PATH_PATTERN = /data\.([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)/g;
 const MUSTACHE_PATTERN = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_.[\]]*)\s*\}\}/g;
@@ -39,7 +41,7 @@ export function buildSampleDataFromPaths(paths: string[]): Record<string, unknow
     let cursor: Record<string, unknown> = output;
 
     for (let index = 0; index < segments.length; index += 1) {
-      const segment = segments[index]!;
+      const segment = assertPresent(segments[index], `Missing path segment at index ${index}`);
       const isArraySegment = segment.endsWith("[]");
       const key = isArraySegment ? segment.slice(0, -2) : segment;
       const isLast = index === segments.length - 1;
@@ -48,7 +50,7 @@ export function buildSampleDataFromPaths(paths: string[]): Record<string, unknow
         if (!Array.isArray(cursor[key])) {
           cursor[key] = [{}];
         }
-        const first = (cursor[key] as Record<string, unknown>[])[0]!;
+        const first = assertPresent((cursor[key] as Record<string, unknown>[])[0], `Expected first array item for ${key}`);
         if (isLast) {
           if (Object.keys(first).length === 0) {
             cursor[key] = [""];

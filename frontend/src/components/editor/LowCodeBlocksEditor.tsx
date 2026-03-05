@@ -75,8 +75,10 @@ export function LowCodeBlocksEditor({
     const targetIndex = safeSelectedIndex + direction;
     if (targetIndex < 0 || targetIndex >= lowCodeSpec.blocks.length) return;
     apply((draft) => {
-      const current = draft.blocks[safeSelectedIndex]!;
-      draft.blocks[safeSelectedIndex] = draft.blocks[targetIndex]!;
+      const current = draft.blocks[safeSelectedIndex];
+      const target = draft.blocks[targetIndex];
+      if (!current || !target) return;
+      draft.blocks[safeSelectedIndex] = target;
       draft.blocks[targetIndex] = current;
     });
     setSelectedIndex(targetIndex);

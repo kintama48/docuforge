@@ -19,3 +19,6 @@
 - For every new feature request, implement end-to-end across the full stack (backend + frontend + integrations) and include automated tests that validate the complete flow before considering the task done.
 - When the user explicitly asks to simplify import architecture (e.g., no OCR), remove OCR from v1 scope and route converter output + user prompt into the in-house LLM pipeline instead of over-designing.
 - If a user asks for quality review/testing after implementation, always run an explicit quality gate (lint + relevant tests + build), add regression tests for the new work, and report review findings by severity.
+- If unexpected uncommitted files exist and the user confirms they are from another agent, continue implementation but avoid touching those files.
+- When a user explicitly asks to include unexpected/untracked files in the active work, include them in scope instead of treating them as off-limits.
+- Public API docs must stay consumer-focused: do not include dashboard-only auth/session routes or `/console/*` endpoints in customer-facing endpoint listings.

@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
-import { setCookie, deleteCookie } from 'hono/cookie';
+import { setCookie, deleteCookie, getCookie } from 'hono/cookie';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
 import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../lib/api-key';
 import { evictCachedKey } from '../services/key-cache';
 import { createJwt, jwtAuth } from '../middleware/auth';
+import { consoleAuthMutationRateLimit } from '../middleware/rate-limit';
 import { noCache } from '../middleware/cache';
 import {
   zValidator,
@@ -31,6 +32,7 @@ import {
   type OAuthProvider,
 } from '../services/oauth';
 import { createExchangeCode, consumeExchangeCode } from '../services/oauth-exchange';
+import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from '../services/refresh-token';
 import {
   canonicalizeEmail,
   createOtpChallenge,
@@ -121,12 +123,37 @@ async function sendLoginCode(email: string, code: string): Promise<void> {
 }
 
 function setSessionCookie(c: Context, token: string) {
+  if (!token || token.trim().length === 0) {
+    throw new Error('Session token must be provided');
+  }
+  if (env.AUTH_COOKIE_MAX_AGE_SECONDS <= 0) {
+    throw new Error('AUTH_COOKIE_MAX_AGE_SECONDS must be positive');
+  }
+
   setCookie(c, env.AUTH_COOKIE_NAME, token, {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: env.AUTH_COOKIE_SAME_SITE,
     path: '/',
     maxAge: env.AUTH_COOKIE_MAX_AGE_SECONDS,
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+function setRefreshCookie(c: Context, token: string) {
+  if (!token || token.trim().length === 0) {
+    throw new Error('Refresh token must be provided');
+  }
+  if (env.AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS <= 0) {
+    throw new Error('AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS must be positive');
+  }
+
+  setCookie(c, env.AUTH_REFRESH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.AUTH_COOKIE_SAME_SITE,
+    path: '/',
+    maxAge: env.AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS,
     ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
   });
 }
@@ -138,8 +165,25 @@ function clearSessionCookie(c: Context) {
   });
 }
 
+function clearRefreshCookie(c: Context) {
+  deleteCookie(c, env.AUTH_REFRESH_COOKIE_NAME, {
+    path: '/',
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+async function issueSessionForUser(c: Context, user: { id: string; email: string }) {
+  const accessToken = await createJwt(user.id, user.email);
+  const { refreshToken } = await issueRefreshToken(user.id);
+
+  setSessionCookie(c, accessToken);
+  setRefreshCookie(c, refreshToken);
+
+  return accessToken;
+}
+
 // POST /v1/auth/register
-auth.post('/register', zValidator('json', registerSchema), async (c) => {
+auth.post('/register', consoleAuthMutationRateLimit, zValidator('json', registerSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
@@ -215,8 +259,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
     throw new UnauthorizedError('Unable to provision default API key');
   }
 
-  const token = await createJwt(userId, email);
-  setSessionCookie(c, token);
+  const token = await issueSessionForUser(c, { id: userId, email });
 
   return c.json(
     {
@@ -238,7 +281,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
 });
 
 // POST /v1/auth/login
-auth.post('/login', zValidator('json', loginSchema), async (c) => {
+auth.post('/login', consoleAuthMutationRateLimit, zValidator('json', loginSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
@@ -317,8 +360,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
   await upsertUserPin(user.id, fingerprint.fingerprintHash, fingerprint.ipHash, now);
 
   // Generate JWT
-  const token = await createJwt(user.id, user.email);
-  setSessionCookie(c, token);
+  const token = await issueSessionForUser(c, { id: user.id, email: user.email });
 
   return c.json({
     token,
@@ -331,7 +373,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
 });
 
 // POST /v1/auth/verify-email - Verify signup email using OTP code
-auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
+auth.post('/verify-email', consoleAuthMutationRateLimit, zValidator('json', verifyEmailSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id, code } = c.req.valid('json');
   const now = Date.now();
@@ -359,7 +401,7 @@ auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
   }
 
   const defaultKey = await createDefaultApiKey(user.id, now);
-  const token = await createJwt(user.id, user.email);
+  const token = await issueSessionForUser(c, { id: user.id, email: user.email });
 
   return c.json({
     email_verified: true,
@@ -381,7 +423,11 @@ auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
 });
 
 // POST /v1/auth/resend-verification - Resend signup verification code
-auth.post('/resend-verification', zValidator('json', resendEmailVerificationSchema), async (c) => {
+auth.post(
+  '/resend-verification',
+  consoleAuthMutationRateLimit,
+  zValidator('json', resendEmailVerificationSchema),
+  async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id } = c.req.valid('json');
   const now = Date.now();
@@ -397,7 +443,7 @@ auth.post('/resend-verification', zValidator('json', resendEmailVerificationSche
 });
 
 // POST /v1/auth/2fa/verify - Verify login OTP code and issue JWT
-auth.post('/2fa/verify', zValidator('json', verifyTwoFactorSchema), async (c) => {
+auth.post('/2fa/verify', consoleAuthMutationRateLimit, zValidator('json', verifyTwoFactorSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id, code } = c.req.valid('json');
   const now = Date.now();
@@ -414,7 +460,7 @@ auth.post('/2fa/verify', zValidator('json', verifyTwoFactorSchema), async (c) =>
     await upsertUserPin(user.id, verified.metadata.fingerprint_hash, ipHash, now);
   }
 
-  const token = await createJwt(user.id, user.email);
+  const token = await issueSessionForUser(c, { id: user.id, email: user.email });
   return c.json({
     token,
     user: {
@@ -426,7 +472,7 @@ auth.post('/2fa/verify', zValidator('json', verifyTwoFactorSchema), async (c) =>
 });
 
 // POST /v1/auth/2fa/resend - Resend login OTP code
-auth.post('/2fa/resend', zValidator('json', resendTwoFactorSchema), async (c) => {
+auth.post('/2fa/resend', consoleAuthMutationRateLimit, zValidator('json', resendTwoFactorSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id } = c.req.valid('json');
   const now = Date.now();
@@ -575,7 +621,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
 });
 
 // POST /v1/auth/oauth/exchange - Exchange OAuth code for credentials
-auth.post('/oauth/exchange', async (c) => {
+auth.post('/oauth/exchange', consoleAuthMutationRateLimit, async (c) => {
   assertTrustedBrowserOrigin(c);
   const body = await c.req.json().catch(() => ({}));
   const code = body.code;
@@ -589,8 +635,10 @@ auth.post('/oauth/exchange', async (c) => {
     throw new UnauthorizedError('Invalid or expired exchange code');
   }
 
+  const token = await issueSessionForUser(c, { id: data.userId, email: data.email });
+
   const response: Record<string, unknown> = {
-    token: data.token,
+    token,
     user: {
       id: data.userId,
       email: data.email,
@@ -607,15 +655,65 @@ auth.post('/oauth/exchange', async (c) => {
     response.redirect = safeRedirect;
   }
 
-  setSessionCookie(c, data.token);
-
   return c.json(response);
 });
 
-// POST /v1/auth/logout - clear browser session cookie
-auth.post('/logout', async (c) => {
+// POST /v1/auth/refresh - Rotate refresh token and issue new access token
+auth.post('/refresh', consoleAuthMutationRateLimit, async (c) => {
   assertTrustedBrowserOrigin(c);
+  const rawRefreshToken = getCookie(c, env.AUTH_REFRESH_COOKIE_NAME);
+  if (!rawRefreshToken) {
+    clearSessionCookie(c);
+    clearRefreshCookie(c);
+    throw new UnauthorizedError('Refresh token required');
+  }
+
+  const rotated = await rotateRefreshToken(rawRefreshToken);
+  if (!rotated) {
+    clearSessionCookie(c);
+    clearRefreshCookie(c);
+    throw new UnauthorizedError('Invalid or expired refresh token');
+  }
+
+  const db = getDb();
+  const [user] = await db
+    .select({
+      id: schema.users.id,
+      email: schema.users.email,
+      planTier: schema.users.planTier,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, rotated.userId));
+
+  if (!user) {
+    clearSessionCookie(c);
+    clearRefreshCookie(c);
+    throw new UnauthorizedError('Refresh token user not found');
+  }
+
+  const token = await createJwt(user.id, user.email);
+  setSessionCookie(c, token);
+  setRefreshCookie(c, rotated.refreshToken);
+
+  return c.json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      plan: user.planTier,
+    },
+  });
+});
+
+// POST /v1/auth/logout - clear browser session cookie
+auth.post('/logout', consoleAuthMutationRateLimit, async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const rawRefreshToken = getCookie(c, env.AUTH_REFRESH_COOKIE_NAME);
+  if (rawRefreshToken) {
+    await revokeRefreshToken(rawRefreshToken);
+  }
   clearSessionCookie(c);
+  clearRefreshCookie(c);
   return c.json({ message: 'Logged out' });
 });
 

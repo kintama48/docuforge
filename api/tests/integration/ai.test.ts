@@ -38,7 +38,7 @@ describe('POST /v1/ai', () => {
   });
 
   it('edits code via AI', async () => {
-    const response = await app.request('/v1/ai/edit', {
+    const response = await app.request('/console/ai/edit', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -55,7 +55,7 @@ describe('POST /v1/ai', () => {
   });
 
   it('generates code from image', async () => {
-    const response = await app.request('/v1/ai/generate', {
+    const response = await app.request('/console/ai/generate', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({

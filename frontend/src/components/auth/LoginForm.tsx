@@ -21,6 +21,18 @@ import { useI18n } from "@/src/lib/i18n";
 type FormValues = { email: string; password: string };
 type LoginStep = "credentials" | "verify-email" | "two-factor";
 
+function parseApiError(error: unknown): ApiError | null {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as Record<string, unknown>;
+  const errorCode = typeof candidate.error === "string" ? candidate.error : "unknown_error";
+  const message = typeof candidate.message === "string" ? candidate.message : "";
+  const details =
+    candidate.details && typeof candidate.details === "object"
+      ? (candidate.details as Record<string, unknown>)
+      : undefined;
+  return { error: errorCode, message, details };
+}
+
 export function LoginForm() {
   const { messages } = useI18n();
   const [step, setStep] = useState<LoginStep>("credentials");
@@ -50,7 +62,7 @@ export function LoginForm() {
   const errorMessage = (() => {
     if (step !== "credentials") return null;
     if (!login.isError) return null;
-    const error = login.error as unknown as ApiError | undefined;
+    const error = parseApiError(login.error);
     if (error?.error === "unknown_error") {
       return error.message || messages.auth.errorApiUnavailable;
     }

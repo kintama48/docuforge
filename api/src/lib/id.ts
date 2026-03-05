@@ -12,7 +12,8 @@ export type IdPrefix =
   | 'whk'
   | 'dlv'
   | 'otp'
-  | 'pin';
+  | 'pin'
+  | 'rft';
 
 export function generateId(prefix: IdPrefix): string {
   return `${prefix}_${nanoid(21)}`;
@@ -64,4 +65,8 @@ export function generateOtpChallengeId(): string {
 
 export function generatePinId(): string {
   return generateId('pin');
+}
+
+export function generateRefreshTokenId(): string {
+  return generateId('rft');
 }

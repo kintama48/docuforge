@@ -4,6 +4,7 @@ import { generateTemplateId, generateVersionId } from '../lib/id';
 import { ConflictError, NotFoundError, ForbiddenError, ValidationError } from '../lib/errors';
 import type { TemplateSelect, TemplateVersionSelect } from '../db/schema';
 import { compileLowCodeSpec, lowCodeSpecSchema, type LowCodeSpec } from '../lib/low-code';
+import { assertPresent } from '../lib/assert';
 
 export interface CreateTemplateParams {
   userId: string;
@@ -39,7 +40,7 @@ function resolveSource(input: { source?: string; lowCodeSpec?: LowCodeSpec }): {
 } {
   if (input.source && input.source.trim().length > 0) {
     const normalizedSpec = input.lowCodeSpec
-      ? (lowCodeSpecSchema.parse(input.lowCodeSpec) as unknown as Record<string, unknown>)
+      ? { ...lowCodeSpecSchema.parse(input.lowCodeSpec) }
       : null;
     return {
       source: input.source,
@@ -51,7 +52,7 @@ function resolveSource(input: { source?: string; lowCodeSpec?: LowCodeSpec }): {
     const normalizedSpec = lowCodeSpecSchema.parse(input.lowCodeSpec);
     return {
       source: compileLowCodeSpec(normalizedSpec),
-      lowCodeSpec: normalizedSpec as unknown as Record<string, unknown>,
+      lowCodeSpec: { ...normalizedSpec },
     };
   }
 
@@ -114,7 +115,10 @@ export async function createTemplate(params: CreateTemplateParams): Promise<{
   const [template] = await db.select().from(schema.templates).where(eq(schema.templates.id, templateId));
   const [version] = await db.select().from(schema.templateVersions).where(eq(schema.templateVersions.id, versionId));
 
-  return { template: template!, version: version! };
+  return {
+    template: assertPresent(template, `Template insert returned no row for ${templateId}`),
+    version: assertPresent(version, `Template version insert returned no row for ${versionId}`),
+  };
 }
 
 export async function publishVersion(params: PublishVersionParams): Promise<TemplateVersionSelect> {
@@ -166,7 +170,7 @@ export async function publishVersion(params: PublishVersionParams): Promise<Temp
 
   const [version] = await db.select().from(schema.templateVersions).where(eq(schema.templateVersions.id, versionId));
 
-  return version!;
+  return assertPresent(version, `Published template version row not found for ${versionId}`);
 }
 
 export async function forkTemplate(
@@ -284,7 +288,7 @@ export async function updateTemplate(
     .from(schema.templates)
     .where(eq(schema.templates.id, params.templateId));
 
-  return updated!;
+  return assertPresent(updated, `Updated template row not found for ${params.templateId}`);
 }
 
 export async function listTemplates(

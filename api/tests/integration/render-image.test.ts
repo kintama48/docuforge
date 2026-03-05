@@ -9,7 +9,7 @@ import {
   type TestUser,
 } from '../setup';
 
-describe('POST /v1/render/image and /v1/render/preview/image', () => {
+describe('POST /v1/render/image and /console/render/preview/image', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
   let user: TestUser;
@@ -25,7 +25,7 @@ describe('POST /v1/render/image and /v1/render/preview/image', () => {
   });
 
   it('renders preview image with JWT auth', async () => {
-    const response = await app.request('/v1/render/preview/image', {
+    const response = await app.request('/console/render/preview/image', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -66,7 +66,7 @@ describe('POST /v1/render/image and /v1/render/preview/image', () => {
   });
 
   it('rejects out-of-range page numbers', async () => {
-    const response = await app.request('/v1/render/preview/image', {
+    const response = await app.request('/console/render/preview/image', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({

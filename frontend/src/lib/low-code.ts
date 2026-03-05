@@ -1,3 +1,5 @@
+import { assertPresent } from "@/src/lib/assert";
+
 export type LowCodePage = "a4" | "letter";
 
 export type LowCodeSpec = {
@@ -220,7 +222,7 @@ export function inferLowCodeDefaults(specInput: LowCodeSpec): Record<string, unk
     const segments = path.split(".");
     let cursor: Record<string, unknown> = output;
     for (let index = 0; index < segments.length; index += 1) {
-      const segment = segments[index]!;
+      const segment = assertPresent(segments[index], `Missing path segment at index ${index}`);
       if (index === segments.length - 1) {
         cursor[segment] = "";
         break;

@@ -12,6 +12,7 @@ use tracing_subscriber::EnvFilter;
 use docuforge_engine::cache::{AssetCache, TemplateCacheL2};
 use docuforge_engine::config::Config;
 use docuforge_engine::engine::{Compiler, FontLoader};
+use docuforge_engine::error::EngineError;
 use docuforge_engine::server::{create_router, AppState};
 
 #[cfg(not(test))]
@@ -40,13 +41,23 @@ async fn main() {
     // Initialize tracing
     init_tracing(&config);
 
-    let (app, fonts_loaded) = build_app(&config);
+    let (app, fonts_loaded) = match build_app(&config) {
+        Ok(value) => value,
+        Err(error) => {
+            tracing::error!(%error, "Failed to build engine application state");
+            return;
+        }
+    };
 
     // Bind to address
     let addr = config.bind_addr();
-    let listener = TcpListener::bind(&addr).await.unwrap_or_else(|e| {
-        panic!("Failed to bind to {addr}: {e}");
-    });
+    let listener = match TcpListener::bind(&addr).await {
+        Ok(listener) => listener,
+        Err(error) => {
+            tracing::error!(%error, %addr, "Failed to bind engine listener");
+            return;
+        }
+    };
 
     info!(
         host = %config.host,
@@ -56,13 +67,15 @@ async fn main() {
     );
 
     // Start server with graceful shutdown
-    axum::serve(listener, app)
+    if let Err(error) = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
-        .expect("Axum server exited with error");
+    {
+        tracing::error!(%error, "Axum server exited with error");
+    }
 }
 
-fn build_app(config: &Config) -> (axum::Router, usize) {
+fn build_app(config: &Config) -> Result<(axum::Router, usize), EngineError> {
     // Load fonts
     let fonts = match FontLoader::load_from_directory(Path::new(&config.font_dir)) {
         Ok(f) => Arc::new(f),
@@ -75,7 +88,7 @@ fn build_app(config: &Config) -> (axum::Router, usize) {
     let fonts_loaded = fonts.len();
 
     // Create asset cache
-    let asset_cache = AssetCache::new(config.asset_cache_size_bytes());
+    let asset_cache = AssetCache::try_new(config.asset_cache_size_bytes())?;
 
     let template_cache_l2 = if config.template_cache_l2_enabled {
         if let Some(redis_url) = config.redis_url.as_deref() {
@@ -113,7 +126,7 @@ fn build_app(config: &Config) -> (axum::Router, usize) {
     // Create router
     let app = create_router(state);
 
-    (app, fonts_loaded)
+    Ok((app, fonts_loaded))
 }
 
 fn init_tracing(config: &Config) {
@@ -147,17 +160,21 @@ fn init_tracing(config: &Config) {
 #[cfg(not(test))]
 async fn shutdown_signal() {
     let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("Failed to install Ctrl+C handler");
+        if let Err(error) = signal::ctrl_c().await {
+            tracing::error!(%error, "Failed to install Ctrl+C handler");
+        }
     };
 
     #[cfg(unix)]
     let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("Failed to install signal handler")
-            .recv()
-            .await;
+        match signal::unix::signal(signal::unix::SignalKind::terminate()) {
+            Ok(mut handler) => {
+                handler.recv().await;
+            }
+            Err(error) => {
+                tracing::error!(%error, "Failed to install signal handler");
+            }
+        }
     };
 
     #[cfg(not(unix))]
@@ -187,8 +204,11 @@ mod tests {
         let mut config = Config::from_env();
         config.font_dir = "/nonexistent/fonts".to_string();
 
-        let (_app, fonts_loaded) = build_app(&config);
-        assert_eq!(fonts_loaded, 0);
+        if let Ok((_app, fonts_loaded)) = build_app(&config) {
+            assert_eq!(fonts_loaded, 0);
+        } else {
+            assert!(false, "build_app should succeed");
+        }
     }
 
     #[test]
@@ -199,8 +219,11 @@ mod tests {
             .join("fonts");
         config.font_dir = fonts_dir.to_string_lossy().to_string();
 
-        let (_app, fonts_loaded) = build_app(&config);
-        assert!(fonts_loaded > 0);
+        if let Ok((_app, fonts_loaded)) = build_app(&config) {
+            assert!(fonts_loaded > 0);
+        } else {
+            assert!(false, "build_app should succeed");
+        }
     }
 
     #[test]

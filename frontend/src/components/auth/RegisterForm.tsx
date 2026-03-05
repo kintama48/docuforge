@@ -18,6 +18,18 @@ import { useI18n } from "@/src/lib/i18n";
 type FormValues = { email: string; password: string; confirmPassword: string };
 type RegisterStep = "credentials" | "verify-email";
 
+function parseApiError(error: unknown): ApiError | null {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as Record<string, unknown>;
+  const errorCode = typeof candidate.error === "string" ? candidate.error : "unknown_error";
+  const message = typeof candidate.message === "string" ? candidate.message : "";
+  const details =
+    candidate.details && typeof candidate.details === "object"
+      ? (candidate.details as Record<string, unknown>)
+      : undefined;
+  return { error: errorCode, message, details };
+}
+
 export function RegisterForm() {
   const { messages } = useI18n();
   const [step, setStep] = useState<RegisterStep>("credentials");
@@ -51,7 +63,7 @@ export function RegisterForm() {
   const errorMessage = (() => {
     if (step !== "credentials") return null;
     if (!registerMutation.isError) return null;
-    const error = registerMutation.error as unknown as ApiError | undefined;
+    const error = parseApiError(registerMutation.error);
     if (error?.error === "conflict") {
       return messages.auth.errorEmailExists;
     }

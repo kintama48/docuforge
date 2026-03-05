@@ -24,7 +24,7 @@ describe("api client", () => {
     await api.get("/v1/usage");
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      "http://localhost:3000/v1/usage",
+      "http://localhost:3000/console/usage",
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
@@ -41,20 +41,73 @@ describe("api client", () => {
     await api.get("/v1/usage");
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      "http://localhost:3000/v1/usage",
+      "http://localhost:3000/console/usage",
       expect.objectContaining({
         headers: {},
       })
     );
   });
 
-  it("clears auth on 401", async () => {
+  it("refreshes session and retries once after 401", async () => {
+    useAuthStore.setState({
+      token: "expired-token",
+      user: { id: "usr_1", email: "test@example.com", plan: "free" },
+    });
+
+    let usageCallCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith("/console/usage")) {
+        usageCallCount += 1;
+        if (usageCallCount === 1) {
+          return new Response(
+            JSON.stringify({ error: "unauthorized", message: "expired" }),
+            { status: 401 }
+          );
+        }
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+
+      if (url.endsWith("/console/auth/refresh")) {
+        return new Response(
+          JSON.stringify({
+            token: "new-token",
+            user: { id: "usr_1", email: "test@example.com", plan: "free" },
+          }),
+          { status: 200 }
+        );
+      }
+
+      return new Response(JSON.stringify({ message: "Logged out" }), {
+        status: 200,
+      });
+    });
+
+    const result = await api.get<{ ok: boolean }>("/v1/usage");
+    expect(result.ok).toBe(true);
+    expect(useAuthStore.getState().token).toBe("new-token");
+  });
+
+  it("clears auth on 401 when refresh fails", async () => {
     useAuthStore.setState({ token: "test-token", user: null });
-    vi.spyOn(global, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ error: "unauthorized", message: "401" }), {
-        status: 401,
-      })
-    );
+    vi.spyOn(global, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith("/console/usage")) {
+        return new Response(
+          JSON.stringify({ error: "unauthorized", message: "expired" }),
+          { status: 401 }
+        );
+      }
+      if (url.endsWith("/console/auth/refresh")) {
+        return new Response(
+          JSON.stringify({ error: "unauthorized", message: "refresh failed" }),
+          { status: 401 }
+        );
+      }
+      return new Response(JSON.stringify({ message: "Logged out" }), {
+        status: 200,
+      });
+    });
 
     await expect(api.get("/v1/usage")).rejects.toBeDefined();
     expect(useAuthStore.getState().token).toBeNull();
@@ -135,7 +188,7 @@ describe("api client", () => {
 
     await api.post("/v1/assets", formData);
     expect(fetchSpy).toHaveBeenCalledWith(
-      "http://localhost:3000/v1/assets",
+      "http://localhost:3000/console/assets",
       expect.objectContaining({
         headers: expect.not.objectContaining({ "Content-Type": "application/json" }),
       })

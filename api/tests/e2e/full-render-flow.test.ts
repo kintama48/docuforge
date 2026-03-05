@@ -2,25 +2,22 @@
  * E2E Test: Full Render Flow
  *
  * Tests the complete render journey:
- * 1. POST /v1/auth/register -> Get API key
- * 2. POST /v1/templates -> Create "My Invoice" template
+ * 1. POST /console/auth/register -> Get API key
+ * 2. POST /console/templates -> Create "My Invoice" template
  * 3. POST /v1/render with template_id + data -> Get PDF
  * 4. Verify PDF bytes are valid (check for %PDF header)
- * 5. GET /v1/usage -> Verify 1 render counted
+ * 5. GET /console/usage -> Verify 1 render counted
  */
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { createApp } from '../../src/app';
+import { env } from '../../src/config/env';
 import {
   createMockEngine,
   createTestServer,
   setupTestEnv,
   type MockEngine,
 } from '../setup';
-import { resetDb } from '../../src/db/client';
-import { unlinkSync } from 'fs';
-
-// Use a file-based database for E2E tests so app and test share same DB
-const TEST_DB_PATH = `/tmp/docuforge-e2e-render-${Date.now()}.db`;
+import { resetDb, initTestDb } from '../../src/db/client';
 
 describe('E2E: Full Render Flow', () => {
   let engine: MockEngine;
@@ -28,147 +25,25 @@ describe('E2E: Full Render Flow', () => {
   let baseUrl: string;
   let server: ReturnType<typeof createTestServer>;
 
+  function sessionCookie(token: string): string {
+    return `${env.AUTH_COOKIE_NAME}=${encodeURIComponent(token)}`;
+  }
+
+  function authMutationHeaders(seed: string): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'X-Device-Id': `full-render-${seed}-${crypto.randomUUID()}`,
+      'User-Agent': `full-render/${seed}`,
+      'Accept-Language': 'en-US',
+      'X-Forwarded-For': '198.51.100.51',
+    };
+  }
+
   beforeAll(async () => {
-    // Set up mock engine
     engine = createMockEngine();
-
-    // Set up test environment with file-based database
     setupTestEnv(engine.url);
-    process.env.DATABASE_URL = `file:${TEST_DB_PATH}`;
-
-    // Run migrations on the test database
-    const { Database } = await import('bun:sqlite');
-    const sqlite = new Database(TEST_DB_PATH);
-    sqlite.exec('PRAGMA foreign_keys = ON;');
-    sqlite.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        email_canonical TEXT UNIQUE NOT NULL,
-        email_verified_at INTEGER,
-        password_hash TEXT NOT NULL,
-        stripe_customer_id TEXT,
-        signup_fingerprint_hash TEXT,
-        signup_ip_hash TEXT,
-        plan_tier TEXT NOT NULL DEFAULT 'free',
-        plan_renders INTEGER NOT NULL DEFAULT 1000,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_users_email_canonical ON users(email_canonical);
-      CREATE INDEX IF NOT EXISTS idx_users_signup_fp_created ON users(signup_fingerprint_hash, created_at);
-      CREATE INDEX IF NOT EXISTS idx_users_signup_ip_created ON users(signup_ip_hash, created_at);
-      CREATE TABLE IF NOT EXISTS api_keys (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        key_hash TEXT UNIQUE NOT NULL,
-        key_prefix TEXT NOT NULL,
-        name TEXT NOT NULL,
-        last_used_at INTEGER,
-        created_at INTEGER NOT NULL,
-        is_revoked INTEGER NOT NULL DEFAULT 0
-      );
-      CREATE TABLE IF NOT EXISTS templates (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        description TEXT,
-        live_version_id TEXT,
-        is_public INTEGER NOT NULL DEFAULT 0,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS template_versions (
-        id TEXT PRIMARY KEY,
-        template_id TEXT NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
-        version_number INTEGER NOT NULL,
-        source TEXT NOT NULL,
-        files TEXT,
-        defaults TEXT,
-        low_code_spec TEXT,
-        commit_message TEXT,
-        created_at INTEGER NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS assets (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        r2_key TEXT NOT NULL,
-        mime_type TEXT NOT NULL,
-        size_bytes INTEGER NOT NULL,
-        hash TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS render_logs (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        template_id TEXT,
-        template_version_id TEXT,
-        status TEXT NOT NULL,
-        duration_ms INTEGER NOT NULL,
-        error_message TEXT,
-        created_at INTEGER NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS auth_otp_challenges (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        purpose TEXT NOT NULL,
-        email TEXT NOT NULL,
-        code_hash TEXT NOT NULL,
-        expires_at INTEGER NOT NULL,
-        resend_available_at INTEGER NOT NULL,
-        attempts INTEGER NOT NULL DEFAULT 0,
-        max_attempts INTEGER NOT NULL DEFAULT 5,
-        sent_count INTEGER NOT NULL DEFAULT 1,
-        consumed_at INTEGER,
-        metadata TEXT,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_auth_otp_user_purpose ON auth_otp_challenges(user_id, purpose);
-      CREATE INDEX IF NOT EXISTS idx_auth_otp_active ON auth_otp_challenges(purpose, consumed_at, expires_at);
-      CREATE TABLE IF NOT EXISTS user_pins (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        fingerprint_hash TEXT NOT NULL,
-        ip_hash TEXT,
-        first_seen_at INTEGER NOT NULL,
-        last_seen_at INTEGER NOT NULL,
-        created_at INTEGER NOT NULL
-      );
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_user_pins_user_fingerprint ON user_pins(user_id, fingerprint_hash);
-      CREATE INDEX IF NOT EXISTS idx_user_pins_fingerprint ON user_pins(fingerprint_hash, last_seen_at);
-      CREATE TABLE IF NOT EXISTS webhooks (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        url TEXT NOT NULL,
-        events TEXT NOT NULL,
-        secret TEXT NOT NULL,
-        is_active INTEGER NOT NULL DEFAULT 1,
-        created_at INTEGER NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_webhooks_user ON webhooks(user_id);
-      CREATE TABLE IF NOT EXISTS webhook_deliveries (
-        id TEXT PRIMARY KEY,
-        webhook_id TEXT NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
-        event TEXT NOT NULL,
-        payload TEXT NOT NULL,
-        status TEXT NOT NULL,
-        attempts INTEGER NOT NULL DEFAULT 0,
-        last_attempt_at INTEGER,
-        next_retry_at INTEGER,
-        response_code INTEGER,
-        created_at INTEGER NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_webhook ON webhook_deliveries(webhook_id);
-      CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_status ON webhook_deliveries(status, next_retry_at);
-    `);
-    sqlite.close();
-
-    // Reset the database singleton to use the new file-based database
     resetDb();
-
-    // Create app and start server
+    await initTestDb();
     app = createApp();
     server = createTestServer(app);
     baseUrl = server.url;
@@ -177,18 +52,14 @@ describe('E2E: Full Render Flow', () => {
   afterAll(async () => {
     server.stop();
     await engine.stop();
-    try {
-      unlinkSync(TEST_DB_PATH);
-    } catch {
-      // Ignore cleanup errors
-    }
+    resetDb();
   });
 
   test('complete render journey from registration to PDF output', async () => {
     // Step 1: Register a new user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('journey'),
       body: JSON.stringify({
         email: 'e2e-render@example.com',
         password: 'securepassword123',
@@ -209,11 +80,11 @@ describe('E2E: Full Render Flow', () => {
     const jwt = registerData.token;
 
     // Step 2: Create a template (requires JWT auth)
-    const createTemplateResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createTemplateResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
+        Cookie: sessionCookie(jwt),
       },
       body: JSON.stringify({
         name: 'My Invoice',
@@ -290,10 +161,10 @@ describe('E2E: Full Render Flow', () => {
     expect(lastRequest!.body!.template.files['main.typ']).toContain('Invoice');
 
     // Step 5: Check usage - should show 1 render
-    const usageResponse = await fetch(`${baseUrl}/v1/usage`, {
+    const usageResponse = await fetch(`${baseUrl}/console/usage`, {
       method: 'GET',
       headers: {
-        'X-API-Key': apiKey,
+        Cookie: sessionCookie(jwt),
       },
     });
 
@@ -312,9 +183,9 @@ describe('E2E: Full Render Flow', () => {
 
   test('render with same template multiple times updates usage correctly', async () => {
     // Register a new user
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('multi'),
       body: JSON.stringify({
         email: 'e2e-multi-render@example.com',
         password: 'securepassword123',
@@ -325,11 +196,11 @@ describe('E2E: Full Render Flow', () => {
     const { api_key, token } = await registerResponse.json();
 
     // Create template
-    const createTemplateResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createTemplateResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Cookie: sessionCookie(token),
       },
       body: JSON.stringify({
         name: 'Simple Template',
@@ -360,9 +231,9 @@ describe('E2E: Full Render Flow', () => {
     }
 
     // Check usage shows 3 renders
-    const usageResponse = await fetch(`${baseUrl}/v1/usage`, {
+    const usageResponse = await fetch(`${baseUrl}/console/usage`, {
       method: 'GET',
-      headers: { 'X-API-Key': apiKey },
+      headers: { Cookie: sessionCookie(token) },
     });
 
     const usageData = await usageResponse.json();
@@ -372,9 +243,9 @@ describe('E2E: Full Render Flow', () => {
 
   test('render fails without valid API key', async () => {
     // Register to get a template
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('no-key'),
       body: JSON.stringify({
         email: 'e2e-nokey@example.com',
         password: 'securepassword123',
@@ -384,11 +255,11 @@ describe('E2E: Full Render Flow', () => {
     const { token } = await registerResponse.json();
 
     // Create template
-    const createTemplateResponse = await fetch(`${baseUrl}/v1/templates`, {
+    const createTemplateResponse = await fetch(`${baseUrl}/console/templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Cookie: sessionCookie(token),
       },
       body: JSON.stringify({
         name: 'Test Template',
@@ -413,9 +284,9 @@ describe('E2E: Full Render Flow', () => {
   });
 
   test('render fails for non-existent template', async () => {
-    const registerResponse = await fetch(`${baseUrl}/v1/auth/register`, {
+    const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders('missing-template'),
       body: JSON.stringify({
         email: 'e2e-notemplate@example.com',
         password: 'securepassword123',

@@ -1,4 +1,4 @@
-.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
+.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
 
 help:
 	@echo "DocuForge commands:"
@@ -13,6 +13,7 @@ help:
 	@echo "  make test-frontend  - Run frontend unit/integration tests"
 	@echo "  make test-mcp       - Run MCP server tests"
 	@echo "  make validate-mcp-registry - Validate MCP server.json against MCP Registry schema"
+	@echo "  make assertions-check - Enforce assertion/cast/panic policy in runtime source files"
 	@echo "  make test-e2e       - Run frontend Playwright tests"
 	@echo "  make install-mcp    - Install MCP server dependencies"
 	@echo "  make dev-mcp        - Run MCP server locally"
@@ -87,6 +88,9 @@ test-mcp:
 
 validate-mcp-registry:
 	cd mcp-server && bun run validate:registry
+
+assertions-check:
+	bun ./scripts/assertions-check.mjs
 
 docker-up:
 	docker compose up --build

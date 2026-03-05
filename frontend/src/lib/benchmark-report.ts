@@ -1,4 +1,5 @@
 import rawReport from "@/src/data/benchmarks/latest.json";
+import { assertPresent, invariant } from "@/src/lib/assert";
 
 export type BenchmarkToolId = "docuforge" | "puppeteer" | "wkhtmltopdf" | "weasyprint";
 export type BenchmarkMetricKey = "speed" | "memory" | "coldStart";
@@ -85,12 +86,6 @@ const TOOL_ORDER: BenchmarkToolId[] = [
   "wkhtmltopdf",
   "weasyprint",
 ];
-
-function invariant(condition: unknown, message: string): asserts condition {
-  if (!condition) {
-    throw new Error(`Invalid benchmark report: ${message}`);
-  }
-}
 
 function isFinitePositive(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -198,11 +193,11 @@ export function getHomeBenchmarkModel(): HomeBenchmarkModel {
   invariant(docuforge.available, "docuforge must be available");
   const baseline = choosePrimaryCompetitor();
 
-  const docSpeed = docuforge.speedMs!.p50;
+  const docSpeed = assertPresent(docuforge.speedMs, "docuforge.speedMs missing").p50;
   const baselineSpeed = baseline?.speedMs?.p50 ?? docSpeed;
-  const docMemory = docuforge.peakMemoryMb!.p50;
+  const docMemory = assertPresent(docuforge.peakMemoryMb, "docuforge.peakMemoryMb missing").p50;
   const baselineMemory = baseline?.peakMemoryMb?.p50 ?? docMemory;
-  const docCold = docuforge.coldStartMs!.p50;
+  const docCold = assertPresent(docuforge.coldStartMs, "docuforge.coldStartMs missing").p50;
   const baselineCold = baseline?.coldStartMs?.p50 ?? docCold;
 
   return {
@@ -248,20 +243,20 @@ export function getCompareBenchmarkModel(): CompareBenchmarkModel {
 
   const speedData = available.map((tool) => ({
     tool: tool.id,
-    value: tool.speedMs!.p50,
-    label: formatMs(tool.speedMs!.p50),
+    value: assertPresent(tool.speedMs, `${tool.id}.speedMs missing`).p50,
+    label: formatMs(assertPresent(tool.speedMs, `${tool.id}.speedMs missing`).p50),
   }));
 
   const memoryData = available.map((tool) => ({
     tool: tool.id,
-    value: tool.peakMemoryMb!.p50,
-    label: formatMb(tool.peakMemoryMb!.p50),
+    value: assertPresent(tool.peakMemoryMb, `${tool.id}.peakMemoryMb missing`).p50,
+    label: formatMb(assertPresent(tool.peakMemoryMb, `${tool.id}.peakMemoryMb missing`).p50),
   }));
 
   const coldStartData = available.map((tool) => ({
     tool: tool.id,
-    value: tool.coldStartMs!.p50,
-    label: formatMs(tool.coldStartMs!.p50),
+    value: assertPresent(tool.coldStartMs, `${tool.id}.coldStartMs missing`).p50,
+    label: formatMs(assertPresent(tool.coldStartMs, `${tool.id}.coldStartMs missing`).p50),
   }));
 
   return {

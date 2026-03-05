@@ -24,7 +24,7 @@ describe("auth security flow", () => {
 
   it("completes signup email verification and stores onboarding API key", async () => {
     server.use(
-      http.post("http://localhost:3000/v1/auth/register", async () =>
+      http.post("http://localhost:3000/console/auth/register", async () =>
         HttpResponse.json(
           {
             verification_required: true,
@@ -36,7 +36,7 @@ describe("auth security flow", () => {
           { status: 202 }
         )
       ),
-      http.post("http://localhost:3000/v1/auth/verify-email", async () =>
+      http.post("http://localhost:3000/console/auth/verify-email", async () =>
         HttpResponse.json({
           email_verified: true,
           token: "tok_signup_verified",
@@ -82,7 +82,7 @@ describe("auth security flow", () => {
 
   it("handles login email verification challenge and resumes redirect flow", async () => {
     server.use(
-      http.post("http://localhost:3000/v1/auth/login", async () =>
+      http.post("http://localhost:3000/console/auth/login", async () =>
         HttpResponse.json(
           {
             verification_required: true,
@@ -93,7 +93,7 @@ describe("auth security flow", () => {
           { status: 403 }
         )
       ),
-      http.post("http://localhost:3000/v1/auth/verify-email", async () =>
+      http.post("http://localhost:3000/console/auth/verify-email", async () =>
         HttpResponse.json({
           email_verified: true,
           token: "tok_login_verified",
@@ -130,7 +130,7 @@ describe("auth security flow", () => {
 
   it("handles 2FA challenge with resend and final verification", async () => {
     server.use(
-      http.post("http://localhost:3000/v1/auth/login", async () =>
+      http.post("http://localhost:3000/console/auth/login", async () =>
         HttpResponse.json({
           two_factor_required: true,
           challenge_id: "otp_login_2fa_1",
@@ -139,7 +139,7 @@ describe("auth security flow", () => {
           user: { id: "usr_existing", email: "existing@docuforge.dev", plan: "starter" },
         })
       ),
-      http.post("http://localhost:3000/v1/auth/2fa/resend", async () =>
+      http.post("http://localhost:3000/console/auth/2fa/resend", async () =>
         HttpResponse.json({
           sent: true,
           challenge_id: "otp_login_2fa_1",
@@ -147,7 +147,7 @@ describe("auth security flow", () => {
           resend_after_ms: 30000,
         })
       ),
-      http.post("http://localhost:3000/v1/auth/2fa/verify", async () =>
+      http.post("http://localhost:3000/console/auth/2fa/verify", async () =>
         HttpResponse.json({
           token: "tok_2fa_verified",
           user: { id: "usr_existing", email: "existing@docuforge.dev", plan: "starter" },
