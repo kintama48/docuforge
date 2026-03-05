@@ -2,8 +2,6 @@ import { ImageResponse } from "next/og";
 import { normalizeLocale } from "@/src/lib/i18n-config";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 
-export const runtime = "edge";
-
 const badgeCopy: Record<string, string> = {
   en: "Plans & usage",
   fr: "Plans & usage",
