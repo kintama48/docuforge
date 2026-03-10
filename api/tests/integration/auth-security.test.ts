@@ -58,7 +58,11 @@ describe('Auth security flows', () => {
 
     const verificationEmail = listMockEmails().at(-1);
     expect(verificationEmail).toBeDefined();
+    expect(verificationEmail?.subject).toBe('Verify your DocuForge email');
+    expect(verificationEmail?.from).toBe('noreply@test.docuforge.local');
+    expect(verificationEmail?.html).toBeDefined();
     const verificationCode = extractOtpCode(verificationEmail!.text);
+    expect(verificationEmail?.html).toContain(verificationCode);
 
     const verifyEmailResponse = await app.request('/console/auth/verify-email', {
       method: 'POST',
@@ -75,6 +79,12 @@ describe('Auth security flows', () => {
     expect(verifyEmailBody.email_verified).toBe(true);
     expect(verifyEmailBody.token).toBeDefined();
     expect(verifyEmailBody.api_key?.raw_key).toMatch(/^docu_live_/);
+
+    const welcomeEmail = listMockEmails().at(-1);
+    expect(welcomeEmail).toBeDefined();
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
+    expect(welcomeEmail?.replyTo).toBe('hello@test.docuforge.local');
 
     const loginResponse = await app.request('/console/auth/login', {
       method: 'POST',
@@ -97,7 +107,9 @@ describe('Auth security flows', () => {
         challenge_id: loginBody.challenge_id,
       }),
     });
-    expect(resendTooSoon.status).toBe(429);
+    expect(resendTooSoon.status).toBe(200);
+    const resendTooSoonBody = await resendTooSoon.json();
+    expect(resendTooSoonBody.sent).toBe(false);
 
     await Bun.sleep(220);
 
@@ -112,7 +124,11 @@ describe('Auth security flows', () => {
 
     const secondFactorEmail = listMockEmails().at(-1);
     expect(secondFactorEmail).toBeDefined();
+    expect(secondFactorEmail?.subject).toBe('Your DocuForge login verification code');
+    expect(secondFactorEmail?.from).toBe('noreply@test.docuforge.local');
+    expect(secondFactorEmail?.html).toBeDefined();
     const secondFactorCode = extractOtpCode(secondFactorEmail!.text);
+    expect(secondFactorEmail?.html).toContain(secondFactorCode);
 
     const verify2faResponse = await app.request('/console/auth/2fa/verify', {
       method: 'POST',
@@ -128,6 +144,56 @@ describe('Auth security flows', () => {
     const verify2faBody = await verify2faResponse.json();
     expect(verify2faBody.token).toBeDefined();
     expect(verify2faBody.user.email).toBe('secure-user@example.com');
+  });
+
+  it('uses request locale when rendering verification emails', async () => {
+    process.env.AUTH_EMAIL_VERIFICATION_REQUIRED = 'true';
+    process.env.AUTH_2FA_REQUIRED = 'false';
+    process.env.EMAIL_PROVIDER = 'mock';
+    reloadEnv();
+
+    const response = await app.request('/console/auth/register', {
+      method: 'POST',
+      headers: {
+        ...authMutationHeaders,
+        'Accept-Language': 'fr-FR,fr;q=0.9',
+      },
+      body: JSON.stringify({
+        email: 'locale-user@example.com',
+        password: 'securepassword123',
+      }),
+    });
+
+    expect(response.status).toBe(202);
+    const email = listMockEmails().at(-1);
+    expect(email).toBeDefined();
+    expect(email?.subject).toBe('Verifiez votre email DocuForge');
+    expect(email?.from).toBe('noreply@test.docuforge.local');
+    expect(email?.text).toContain('Votre code de verification DocuForge est');
+    expect(email?.html).toContain('Code de verification');
+  });
+
+  it('sends welcome email when email verification is disabled', async () => {
+    process.env.AUTH_EMAIL_VERIFICATION_REQUIRED = 'false';
+    process.env.AUTH_2FA_REQUIRED = 'false';
+    process.env.EMAIL_PROVIDER = 'mock';
+    reloadEnv();
+
+    const response = await app.request('/console/auth/register', {
+      method: 'POST',
+      headers: authMutationHeaders,
+      body: JSON.stringify({
+        email: 'welcome-user@example.com',
+        password: 'securepassword123',
+      }),
+    });
+
+    expect(response.status).toBe(201);
+    const welcomeEmail = listMockEmails().at(-1);
+    expect(welcomeEmail).toBeDefined();
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
+    expect(welcomeEmail?.replyTo).toBe('hello@test.docuforge.local');
   });
 
   it('blocks repeated account creation from the same fingerprint', async () => {

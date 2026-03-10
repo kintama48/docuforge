@@ -5,7 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { apiKeyAuth, jwtAuth } from '../middleware/auth';
-import { renderRateLimit, previewRateLimit } from '../middleware/rate-limit';
+import { renderRateLimit } from '../middleware/rate-limit';
 import { noCache } from '../middleware/cache';
 import {
   zValidator,
@@ -605,7 +605,6 @@ render.post(
   '/preview',
   requireConsoleRenderPath,
   jwtAuth,
-  previewRateLimit,
   noCache,
   zValidator('json', renderPreviewSchema),
   async (c) => {
@@ -678,7 +677,6 @@ render.post(
   '/preview/image',
   requireConsoleRenderPath,
   jwtAuth,
-  previewRateLimit,
   noCache,
   zValidator('json', renderImagePreviewSchema),
   async (c) => {

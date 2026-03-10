@@ -8,6 +8,7 @@ import { setupTestEnv, createTestUser } from '../setup';
 import { reloadEnv } from '../../src/config/env';
 import { eq } from 'drizzle-orm';
 import { registerFetchHandler } from '../helpers/fetch-router';
+import { clearMockEmails, listMockEmails } from '../../src/services/email';
 
 let unregisters: Array<() => void> = [];
 
@@ -31,9 +32,11 @@ describe('OAuth routes', () => {
     await initTestDb();
     app = createApp();
     deviceId = `auth-oauth-${crypto.randomUUID()}`;
+    clearMockEmails();
   });
 
   afterEach(() => {
+    clearMockEmails();
     for (const unregister of unregisters) {
       unregister();
     }
@@ -126,6 +129,11 @@ describe('OAuth routes', () => {
     expect(exchangeResponse.status).toBe(200);
     const exchangeBody = await exchangeResponse.json();
     expect(exchangeBody.api_key).toBeTruthy();
+
+    const welcomeEmail = listMockEmails().at(-1);
+    expect(welcomeEmail).toBeDefined();
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
 
     const db = getDb();
     const [user] = await db.select().from(schema.users).where(eq(schema.users.email, 'new@example.com'));

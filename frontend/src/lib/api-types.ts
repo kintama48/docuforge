@@ -52,7 +52,7 @@ export type VerifyEmailResponse = {
 export type VerifyTwoFactorResponse = LoginResponse;
 
 export type ResendChallengeResponse = {
-  sent: true;
+  sent: boolean;
   challenge_id: string;
   expires_in_ms: number;
   resend_after_ms: number;

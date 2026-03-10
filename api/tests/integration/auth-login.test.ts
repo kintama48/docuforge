@@ -166,7 +166,7 @@ describe('POST /console/auth/login', () => {
     expect(response.status).toBe(404);
   });
 
-  it('applies auth mutation rate limit with retry-after header', async () => {
+  it('does not hard-throttle auth mutations for normal frontend UX', async () => {
     await createTestUser(ctx.db, {
       email: sampleUsers.valid.email,
       password: sampleUsers.valid.password,
@@ -189,7 +189,7 @@ describe('POST /console/auth/login', () => {
       expect(response.status).toBe(401);
     }
 
-    const blocked = await app.request('/console/auth/login', {
+    const followup = await app.request('/console/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -203,8 +203,8 @@ describe('POST /console/auth/login', () => {
       }),
     });
 
-    expect(blocked.status).toBe(429);
-    expect(blocked.headers.get('Retry-After')).toBeTruthy();
-    expect(blocked.headers.get('X-RateLimit-Limit')).toBe('12');
+    expect(followup.status).toBe(401);
+    expect(followup.headers.get('Retry-After')).toBeNull();
+    expect(followup.headers.get('X-RateLimit-Limit')).toBeNull();
   });
 });

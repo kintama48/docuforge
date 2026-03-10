@@ -142,6 +142,13 @@ export function PlanSection({
           );
         })}
       </div>
+
+      <p className="mt-4 text-xs text-[var(--muted)]">
+        Billing questions:{" "}
+        <a className="underline decoration-[var(--line-hover)] underline-offset-2" href="mailto:billing@docuforge.app">
+          billing@docuforge.app
+        </a>
+      </p>
     </section>
   );
 }

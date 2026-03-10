@@ -2,7 +2,7 @@ import { createHash, randomInt, timingSafeEqual } from 'node:crypto';
 import type { Context } from 'hono';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { env } from '../config/env';
-import { ForbiddenError, RateLimitedError, UnauthorizedError } from '../lib/errors';
+import { ForbiddenError, UnauthorizedError } from '../lib/errors';
 import { generateOtpChallengeId, generatePinId } from '../lib/id';
 import { getDb, schema } from '../db/client';
 
@@ -133,10 +133,7 @@ export async function enforceSignupAbuseGuards(
 
   const fingerprintSignupCount = Number(signupCountByFingerprint?.count || 0);
   if (fingerprintSignupCount >= env.AUTH_MAX_SIGNUPS_PER_FINGERPRINT_PER_DAY) {
-    throw new RateLimitedError(
-      'Too many signups from this device fingerprint',
-      60 * 60
-    );
+    throw new ForbiddenError('Signup temporarily unavailable for this device');
   }
 
   const [signupCountByIp] = await db
@@ -146,7 +143,7 @@ export async function enforceSignupAbuseGuards(
 
   const ipSignupCount = Number(signupCountByIp?.count || 0);
   if (ipSignupCount >= env.AUTH_MAX_SIGNUPS_PER_IP_PER_DAY) {
-    throw new RateLimitedError('Too many signups from this network', 60 * 60);
+    throw new ForbiddenError('Signup temporarily unavailable from this network');
   }
 }
 
@@ -233,9 +230,10 @@ export async function resendOtpChallenge(
   challengeId: string,
   purpose: OtpPurpose
 ): Promise<{
+  status: 'sent' | 'cooldown' | 'maxed';
   challengeId: string;
-  code: string;
-  email: string;
+  code?: string;
+  email?: string;
   expiresAt: number;
   resendAvailableAt: number;
 }> {
@@ -257,13 +255,21 @@ export async function resendOtpChallenge(
   }
 
   if (challenge.sentCount >= env.AUTH_OTP_MAX_SENDS) {
-    const retryAfter = Math.max(1, Math.ceil((challenge.expiresAt - now) / 1000));
-    throw new RateLimitedError('Maximum resend limit reached for this challenge', retryAfter);
+    return {
+      status: 'maxed',
+      challengeId: challenge.id,
+      expiresAt: challenge.expiresAt,
+      resendAvailableAt: challenge.resendAvailableAt,
+    };
   }
 
   if (now < challenge.resendAvailableAt) {
-    const retryAfter = Math.max(1, Math.ceil((challenge.resendAvailableAt - now) / 1000));
-    throw new RateLimitedError('Please wait before requesting another verification code', retryAfter);
+    return {
+      status: 'cooldown',
+      challengeId: challenge.id,
+      expiresAt: challenge.expiresAt,
+      resendAvailableAt: challenge.resendAvailableAt,
+    };
   }
 
   const code = generateOtpCode();
@@ -283,6 +289,7 @@ export async function resendOtpChallenge(
     .where(eq(schema.authOtpChallenges.id, challenge.id));
 
   return {
+    status: 'sent',
     challengeId: challenge.id,
     code,
     email: challenge.email,

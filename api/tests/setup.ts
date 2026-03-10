@@ -23,6 +23,7 @@ import { resetDb, initTestDb, getDb, schema as dbSchema } from '../src/db/client
 import { createApp } from '../src/app';
 import { env, reloadEnv } from '../src/config/env';
 import { resetRateLimitersForTests } from '../src/middleware/rate-limit';
+import { resetAbuseCountersForTests } from '../src/middleware/abuse-protection';
 
 // Re-export helpers for convenience
 export { createTestDatabase, closeTestDatabase, type TestDb, schema } from './helpers/db';
@@ -66,6 +67,10 @@ export function setupTestEnv(engineUrl?: string): void {
   process.env.AUTH_MAX_SIGNUPS_PER_IP_PER_DAY = '20000';
   process.env.EMAIL_PROVIDER = 'mock';
   process.env.EMAIL_FROM = 'noreply@test.docuforge.local';
+  process.env.EMAIL_FROM_NOREPLY = 'noreply@test.docuforge.local';
+  process.env.EMAIL_FROM_SUPPORT = 'support@test.docuforge.local';
+  process.env.EMAIL_FROM_HELLO = 'hello@test.docuforge.local';
+  process.env.EMAIL_FROM_BILLING = 'billing@test.docuforge.local';
   process.env.ENGINE_TIMEOUT_MS = '5000';
   process.env.FREE_MONTHLY_LIMIT = '1000';
   process.env.DEV_MONTHLY_LIMIT = '3000';
@@ -90,6 +95,7 @@ export function setupTestEnv(engineUrl?: string): void {
 
   reloadEnv();
   resetRateLimitersForTests();
+  resetAbuseCountersForTests();
 }
 
 /**
@@ -105,6 +111,7 @@ export async function createTestContext(engineConfig?: MockEngineConfig): Promis
   // Reset and initialize the global database for tests
   // This ensures the real app uses the same in-memory database
   resetRateLimitersForTests();
+  resetAbuseCountersForTests();
   resetDb();
   await initTestDb();
   const db = getDb() as unknown as TestDb;
@@ -125,6 +132,7 @@ export async function createTestContext(engineConfig?: MockEngineConfig): Promis
       await engine.stop();
       closeTestDatabase(sqlite);
       resetRateLimitersForTests();
+      resetAbuseCountersForTests();
       resetDb();
     },
   };

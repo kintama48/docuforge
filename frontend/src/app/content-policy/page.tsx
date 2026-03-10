@@ -90,7 +90,7 @@ export default function ContentPolicyPage() {
         </h2>
         <p>
           If you believe content on DocuForge violates this policy, contact us
-          at hello@docuforge.app with relevant details.
+          at support@docuforge.app with relevant details.
         </p>
       </section>
 

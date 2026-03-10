@@ -9,6 +9,7 @@ import { createTestJwt } from '../helpers/auth';
 import { setStripeClient } from '../../src/routes/billing';
 import { env } from '../../src/config/env';
 import { eq } from 'drizzle-orm';
+import { clearMockEmails, listMockEmails } from '../../src/services/email';
 
 const originalEnv = { ...process.env };
 
@@ -66,9 +67,11 @@ describe('Billing checkout and webhook', () => {
     stripeStub = createStripeStub();
     setStripeClient(stripeStub as any);
     app = createApp();
+    clearMockEmails();
   });
 
   afterEach(() => {
+    clearMockEmails();
     setStripeClient(null);
     resetDb();
     for (const key of Object.keys(process.env)) {
@@ -195,6 +198,12 @@ describe('Billing checkout and webhook', () => {
     const [record] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
     expect(record?.planTier).toBe('starter');
     expect(record?.stripeCustomerId).toBe('cus_checkout');
+
+    const billingEmail = listMockEmails().at(-1);
+    expect(billingEmail).toBeDefined();
+    expect(billingEmail?.subject).toContain('subscription is active');
+    expect(billingEmail?.from).toBe('billing@test.docuforge.local');
+    expect(billingEmail?.replyTo).toBe('billing@test.docuforge.local');
   });
 
   it('handles subscription updated and deleted webhooks', async () => {
@@ -245,6 +254,11 @@ describe('Billing checkout and webhook', () => {
     const [devUpdated] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
     expect(devUpdated?.planTier).toBe('dev');
 
+    const planChangedEmail = listMockEmails().at(-1);
+    expect(planChangedEmail).toBeDefined();
+    expect(planChangedEmail?.subject).toContain('plan was updated');
+    expect(planChangedEmail?.from).toBe('billing@test.docuforge.local');
+
     const deleteEvent = {
       type: 'customer.subscription.deleted',
       data: {
@@ -263,5 +277,10 @@ describe('Billing checkout and webhook', () => {
 
     const [deleted] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
     expect(deleted?.planTier).toBe('free');
+
+    const canceledEmail = listMockEmails().at(-1);
+    expect(canceledEmail).toBeDefined();
+    expect(canceledEmail?.subject).toContain('subscription was canceled');
+    expect(canceledEmail?.from).toBe('billing@test.docuforge.local');
   });
 });

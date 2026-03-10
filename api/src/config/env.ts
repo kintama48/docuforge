@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { appConfig } from './config';
 
 const envBoolean = z.preprocess((value) => {
   if (typeof value === 'boolean') return value;
@@ -80,6 +81,16 @@ const envSchema = z.object({
   // Transactional email
   EMAIL_PROVIDER: z.enum(['mock', 'resend']).default('mock'),
   EMAIL_FROM: z.string().email().default('noreply@docuforge.app'),
+  EMAIL_FROM_NOREPLY: z.string().email().default('noreply@docuforge.app'),
+  EMAIL_FROM_SUPPORT: z.string().email().default('support@docuforge.app'),
+  EMAIL_FROM_HELLO: z.string().email().default('hello@docuforge.app'),
+  EMAIL_FROM_BILLING: z.string().email().default('billing@docuforge.app'),
+  EMAIL_RESEND_MAX_PER_SECOND: z.coerce.number().int().positive().default(1),
+  EMAIL_RESEND_MAX_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  EMAIL_RESEND_MAX_PER_DAY: z.coerce.number().int().positive().default(90),
+  EMAIL_RESEND_MAX_RETRIES: z.coerce.number().int().positive().default(6),
+  EMAIL_RESEND_RETRY_BASE_MS: z.coerce.number().int().positive().default(750),
+  EMAIL_RESEND_RETRY_MAX_MS: z.coerce.number().int().positive().default(10_000),
   RESEND_API_KEY: z.string().optional(),
 
   // OAuth
@@ -115,15 +126,15 @@ const envSchema = z.object({
   RAG_EMBEDDING_MODEL: z.string().default('text-embedding-004'),
 
   // Limits
-  FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
-  DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
-  STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
-  PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
-  FREE_MONTHLY_AI_CREDITS: z.coerce.number().default(5),
-  DEV_MONTHLY_AI_CREDITS: z.coerce.number().default(25),
-  STARTER_MONTHLY_AI_CREDITS: z.coerce.number().default(120),
-  PRO_MONTHLY_AI_CREDITS: z.coerce.number().default(600),
-  MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
+  FREE_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.free),
+  DEV_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.dev),
+  STARTER_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.starter),
+  PRO_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.pro),
+  FREE_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.free),
+  DEV_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.dev),
+  STARTER_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.starter),
+  PRO_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.pro),
+  MAX_UPLOAD_SIZE_MB: z.coerce.number().default(appConfig.maxUploadSizeMb),
 
   // Public preview hardening
   PUBLIC_PREVIEW_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(1800),
@@ -181,5 +192,18 @@ export function getPlanLimit(planTier: string): number {
       return env.DEV_MONTHLY_LIMIT;
     default:
       return env.FREE_MONTHLY_LIMIT;
+  }
+}
+
+export function getPlanAiCreditLimit(planTier: string): number {
+  switch (planTier) {
+    case 'pro':
+      return env.PRO_MONTHLY_AI_CREDITS;
+    case 'starter':
+      return env.STARTER_MONTHLY_AI_CREDITS;
+    case 'dev':
+      return env.DEV_MONTHLY_AI_CREDITS;
+    default:
+      return env.FREE_MONTHLY_AI_CREDITS;
   }
 }

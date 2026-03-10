@@ -9,6 +9,7 @@ import {
 } from '../../src/middleware/rate-limit';
 import { RateLimitedError } from '../../src/lib/errors';
 import { env } from '../../src/config/env';
+import { getConsoleRateLimitConfig, getRequestRateLimitConfig } from '../../src/config/config';
 
 function makeContext(auth?: { userId: string; planTier?: string }) {
   const headers = new Map<string, string>();
@@ -61,32 +62,58 @@ describe('rate limiter', () => {
   test('sets headers and blocks after limit', async () => {
     const limiter = createRateLimiter('render');
     const ctx = makeContext({ userId: 'usr_rate', planTier: 'free' });
+    const renderLimit = getRequestRateLimitConfig('render').limits.free;
 
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < renderLimit; i += 1) {
       await limiter(ctx, async () => {});
     }
 
-    expect(ctx.headers.get('X-RateLimit-Limit')).toBe('10');
+    expect(ctx.headers.get('X-RateLimit-Limit')).toBe(String(renderLimit));
     expect(ctx.headers.get('X-RateLimit-Remaining')).toBe('0');
 
     await expect(limiter(ctx, async () => {})).rejects.toBeInstanceOf(RateLimitedError);
     expect(ctx.headers.get('Retry-After')).toBeDefined();
   });
 
+  test('includes plan upgrade metadata for render throttles', async () => {
+    const limiter = createRateLimiter('render');
+    const ctx = makeContext({ userId: 'usr_upgrade', planTier: 'free' });
+    const renderLimit = getRequestRateLimitConfig('render').limits.free;
+
+    for (let i = 0; i < renderLimit; i += 1) {
+      await limiter(ctx, async () => {});
+    }
+
+    let thrown: unknown;
+    try {
+      await limiter(ctx, async () => {});
+    } catch (err) {
+      thrown = err;
+    }
+
+    expect(thrown).toBeInstanceOf(RateLimitedError);
+    const rateLimitError = thrown as RateLimitedError;
+    expect(rateLimitError.details?.scope).toBe('render');
+    expect(rateLimitError.details?.current_plan).toBe('free');
+    expect(rateLimitError.details?.suggested_plan).toBe('dev');
+    expect(typeof rateLimitError.details?.upgrade_url).toBe('string');
+  });
+
   test('resets window after expiration', async () => {
     const limiter = createRateLimiter('render');
     const ctx = makeContext({ userId: 'usr_reset', planTier: 'free' });
+    const renderLimit = getRequestRateLimitConfig('render').limits.free;
 
     const realNow = Date.now;
     const base = Date.now();
     Date.now = () => base;
 
     await limiter(ctx, async () => {});
-    expect(ctx.headers.get('X-RateLimit-Remaining')).toBe('9');
+    expect(ctx.headers.get('X-RateLimit-Remaining')).toBe(String(renderLimit - 1));
 
     Date.now = () => base + 61 * 1000;
     await limiter(ctx, async () => {});
-    expect(ctx.headers.get('X-RateLimit-Remaining')).toBe('9');
+    expect(ctx.headers.get('X-RateLimit-Remaining')).toBe(String(renderLimit - 1));
 
     Date.now = realNow;
   });
@@ -97,12 +124,13 @@ describe('console rate limiters', () => {
     const ctx = makeRequestContext('/console/templates', {
       'X-Forwarded-For': '198.51.100.22',
     });
+    const sessionLimit = getConsoleRateLimitConfig('session').limit;
 
-    for (let i = 0; i < 120; i += 1) {
+    for (let i = 0; i < sessionLimit; i += 1) {
       await consoleSessionRateLimit(ctx, async () => {});
     }
 
-    expect(ctx.headers.get('X-RateLimit-Limit')).toBe('120');
+    expect(ctx.headers.get('X-RateLimit-Limit')).toBe(String(sessionLimit));
     expect(ctx.headers.get('X-RateLimit-Remaining')).toBe('0');
     await expect(consoleSessionRateLimit(ctx, async () => {})).rejects.toBeInstanceOf(RateLimitedError);
     expect(ctx.headers.get('Retry-After')).toBeDefined();
@@ -112,11 +140,12 @@ describe('console rate limiters', () => {
     const ctx = makeRequestContext('/console/templates', {
       Cookie: `${env.AUTH_COOKIE_NAME}=token-cookie-key`,
     });
+    const sessionLimit = getConsoleRateLimitConfig('session').limit;
 
     await consoleSessionRateLimit(ctx, async () => {});
 
-    expect(ctx.headers.get('X-RateLimit-Limit')).toBe('120');
-    expect(ctx.headers.get('X-RateLimit-Remaining')).toBe('119');
+    expect(ctx.headers.get('X-RateLimit-Limit')).toBe(String(sessionLimit));
+    expect(ctx.headers.get('X-RateLimit-Remaining')).toBe(String(sessionLimit - 1));
   });
 
   test('console auth mutation limiter blocks after threshold', async () => {
@@ -126,12 +155,13 @@ describe('console rate limiters', () => {
       'Accept-Language': 'en-US',
       'X-Device-Id': 'unit-device-1',
     });
+    const mutationLimit = getConsoleRateLimitConfig('authMutation').limit;
 
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < mutationLimit; i += 1) {
       await consoleAuthMutationRateLimit(ctx, async () => {});
     }
 
-    expect(ctx.headers.get('X-RateLimit-Limit')).toBe('12');
+    expect(ctx.headers.get('X-RateLimit-Limit')).toBe(String(mutationLimit));
     expect(ctx.headers.get('X-RateLimit-Remaining')).toBe('0');
     await expect(consoleAuthMutationRateLimit(ctx, async () => {})).rejects.toBeInstanceOf(RateLimitedError);
     expect(ctx.headers.get('Retry-After')).toBeDefined();

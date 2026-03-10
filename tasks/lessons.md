@@ -1,5 +1,8 @@
 # Lessons
 
+- If Redis-backed features are required locally, wire Redis into the default developer startup path (`make dev`) instead of relying on optional manual setup.
+- Transactional email templates must include the DocuForge visual logo in HTML, not brand text alone.
+- When users request reducing env sprawl, centralize non-secret operational defaults in typed `config.ts` objects and keep `.env` focused on true deployment-specific/secrets values.
 - Read and apply `/Users/abdullah/WebstormProjects/docuforge/AGENTS.md` rules before implementation work.
 - Follow requested sequencing strictly: complete UI changes first, then do deep code-quality/backend/queue refinements.
 - Do not replace brand assets with temporary badges in user-facing surfaces; keep official logo lockup unless explicitly told to rebrand.
@@ -17,8 +20,10 @@
 - Visual adjustments must stay scoped: avoid global icon-size shifts when the user asks for local layout polish.
 - For security marketing copy, lead with customer outcomes and risk reduction; avoid exposing low-level headers/protocol internals in hero/value-prop sections.
 - For every new feature request, implement end-to-end across the full stack (backend + frontend + integrations) and include automated tests that validate the complete flow before considering the task done.
+- When users specify a strict transactional-email sender map and locale coverage, encode it explicitly in env/config + route wiring and provide a one-command matrix sender for verification.
 - When the user explicitly asks to simplify import architecture (e.g., no OCR), remove OCR from v1 scope and route converter output + user prompt into the in-house LLM pipeline instead of over-designing.
 - If a user asks for quality review/testing after implementation, always run an explicit quality gate (lint + relevant tests + build), add regression tests for the new work, and report review findings by severity.
 - If unexpected uncommitted files exist and the user confirms they are from another agent, continue implementation but avoid touching those files.
 - When a user explicitly asks to include unexpected/untracked files in the active work, include them in scope instead of treating them as off-limits.
 - Public API docs must stay consumer-focused: do not include dashboard-only auth/session routes or `/console/*` endpoints in customer-facing endpoint listings.
+- For frontend cookie-session (`/console/*`) user flows, avoid hard 429 rate-limit UX throttles; enforce abuse/bot protection passively and reserve hard blocks for clearly abusive traffic.
