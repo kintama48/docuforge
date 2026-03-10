@@ -5,5 +5,8 @@ bun-tests
 e2e
 tests
 .git
+.coverage
+coverage
 .env
-.env.local
+.env.*
+!.env.example

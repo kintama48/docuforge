@@ -1,4 +1,4 @@
-.PHONY: help env install dev dev-redis build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
+.PHONY: help env install dev dev-redis build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-destroy docker-build docker-logs docker-prod-up docker-prod-up-bg docker-prod-down docker-prod-build docker-prod-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
 
 help:
 	@echo "DocuForge commands:"
@@ -32,11 +32,17 @@ help:
 	@echo "  make clean-engine   - Clean only Rust build artifacts"
 	@echo "  make clean-check    - Show disk usage of build artifacts"
 	@echo ""
-	@echo "  make docker-up      - Build and run full stack (foreground)"
-	@echo "  make docker-up-bg   - Build and run full stack (detached)"
-	@echo "  make docker-down    - Stop stack and remove volumes"
-	@echo "  make docker-build   - Build docker images"
-	@echo "  make docker-logs    - Tail docker logs"
+	@echo "  make docker-up      - Build and run dev stack (foreground)"
+	@echo "  make docker-up-bg   - Build and run dev stack (detached)"
+	@echo "  make docker-down    - Stop dev stack and keep volumes"
+	@echo "  make docker-destroy - Stop dev stack and delete volumes"
+	@echo "  make docker-build   - Build dev docker images"
+	@echo "  make docker-logs    - Tail dev docker logs"
+	@echo "  make docker-prod-up - Build and run prod stack (foreground, requires .env.prod)"
+	@echo "  make docker-prod-up-bg - Build and run prod stack (detached, requires .env.prod)"
+	@echo "  make docker-prod-down - Stop prod stack and keep volumes"
+	@echo "  make docker-prod-build - Build prod docker images (requires .env.prod)"
+	@echo "  make docker-prod-logs - Tail prod docker logs"
 
 env:
 	@test -f api/.env || cp api/.env.example api/.env
@@ -108,6 +114,9 @@ docker-up-bg:
 	docker compose up -d --build
 
 docker-down:
+	docker compose down
+
+docker-destroy:
 	docker compose down -v
 
 docker-build:
@@ -115,6 +124,21 @@ docker-build:
 
 docker-logs:
 	docker compose logs -f
+
+docker-prod-up:
+	docker compose --env-file .env.prod -f docker-compose.prod.yml up --build
+
+docker-prod-up-bg:
+	docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+
+docker-prod-down:
+	docker compose --env-file .env.prod -f docker-compose.prod.yml down
+
+docker-prod-build:
+	docker compose --env-file .env.prod -f docker-compose.prod.yml build
+
+docker-prod-logs:
+	docker compose --env-file .env.prod -f docker-compose.prod.yml logs -f
 
 clean:
 	cd engine && cargo clean
