@@ -626,3 +626,94 @@
   - `cd api && bun test tests/unit/email-locale.test.ts tests/unit/email-templates.test.ts tests/unit/email-sender.test.ts tests/integration/auth-security.test.ts tests/integration/auth-oauth.test.ts tests/integration/billing-checkout.test.ts` (pass)
   - `cd frontend && bun run test:run tests/component/PlanSection.test.tsx` (pass)
   - `cd api && bun run email:test:matrix -- --dry-run --to=abdullah.baig416@gmail.com` (pass; 49-template matrix preview)
+
+## Single-Droplet Deployment Plan (2026-03-10)
+
+- [x] Inspect production/runtime requirements for `frontend`, `api`, `engine`, and Redis in the current repo.
+- [x] Persist the temporary zero-cost single-droplet deployment policy in `AGENTS.md`.
+- [x] Capture the deployment-size lesson in `tasks/lessons.md`.
+- [x] Prepare repo-specific deployment guidance for one free DigitalOcean droplet with Docker Compose, nginx, and Cloudflare DNS.
+
+## Single-Droplet Deployment Review (2026-03-10)
+
+- Recommended topology for the temporary low-cost phase is five services on one droplet:
+  - `nginx` on 80/443
+  - `frontend` on 5173
+  - `api` on 3000
+  - `engine` on 3001
+  - `redis` on 6379
+- The repo already supports this direction with:
+  - `frontend/Dockerfile`
+  - `api/Dockerfile`
+  - `engine/docker/Dockerfile`
+  - root `docker-compose.yml`
+  - `DOCKER-RUNBOOK.md` production nginx/compose guidance
+- Queue/workers do not need separate processes on the droplet for this phase:
+  - keep `RENDER_QUEUE_AUTO_START_WORKER=true` in the API process
+  - keep Redis enabled because render/webhook queue features are active in this repo
+- Domain plan for this phase:
+  - `www.docuforge.app` -> nginx -> frontend
+  - `api.docuforge.app` -> nginx -> api
+  - frontend app/marketing URLs should both use `https://www.docuforge.app`
+- Verification basis:
+  - inspected runtime/build commands in `frontend/package.json`, `api/package.json`, `engine/Makefile`
+  - inspected env requirements in `frontend/.env.example` and `api/.env.example`
+  - inspected container topology in root `docker-compose.yml` and `DOCKER-RUNBOOK.md`
+
+## Docker Runbook Remediation Plan (2026-03-10)
+
+- [x] Re-audit `DOCKER-RUNBOOK.md` against the current repo and identify stale vs still-open findings.
+- [x] Implement the missing Docker production artifacts (`docker-compose.prod.yml`, `nginx/nginx.conf`) and any missing ignore files.
+- [x] Harden existing Dockerfiles/Make targets/compose files to resolve the runbook’s actionable findings.
+- [x] Add a concise review index for all relevant Docker setup files and update the runbook to point to the authoritative artifacts.
+- [x] Verify the resulting Docker configuration for syntax and consistency, then document the review outcome.
+
+## Docker Runbook Remediation Review (2026-03-10)
+
+- Replaced the stale audit-style `DOCKER-RUNBOOK.md` with an authoritative runbook that:
+  - lists the real Docker review index;
+  - documents the current dev/prod compose split;
+  - records the audit findings as resolved with file-level references;
+  - points operators at `docker-compose.prod.yml`, `nginx/nginx.conf`, `.env.prod.example`, and the Docker CI workflow.
+- Added the missing production deployment artifacts:
+  - `docker-compose.prod.yml`
+  - `nginx/nginx.conf`
+  - `nginx/ssl/.gitkeep`
+  - `.env.prod.example`
+- Hardened container build/runtime files:
+  - `frontend/Dockerfile`: non-root runtime, health check, and build-time `NEXT_PUBLIC_*` args/env
+  - `api/Dockerfile`: Bun-based health check instead of `curl`
+  - `engine/docker/Dockerfile`: stable Rust channel instead of stale fixed 1.75 image
+  - `mcp-server/Dockerfile`: multi-stage build, non-root runtime, health check
+  - `api/.dockerignore`
+  - `mcp-server/.dockerignore`
+  - `frontend/.dockerignore`
+- Simplified operator entry points:
+  - removed `api/docker-compose.yml` to eliminate compose ambiguity
+  - updated `Makefile` so `docker-down` is non-destructive and added explicit prod helper targets
+  - ignored real `.env.prod` in root `.gitignore`
+- Added Docker CI/image tagging:
+  - `.github/workflows/docker-images.yml`
+  - GHCR tags now cover default-branch `latest`, branch/PR refs, commit SHA, and semver tags
+- Verification:
+  - `python3` YAML parse for `docker-compose.yml`, `docker-compose.prod.yml`, `.github/workflows/docker-images.yml` -> pass
+  - file existence checks for `nginx/nginx.conf`, `docker-compose.prod.yml`, `.env.prod.example`, `api/.dockerignore`, `mcp-server/.dockerignore`, `.github/workflows/docker-images.yml` -> pass
+  - `git diff --check` -> pass
+  - compose env coverage check: every `${VAR}` in `docker-compose.prod.yml` exists in `.env.prod.example` -> pass
+  - `make help` -> pass
+- Constraint:
+  - Docker/Compose binaries are not installed in this workspace, so I could not run `docker compose config` or container build smoke tests here.
+
+## Docker Runbook Cleanup Plan (2026-03-10)
+
+- [x] Re-check the current Docker files against the old runbook issue list.
+- [x] Remove the now-stale audit/issues section from `DOCKER-RUNBOOK.md`.
+- [x] Preserve only current-state operator guidance plus validation notes in the runbook.
+
+## Docker Runbook Cleanup Review (2026-03-10)
+
+- Re-audited the current Docker files against the old runbook issue list and found the listed items structurally resolved in repo.
+- Removed the `Resolved Audit Findings` section from `DOCKER-RUNBOOK.md` and renumbered the runbook so it now reads as an operator document rather than an audit log.
+- Kept the runbook’s current-state review index, deployment commands, and validation checklist so unresolved runtime verification still has a clear place in the docs.
+- Additional hardening during this pass:
+  - root `.gitignore` now ignores real `nginx/ssl/*` cert material while keeping `nginx/ssl/.gitkeep`

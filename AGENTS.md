@@ -78,6 +78,7 @@
 - **API Boundary Contract**: Dashboard API must live under `/console/*` with cookie-session-only auth, while consumer API remains under `/v1/*`.
 - **Console UX Protection**: Do not hard-rate-limit normal `/console/*` cookie-session UX paths with user-facing 429s; use abuse/bot protection and internal safeguards instead.
 - **Frontend Deploy Target**: Prefer deploying `frontend/` to Cloudflare Workers (OpenNext) over Cloudflare Pages unless the user explicitly says otherwise.
+- **Early-Stage Infra Override**: Until DocuForge exceeds five paying users, keep infra spend at zero by running `frontend`, `api`, `engine`, and local Redis on the same free DigitalOcean droplet behind nginx, with Cloudflare as authoritative DNS/proxy and `www` + `api` pointing to the droplet. Revisit Workers or split services only after that threshold.
 - **Transactional Email Standard**: Use Resend for user-facing transactional emails and keep localized, branded HTML+text templates in API code.
 - **Transactional Sender Map**: Use `noreply@docuforge.app` for one-way auth/security emails, `hello@docuforge.app` for welcome/onboarding emails, `billing@docuforge.app` for billing events, and `support@docuforge.app` for user support correspondence.
 - **Icon Consistency**: Use Phosphor icons as the default icon library on product surfaces unless explicitly overridden.

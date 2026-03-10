@@ -5,6 +5,7 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "3001:3001"
+    restart: unless-stopped
 
   api:
     build: ./api
@@ -23,8 +24,11 @@ services:
     volumes:
       - api-data:/data
     depends_on:
-      - engine
-      - redis
+      engine:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -38,17 +42,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3000
+        NEXT_PUBLIC_APP_NAME: DocuForge
+        NEXT_PUBLIC_APP_URL: http://localhost:5173
+        NEXT_PUBLIC_MARKETING_URL: http://localhost:5173
+        NEXT_PUBLIC_CONSOLE_URL: http://localhost:5173
+        NEXT_PUBLIC_BILLING_ENABLED: "false"
+        NEXT_PUBLIC_BILLING_PROVIDER: none
+        NEXT_PUBLIC_BILLING_PORTAL_URL: ""
+        NEXT_PUBLIC_SENTRY_DSN: ""
     ports:
       - "5173:5173"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_NAME: DocuForge
       NEXT_PUBLIC_APP_URL: http://localhost:5173
+      NEXT_PUBLIC_MARKETING_URL: http://localhost:5173
+      NEXT_PUBLIC_CONSOLE_URL: http://localhost:5173
       NODE_ENV: production
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
   mcp-server:
     build: ./mcp-server
@@ -59,7 +80,9 @@ services:
     environment:
       DOCUFORGE_API_BASE_URL: http://api:3000
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   api-data:
