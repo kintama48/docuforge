@@ -1,4 +1,4 @@
-.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
+.PHONY: help env install dev dev-redis build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
 
 help:
 	@echo "DocuForge commands:"
@@ -6,6 +6,7 @@ help:
 	@echo "  make env            - Create api/.env from api/.env.example if missing"
 	@echo "  make install        - Install API + frontend deps"
 	@echo "  make dev            - Run engine + api + frontend locally"
+	@echo "  make dev-redis      - Start local Redis dependency in Docker"
 	@echo "  make build          - Build engine + frontend"
 	@echo "  make test           - Run engine + api + frontend tests"
 	@echo "  make test-api       - Run API tests"
@@ -39,18 +40,26 @@ help:
 
 env:
 	@test -f api/.env || cp api/.env.example api/.env
+	@test -f mcp-server/.env || cp mcp-server/.env.example mcp-server/.env
 
 install:
 	cd api && bun install
 	cd frontend && bun install
 	cd mcp-server && bun install
 
-dev: env
+dev: env dev-redis
 	@trap 'kill 0' INT TERM EXIT; \
 		(cd engine && cargo run) & \
 		(cd api && bun run dev) & \
 		(cd frontend && bun run dev) & \
 		wait
+
+dev-redis: env
+	@if command -v ss >/dev/null 2>&1 && ss -ltn '( sport = :6379 )' 2>/dev/null | grep -q ':6379'; then \
+		echo "Redis already listening on 127.0.0.1:6379; skipping docker compose redis."; \
+	else \
+		docker compose up -d redis; \
+	fi
 
 build:
 	cd engine && cargo build --release

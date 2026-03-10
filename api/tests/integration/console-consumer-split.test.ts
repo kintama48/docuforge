@@ -109,24 +109,16 @@ describe('console vs consumer API split', () => {
     expect(sessionResponse.status).toBe(201);
   });
 
-  it('enforces console session-level rate limits', async () => {
+  it('does not hard-throttle console cookie traffic', async () => {
     await createTestTemplate(ctx.db, user.id, { name: 'Rate Limit Template' });
     const headers = cookieAuthHeader(user);
 
-    for (let i = 0; i < 120; i += 1) {
+    for (let i = 0; i < 140; i += 1) {
       const response = await app.request('/console/templates?include_official=false', {
         method: 'GET',
         headers,
       });
       expect(response.status).toBe(200);
     }
-
-    const blocked = await app.request('/console/templates?include_official=false', {
-      method: 'GET',
-      headers,
-    });
-    expect(blocked.status).toBe(429);
-    expect(blocked.headers.get('Retry-After')).toBeTruthy();
-    expect(blocked.headers.get('X-RateLimit-Limit')).toBe('120');
   });
 });

@@ -49,8 +49,22 @@ function handleStatus(response: Response, error: ApiError) {
     toast.error("Upgrade required to continue.");
   }
   if (response.status === 429) {
-    const retryAfter = (error.details as { retryAfter?: number } | undefined)
-      ?.retryAfter;
+    const details = error.details as
+      | {
+          retryAfter?: number;
+          current_plan?: string;
+          suggested_plan?: string;
+          upgrade_url?: string;
+        }
+      | undefined;
+    const retryAfter = details?.retryAfter;
+    const suggestedPlan = details?.suggested_plan;
+    if (details?.upgrade_url && suggestedPlan) {
+      toast.error(
+        `Rate limited for current throughput. Upgrade to ${suggestedPlan} for higher limits.`
+      );
+      return;
+    }
     toast.error(
       retryAfter
         ? `Rate limited — try again in ${retryAfter} seconds.`
@@ -85,6 +99,22 @@ function hasAuthPayload(data: unknown): data is {
     typeof user.email === "string" &&
     (plan === "free" || plan === "dev" || plan === "starter" || plan === "pro")
   );
+}
+
+function resolveClientLocaleHeader(): string | null {
+  if (typeof document === "undefined") return null;
+
+  const htmlLang = document.documentElement.lang.trim();
+  if (htmlLang.length > 0) return htmlLang;
+
+  const localeCookie = document.cookie.match(/(?:^|;\s*)docuforge-locale=([^;]+)/);
+  if (!localeCookie?.[1]) return null;
+
+  try {
+    return decodeURIComponent(localeCookie[1]);
+  } catch {
+    return localeCookie[1];
+  }
 }
 
 function toConsolePath(path: string): string {
@@ -126,6 +156,12 @@ class ApiClient {
   ): Promise<Response> {
     const token = useAuthStore.getState().token;
     const headers: HeadersInit = {};
+
+    const locale = resolveClientLocaleHeader();
+    if (locale) {
+      headers["X-Docuforge-Locale"] = locale;
+    }
+
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }

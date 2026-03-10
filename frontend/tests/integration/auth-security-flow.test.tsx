@@ -135,7 +135,7 @@ describe("auth security flow", () => {
           two_factor_required: true,
           challenge_id: "otp_login_2fa_1",
           expires_in_ms: 600000,
-          resend_after_ms: 30000,
+          resend_after_ms: 0,
           user: { id: "usr_existing", email: "existing@docuforge.dev", plan: "starter" },
         })
       ),
@@ -144,7 +144,7 @@ describe("auth security flow", () => {
           sent: true,
           challenge_id: "otp_login_2fa_1",
           expires_in_ms: 600000,
-          resend_after_ms: 30000,
+          resend_after_ms: 0,
         })
       ),
       http.post("http://localhost:3000/console/auth/2fa/verify", async () =>
@@ -183,5 +183,97 @@ describe("auth security flow", () => {
       expect(useAuthStore.getState().token).toBe("tok_2fa_verified")
     );
     expect(pushMock).toHaveBeenCalledWith("/secure-area");
+  });
+
+  it("disables resend button while cooldown is active", async () => {
+    const resendSpy = vi.fn();
+
+    server.use(
+      http.post("http://localhost:3000/console/auth/login", async () =>
+        HttpResponse.json({
+          two_factor_required: true,
+          challenge_id: "otp_login_2fa_cooldown",
+          expires_in_ms: 600000,
+          resend_after_ms: 30000,
+          user: { id: "usr_existing", email: "existing@docuforge.dev", plan: "starter" },
+        })
+      ),
+      http.post("http://localhost:3000/console/auth/2fa/resend", async () => {
+        resendSpy();
+        return HttpResponse.json({
+          sent: true,
+          challenge_id: "otp_login_2fa_cooldown",
+          expires_in_ms: 600000,
+          resend_after_ms: 30000,
+        });
+      })
+    );
+
+    renderWithProviders(<LoginForm />);
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "existing@docuforge.dev" },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    const resendButton = await screen.findByRole("button", {
+      name: /resend code in/i,
+    });
+
+    expect(resendButton).toBeDisabled();
+    fireEvent.click(resendButton);
+    expect(resendSpy).not.toHaveBeenCalled();
+  });
+
+  it("disables register verification resend button while cooldown is active", async () => {
+    const resendSpy = vi.fn();
+
+    server.use(
+      http.post("http://localhost:3000/console/auth/register", async () =>
+        HttpResponse.json(
+          {
+            verification_required: true,
+            challenge_id: "otp_signup_cooldown",
+            expires_in_ms: 600000,
+            resend_after_ms: 30000,
+            user: { id: "usr_new", email: "new@docuforge.dev", plan: "free" },
+          },
+          { status: 202 }
+        )
+      ),
+      http.post("http://localhost:3000/console/auth/resend-verification", async () => {
+        resendSpy();
+        return HttpResponse.json({
+          sent: true,
+          challenge_id: "otp_signup_cooldown",
+          expires_in_ms: 600000,
+          resend_after_ms: 30000,
+        });
+      })
+    );
+
+    renderWithProviders(<RegisterForm />);
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "new@docuforge.dev" },
+    });
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+
+    const resendButton = await screen.findByRole("button", {
+      name: /resend code in/i,
+    });
+
+    expect(resendButton).toBeDisabled();
+    fireEvent.click(resendButton);
+    expect(resendSpy).not.toHaveBeenCalled();
   });
 });

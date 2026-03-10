@@ -11,6 +11,7 @@ import { RateLimitedError } from '../lib/errors';
 import type { PlanTier } from '../types';
 import { withRedis } from '../services/redis';
 import { env } from '../config/env';
+import { getConsoleRateLimitConfig, getRequestRateLimitConfig } from '../config/config';
 import { getAuthFingerprint, resolveClientIp } from '../services/auth-security';
 import { assertPresent } from '../lib/assert';
 
@@ -21,34 +22,19 @@ interface RateLimitEntry {
 
 const limiters = new Map<string, Map<string, RateLimitEntry>>();
 
-interface RateLimitConfig {
-  windowMs: number;
-  limits: Record<PlanTier, number>;
+function suggestPlanUpgrade(plan: PlanTier): PlanTier | null {
+  switch (plan) {
+    case 'free':
+      return 'dev';
+    case 'dev':
+      return 'starter';
+    case 'starter':
+      return 'pro';
+    case 'pro':
+    default:
+      return null;
+  }
 }
-
-const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
-  render: {
-    windowMs: 60 * 1000, // 1 minute
-    limits: { free: 10, dev: 30, starter: 60, pro: 200 },
-  },
-  preview: {
-    windowMs: 60 * 1000,
-    limits: { free: 30, dev: 30, starter: 30, pro: 30 },
-  },
-  ai: {
-    windowMs: 60 * 60 * 1000, // 1 hour
-    limits: { free: 5, dev: 10, starter: 20, pro: 50 },
-  },
-  default: {
-    windowMs: 60 * 1000,
-    limits: { free: 60, dev: 60, starter: 60, pro: 60 },
-  },
-};
-
-const CONSOLE_SESSION_WINDOW_MS = 60 * 1000;
-const CONSOLE_SESSION_LIMIT = 120;
-const CONSOLE_AUTH_MUTATION_WINDOW_MS = 5 * 60 * 1000;
-const CONSOLE_AUTH_MUTATION_LIMIT = 12;
 
 function getLimiter(name: string): Map<string, RateLimitEntry> {
   if (!limiters.has(name)) {
@@ -126,7 +112,7 @@ async function resolveRateCount(
 }
 
 export function createRateLimiter(configName: string) {
-  const config = RATE_LIMIT_CONFIGS[configName] || RATE_LIMIT_CONFIGS.default;
+  const config = getRequestRateLimitConfig(configName);
   const limiter = getLimiter(configName);
 
   return createMiddleware(async (c, next) => {
@@ -151,6 +137,15 @@ export function createRateLimiter(configName: string) {
     if (count > limit) {
       const retryAfter = Math.ceil((resetAt - now) / 1000);
       c.header('Retry-After', String(retryAfter));
+      if (configName === 'render') {
+        const suggestedPlan = suggestPlanUpgrade(planTier);
+        throw new RateLimitedError('Render throughput limit reached', retryAfter, {
+          scope: 'render',
+          current_plan: planTier,
+          suggested_plan: suggestedPlan || 'pro',
+          upgrade_url: `${env.APP_URL}/pricing`,
+        });
+      }
       throw new RateLimitedError('Rate limit exceeded', retryAfter);
     }
 
@@ -162,6 +157,8 @@ export const renderRateLimit = createRateLimiter('render');
 export const previewRateLimit = createRateLimiter('preview');
 export const aiRateLimit = createRateLimiter('ai');
 export const defaultRateLimit = createRateLimiter('default');
+const consoleSessionConfig = getConsoleRateLimitConfig('session');
+const consoleAuthMutationConfig = getConsoleRateLimitConfig('authMutation');
 const consoleSessionLimiter = getLimiter('console_session');
 const consoleAuthMutationLimiter = getLimiter('console_auth_mutation');
 
@@ -179,15 +176,15 @@ export const consoleSessionRateLimit = createMiddleware(async (c, next) => {
   const { count, resetAt } = await resolveRateCount(
     'console_session',
     key,
-    CONSOLE_SESSION_WINDOW_MS,
+    consoleSessionConfig.windowMs,
     consoleSessionLimiter
   );
 
-  c.header('X-RateLimit-Limit', String(CONSOLE_SESSION_LIMIT));
-  c.header('X-RateLimit-Remaining', String(Math.max(0, CONSOLE_SESSION_LIMIT - count)));
+  c.header('X-RateLimit-Limit', String(consoleSessionConfig.limit));
+  c.header('X-RateLimit-Remaining', String(Math.max(0, consoleSessionConfig.limit - count)));
   c.header('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)));
 
-  if (count > CONSOLE_SESSION_LIMIT) {
+  if (count > consoleSessionConfig.limit) {
     const retryAfter = Math.ceil((resetAt - now) / 1000);
     c.header('Retry-After', String(retryAfter));
     throw new RateLimitedError('Console rate limit exceeded', retryAfter);
@@ -208,15 +205,15 @@ export const consoleAuthMutationRateLimit = createMiddleware(async (c, next) => 
   const { count, resetAt } = await resolveRateCount(
     'console_auth_mutation',
     key,
-    CONSOLE_AUTH_MUTATION_WINDOW_MS,
+    consoleAuthMutationConfig.windowMs,
     consoleAuthMutationLimiter
   );
 
-  c.header('X-RateLimit-Limit', String(CONSOLE_AUTH_MUTATION_LIMIT));
-  c.header('X-RateLimit-Remaining', String(Math.max(0, CONSOLE_AUTH_MUTATION_LIMIT - count)));
+  c.header('X-RateLimit-Limit', String(consoleAuthMutationConfig.limit));
+  c.header('X-RateLimit-Remaining', String(Math.max(0, consoleAuthMutationConfig.limit - count)));
   c.header('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)));
 
-  if (count > CONSOLE_AUTH_MUTATION_LIMIT) {
+  if (count > consoleAuthMutationConfig.limit) {
     const retryAfter = Math.ceil((resetAt - now) / 1000);
     c.header('Retry-After', String(retryAfter));
     throw new RateLimitedError('Too many auth attempts', retryAfter);

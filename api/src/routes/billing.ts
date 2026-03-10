@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import { getCookie } from 'hono/cookie';
 
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
@@ -11,6 +12,14 @@ import { checkCredits, formatUsageResponse } from '../services/usage';
 import { checkAiCredits, formatAiUsageResponse } from '../services/ai-usage';
 import { ValidationError, InternalError, NotFoundError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
+import { sendTransactionalEmail } from '../services/email';
+import { resolveEmailLocale, type EmailLocale } from '../services/email-locale';
+import {
+  renderEmailTemplate,
+  type EmailTemplateId,
+  type EmailTemplateInputById,
+} from '../services/email-templates';
+import { resolveEmailSenderForTemplate } from '../services/email-sender';
 
 const billing = new Hono();
 
@@ -57,6 +66,88 @@ async function requireConsumerBillingPath(c: Context, next: () => Promise<void>)
   await next();
 }
 
+type PlanTier = 'free' | 'dev' | 'starter' | 'pro';
+
+function planLabel(plan: PlanTier): string {
+  switch (plan) {
+    case 'dev':
+      return 'Dev';
+    case 'starter':
+      return 'Starter';
+    case 'pro':
+      return 'Pro';
+    case 'free':
+    default:
+      return 'Free';
+  }
+}
+
+function resolvePlanFromPriceId(priceId: string | undefined): PlanTier {
+  if (priceId === env.STRIPE_PRO_PRICE_ID) {
+    return 'pro';
+  }
+  if (priceId === env.STRIPE_STARTER_PRICE_ID) {
+    return 'starter';
+  }
+  if (priceId === env.STRIPE_DEV_PRICE_ID) {
+    return 'dev';
+  }
+  return 'free';
+}
+
+function normalizePlanTier(value: string): PlanTier {
+  if (value === 'pro' || value === 'starter' || value === 'dev') {
+    return value;
+  }
+  return 'free';
+}
+
+function resolveLocaleFromContext(c: Context): EmailLocale {
+  return resolveEmailLocale({
+    headerLocale: c.req.header('x-docuforge-locale'),
+    cookieLocale: getCookie(c, 'docuforge-locale') || null,
+    acceptLanguage: c.req.header('Accept-Language'),
+  });
+}
+
+function resolveLocaleFromMetadata(metadata: Record<string, unknown> | null | undefined): EmailLocale {
+  const rawLocale = typeof metadata?.locale === 'string' ? metadata.locale : null;
+  return resolveEmailLocale({
+    headerLocale: rawLocale,
+    cookieLocale: null,
+    acceptLanguage: null,
+  });
+}
+
+async function sendTemplatedEmail<K extends EmailTemplateId>(
+  templateId: K,
+  to: string,
+  input: EmailTemplateInputById[K]
+): Promise<void> {
+  const template = renderEmailTemplate(templateId, input);
+  const sender = resolveEmailSenderForTemplate(templateId);
+  await sendTransactionalEmail({
+    to,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+    from: sender.from,
+    replyTo: sender.replyTo,
+  });
+}
+
+async function sendBillingEmail<K extends EmailTemplateId>(
+  templateId: K,
+  to: string,
+  input: EmailTemplateInputById[K]
+): Promise<void> {
+  try {
+    await sendTemplatedEmail(templateId, to, input);
+  } catch (err) {
+    console.error('Failed to send billing email', err);
+  }
+}
+
 // GET /v1/usage - Get usage stats
 billing.get('/usage', requireConsoleBillingPath, flexibleAuth, async (c) => {
   const { userId } = c.get('auth');
@@ -81,6 +172,7 @@ billing.post(
   const { userId } = c.get('auth');
   const db = getDb();
   const stripe = getStripe();
+  const locale = resolveLocaleFromContext(c);
 
   // Get or create Stripe customer
   const [user] = await db.select().from(schema.users).where(eq(schema.users.id, userId));
@@ -120,7 +212,10 @@ billing.post(
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${env.APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${env.APP_URL}/billing/cancel`,
-    metadata: { userId: user.id, plan },
+    metadata: { userId: user.id, plan, locale },
+    subscription_data: {
+      metadata: { userId: user.id, locale },
+    },
   });
 
   return c.json({ checkout_url: session.url });
@@ -151,9 +246,17 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
-      const plan = session.metadata?.plan as 'dev' | 'starter' | 'pro' | undefined;
+      const plan = normalizePlanTier(typeof session.metadata?.plan === 'string' ? session.metadata.plan : 'free');
 
-      if (userId && plan) {
+      if (userId && plan !== 'free') {
+        const [user] = await db
+          .select({
+            id: schema.users.id,
+            email: schema.users.email,
+          })
+          .from(schema.users)
+          .where(eq(schema.users.id, userId));
+
         await db
           .update(schema.users)
           .set({
@@ -163,6 +266,15 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
             updatedAt: Date.now(),
           })
           .where(eq(schema.users.id, userId));
+
+        if (user) {
+          const locale = resolveLocaleFromMetadata(session.metadata);
+          await sendBillingEmail('billing_subscription_started', user.email, {
+            locale,
+            planName: planLabel(plan),
+            manageBillingUrl: `${env.APP_URL}/settings`,
+          });
+        }
       }
       break;
     }
@@ -173,15 +285,16 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
 
       // Determine plan from price
       const priceId = subscription.items.data[0]?.price?.id;
-      let plan: string = 'free';
+      const plan = resolvePlanFromPriceId(priceId);
 
-      if (priceId === env.STRIPE_PRO_PRICE_ID) {
-        plan = 'pro';
-      } else if (priceId === env.STRIPE_STARTER_PRICE_ID) {
-        plan = 'starter';
-      } else if (priceId === env.STRIPE_DEV_PRICE_ID) {
-        plan = 'dev';
-      }
+      const [user] = await db
+        .select({
+          id: schema.users.id,
+          email: schema.users.email,
+          planTier: schema.users.planTier,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.stripeCustomerId, customerId));
 
       await db
         .update(schema.users)
@@ -191,12 +304,32 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
           updatedAt: Date.now(),
         })
         .where(eq(schema.users.stripeCustomerId, customerId));
+
+      if (user && user.planTier !== plan && user.planTier !== 'free' && plan !== 'free') {
+        const locale = resolveLocaleFromMetadata(subscription.metadata);
+        const previousPlan = normalizePlanTier(user.planTier);
+        await sendBillingEmail('billing_plan_changed', user.email, {
+          locale,
+          previousPlanName: planLabel(previousPlan),
+          planName: planLabel(plan),
+          manageBillingUrl: `${env.APP_URL}/settings`,
+        });
+      }
       break;
     }
 
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
+
+      const [user] = await db
+        .select({
+          id: schema.users.id,
+          email: schema.users.email,
+          planTier: schema.users.planTier,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.stripeCustomerId, customerId));
 
       // Downgrade to free
       await db
@@ -207,6 +340,17 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
           updatedAt: Date.now(),
         })
         .where(eq(schema.users.stripeCustomerId, customerId));
+
+      if (user && user.planTier !== 'free') {
+        const locale = resolveLocaleFromMetadata(subscription.metadata);
+        const previousPlan = normalizePlanTier(user.planTier);
+        await sendBillingEmail('billing_subscription_canceled', user.email, {
+          locale,
+          previousPlanName: planLabel(previousPlan),
+          restartBillingUrl: `${env.APP_URL}/pricing`,
+          supportEmail: env.EMAIL_FROM_SUPPORT,
+        });
+      }
       break;
     }
   }

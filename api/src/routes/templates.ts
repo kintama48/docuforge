@@ -3,7 +3,6 @@ import { Hono } from 'hono';
 import { eq, inArray } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
-import { aiRateLimit } from '../middleware/rate-limit';
 import { shortCache, mediumCache, noCache } from '../middleware/cache';
 import { etag } from '../middleware/etag';
 import {
@@ -297,7 +296,6 @@ templates.delete('/:id', jwtAuth, noCache, async (c) => {
 templates.post(
   '/import/pdf/analyze',
   jwtAuth,
-  aiRateLimit,
   noCache,
   zValidator('json', pdfImportAnalyzeSchema),
   async (c) => {

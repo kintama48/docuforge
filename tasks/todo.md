@@ -1,5 +1,124 @@
 # Task Plan
 
+## Local Redis + Email Logo Hardening Plan (2026-03-09)
+
+- [x] Ensure local development boot flow provisions Redis reliably (compose + make target wiring).
+- [x] Expose/document explicit local Redis config (`REDIS_URL`) in API env templates.
+- [x] Add DocuForge logo block to transactional email HTML shell used by all templates.
+- [x] Add/adjust regression tests for branded logo presence in generated email HTML.
+- [x] Run targeted verification for email template rendering.
+- [x] Document review outcomes in this file.
+
+## Local Redis + Email Logo Hardening Review (2026-03-09)
+
+- Added missing root-level Redis service to `docker-compose.yml` (persistent volume, healthcheck, host port `6379`).
+- Updated `Makefile` local workflow:
+  - `make env` now seeds both `api/.env` and `mcp-server/.env` when missing.
+  - Added `make dev-redis` target (`docker compose up -d redis`).
+  - `make dev` now depends on `dev-redis` so Redis is started automatically.
+- Added explicit Redis configuration in env templates:
+  - `api/.env`, `api/.env.example`, `api/.env.stag`, `api/.env.prod`.
+- Branded transactional email HTML now includes the DocuForge logo image block in shared OTP + standard template shells (`api/src/services/email-templates.ts`).
+- Added regression assertion for logo presence in generated HTML (`api/tests/unit/email-templates.test.ts`).
+- Verification:
+  - `cd api && bun test tests/unit/email-templates.test.ts` (pass)
+  - `make env && docker compose config` (pass)
+  - `make dev-redis` (pass; skips compose startup cleanly when local Redis is already listening)
+  - `cd api && bun run email:test:matrix -- --dry-run --to=abdullah.baig416@gmail.com --locales=en --templates=email_verification` (pass)
+
+## Config Consolidation + Plan Request Limits Plan (2026-03-08)
+
+- [x] Add `api/src/config/config.ts` with typed default objects for plan quotas and per-plan request rate limits.
+- [x] Refactor `api/src/config/env.ts` to consume defaults from `config.ts` for plan quota defaults instead of hardcoded literals.
+- [x] Refactor `api/src/middleware/rate-limit.ts` to consume per-plan request limits from `config.ts` (remove hardcoded inline limiter map).
+- [x] Add focused unit coverage for new config defaults and rate-limit wiring.
+- [x] Reduce `.env` clutter by removing non-secret default limit knobs that now live in `config.ts`.
+- [x] Run targeted API tests and document verification + review notes.
+
+## Config Consolidation + Plan Request Limits Review (2026-03-08)
+
+- Added centralized typed defaults in `api/src/config/config.ts` for:
+  - monthly render quotas per plan
+  - monthly AI credit quotas per plan
+  - per-plan request-rate limits (`render`, `preview`, `ai`, `default`)
+  - console session/auth mutation rate-limit windows and thresholds
+- Refactored `api/src/config/env.ts` to use `config.ts` defaults for plan quotas and upload size, reducing literal sprawl in env schema.
+- Refactored `api/src/middleware/rate-limit.ts` to consume plan request limits from `config.ts` and removed hardcoded inline limit tables.
+- Added reusable AI quota accessor in env (`getPlanAiCreditLimit`) and wired `api/src/services/ai-usage.ts` to it.
+- Added regression coverage:
+  - `api/tests/unit/config.test.ts`
+  - `api/tests/unit/rate-limit.test.ts` now validates configured limits via config accessors
+  - `api/tests/unit/env-runtime.test.ts` now verifies AI quota reload + lookup
+- Reduced `.env` noise:
+  - removed default plan quota lines from `api/.env`, `api/.env.stag`, and `api/.env.prod`
+  - converted plan quota lines in `api/.env.example` to optional commented overrides
+- Verification:
+  - `cd api && bun test tests/unit/config.test.ts tests/unit/rate-limit.test.ts tests/unit/env-runtime.test.ts` (pass)
+
+## UX-Safe Abuse Protection + Resend Quota Plan (2026-03-07)
+
+- [x] Remove hard user-facing rate-limiter middleware from cookie-session frontend routes (`/console/*` auth/templates/preview/AI paths).
+- [x] Add non-UX-blocking abuse controls on auth mutation routes (monitoring, suspicious jitter, hard block only for extreme bursts).
+- [x] Keep consumer API render plan nudging limits and attach upgrade metadata in 429 responses.
+- [x] Shield Resend free-plan/provider quotas internally with bounded retries/backoff and generic failure behavior.
+- [x] Update resend challenge contract to return `200` with `sent: boolean` so cooldown/max-sends do not surface as user-facing errors.
+- [x] Wire sender-address profile mapping and locale-aware templates across auth + billing email flows.
+- [x] Add/adjust API/frontend regression coverage and verify matrix template command output.
+
+## UX-Safe Abuse Protection + Resend Quota Review (2026-03-07)
+
+- Console cookie UX paths no longer hit hard throttling middleware; normal dashboard/auth user flows are no longer blocked by routine 429s.
+- Added `consoleAuthAbuseProtection` on sensitive auth POST endpoints with Redis-backed counters and local fallback:
+  - monitor-only logging at low anomaly thresholds
+  - delay jitter for suspicious spikes
+  - `403` block only for extreme abusive bursts
+- Consumer render rate limits remain for plan nudging and now return structured upgrade metadata:
+  - `scope`, `current_plan`, `suggested_plan`, `upgrade_url`
+- Resend delivery path now handles provider/free-plan limits internally:
+  - per-second/per-minute/per-day quota windows
+  - retry/backoff + jitter for transient failures and 429/5xx provider responses
+  - generic final error on exhaustion to avoid leaking provider details
+- Auth resend endpoints (`/console/auth/resend-verification`, `/console/auth/2fa/resend`) now return `200` with `sent: boolean` and timing fields, even during cooldown/maxed states.
+- Frontend auth forms now respect resend cooldown timers and only show success copy when `sent === true`.
+- Added template sender map + locale template matrix script (`api/scripts/send-email-template-matrix.ts`) and verified dry-run coverage across all locales/templates.
+- Verification completed:
+  - `cd api && npm test -- --runInBand tests/unit/rate-limit.test.ts tests/unit/abuse-protection.test.ts tests/unit/email-locale.test.ts tests/unit/email-sender.test.ts tests/unit/email-templates.test.ts` (pass)
+  - `cd api && npm test -- tests/integration/auth-security.test.ts tests/integration/auth-login.test.ts tests/integration/console-consumer-split.test.ts tests/integration/auth-oauth.test.ts tests/integration/billing-checkout.test.ts` (pass)
+  - `cd frontend && npx vitest run tests/unit/api.test.ts tests/integration/auth-security-flow.test.tsx` (pass)
+  - `cd api && npm run email:test:matrix -- --dry-run --to=abdullah.baig416@gmail.com` (pass)
+
+## Resend Email Templates + Auth Locale Wiring Plan (2026-03-05)
+
+- [x] Add API email locale resolver (`x-docuforge-locale` -> cookie -> `Accept-Language` -> `en` fallback).
+- [x] Add branded, localized OTP email template renderer for signup verification and login 2FA.
+- [x] Wire auth routes to send template-based `subject + text + html` for all verification/resend flows.
+- [x] Add API unit/integration tests for locale resolution, email rendering, and HTML payload presence.
+- [x] Update frontend auth flows to keep resend cooldown behavior functional for login and register.
+- [x] Move auth challenge/resend labels and error/status copy to i18n keys across all supported locales.
+- [x] Run targeted verification and document results in review notes.
+
+## Resend Email Templates + Auth Locale Wiring Review (2026-03-05)
+
+- Added API locale resolution utility with explicit precedence: `x-docuforge-locale` -> `docuforge-locale` cookie -> `Accept-Language` -> `en`.
+- Added centralized localized OTP email renderer returning `subject + text + html` for:
+  - signup email verification
+  - login 2FA verification
+- Enabled Resend runtime usage in local/staging/production env files by setting `EMAIL_PROVIDER=resend` and explicit `EMAIL_FROM`.
+- Updated auth routes to call template renderer for register/login resend flows so all transactional auth OTP emails now share one design system-compliant template path.
+- Added API coverage:
+  - `api/tests/unit/email-locale.test.ts`
+  - `api/tests/unit/email-templates.test.ts`
+  - `api/tests/integration/auth-security.test.ts` assertions for HTML + locale-aware rendering
+- Updated frontend auth UX:
+  - cooldown timer enforcement for register resend (login already had cooldown)
+  - i18n keys for challenge/resend/error/status labels across all supported locales
+  - locale propagation header on API requests (`X-Docuforge-Locale`)
+- Verification:
+  - `cd api && bun test tests/unit/email-locale.test.ts tests/unit/email-templates.test.ts tests/integration/auth-security.test.ts` (pass)
+  - `cd frontend && bun run test:run tests/integration/auth-security-flow.test.tsx` (pass)
+  - `cd frontend && ./node_modules/.bin/eslint src/components/auth/LoginForm.tsx src/components/auth/RegisterForm.tsx src/lib/i18n.tsx src/lib/api.ts tests/integration/auth-security-flow.test.tsx` (pass)
+  - `cd frontend && bun run lint` fails due pre-existing/generated `.open-next` artifacts not introduced by this change.
+
 ## Consumer Docs + Refresh Hardening Plan (2026-03-05)
 
 - [x] Remove console-only/auth-session endpoints from public API docs output and keep docs focused on consumer API usage.
@@ -454,3 +573,56 @@
 - Verification:
   - `cd api && bun test tests/integration/auth-refresh.test.ts tests/unit/refresh-token.test.ts`
   - `cd frontend && bun run test:run tests/unit/api.test.ts`
+
+## Transactional Email Sender Matrix + Template Sweep Plan (2026-03-06)
+
+- [x] Expand API transactional templates to cover OTP, welcome, billing lifecycle, and support acknowledgement across all supported locales.
+- [x] Enforce sender-profile routing (`noreply`, `hello`, `billing`, `support`) across auth and billing flows.
+- [x] Add a matrix test-send command to deliver every template in every locale to a target inbox for visual QA.
+- [x] Update frontend contact surfaces to map users to the correct inboxes for support, hello, and billing flows.
+- [x] Add/refresh unit+integration tests for template rendering and route-triggered emails.
+- [x] Run targeted verification and document outcomes.
+
+## Transactional Email Sender Matrix + Template Sweep Review (2026-03-06)
+
+- Expanded API transactional template catalog and branded renderers:
+  - `api/src/services/email-templates.ts`
+  - Added localized templates for `email_verification`, `login_2fa`, `welcome_first_message`, `billing_subscription_started`, `billing_plan_changed`, `billing_subscription_canceled`, `support_acknowledgement`.
+- Added sender-profile routing by template:
+  - `api/src/services/email-sender.ts`
+  - Template-to-sender map now enforces: `noreply`, `hello`, `billing`, `support`.
+- Wired auth flows:
+  - `api/src/routes/auth.ts`
+  - OTP emails send from `noreply`.
+  - Welcome email sends from `hello` on:
+    - direct registration when verification is disabled,
+    - first successful email verification,
+    - first-time OAuth user creation.
+- Wired billing flows:
+  - `api/src/routes/billing.ts`
+  - `checkout.session.completed` -> subscription-started email from `billing`.
+  - `customer.subscription.updated` -> plan-change email from `billing` (when paid->paid plan changes).
+  - `customer.subscription.deleted` -> cancellation email from `billing`.
+  - Checkout now stores locale in Stripe metadata so billing email locale can be resolved.
+- Added one-command matrix sender:
+  - `api/scripts/send-email-template-matrix.ts`
+  - `api/package.json` script: `email:test:matrix`
+  - Supports `--to`, `--locales`, `--templates`, `--dry-run`.
+- Updated env/setup sender vars:
+  - `api/.env`, `api/.env.prod`, `api/.env.stag`, `api/.env.example`, `api/src/config/env.ts`, `api/tests/setup.ts`.
+- Updated frontend contact surfaces:
+  - `frontend/src/app/privacy/page.tsx` -> `support@docuforge.app`
+  - `frontend/src/app/terms/page.tsx` -> `support@docuforge.app`
+  - `frontend/src/app/content-policy/page.tsx` -> `support@docuforge.app`
+  - `frontend/src/components/settings/PlanSection.tsx` adds billing contact `billing@docuforge.app`.
+- Added/updated tests:
+  - `api/tests/unit/email-templates.test.ts`
+  - `api/tests/unit/email-sender.test.ts`
+  - `api/tests/integration/auth-security.test.ts`
+  - `api/tests/integration/auth-oauth.test.ts`
+  - `api/tests/integration/billing-checkout.test.ts`
+  - `frontend/tests/component/PlanSection.test.tsx`
+- Verification:
+  - `cd api && bun test tests/unit/email-locale.test.ts tests/unit/email-templates.test.ts tests/unit/email-sender.test.ts tests/integration/auth-security.test.ts tests/integration/auth-oauth.test.ts tests/integration/billing-checkout.test.ts` (pass)
+  - `cd frontend && bun run test:run tests/component/PlanSection.test.tsx` (pass)
+  - `cd api && bun run email:test:matrix -- --dry-run --to=abdullah.baig416@gmail.com` (pass; 49-template matrix preview)

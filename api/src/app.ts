@@ -14,7 +14,6 @@ import templates from './routes/templates';
 import assets from './routes/assets';
 import ai from './routes/ai';
 import webhooksRoute from './routes/webhooks';
-import { consoleSessionRateLimit } from './middleware/rate-limit';
 import {
   isRenderQueueEnabled,
   shouldAutoStartRenderWorker,
@@ -56,6 +55,7 @@ export function createApp() {
         'Idempotency-Key',
         'X-Idempotency-Key',
         'X-Device-Id',
+        'X-Docuforge-Locale',
       ],
       credentials: true,
       maxAge: 86400,
@@ -63,7 +63,6 @@ export function createApp() {
   );
   app.use('*', compress());
   app.use('*', requestLogger);
-  app.use('/console/*', consoleSessionRateLimit);
 
   app.use('*', async (c, next) => {
     await next();

@@ -28,11 +28,15 @@ describe('env runtime', () => {
   });
 
   test('reloadEnv updates plan limits', async () => {
-    const { env, reloadEnv, getPlanLimit } = await import('../../src/config/env');
+    const { env, reloadEnv, getPlanLimit, getPlanAiCreditLimit } = await import('../../src/config/env');
     process.env.FREE_MONTHLY_LIMIT = '123';
     process.env.DEV_MONTHLY_LIMIT = '234';
     process.env.STARTER_MONTHLY_LIMIT = '456';
     process.env.PRO_MONTHLY_LIMIT = '789';
+    process.env.FREE_MONTHLY_AI_CREDITS = '11';
+    process.env.DEV_MONTHLY_AI_CREDITS = '22';
+    process.env.STARTER_MONTHLY_AI_CREDITS = '33';
+    process.env.PRO_MONTHLY_AI_CREDITS = '44';
 
     reloadEnv();
 
@@ -41,5 +45,9 @@ describe('env runtime', () => {
     expect(getPlanLimit('dev')).toBe(234);
     expect(getPlanLimit('starter')).toBe(456);
     expect(getPlanLimit('pro')).toBe(789);
+    expect(getPlanAiCreditLimit('free')).toBe(11);
+    expect(getPlanAiCreditLimit('dev')).toBe(22);
+    expect(getPlanAiCreditLimit('starter')).toBe(33);
+    expect(getPlanAiCreditLimit('pro')).toBe(44);
   });
 });

@@ -7,8 +7,8 @@ import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
 import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../lib/api-key';
 import { evictCachedKey } from '../services/key-cache';
 import { createJwt, jwtAuth } from '../middleware/auth';
-import { consoleAuthMutationRateLimit } from '../middleware/rate-limit';
 import { noCache } from '../middleware/cache';
+import { consoleAuthAbuseProtection } from '../middleware/abuse-protection';
 import {
   zValidator,
   registerSchema,
@@ -22,6 +22,13 @@ import {
 import { ConflictError, UnauthorizedError, NotFoundError, ForbiddenError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
 import { sendTransactionalEmail } from '../services/email';
+import { resolveEmailLocale, type EmailLocale } from '../services/email-locale';
+import {
+  renderEmailTemplate,
+  type EmailTemplateId,
+  type EmailTemplateInputById,
+} from '../services/email-templates';
+import { resolveEmailSenderForTemplate } from '../services/email-sender';
 import {
   buildAuthUrl,
   consumeOAuthStateDistributed,
@@ -49,6 +56,7 @@ const auth = new Hono();
 
 // All auth endpoints are mutations — never cache
 auth.use('*', noCache);
+auth.use('*', consoleAuthAbuseProtection);
 
 const oauthProviders: OAuthProvider[] = ['google', 'microsoft', 'github'];
 const trustedBrowserOrigins = new Set([new URL(env.APP_URL).origin]);
@@ -104,22 +112,58 @@ async function createDefaultApiKey(
   return { rawKey, keyPrefix, name };
 }
 
-async function sendEmailVerificationCode(email: string, code: string): Promise<void> {
-  const ttlMinutes = getOtpLifetimeMinutes();
-  await sendTransactionalEmail({
-    to: email,
-    subject: 'Verify your DocuForge email',
-    text: `Your DocuForge verification code is ${code}. It expires in ${ttlMinutes} minute(s).`,
+function resolveRequestEmailLocale(c: Context): EmailLocale {
+  return resolveEmailLocale({
+    headerLocale: c.req.header('x-docuforge-locale'),
+    cookieLocale: getCookie(c, 'docuforge-locale') || null,
+    acceptLanguage: c.req.header('Accept-Language'),
   });
 }
 
-async function sendLoginCode(email: string, code: string): Promise<void> {
-  const ttlMinutes = getOtpLifetimeMinutes();
+async function sendTemplatedEmail<K extends EmailTemplateId>(
+  templateId: K,
+  email: string,
+  input: EmailTemplateInputById[K]
+): Promise<void> {
+  const template = renderEmailTemplate(templateId, input);
+  const sender = resolveEmailSenderForTemplate(templateId);
   await sendTransactionalEmail({
     to: email,
-    subject: 'Your DocuForge login verification code',
-    text: `Your DocuForge login code is ${code}. It expires in ${ttlMinutes} minute(s).`,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+    from: sender.from,
+    replyTo: sender.replyTo,
   });
+}
+
+async function sendEmailVerificationCode(email: string, code: string, locale: EmailLocale): Promise<void> {
+  const ttlMinutes = getOtpLifetimeMinutes();
+  await sendTemplatedEmail('email_verification', email, {
+    locale,
+    code,
+    ttlMinutes,
+  });
+}
+
+async function sendLoginCode(email: string, code: string, locale: EmailLocale): Promise<void> {
+  const ttlMinutes = getOtpLifetimeMinutes();
+  await sendTemplatedEmail('login_2fa', email, {
+    locale,
+    code,
+    ttlMinutes,
+  });
+}
+
+async function sendWelcomeEmail(email: string, locale: EmailLocale): Promise<void> {
+  try {
+    await sendTemplatedEmail('welcome_first_message', email, {
+      locale,
+      dashboardUrl: `${env.APP_URL}/`,
+    });
+  } catch (err) {
+    console.error('Failed to send welcome email', err);
+  }
 }
 
 function setSessionCookie(c: Context, token: string) {
@@ -183,11 +227,12 @@ async function issueSessionForUser(c: Context, user: { id: string; email: string
 }
 
 // POST /v1/auth/register
-auth.post('/register', consoleAuthMutationRateLimit, zValidator('json', registerSchema), async (c) => {
+auth.post('/register', zValidator('json', registerSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const email = normalizeEmail(rawEmail);
   const emailCanonical = canonicalizeEmail(email);
   const fingerprint = getAuthFingerprint(c);
@@ -236,7 +281,7 @@ auth.post('/register', consoleAuthMutationRateLimit, zValidator('json', register
       },
     });
 
-    await sendEmailVerificationCode(email, challenge.code);
+    await sendEmailVerificationCode(email, challenge.code, locale);
 
     return c.json(
       {
@@ -253,6 +298,8 @@ auth.post('/register', consoleAuthMutationRateLimit, zValidator('json', register
       202
     );
   }
+
+  await sendWelcomeEmail(email, locale);
 
   const defaultKey = await createDefaultApiKey(userId, now);
   if (!defaultKey) {
@@ -281,13 +328,14 @@ auth.post('/register', consoleAuthMutationRateLimit, zValidator('json', register
 });
 
 // POST /v1/auth/login
-auth.post('/login', consoleAuthMutationRateLimit, zValidator('json', loginSchema), async (c) => {
+auth.post('/login', zValidator('json', loginSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
   const email = normalizeEmail(rawEmail);
   const emailCanonical = canonicalizeEmail(email);
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const fingerprint = getAuthFingerprint(c);
 
   // Find user
@@ -318,7 +366,7 @@ auth.post('/login', consoleAuthMutationRateLimit, zValidator('json', loginSchema
       },
     });
 
-    await sendEmailVerificationCode(user.email, challenge.code);
+    await sendEmailVerificationCode(user.email, challenge.code, locale);
 
     return c.json(
       {
@@ -342,7 +390,7 @@ auth.post('/login', consoleAuthMutationRateLimit, zValidator('json', loginSchema
       },
     });
 
-    await sendLoginCode(user.email, challenge.code);
+    await sendLoginCode(user.email, challenge.code, locale);
 
     return c.json({
       two_factor_required: true,
@@ -373,10 +421,11 @@ auth.post('/login', consoleAuthMutationRateLimit, zValidator('json', loginSchema
 });
 
 // POST /v1/auth/verify-email - Verify signup email using OTP code
-auth.post('/verify-email', consoleAuthMutationRateLimit, zValidator('json', verifyEmailSchema), async (c) => {
+auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id, code } = c.req.valid('json');
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const verified = await verifyOtpChallenge(challenge_id, 'email_verification', code);
   const db = getDb();
 
@@ -385,7 +434,8 @@ auth.post('/verify-email', consoleAuthMutationRateLimit, zValidator('json', veri
     throw new UnauthorizedError('Invalid verification challenge');
   }
 
-  if (!user.emailVerifiedAt) {
+  const wasUnverified = !user.emailVerifiedAt;
+  if (wasUnverified) {
     await db
       .update(schema.users)
       .set({
@@ -398,6 +448,10 @@ auth.post('/verify-email', consoleAuthMutationRateLimit, zValidator('json', veri
   if (typeof verified.metadata?.fingerprint_hash === 'string') {
     const ipHash = typeof verified.metadata?.ip_hash === 'string' ? verified.metadata.ip_hash : null;
     await upsertUserPin(user.id, verified.metadata.fingerprint_hash, ipHash, now);
+  }
+
+  if (wasUnverified) {
+    await sendWelcomeEmail(user.email, locale);
   }
 
   const defaultKey = await createDefaultApiKey(user.id, now);
@@ -425,17 +479,19 @@ auth.post('/verify-email', consoleAuthMutationRateLimit, zValidator('json', veri
 // POST /v1/auth/resend-verification - Resend signup verification code
 auth.post(
   '/resend-verification',
-  consoleAuthMutationRateLimit,
   zValidator('json', resendEmailVerificationSchema),
   async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id } = c.req.valid('json');
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const resent = await resendOtpChallenge(challenge_id, 'email_verification');
-  await sendEmailVerificationCode(resent.email, resent.code);
+  if (resent.status === 'sent' && resent.email && resent.code) {
+    await sendEmailVerificationCode(resent.email, resent.code, locale);
+  }
 
   return c.json({
-    sent: true,
+    sent: resent.status === 'sent',
     challenge_id: resent.challengeId,
     expires_in_ms: Math.max(0, resent.expiresAt - now),
     resend_after_ms: Math.max(0, resent.resendAvailableAt - now),
@@ -443,7 +499,7 @@ auth.post(
 });
 
 // POST /v1/auth/2fa/verify - Verify login OTP code and issue JWT
-auth.post('/2fa/verify', consoleAuthMutationRateLimit, zValidator('json', verifyTwoFactorSchema), async (c) => {
+auth.post('/2fa/verify', zValidator('json', verifyTwoFactorSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id, code } = c.req.valid('json');
   const now = Date.now();
@@ -472,15 +528,18 @@ auth.post('/2fa/verify', consoleAuthMutationRateLimit, zValidator('json', verify
 });
 
 // POST /v1/auth/2fa/resend - Resend login OTP code
-auth.post('/2fa/resend', consoleAuthMutationRateLimit, zValidator('json', resendTwoFactorSchema), async (c) => {
+auth.post('/2fa/resend', zValidator('json', resendTwoFactorSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id } = c.req.valid('json');
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const resent = await resendOtpChallenge(challenge_id, 'login_2fa');
-  await sendLoginCode(resent.email, resent.code);
+  if (resent.status === 'sent' && resent.email && resent.code) {
+    await sendLoginCode(resent.email, resent.code, locale);
+  }
 
   return c.json({
-    sent: true,
+    sent: resent.status === 'sent',
     challenge_id: resent.challengeId,
     expires_in_ms: Math.max(0, resent.expiresAt - now),
     resend_after_ms: Math.max(0, resent.resendAvailableAt - now),
@@ -523,6 +582,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
     const profile = await fetchOAuthProfile(provider, accessToken);
     const db = getDb();
     const now = Date.now();
+    const locale = resolveRequestEmailLocale(c);
 
     // Find user by OAuth account
     const [oauthAccount] = await db
@@ -537,6 +597,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
 
     let user = null;
     let rawKey: string | null = null;
+    let createdUser = false;
 
     if (oauthAccount) {
       const [existingUser] = await db
@@ -570,6 +631,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
       };
 
       await db.insert(schema.users).values(user);
+      createdUser = true;
 
       rawKey = generateRawApiKey();
       const keyHash = hashApiKey(rawKey);
@@ -597,6 +659,10 @@ auth.get('/oauth/:provider/callback', async (c) => {
       });
     }
 
+    if (createdUser) {
+      await sendWelcomeEmail(user.email, locale);
+    }
+
     const token = await createJwt(user.id, user.email);
 
     // Create a short-lived exchange code instead of passing sensitive data in URL
@@ -621,7 +687,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
 });
 
 // POST /v1/auth/oauth/exchange - Exchange OAuth code for credentials
-auth.post('/oauth/exchange', consoleAuthMutationRateLimit, async (c) => {
+auth.post('/oauth/exchange', async (c) => {
   assertTrustedBrowserOrigin(c);
   const body = await c.req.json().catch(() => ({}));
   const code = body.code;
@@ -659,7 +725,7 @@ auth.post('/oauth/exchange', consoleAuthMutationRateLimit, async (c) => {
 });
 
 // POST /v1/auth/refresh - Rotate refresh token and issue new access token
-auth.post('/refresh', consoleAuthMutationRateLimit, async (c) => {
+auth.post('/refresh', async (c) => {
   assertTrustedBrowserOrigin(c);
   const rawRefreshToken = getCookie(c, env.AUTH_REFRESH_COOKIE_NAME);
   if (!rawRefreshToken) {
@@ -706,7 +772,7 @@ auth.post('/refresh', consoleAuthMutationRateLimit, async (c) => {
 });
 
 // POST /v1/auth/logout - clear browser session cookie
-auth.post('/logout', consoleAuthMutationRateLimit, async (c) => {
+auth.post('/logout', async (c) => {
   assertTrustedBrowserOrigin(c);
   const rawRefreshToken = getCookie(c, env.AUTH_REFRESH_COOKIE_NAME);
   if (rawRefreshToken) {

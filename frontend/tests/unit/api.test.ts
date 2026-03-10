@@ -171,6 +171,29 @@ describe("api client", () => {
     expect(toastSpy).toHaveBeenCalledWith("Rate limited — try again shortly.");
 
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          error: "rate_limited",
+          message: "429",
+          details: {
+            retryAfter: 10,
+            scope: "render",
+            current_plan: "free",
+            suggested_plan: "dev",
+            upgrade_url: "https://console.docuforge.app/pricing",
+          },
+        }),
+        {
+          status: 429,
+        }
+      )
+    );
+    await expect(api.get("/v1/usage")).rejects.toBeDefined();
+    expect(toastSpy).toHaveBeenCalledWith(
+      "Rate limited for current throughput. Upgrade to dev for higher limits."
+    );
+
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify({ error: "server_error", message: "500" }), {
         status: 500,
       })
