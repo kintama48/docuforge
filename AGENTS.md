@@ -86,6 +86,7 @@
 - **PDF Import Strategy**: For PDF import, do not add OCR-first complexity unless explicitly requested. Use deterministic converter output plus user input, then run in-house LLM/RAG best-effort reconstruction with a clear user review step.
 - **Consumer-Only API Docs**: Public API documentation should only include consumer-facing `/v1/*` endpoints; do not document `/console/*` routes or console-only endpoints.
 - **Config Hygiene**: Keep `.env` focused on secrets/deployment-specific values; move non-secret default knobs (especially plan quotas and request limits) into typed `config.ts` objects.
+- **Unified Env File**: Use root `.env` as the canonical environment file for local prod-like orchestration and production compose runs.
 - **Local Redis Requirement**: Keep Redis in the default local-dev startup path (`make dev` / compose) when Redis-backed features are active.
 - **Email Branding Requirement**: Transactional email HTML must include the DocuForge logo mark, not just text branding.
 
