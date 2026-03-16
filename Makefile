@@ -38,10 +38,10 @@ help:
 	@echo "  make docker-destroy - Stop dev stack and delete volumes"
 	@echo "  make docker-build   - Build dev docker images"
 	@echo "  make docker-logs    - Tail dev docker logs"
-	@echo "  make docker-prod-up - Build and run prod stack (foreground, requires .env.prod)"
-	@echo "  make docker-prod-up-bg - Build and run prod stack (detached, requires .env.prod)"
+	@echo "  make docker-prod-up - Build and run prod stack (foreground, requires .env)"
+	@echo "  make docker-prod-up-bg - Build and run prod stack (detached, requires .env)"
 	@echo "  make docker-prod-down - Stop prod stack and keep volumes"
-	@echo "  make docker-prod-build - Build prod docker images (requires .env.prod)"
+	@echo "  make docker-prod-build - Build prod docker images (requires .env)"
 	@echo "  make docker-prod-logs - Tail prod docker logs"
 
 env:
@@ -126,19 +126,19 @@ docker-logs:
 	docker compose logs -f
 
 docker-prod-up:
-	docker compose --env-file .env.prod -f docker-compose.prod.yml up --build
+	docker compose --env-file .env -f docker-compose.prod.yml up --build
 
 docker-prod-up-bg:
-	docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+	docker compose --env-file .env -f docker-compose.prod.yml up -d --build
 
 docker-prod-down:
-	docker compose --env-file .env.prod -f docker-compose.prod.yml down
+	docker compose --env-file .env -f docker-compose.prod.yml down
 
 docker-prod-build:
-	docker compose --env-file .env.prod -f docker-compose.prod.yml build
+	docker compose --env-file .env -f docker-compose.prod.yml build
 
 docker-prod-logs:
-	docker compose --env-file .env.prod -f docker-compose.prod.yml logs -f
+	docker compose --env-file .env -f docker-compose.prod.yml logs -f
 
 clean:
 	cd engine && cargo clean

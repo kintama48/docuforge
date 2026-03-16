@@ -22,7 +22,7 @@
 | `docker-compose.yml` | Local/dev multi-service compose | You change local Docker behavior or service wiring |
 | `docker-compose.prod.yml` | Production one-droplet compose | You change production topology, ports, env, or limits |
 | `nginx/nginx.conf` | TLS termination and host-based reverse proxy | You change domains, proxy headers, or timeouts |
-| `.env.prod.example` | Production env template | You add/remove runtime config |
+| `.env.example` | Production env template | You add/remove runtime config |
 | `frontend/Dockerfile` | Next.js production image | You change frontend build/runtime behavior |
 | `api/Dockerfile` | API production image | You change API startup or health behavior |
 | `engine/docker/Dockerfile` | Rust engine image | You change engine toolchain/runtime deps |
@@ -168,37 +168,37 @@ Important proxy behavior:
 - API read/send timeouts are extended for longer render operations
 - Only `nginx` binds host ports in production
 
-Cloudflare expectations:
+TLS expectations:
 
 - Keep `www` and `api` as proxied `A` records
-- Use a Cloudflare Origin Certificate on the droplet
-- Set Cloudflare SSL mode to `Full (strict)`
+- Use a standard server certificate (Let's Encrypt recommended) on the droplet
+- Keep Cloudflare SSL mode at `Full (strict)` when proxied
 
 ## 6. Environment Model
 
-Authoritative file: `.env.prod.example`
+Authoritative files: `.env.example`, `api/.env`, `frontend/.env`, `engine/.env`
 
 ### Production env flow
 
-1. Copy `.env.prod.example` to `.env.prod`
-2. Replace all placeholder secrets and live keys
-3. Run prod compose with `--env-file .env.prod`
+1. Copy `.env.example` to `.env` (compose-level frontend build args)
+2. Ensure `api/.env`, `frontend/.env`, and `engine/.env` are present with production values
+3. Run prod compose with `--env-file .env`
 
 ### Variables that matter most for the one-droplet setup
 
-- Frontend public URLs:
+- Compose-level frontend build args (`.env`):
   - `NEXT_PUBLIC_API_URL=https://api.docuforge.app`
   - `NEXT_PUBLIC_APP_URL=https://www.docuforge.app`
   - `NEXT_PUBLIC_MARKETING_URL=https://www.docuforge.app`
   - `NEXT_PUBLIC_CONSOLE_URL=https://www.docuforge.app`
-- API origin and cookie trust:
+- API runtime (`api/.env`):
   - `APP_URL=https://www.docuforge.app`
   - `API_URL=https://api.docuforge.app`
-- Internal service wiring:
+- API runtime internal wiring (`api/.env`):
   - `ENGINE_URL=http://engine:3001`
   - `REDIS_URL=redis://redis:6379`
   - `DATABASE_URL=file:/data/docuforge.db`
-- Queue behavior:
+- API runtime queue behavior (`api/.env`):
   - `RENDER_QUEUE_ENABLED=true`
   - `RENDER_QUEUE_AUTO_START_WORKER=true`
 
@@ -233,22 +233,25 @@ Registry naming:
 ### First-time production bootstrap
 
 ```bash
-cp .env.prod.example .env.prod
-$EDITOR .env.prod
+cp .env.example .env
+$EDITOR .env
+$EDITOR api/.env
+$EDITOR frontend/.env
+$EDITOR engine/.env
 
-docker compose --env-file .env.prod -f docker-compose.prod.yml build
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
-docker compose --env-file .env.prod -f docker-compose.prod.yml ps
-docker compose --env-file .env.prod -f docker-compose.prod.yml logs --tail=100
+docker compose --env-file .env -f docker-compose.prod.yml build
+docker compose --env-file .env -f docker-compose.prod.yml up -d
+docker compose --env-file .env -f docker-compose.prod.yml ps
+docker compose --env-file .env -f docker-compose.prod.yml logs --tail=100
 ```
 
 ### Rolling out updates
 
 ```bash
 git pull origin main
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
-docker compose --env-file .env.prod -f docker-compose.prod.yml ps
-docker compose --env-file .env.prod -f docker-compose.prod.yml logs --tail=100
+docker compose --env-file .env -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env -f docker-compose.prod.yml ps
+docker compose --env-file .env -f docker-compose.prod.yml logs --tail=100
 ```
 
 ### Dev stack helpers
@@ -275,14 +278,15 @@ make docker-prod-logs
 ### Static review
 
 - `docker compose config`
-- `docker compose --env-file .env.prod -f docker-compose.prod.yml config`
+- `docker compose --env-file .env -f docker-compose.prod.yml config`
+- Confirm `api/.env`, `frontend/.env`, and `engine/.env` are present on the host
 - Confirm only `nginx` publishes ports in `docker-compose.prod.yml`
 - Confirm frontend `NEXT_PUBLIC_*` values appear in both prod build args and runtime env
 
 ### Runtime review
 
-- `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build`
-- `docker compose --env-file .env.prod -f docker-compose.prod.yml ps`
+- `docker compose --env-file .env -f docker-compose.prod.yml up -d --build`
+- `docker compose --env-file .env -f docker-compose.prod.yml ps`
 - `curl -I https://www.docuforge.app`
 - `curl https://api.docuforge.app/health`
 - Test login/session flow from `www` to `api`

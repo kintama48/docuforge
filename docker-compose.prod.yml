@@ -36,17 +36,10 @@ services:
         NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     expose:
       - "5173"
+    env_file:
+      - ./frontend/.env
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-DocuForge}
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-      NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL}
-      NEXT_PUBLIC_CONSOLE_URL: ${NEXT_PUBLIC_CONSOLE_URL}
-      NEXT_PUBLIC_BILLING_ENABLED: ${NEXT_PUBLIC_BILLING_ENABLED:-false}
-      NEXT_PUBLIC_BILLING_PROVIDER: ${NEXT_PUBLIC_BILLING_PROVIDER:-none}
-      NEXT_PUBLIC_BILLING_PORTAL_URL: ${NEXT_PUBLIC_BILLING_PORTAL_URL:-}
-      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     depends_on:
       api:
         condition: service_healthy
@@ -59,17 +52,12 @@ services:
     expose:
       - "3000"
     env_file:
-      - ./.env.prod
+      - ./api/.env
     environment:
       PORT: 3000
       NODE_ENV: production
-      APP_URL: ${APP_URL}
-      API_URL: ${API_URL}
-      DATABASE_URL: file:/data/docuforge.db
       ENGINE_URL: http://engine:3001
       REDIS_URL: redis://redis:6379
-      RENDER_QUEUE_ENABLED: ${RENDER_QUEUE_ENABLED:-true}
-      RENDER_QUEUE_AUTO_START_WORKER: ${RENDER_QUEUE_AUTO_START_WORKER:-true}
     volumes:
       - api-data:/data
     depends_on:
@@ -87,6 +75,8 @@ services:
       dockerfile: docker/Dockerfile
     expose:
       - "3001"
+    env_file:
+      - ./engine/.env
     environment:
       HOST: 0.0.0.0
       PORT: 3001
