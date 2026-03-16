@@ -1,8 +1,9 @@
 /**
- * Integration tests for POST /v1/auth/login endpoint.
+ * Integration tests for POST /console/auth/login endpoint.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { createApp } from '../../src/app';
+import { env } from '../../src/config/env';
 import {
   createTestContext,
   createTestUser,
@@ -10,13 +11,15 @@ import {
   sampleUsers,
 } from '../setup';
 
-describe('POST /v1/auth/login', () => {
+describe('POST /console/auth/login', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
+  let deviceId: string;
 
   beforeEach(async () => {
     ctx = await createTestContext();
     app = createApp();
+    deviceId = `auth-login-${crypto.randomUUID()}`;
   });
 
   afterEach(async () => {
@@ -30,9 +33,12 @@ describe('POST /v1/auth/login', () => {
       password: sampleUsers.valid.password,
     });
 
-    const response = await app.request('/v1/auth/login', {
+    const response = await app.request('/console/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': deviceId,
+      },
       body: JSON.stringify({
         email: sampleUsers.valid.email,
         password: sampleUsers.valid.password,
@@ -48,6 +54,28 @@ describe('POST /v1/auth/login', () => {
     expect(body.user.email).toBe(sampleUsers.valid.email);
     expect(body.user.id).toMatch(/^usr_/);
     expect(body.user.plan).toBeDefined();
+    const setCookie = response.headers.get('Set-Cookie');
+    expect(setCookie).toContain(`${env.AUTH_COOKIE_NAME}=`);
+    expect(setCookie).toContain(`${env.AUTH_REFRESH_COOKIE_NAME}=`);
+    expect(setCookie).toContain('HttpOnly');
+  });
+
+  it('clears auth cookie on logout', async () => {
+    const response = await app.request('/console/auth/logout', {
+      method: 'POST',
+      headers: {
+        Origin: env.APP_URL,
+        'X-Device-Id': deviceId,
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.message).toBe('Logged out');
+    const setCookie = response.headers.get('Set-Cookie');
+    expect(setCookie).toContain(`${env.AUTH_COOKIE_NAME}=`);
+    expect(setCookie).toContain(`${env.AUTH_REFRESH_COOKIE_NAME}=`);
+    expect(setCookie).toContain('Max-Age=0');
   });
 
   it('rejects wrong password with 401', async () => {
@@ -57,9 +85,12 @@ describe('POST /v1/auth/login', () => {
       password: sampleUsers.valid.password,
     });
 
-    const response = await app.request('/v1/auth/login', {
+    const response = await app.request('/console/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': deviceId,
+      },
       body: JSON.stringify({
         email: sampleUsers.valid.email,
         password: 'wrongpassword123',
@@ -75,9 +106,12 @@ describe('POST /v1/auth/login', () => {
   });
 
   it('rejects unknown email with 401 and same message as wrong password', async () => {
-    const response = await app.request('/v1/auth/login', {
+    const response = await app.request('/console/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': deviceId,
+      },
       body: JSON.stringify({
         email: 'nonexistent@example.com',
         password: 'anypassword123',
@@ -98,11 +132,12 @@ describe('POST /v1/auth/login', () => {
       password: sampleUsers.valid.password,
     });
 
-    const response = await app.request('/v1/auth/login', {
+    const response = await app.request('/console/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Origin: 'https://evil.example',
+        'X-Device-Id': deviceId,
       },
       body: JSON.stringify({
         email: sampleUsers.valid.email,
@@ -113,5 +148,63 @@ describe('POST /v1/auth/login', () => {
     expect(response.status).toBe(403);
     const body = await response.json();
     expect(body.error).toBe('forbidden');
+  });
+
+  it('returns 404 for legacy /v1 auth login path', async () => {
+    const response = await app.request('/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': deviceId,
+      },
+      body: JSON.stringify({
+        email: sampleUsers.valid.email,
+        password: sampleUsers.valid.password,
+      }),
+    });
+
+    expect(response.status).toBe(404);
+  });
+
+  it('does not hard-throttle auth mutations for normal frontend UX', async () => {
+    await createTestUser(ctx.db, {
+      email: sampleUsers.valid.email,
+      password: sampleUsers.valid.password,
+    });
+
+    for (let i = 0; i < 12; i += 1) {
+      const response = await app.request('/console/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'rate-limit-login-test',
+          'X-Forwarded-For': '203.0.113.77',
+          'X-Device-Id': 'rl-device-login',
+        },
+        body: JSON.stringify({
+          email: sampleUsers.valid.email,
+          password: 'wrong-password',
+        }),
+      });
+      expect(response.status).toBe(401);
+    }
+
+    const followup = await app.request('/console/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'rate-limit-login-test',
+        'X-Forwarded-For': '203.0.113.77',
+        'X-Device-Id': 'rl-device-login',
+      },
+      body: JSON.stringify({
+        email: sampleUsers.valid.email,
+        password: 'wrong-password',
+      }),
+    });
+
+    expect(followup.status).toBe(401);
+    expect(followup.headers.get('Retry-After')).toBeNull();
+    expect(followup.headers.get('X-RateLimit-Limit')).toBeNull();
   });
 });

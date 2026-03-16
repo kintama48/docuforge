@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,12 +21,25 @@ import { useI18n } from "@/src/lib/i18n";
 type FormValues = { email: string; password: string };
 type LoginStep = "credentials" | "verify-email" | "two-factor";
 
+function parseApiError(error: unknown): ApiError | null {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as Record<string, unknown>;
+  const errorCode = typeof candidate.error === "string" ? candidate.error : "unknown_error";
+  const message = typeof candidate.message === "string" ? candidate.message : "";
+  const details =
+    candidate.details && typeof candidate.details === "object"
+      ? (candidate.details as Record<string, unknown>)
+      : undefined;
+  return { error: errorCode, message, details };
+}
+
 export function LoginForm() {
   const { messages } = useI18n();
   const [step, setStep] = useState<LoginStep>("credentials");
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [resendRemainingMs, setResendRemainingMs] = useState<number>(0);
 
   const schema = z.object({
     email: z.string().email(),
@@ -50,7 +63,7 @@ export function LoginForm() {
   const errorMessage = (() => {
     if (step !== "credentials") return null;
     if (!login.isError) return null;
-    const error = login.error as unknown as ApiError | undefined;
+    const error = parseApiError(login.error);
     if (error?.error === "unknown_error") {
       return error.message || messages.auth.errorApiUnavailable;
     }
@@ -64,13 +77,13 @@ export function LoginForm() {
       if (verifyEmail.isError) {
         return extractApiErrorMessage(
           verifyEmail.error,
-          "Unable to verify your email code. Please try again."
+          messages.auth.errorVerifyEmailCode
         );
       }
       if (resendEmail.isError) {
         return extractApiErrorMessage(
           resendEmail.error,
-          "Unable to resend verification code."
+          messages.auth.errorResendVerificationCode
         );
       }
       return null;
@@ -79,17 +92,29 @@ export function LoginForm() {
     if (verifyTwoFactor.isError) {
       return extractApiErrorMessage(
         verifyTwoFactor.error,
-        "Unable to verify your 2FA code. Please try again."
+        messages.auth.errorVerifyTwoFactorCode
       );
     }
     if (resendTwoFactor.isError) {
       return extractApiErrorMessage(
         resendTwoFactor.error,
-        "Unable to resend 2FA code."
+        messages.auth.errorResendTwoFactorCode
       );
     }
     return null;
   })();
+
+  useEffect(() => {
+    if (resendRemainingMs <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setResendRemainingMs((current) =>
+        current <= 1000 ? 0 : current - 1000
+      );
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendRemainingMs]);
 
   async function submitCredentials(values: FormValues) {
     setStatusMessage(null);
@@ -100,6 +125,7 @@ export function LoginForm() {
       if (isVerificationRequiredResponse(response)) {
         setStep("verify-email");
         setChallengeId(response.challenge_id);
+        setResendRemainingMs(Math.max(0, response.resend_after_ms));
         setVerificationCode("");
         return;
       }
@@ -107,6 +133,7 @@ export function LoginForm() {
       if (isTwoFactorRequiredResponse(response)) {
         setStep("two-factor");
         setChallengeId(response.challenge_id);
+        setResendRemainingMs(Math.max(0, response.resend_after_ms));
         setVerificationCode("");
       }
     } catch {
@@ -147,7 +174,8 @@ export function LoginForm() {
           : await resendTwoFactor.mutateAsync({ challenge_id: challengeId });
 
       setChallengeId(response.challenge_id);
-      setStatusMessage("A new verification code has been sent.");
+      setResendRemainingMs(Math.max(0, response.resend_after_ms));
+      setStatusMessage(response.sent ? messages.auth.resendSuccess : null);
     } catch {
       // Mutation errors are rendered through `challengeError`.
     }
@@ -156,6 +184,7 @@ export function LoginForm() {
   function resetToCredentials() {
     setStep("credentials");
     setChallengeId(null);
+    setResendRemainingMs(0);
     setVerificationCode("");
     setStatusMessage(null);
     verifyEmail.reset();
@@ -165,13 +194,19 @@ export function LoginForm() {
   }
 
   const challengeTitle =
-    step === "verify-email" ? "Verify your email" : "Two-factor authentication";
+    step === "verify-email" ? messages.auth.verifyEmailTitle : messages.auth.twoFactorTitle;
   const challengeSubtitle =
     step === "verify-email"
-      ? "Enter the 6-digit code sent to your email."
-      : "Enter the 6-digit code sent to your email to complete sign-in.";
+      ? messages.auth.verifyEmailChallengeSubtitle
+      : messages.auth.twoFactorChallengeSubtitle;
   const verifying = step === "verify-email" ? verifyEmail.isPending : verifyTwoFactor.isPending;
   const resending = step === "verify-email" ? resendEmail.isPending : resendTwoFactor.isPending;
+  const resendRemainingSeconds = Math.ceil(resendRemainingMs / 1000);
+  const resendButtonLabel = resending
+    ? messages.auth.resendingButton
+    : resendRemainingMs > 0
+      ? messages.auth.resendCodeIn.replace("{seconds}", String(resendRemainingSeconds))
+      : messages.auth.resendCodeButton;
 
   return (
     <div className="space-y-4">
@@ -248,7 +283,7 @@ export function LoginForm() {
 
           <div>
             <label htmlFor="verificationCode" className="text-sm text-[#a1a1aa]">
-              Verification code
+              {messages.auth.verificationCodeLabel}
             </label>
             <input
               id="verificationCode"
@@ -275,24 +310,24 @@ export function LoginForm() {
             disabled={verifying || verificationCode.length !== 6}
             className="w-full rounded-md bg-[#3b82f6] py-2 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:opacity-60"
           >
-            {verifying ? "Verifying..." : "Verify code"}
+            {verifying ? messages.auth.verifyingButton : messages.auth.verifyCodeButton}
           </button>
 
           <button
             type="button"
             onClick={() => void resendCode()}
-            disabled={resending || !challengeId}
-            className="w-full rounded-md border border-[#27272a] py-2 text-sm font-semibold text-white transition hover:border-[#3f3f46] disabled:opacity-60"
+            disabled={resending || !challengeId || resendRemainingMs > 0}
+            className="w-full rounded-md border border-[#27272a] bg-transparent py-2 text-sm font-semibold text-white transition hover:border-[#3f3f46] disabled:opacity-60"
           >
-            {resending ? "Resending..." : "Resend code"}
+            {resendButtonLabel}
           </button>
 
           <button
             type="button"
             onClick={resetToCredentials}
-            className="w-full rounded-md border border-transparent py-2 text-xs text-[#a1a1aa] transition hover:text-white"
+            className="w-full rounded-md border border-transparent bg-transparent py-2 text-xs text-[#a1a1aa] transition hover:text-white"
           >
-            Use a different email
+            {messages.auth.useDifferentEmail}
           </button>
         </form>
       )}

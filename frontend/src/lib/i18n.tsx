@@ -49,6 +49,26 @@ const translations = {
       passwordRequired: "Password is required",
       passwordMin: "Password must be at least 8 characters",
       passwordMismatch: "Passwords do not match",
+      verifyEmailTitle: "Verify your email",
+      verifyEmailChallengeSubtitle: "Enter the 6-digit code sent to your email.",
+      registerVerifyEmailSubtitle:
+        "Enter the 6-digit code sent to your email to activate your account.",
+      twoFactorTitle: "Two-factor authentication",
+      twoFactorChallengeSubtitle:
+        "Enter the 6-digit code sent to your email to complete sign-in.",
+      verificationCodeLabel: "Verification code",
+      verifyCodeButton: "Verify code",
+      verifyEmailButton: "Verify email",
+      verifyingButton: "Verifying...",
+      resendingButton: "Resending...",
+      resendCodeButton: "Resend code",
+      resendCodeIn: "Resend code in {seconds}s",
+      resendSuccess: "A new verification code has been sent.",
+      useDifferentEmail: "Use a different email",
+      errorVerifyEmailCode: "Unable to verify your email code. Please try again.",
+      errorResendVerificationCode: "Unable to resend verification code.",
+      errorVerifyTwoFactorCode: "Unable to verify your 2FA code. Please try again.",
+      errorResendTwoFactorCode: "Unable to resend 2FA code.",
     },
     dashboard: {
       usageLabel: "Usage",
@@ -291,67 +311,67 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Developer Console",
-      title: "Typst-native PDF generation that stays out of your way.",
+      title: "Document infrastructure for the critical path.",
       subtitle:
-        "Build and ship PDF workflows with a code-first editor, live preview, and a strict API contract. Simple, fast, and built for developers who hate hidden state.",
+        "Generate production PDFs inline with Rust-powered rendering, versioned template contracts, and practical security controls.",
       engineLabel: "Engine",
       engineBody:
-        "Rust-powered Typst engine (no headless Chrome/Puppeteer). Cheaper, faster, and built to programmatically generate large PDF volumes with Typst-level flexibility.",
+        "Rust-powered rendering engine with no headless browser dependency.",
       ctaDocs: "Read the API docs",
       ctaConsole: "Open the console",
       stats: [
-        { label: "Preview latency", value: "Sub 500ms render pipeline" },
-        { label: "Engine", value: "Rust + Typst, no headless Chrome" },
-        { label: "Delivery", value: "API only, no fluff" },
+        { label: "Render path", value: "Synchronous API responses" },
+        { label: "Runtime", value: "Rust engine, no headless browser" },
+        { label: "Change control", value: "Versioned template contracts" },
       ],
     },
     features: {
       label: "Features",
-      title: "A console built for velocity and clarity.",
+      title: "Infrastructure primitives for document delivery.",
       subtitle:
-        "Every surface is designed to reduce friction. No hidden states, no modal mazes, and no mystery settings.",
+        "Build, validate, and ship templates with explicit contracts and predictable production behavior.",
       items: [
         {
-          title: "Typst-native editor",
-          body: "Write templates with a real Monaco editor, syntax intelligence, and instant diagnostics.",
+          title: "Contract-first editor",
+          body: "Author templates with Monaco, diagnostics, and a direct path from source to runtime output.",
         },
         {
-          title: "Live preview pipeline",
-          body: "Render on save or debounce and keep the last good PDF visible while a new build is in flight.",
+          title: "Synchronous render path",
+          body: "Preview and production routes share the same deterministic rendering core.",
         },
         {
           title: "Asset pipeline",
-          body: "Upload fonts and images once, then insert them straight into your template via snippets.",
+          body: "Upload fonts and images once, then bind them to templates through predictable file references.",
         },
         {
-          title: "Usage control",
-          body: "Track renders, quotas, and API keys in one place with clear limits and upgrade paths.",
+          title: "Operational controls",
+          body: "Track renders, quotas, and API keys with clear limits and observable usage signals.",
         },
         {
-          title: "Team-ready templates",
-          body: "Fork official starters or publish your own versions without reinventing the wheel.",
+          title: "Versioned releases",
+          body: "Publish template versions with explicit promotion so production output stays stable.",
         },
         {
-          title: "Rust-native engine",
-          body: "No headless Chrome. The Rust + Typst engine keeps costs low, throughput high, and makes high-volume programmatic PDFs easy.",
+          title: "Rust execution runtime",
+          body: "No headless browser workers. Keep memory overhead lower and throughput more predictable.",
         },
       ],
     },
     workflow: {
       label: "Workflow",
-      title: "A straight line from template to PDF.",
+      title: "A deterministic path from source to delivery.",
       subtitle:
-        "Follow a three-step flow that mirrors the actual system. Write, test, deploy. The UI stays honest about what is live.",
+        "Follow a three-step release model that mirrors production behavior: author, validate, publish.",
       steps: [
         {
           step: "01",
           title: "Write with structure",
-          body: "Typst templates live beside their data. Use snippets, files, and assets without context switching.",
+          body: "Templates live beside data contracts so schema and layout evolve together.",
         },
         {
           step: "02",
           title: "Preview and validate",
-          body: "See every render in real time with diagnostics that link directly to the line that failed.",
+          body: "Render in real time with diagnostics that point directly to the failing line.",
         },
         {
           step: "03",
@@ -419,7 +439,7 @@ const translations = {
       label: "API",
       title: "One request from render to delivery.",
       subtitle:
-        "The API is designed like the UI: clean inputs, stable outputs, and precise errors that make failures easy to fix.",
+        "Use stable request contracts, synchronous responses, and precise errors that are safe to automate against.",
       ctaDocs: "Explore the docs",
       ctaConsole: "Try the console",
       quickStartLabel: "Quick start",
@@ -461,15 +481,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "Ready to build your PDF workflow?",
+      title: "Ready to simplify your document pipeline?",
       subtitle:
-        "Start with the docs, then open the console when you are ready to ship.",
+        "Start with the API reference, then ship the same payloads through your production path.",
       ctaDocs: "View API docs",
       ctaConsole: "Open console",
     },
     footer: {
       blurb:
-        "Typst-native PDF generation for builders who want speed and clarity from template to render.",
+        "Deterministic document infrastructure for teams that care about runtime behavior, change control, and delivery speed.",
       product: "Product",
       developers: "Developers",
       company: "Company",
@@ -530,6 +550,27 @@ const translations = {
       passwordRequired: "Mot de passe requis",
       passwordMin: "Le mot de passe doit contenir au moins 8 caractères",
       passwordMismatch: "Les mots de passe ne correspondent pas",
+      verifyEmailTitle: "Vérifier votre email",
+      verifyEmailChallengeSubtitle:
+        "Saisissez le code à 6 chiffres envoyé à votre email.",
+      registerVerifyEmailSubtitle:
+        "Saisissez le code à 6 chiffres envoyé à votre email pour activer votre compte.",
+      twoFactorTitle: "Authentification à deux facteurs",
+      twoFactorChallengeSubtitle:
+        "Saisissez le code à 6 chiffres envoyé à votre email pour finaliser la connexion.",
+      verificationCodeLabel: "Code de vérification",
+      verifyCodeButton: "Vérifier le code",
+      verifyEmailButton: "Vérifier l'email",
+      verifyingButton: "Vérification...",
+      resendingButton: "Renvoi...",
+      resendCodeButton: "Renvoyer le code",
+      resendCodeIn: "Renvoyer le code dans {seconds}s",
+      resendSuccess: "Un nouveau code de vérification a été envoyé.",
+      useDifferentEmail: "Utiliser un autre email",
+      errorVerifyEmailCode: "Impossible de vérifier votre code email. Réessayez.",
+      errorResendVerificationCode: "Impossible de renvoyer le code de vérification.",
+      errorVerifyTwoFactorCode: "Impossible de vérifier votre code 2FA. Réessayez.",
+      errorResendTwoFactorCode: "Impossible de renvoyer le code 2FA.",
     },
     dashboard: {
       usageLabel: "Usage",
@@ -771,72 +812,72 @@ const translations = {
     },
     hero: {
       badge: "Console développeur DocuForge",
-      title: "Génération PDF native Typst qui reste simple.",
+      title: "Infrastructure documentaire pour les chemins critiques.",
       subtitle:
-        "Construisez et livrez des workflows PDF avec un éditeur code‑first, un aperçu en direct et un contrat API strict. Simple, rapide, pensé pour les développeurs.",
+        "Générez des PDF de production inline avec un rendu Rust, des contrats de template versionnés et des contrôles de sécurité concrets.",
       engineLabel: "Moteur",
       engineBody:
-        "Moteur Typst en Rust (pas de Chrome/Puppeteer). Moins cher, plus rapide, et conçu pour générer de gros volumes de PDF de façon programmatique avec la flexibilité de Typst.",
+        "Moteur de rendu Rust sans dépendance headless browser. Typst alimente le moteur en coulisses.",
       ctaDocs: "Lire la doc API",
       ctaConsole: "Ouvrir la console",
       stats: [
-        { label: "Latence aperçu", value: "Pipeline de rendu < 500 ms" },
-        { label: "Moteur", value: "Rust + Typst, sans Chrome" },
-        { label: "Livraison", value: "API uniquement" },
+        { label: "Chemin de rendu", value: "Réponses API synchrones" },
+        { label: "Runtime", value: "Moteur Rust, sans headless browser" },
+        { label: "Contrôle des changements", value: "Contrats de template versionnés" },
       ],
     },
     features: {
       label: "Fonctionnalités",
-      title: "Une console pensée pour la vitesse et la clarté.",
+      title: "Des primitives d’infrastructure pour la livraison documentaire.",
       subtitle:
-        "Chaque surface réduit la friction. Pas d’états cachés, pas de labyrinthes de modales.",
+        "Construisez, validez et publiez des templates avec des contrats explicites et un comportement prévisible en production.",
       items: [
         {
-          title: "Éditeur Typst natif",
-          body: "Éditez avec Monaco, intelligence de syntaxe et diagnostics instantanés.",
+          title: "Éditeur orienté contrat",
+          body: "Écrivez des templates avec Monaco, diagnostics intégrés et passage direct de la source au rendu.",
         },
         {
-          title: "Aperçu en direct",
-          body: "Rendez à la sauvegarde ou en différé sans perdre le dernier PDF valide.",
+          title: "Chemin de rendu synchrone",
+          body: "Les routes preview et production partagent le même moteur de rendu déterministe.",
         },
         {
           title: "Pipeline d’assets",
-          body: "Téléversez polices et images puis insérez‑les via des snippets.",
+          body: "Téléversez polices et images une fois, puis liez-les aux templates via des références de fichiers prévisibles.",
         },
         {
-          title: "Contrôle d’usage",
-          body: "Suivez rendus, quotas et clés API avec des limites claires.",
+          title: "Contrôles opérationnels",
+          body: "Suivez rendus, quotas et clés API avec des limites explicites et des signaux d’usage observables.",
         },
         {
-          title: "Templates d’équipe",
-          body: "Forkez les modèles officiels ou publiez vos versions.",
+          title: "Releases versionnées",
+          body: "Publiez des versions de template avec une promotion explicite pour stabiliser le rendu en production.",
         },
         {
-          title: "Moteur Rust natif",
-          body: "Sans Chrome. Le moteur Rust + Typst réduit les coûts, augmente le débit et facilite la génération PDF programmatique à grande échelle.",
+          title: "Runtime d’exécution Rust",
+          body: "Sans workers headless browser. Gardez une empreinte mémoire plus faible et un débit plus prévisible.",
         },
       ],
     },
     workflow: {
       label: "Flux",
-      title: "Une ligne droite du template au PDF.",
+      title: "Un chemin déterministe de la source à la livraison.",
       subtitle:
-        "Un flux en trois étapes qui reflète le système réel. Écrire, tester, déployer.",
+        "Suivez un modèle en trois étapes qui reflète la production: écrire, valider, publier.",
       steps: [
         {
           step: "01",
           title: "Écrire avec structure",
-          body: "Les templates Typst vivent à côté des données et assets.",
+          body: "Les templates vivent à côté des contrats de données pour faire évoluer schéma et mise en page ensemble.",
         },
         {
           step: "02",
           title: "Prévisualiser et valider",
-          body: "Diagnostics liés à la ligne exacte qui a échoué.",
+          body: "Rendez en temps réel avec des diagnostics qui pointent directement vers la ligne en échec.",
         },
         {
           step: "03",
           title: "Publier et livrer",
-          body: "Historique clair des versions et rendu via l’API.",
+          body: "Promouvez des versions avec une piste d’audit claire et rendez en production via l’API.",
         },
       ],
     },
@@ -941,15 +982,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "Prêt à construire votre workflow PDF ?",
+      title: "Prêt à simplifier votre pipeline documentaire ?",
       subtitle:
-        "Commencez par la doc, puis ouvrez la console quand vous êtes prêt.",
+        "Commencez avec la référence API, puis livrez les mêmes payloads sur votre chemin de production.",
       ctaDocs: "Voir la doc API",
       ctaConsole: "Ouvrir la console",
     },
     footer: {
       blurb:
-        "Génération PDF native Typst pour les builders qui veulent vitesse et clarté.",
+        "Infrastructure documentaire déterministe pour les équipes qui exigent un runtime prévisible, un contrôle des changements et une livraison rapide.",
       product: "Produit",
       developers: "Développeurs",
       company: "Entreprise",
@@ -1010,6 +1051,27 @@ const translations = {
       passwordRequired: "Passwort erforderlich",
       passwordMin: "Passwort muss mindestens 8 Zeichen haben",
       passwordMismatch: "Passwörter stimmen nicht überein",
+      verifyEmailTitle: "E-Mail bestätigen",
+      verifyEmailChallengeSubtitle:
+        "Gib den 6-stelligen Code ein, der an deine E-Mail gesendet wurde.",
+      registerVerifyEmailSubtitle:
+        "Gib den 6-stelligen Code ein, der an deine E-Mail gesendet wurde, um dein Konto zu aktivieren.",
+      twoFactorTitle: "Zwei-Faktor-Authentifizierung",
+      twoFactorChallengeSubtitle:
+        "Gib den 6-stelligen Code ein, der an deine E-Mail gesendet wurde, um die Anmeldung abzuschließen.",
+      verificationCodeLabel: "Bestätigungscode",
+      verifyCodeButton: "Code bestätigen",
+      verifyEmailButton: "E-Mail bestätigen",
+      verifyingButton: "Wird bestätigt...",
+      resendingButton: "Wird erneut gesendet...",
+      resendCodeButton: "Code erneut senden",
+      resendCodeIn: "Code erneut senden in {seconds}s",
+      resendSuccess: "Ein neuer Bestätigungscode wurde gesendet.",
+      useDifferentEmail: "Andere E-Mail verwenden",
+      errorVerifyEmailCode: "E-Mail-Code konnte nicht bestätigt werden. Bitte erneut versuchen.",
+      errorResendVerificationCode: "Bestätigungscode konnte nicht erneut gesendet werden.",
+      errorVerifyTwoFactorCode: "2FA-Code konnte nicht bestätigt werden. Bitte erneut versuchen.",
+      errorResendTwoFactorCode: "2FA-Code konnte nicht erneut gesendet werden.",
     },
     dashboard: {
       usageLabel: "Nutzung",
@@ -1251,72 +1313,72 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Entwicklerkonsole",
-      title: "Typst‑native PDF‑Erstellung ohne Umwege.",
+      title: "Dokument-Infrastruktur für den kritischen Pfad.",
       subtitle:
-        "Baue und liefere PDF‑Workflows mit einem code‑first Editor, Live‑Preview und einem klaren API‑Vertrag. Schnell, simpel, für Entwickler.",
+        "Erzeuge produktive PDFs inline mit Rust-basiertem Rendering, versionierten Template-Verträgen und praxisnahen Sicherheitskontrollen.",
       engineLabel: "Engine",
       engineBody:
-        "Rust‑basierte Typst‑Engine (kein Headless Chrome/Puppeteer). Günstiger, schneller und dafür gebaut, große PDF‑Volumen programmatisch mit Typst‑Flexibilität zu erzeugen.",
+        "Rust-Rendering-Engine ohne Headless-Browser-Abhängigkeit. Typst läuft als Engine-Detail im Hintergrund.",
       ctaDocs: "API‑Docs lesen",
       ctaConsole: "Konsole öffnen",
       stats: [
-        { label: "Preview‑Latenz", value: "Render‑Pipeline < 500 ms" },
-        { label: "Engine", value: "Rust + Typst, kein Chrome" },
-        { label: "Lieferung", value: "Nur API" },
+        { label: "Render-Pfad", value: "Synchrone API-Antworten" },
+        { label: "Runtime", value: "Rust-Engine, kein Headless Browser" },
+        { label: "Change Control", value: "Versionierte Template-Verträge" },
       ],
     },
     features: {
       label: "Funktionen",
-      title: "Eine Konsole für Tempo und Klarheit.",
+      title: "Infrastrukturbausteine für die Dokumentauslieferung.",
       subtitle:
-        "Jede Fläche reduziert Reibung. Keine versteckten Zustände, keine Modallabyrinthe.",
+        "Templates mit expliziten Verträgen bauen, validieren und ausrollen, damit das Produktionsverhalten vorhersagbar bleibt.",
       items: [
         {
-          title: "Typst‑nativer Editor",
-          body: "Monaco‑Editor mit Syntax‑Intelligenz und sofortigen Diagnosen.",
+          title: "Vertragsorientierter Editor",
+          body: "Templates mit Monaco, Diagnosen und direktem Pfad von der Quelle zum Laufzeit-Output erstellen.",
         },
         {
-          title: "Live‑Preview",
-          body: "Rendern beim Speichern oder verzögert, ohne das letzte PDF zu verlieren.",
+          title: "Synchroner Render-Pfad",
+          body: "Preview- und Produktionsrouten nutzen denselben deterministischen Render-Kern.",
         },
         {
-          title: "Asset‑Pipeline",
-          body: "Schriften/Bilder hochladen und per Snippets einfügen.",
+          title: "Asset-Pipeline",
+          body: "Schriften und Bilder einmal hochladen und per stabilen Dateireferenzen an Templates binden.",
         },
         {
-          title: "Nutzungskontrolle",
-          body: "Renders, Quoten und API‑Keys zentral mit klaren Limits.",
+          title: "Betriebliche Kontrollen",
+          body: "Renders, Quoten und API-Keys mit klaren Limits und beobachtbaren Nutzungswerten verfolgen.",
         },
         {
-          title: "Team‑Templates",
-          body: "Offizielle Starter forken oder eigene Versionen veröffentlichen.",
+          title: "Versionierte Releases",
+          body: "Template-Versionen mit expliziter Promotion veröffentlichen, damit Produktionsausgaben stabil bleiben.",
         },
         {
-          title: "Rust‑native Engine",
-          body: "Kein Chrome. Rust + Typst senkt Kosten, erhöht den Durchsatz und macht programmatische PDFs im großen Maßstab möglich.",
+          title: "Rust-Ausführungsruntime",
+          body: "Keine Headless-Browser-Worker. Niedrigere Speicherlast und besser planbarer Durchsatz.",
         },
       ],
     },
     workflow: {
       label: "Workflow",
-      title: "Ein gerader Weg vom Template zum PDF.",
+      title: "Ein deterministischer Weg von der Quelle zur Auslieferung.",
       subtitle:
-        "Drei Schritte wie im echten System: schreiben, testen, deployen.",
+        "Ein dreistufiges Release-Modell wie in Produktion: erstellen, validieren, veröffentlichen.",
       steps: [
         {
           step: "01",
           title: "Strukturiert schreiben",
-          body: "Typst‑Templates liegen neben Daten und Assets.",
+          body: "Templates liegen neben Datenverträgen, damit Schema und Layout gemeinsam weiterentwickelt werden.",
         },
         {
           step: "02",
           title: "Vorschau & Validierung",
-          body: "Diagnosen führen direkt zur fehlerhaften Zeile.",
+          body: "In Echtzeit rendern und Diagnosen direkt auf die fehlerhafte Zeile führen.",
         },
         {
           step: "03",
           title: "Publizieren & ausliefern",
-          body: "Klare Versionen und Produktion über die API.",
+          body: "Versionen mit klarer Audit-Spur promoten und in Produktion über die API rendern.",
         },
       ],
     },
@@ -1421,15 +1483,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "Bereit für deinen PDF‑Workflow?",
+      title: "Bereit, deine Dokument-Pipeline zu vereinfachen?",
       subtitle:
-        "Starte mit den Docs und öffne dann die Konsole.",
+        "Starte mit der API-Referenz und liefere dieselben Payloads über deinen Produktionspfad aus.",
       ctaDocs: "API‑Docs",
       ctaConsole: "Konsole öffnen",
     },
     footer: {
       blurb:
-        "Typst‑native PDF‑Erstellung für Teams, die Tempo und Klarheit wollen.",
+        "Deterministische Dokument-Infrastruktur für Teams, die Laufzeitverhalten, Change Control und Liefergeschwindigkeit ernst nehmen.",
       product: "Produkt",
       developers: "Entwickler",
       company: "Unternehmen",
@@ -1490,6 +1552,27 @@ const translations = {
       passwordRequired: "Password richiesta",
       passwordMin: "La password deve avere almeno 8 caratteri",
       passwordMismatch: "Le password non coincidono",
+      verifyEmailTitle: "Verifica la tua email",
+      verifyEmailChallengeSubtitle:
+        "Inserisci il codice a 6 cifre inviato alla tua email.",
+      registerVerifyEmailSubtitle:
+        "Inserisci il codice a 6 cifre inviato alla tua email per attivare il tuo account.",
+      twoFactorTitle: "Autenticazione a due fattori",
+      twoFactorChallengeSubtitle:
+        "Inserisci il codice a 6 cifre inviato alla tua email per completare l'accesso.",
+      verificationCodeLabel: "Codice di verifica",
+      verifyCodeButton: "Verifica codice",
+      verifyEmailButton: "Verifica email",
+      verifyingButton: "Verifica in corso...",
+      resendingButton: "Invio in corso...",
+      resendCodeButton: "Invia di nuovo il codice",
+      resendCodeIn: "Invia di nuovo tra {seconds}s",
+      resendSuccess: "Un nuovo codice di verifica è stato inviato.",
+      useDifferentEmail: "Usa un'altra email",
+      errorVerifyEmailCode: "Impossibile verificare il codice email. Riprova.",
+      errorResendVerificationCode: "Impossibile inviare di nuovo il codice di verifica.",
+      errorVerifyTwoFactorCode: "Impossibile verificare il codice 2FA. Riprova.",
+      errorResendTwoFactorCode: "Impossibile inviare di nuovo il codice 2FA.",
     },
     dashboard: {
       usageLabel: "Uso",
@@ -1731,72 +1814,72 @@ const translations = {
     },
     hero: {
       badge: "Console sviluppatori DocuForge",
-      title: "Generazione PDF nativa Typst senza attrito.",
+      title: "Infrastruttura documentale per il percorso critico.",
       subtitle:
-        "Crea e rilascia workflow PDF con un editor code‑first, preview live e un contratto API rigoroso. Semplice, veloce, per developer.",
+        "Genera PDF di produzione inline con rendering Rust, contratti template versionati e controlli di sicurezza concreti.",
       engineLabel: "Motore",
       engineBody:
-        "Motore Typst in Rust (niente Chrome/Puppeteer). Più economico, più veloce e pensato per generare programmaticamente grandi volumi di PDF con la flessibilità di Typst.",
+        "Motore di rendering Rust senza dipendenze headless browser. Typst alimenta il motore dietro le quinte.",
       ctaDocs: "Leggi la doc API",
       ctaConsole: "Apri la console",
       stats: [
-        { label: "Latenza preview", value: "Pipeline di render < 500 ms" },
-        { label: "Motore", value: "Rust + Typst, senza Chrome" },
-        { label: "Consegna", value: "Solo API" },
+        { label: "Percorso render", value: "Risposte API sincrone" },
+        { label: "Runtime", value: "Motore Rust, senza headless browser" },
+        { label: "Controllo modifiche", value: "Contratti template versionati" },
       ],
     },
     features: {
       label: "Funzionalità",
-      title: "Una console fatta per velocità e chiarezza.",
+      title: "Primitive infrastrutturali per la delivery documentale.",
       subtitle:
-        "Ogni superficie riduce l’attrito. Niente stati nascosti, niente labirinti di modali.",
+        "Costruisci, valida e rilascia template con contratti espliciti e comportamento prevedibile in produzione.",
       items: [
         {
-          title: "Editor Typst nativo",
-          body: "Editor Monaco con intelligenza di sintassi e diagnostica istantanea.",
+          title: "Editor contract-first",
+          body: "Scrivi template con Monaco, diagnostica integrata e passaggio diretto da sorgente a output runtime.",
         },
         {
-          title: "Preview live",
-          body: "Render su salvataggio o con debounce, senza perdere l’ultimo PDF valido.",
+          title: "Percorso di render sincrono",
+          body: "Le route di preview e produzione condividono lo stesso core di rendering deterministico.",
         },
         {
           title: "Pipeline asset",
-          body: "Carica font e immagini e inseriscili via snippet.",
+          body: "Carica font e immagini una volta, poi collegali ai template tramite riferimenti file prevedibili.",
         },
         {
-          title: "Controllo utilizzo",
-          body: "Traccia render, quote e API key con limiti chiari.",
+          title: "Controlli operativi",
+          body: "Monitora render, quote e API key con limiti chiari e segnali di utilizzo osservabili.",
         },
         {
-          title: "Template per team",
-          body: "Forka starter ufficiali o pubblica le tue versioni.",
+          title: "Release versionate",
+          body: "Pubblica versioni template con promozione esplicita per mantenere stabile l’output in produzione.",
         },
         {
-          title: "Motore Rust nativo",
-          body: "Niente Chrome. Rust + Typst riduce i costi, aumenta il throughput e rende semplice la generazione PDF programmatica su larga scala.",
+          title: "Runtime di esecuzione Rust",
+          body: "Niente worker headless browser. Mantieni overhead memoria più basso e throughput più prevedibile.",
         },
       ],
     },
     workflow: {
       label: "Workflow",
-      title: "Una linea retta dal template al PDF.",
+      title: "Un percorso deterministico da sorgente a consegna.",
       subtitle:
-        "Tre passaggi che rispecchiano il sistema reale. Scrivi, testa, rilascia.",
+        "Segui un modello in tre fasi che riflette la produzione: scrivi, valida, pubblica.",
       steps: [
         {
           step: "01",
           title: "Scrivi con struttura",
-          body: "I template Typst vivono accanto ai dati e asset.",
+          body: "I template vivono accanto ai contratti dati, così schema e layout evolvono insieme.",
         },
         {
           step: "02",
           title: "Anteprima e validazione",
-          body: "Diagnostica collegata alla riga che ha fallito.",
+          body: "Renderizza in tempo reale con diagnostica che punta direttamente alla riga in errore.",
         },
         {
           step: "03",
           title: "Pubblica e rilascia",
-          body: "Versioni con audit chiaro e render in produzione via API.",
+          body: "Promuovi versioni con audit trail chiaro e render in produzione tramite API.",
         },
       ],
     },
@@ -1901,15 +1984,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "Pronto a costruire il tuo workflow PDF?",
+      title: "Pronto a semplificare la tua pipeline documentale?",
       subtitle:
-        "Inizia dai docs, poi apri la console quando sei pronto a rilasciare.",
+        "Parti dalla reference API, poi rilascia gli stessi payload nel tuo percorso di produzione.",
       ctaDocs: "Docs API",
       ctaConsole: "Apri console",
     },
     footer: {
       blurb:
-        "Generazione PDF nativa Typst per chi vuole velocità e chiarezza.",
+        "Infrastruttura documentale deterministica per team che richiedono comportamento runtime prevedibile, change control e velocità di delivery.",
       product: "Prodotto",
       developers: "Sviluppatori",
       company: "Azienda",
@@ -1970,6 +2053,27 @@ const translations = {
       passwordRequired: "La contraseña es obligatoria",
       passwordMin: "La contraseña debe tener al menos 8 caracteres",
       passwordMismatch: "Las contraseñas no coinciden",
+      verifyEmailTitle: "Verifica tu email",
+      verifyEmailChallengeSubtitle:
+        "Ingresa el código de 6 dígitos enviado a tu email.",
+      registerVerifyEmailSubtitle:
+        "Ingresa el código de 6 dígitos enviado a tu email para activar tu cuenta.",
+      twoFactorTitle: "Autenticación de dos factores",
+      twoFactorChallengeSubtitle:
+        "Ingresa el código de 6 dígitos enviado a tu email para completar el inicio de sesión.",
+      verificationCodeLabel: "Código de verificación",
+      verifyCodeButton: "Verificar código",
+      verifyEmailButton: "Verificar email",
+      verifyingButton: "Verificando...",
+      resendingButton: "Reenviando...",
+      resendCodeButton: "Reenviar código",
+      resendCodeIn: "Reenviar código en {seconds}s",
+      resendSuccess: "Se envió un nuevo código de verificación.",
+      useDifferentEmail: "Usar otro email",
+      errorVerifyEmailCode: "No se pudo verificar tu código de email. Inténtalo de nuevo.",
+      errorResendVerificationCode: "No se pudo reenviar el código de verificación.",
+      errorVerifyTwoFactorCode: "No se pudo verificar tu código 2FA. Inténtalo de nuevo.",
+      errorResendTwoFactorCode: "No se pudo reenviar el código 2FA.",
     },
     dashboard: {
       usageLabel: "Uso",
@@ -2211,72 +2315,72 @@ const translations = {
     },
     hero: {
       badge: "Consola para desarrolladores DocuForge",
-      title: "Generación PDF nativa de Typst sin fricción.",
+      title: "Infraestructura documental para la ruta crítica.",
       subtitle:
-        "Crea y entrega flujos PDF con un editor code‑first, vista previa en vivo y un contrato API estricto. Simple y rápido para desarrolladores.",
+        "Genera PDFs de producción inline con renderizado en Rust, contratos de plantilla versionados y controles de seguridad prácticos.",
       engineLabel: "Motor",
       engineBody:
-        "Motor Typst en Rust (sin Chrome/Puppeteer). Más barato, más rápido y pensado para generar programáticamente grandes volúmenes de PDF con flexibilidad Typst.",
+        "Motor de render en Rust sin dependencia de headless browser. Typst impulsa el motor por debajo.",
       ctaDocs: "Leer la doc API",
       ctaConsole: "Abrir la consola",
       stats: [
-        { label: "Latencia de preview", value: "Pipeline de render < 500 ms" },
-        { label: "Motor", value: "Rust + Typst, sin Chrome" },
-        { label: "Entrega", value: "Solo API" },
+        { label: "Ruta de render", value: "Respuestas API síncronas" },
+        { label: "Runtime", value: "Motor Rust, sin headless browser" },
+        { label: "Control de cambios", value: "Contratos de plantilla versionados" },
       ],
     },
     features: {
       label: "Funciones",
-      title: "Una consola para velocidad y claridad.",
+      title: "Primitivas de infraestructura para la entrega documental.",
       subtitle:
-        "Cada superficie reduce fricción. Sin estados ocultos, sin laberintos de modales.",
+        "Construye, valida y publica plantillas con contratos explícitos y comportamiento predecible en producción.",
       items: [
         {
-          title: "Editor Typst nativo",
-          body: "Editor Monaco con inteligencia de sintaxis y diagnósticos instantáneos.",
+          title: "Editor orientado a contratos",
+          body: "Escribe plantillas con Monaco, diagnósticos y un camino directo desde el código hasta el resultado en runtime.",
         },
         {
-          title: "Vista previa en vivo",
-          body: "Render al guardar o con debounce, manteniendo el último PDF válido.",
+          title: "Ruta de render síncrona",
+          body: "Las rutas de preview y producción comparten el mismo núcleo de render determinista.",
         },
         {
           title: "Pipeline de assets",
-          body: "Sube fuentes e imágenes e insértalas con snippets.",
+          body: "Sube fuentes e imágenes una vez y vincúlalas a plantillas con referencias de archivo previsibles.",
         },
         {
-          title: "Control de uso",
-          body: "Renders, cuotas y claves API en un solo lugar.",
+          title: "Controles operativos",
+          body: "Sigue renders, cuotas y claves API con límites claros y señales de uso observables.",
         },
         {
-          title: "Templates de equipo",
-          body: "Fork de starters oficiales o publica tus versiones.",
+          title: "Releases versionadas",
+          body: "Publica versiones de plantilla con promoción explícita para mantener estable la salida en producción.",
         },
         {
-          title: "Motor Rust nativo",
-          body: "Sin Chrome. Rust + Typst reduce costes, aumenta el throughput y facilita la generación PDF programática a gran escala.",
+          title: "Runtime de ejecución Rust",
+          body: "Sin workers de headless browser. Mantén menor huella de memoria y throughput más predecible.",
         },
       ],
     },
     workflow: {
       label: "Flujo",
-      title: "Una línea directa del template al PDF.",
+      title: "Una ruta determinista desde el origen hasta la entrega.",
       subtitle:
-        "Tres pasos que reflejan el sistema real. Escribe, prueba, despliega.",
+        "Sigue un modelo de tres pasos que refleja producción: escribir, validar, publicar.",
       steps: [
         {
           step: "01",
           title: "Escribe con estructura",
-          body: "Los templates Typst viven junto a los datos y assets.",
+          body: "Las plantillas viven junto a los contratos de datos para que esquema y layout evolucionen juntos.",
         },
         {
           step: "02",
           title: "Previsualiza y valida",
-          body: "Diagnósticos enlazados a la línea que falló.",
+          body: "Renderiza en tiempo real con diagnósticos que apuntan directamente a la línea con error.",
         },
         {
           step: "03",
           title: "Publica y entrega",
-          body: "Versiones con historial claro y render en producción vía API.",
+          body: "Promueve versiones con una trazabilidad clara y renderiza en producción vía API.",
         },
       ],
     },
@@ -2381,15 +2485,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "¿Listo para tu workflow PDF?",
+      title: "¿Listo para simplificar tu pipeline documental?",
       subtitle:
-        "Empieza con la doc y luego abre la consola cuando estés listo.",
+        "Empieza con la referencia API y entrega los mismos payloads en tu ruta de producción.",
       ctaDocs: "Ver docs API",
       ctaConsole: "Abrir consola",
     },
     footer: {
       blurb:
-        "Generación PDF nativa Typst para equipos que quieren velocidad y claridad.",
+        "Infraestructura documental determinista para equipos que exigen comportamiento de runtime predecible, control de cambios y velocidad de entrega.",
       product: "Producto",
       developers: "Desarrolladores",
       company: "Empresa",
@@ -2450,6 +2554,26 @@ const translations = {
       passwordRequired: "كلمة المرور مطلوبة",
       passwordMin: "كلمة المرور لا تقل عن 8 أحرف",
       passwordMismatch: "كلمتا المرور غير متطابقتين",
+      verifyEmailTitle: "تحقق من بريدك الإلكتروني",
+      verifyEmailChallengeSubtitle: "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني.",
+      registerVerifyEmailSubtitle:
+        "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني لتفعيل حسابك.",
+      twoFactorTitle: "المصادقة الثنائية",
+      twoFactorChallengeSubtitle:
+        "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني لإكمال تسجيل الدخول.",
+      verificationCodeLabel: "رمز التحقق",
+      verifyCodeButton: "تحقق من الرمز",
+      verifyEmailButton: "تحقق من البريد",
+      verifyingButton: "جارٍ التحقق...",
+      resendingButton: "جارٍ إعادة الإرسال...",
+      resendCodeButton: "إعادة إرسال الرمز",
+      resendCodeIn: "إعادة الإرسال خلال {seconds}ث",
+      resendSuccess: "تم إرسال رمز تحقق جديد.",
+      useDifferentEmail: "استخدم بريدًا إلكترونيًا مختلفًا",
+      errorVerifyEmailCode: "تعذر التحقق من رمز البريد الإلكتروني. حاول مرة أخرى.",
+      errorResendVerificationCode: "تعذر إعادة إرسال رمز التحقق.",
+      errorVerifyTwoFactorCode: "تعذر التحقق من رمز المصادقة الثنائية. حاول مرة أخرى.",
+      errorResendTwoFactorCode: "تعذر إعادة إرسال رمز المصادقة الثنائية.",
     },
     dashboard: {
       usageLabel: "الاستخدام",
@@ -2689,72 +2813,72 @@ const translations = {
     },
     hero: {
       badge: "لوحة مطوري DocuForge",
-      title: "توليد PDF أصلي بـ Typst بدون تعقيد.",
+      title: "بنية مستندات للمسار الحرج.",
       subtitle:
-        "ابنِ واصدر تدفقات PDF بمحرر يعتمد على الكود ومعاينة فورية وعقد API واضح. بسيط وسريع للمطورين.",
+        "أنشئ ملفات PDF الإنتاجية مباشرة داخل الطلب مع رندر Rust وعقود قوالب مُنسخة وضوابط أمان عملية.",
       engineLabel: "المحرك",
       engineBody:
-        "محرك Typst بلغة Rust (بدون Chrome/Puppeteer). أرخص وأسرع ومصمم لتوليد كميات كبيرة من ملفات PDF برمجياً مع مرونة Typst.",
+        "محرك رندر بلغة Rust بدون اعتماد على headless browser. يعمل Typst كطبقة تنفيذ داخلية.",
       ctaDocs: "اقرأ وثائق API",
       ctaConsole: "افتح اللوحة",
       stats: [
-        { label: "زمن المعاينة", value: "مسار عرض أقل من 500ms" },
-        { label: "المحرك", value: "Rust + Typst بدون Chrome" },
-        { label: "التسليم", value: "API فقط" },
+        { label: "مسار الرندر", value: "استجابات API متزامنة" },
+        { label: "بيئة التشغيل", value: "محرك Rust بدون headless browser" },
+        { label: "إدارة التغيير", value: "عقود قوالب مُنسخة" },
       ],
     },
     features: {
       label: "الميزات",
-      title: "لوحة مصممة للسرعة والوضوح.",
+      title: "مكوّنات بنية أساسية لتسليم المستندات.",
       subtitle:
-        "كل مساحة تقلل الاحتكاك. لا حالات مخفية ولا متاهات نوافذ.",
+        "ابنِ القوالب وتحقق منها وانشرها بعقود صريحة وسلوك متوقع في الإنتاج.",
       items: [
         {
-          title: "محرر Typst أصلي",
-          body: "محرر Monaco مع ذكاء نحوي وتشخيص فوري.",
+          title: "محرر قائم على العقود",
+          body: "اكتب القوالب عبر Monaco مع تشخيصات ومسار مباشر من المصدر إلى ناتج وقت التشغيل.",
         },
         {
-          title: "معاينة مباشرة",
-          body: "عرض عند الحفظ مع الحفاظ على آخر PDF صالح.",
+          title: "مسار رندر متزامن",
+          body: "مسارا المعاينة والإنتاج يعتمدان نفس نواة الرندر الحتمية.",
         },
         {
           title: "خط أصول",
-          body: "ارفع الخطوط والصور وأدرجها عبر مقتطفات.",
+          body: "ارفع الخطوط والصور مرة واحدة ثم اربطها بالقوالب عبر مراجع ملفات متوقعة.",
         },
         {
-          title: "تحكم بالاستخدام",
-          body: "تتبع العروض والحصص ومفاتيح API بوضوح.",
+          title: "ضوابط تشغيلية",
+          body: "تابع الرندرات والحصص ومفاتيح API بحدود واضحة وإشارات استخدام قابلة للملاحظة.",
         },
         {
-          title: "قوالب للفِرق",
-          body: "انسخ القوالب الرسمية أو انشر نسخك.",
+          title: "إصدارات مُنسخة",
+          body: "انشر نسخ القوالب بترقية صريحة للحفاظ على ثبات الناتج في الإنتاج.",
         },
         {
-          title: "محرك Rust أصلي",
-          body: "بدون Chrome. Rust + Typst يقلل التكلفة ويرفع الإنتاجية ويجعل توليد PDF البرمجي واسع النطاق أسهل.",
+          title: "بيئة تنفيذ Rust",
+          body: "بدون عمال headless browser. حافظ على استهلاك ذاكرة أقل وتدفق أكثر قابلية للتوقع.",
         },
       ],
     },
     workflow: {
       label: "سير العمل",
-      title: "مسار مباشر من القالب إلى PDF.",
+      title: "مسار حتمي من المصدر إلى التسليم.",
       subtitle:
-        "ثلاث خطوات تعكس النظام الحقيقي: اكتب، اختبر، انشر.",
+        "اتبع نموذج إصدار من ثلاث مراحل يعكس الإنتاج: اكتب، تحقق، انشر.",
       steps: [
         {
           step: "01",
           title: "اكتب ببنية واضحة",
-          body: "قوالب Typst بجانب البيانات والأصول.",
+          body: "تعيش القوالب بجانب عقود البيانات كي يتطور المخطط والتخطيط معًا.",
         },
         {
           step: "02",
           title: "عاين وتحقق",
-          body: "تشخيص يربطك بالسطر الذي فشل.",
+          body: "اعرض في الوقت الحقيقي مع تشخيصات تشير مباشرة إلى السطر الذي فشل.",
         },
         {
           step: "03",
           title: "انشر ووزّع",
-          body: "سجل نسخ واضح وعرض في الإنتاج عبر API.",
+          body: "رقِّ النسخ مع سجل تدقيق واضح ونفّذ الرندر في الإنتاج عبر API.",
         },
       ],
     },
@@ -2859,15 +2983,15 @@ const translations = {
       ],
     },
     cta: {
-      title: "هل أنت جاهز لبناء سير عمل PDF؟",
+      title: "هل أنت جاهز لتبسيط مسار مستنداتك؟",
       subtitle:
-        "ابدأ بالمستندات ثم افتح اللوحة عندما تكون جاهزًا.",
+        "ابدأ بمرجع API ثم مرّر نفس الحمولة عبر مسارك الإنتاجي.",
       ctaDocs: "عرض مستندات API",
       ctaConsole: "افتح اللوحة",
     },
     footer: {
       blurb:
-        "توليد PDF أصلي بـ Typst لمن يريد السرعة والوضوح من القالب إلى العرض.",
+        "بنية مستندات حتمية للفرق التي تهتم بسلوك وقت التشغيل وضبط التغييرات وسرعة التسليم.",
       product: "المنتج",
       developers: "المطورون",
       company: "الشركة",
@@ -2928,6 +3052,24 @@ const translations = {
       passwordRequired: "密码必填",
       passwordMin: "密码至少 8 位",
       passwordMismatch: "两次密码不一致",
+      verifyEmailTitle: "验证你的邮箱",
+      verifyEmailChallengeSubtitle: "请输入发送到你邮箱的 6 位验证码。",
+      registerVerifyEmailSubtitle: "请输入发送到你邮箱的 6 位验证码以激活你的账号。",
+      twoFactorTitle: "两步验证",
+      twoFactorChallengeSubtitle: "请输入发送到你邮箱的 6 位验证码以完成登录。",
+      verificationCodeLabel: "验证码",
+      verifyCodeButton: "验证代码",
+      verifyEmailButton: "验证邮箱",
+      verifyingButton: "验证中...",
+      resendingButton: "重新发送中...",
+      resendCodeButton: "重新发送验证码",
+      resendCodeIn: "{seconds}s 后可重发",
+      resendSuccess: "新的验证码已发送。",
+      useDifferentEmail: "使用其他邮箱",
+      errorVerifyEmailCode: "无法验证邮箱验证码，请重试。",
+      errorResendVerificationCode: "无法重新发送验证码。",
+      errorVerifyTwoFactorCode: "无法验证 2FA 验证码，请重试。",
+      errorResendTwoFactorCode: "无法重新发送 2FA 验证码。",
     },
     dashboard: {
       usageLabel: "用量",
@@ -3161,72 +3303,72 @@ const translations = {
     },
     hero: {
       badge: "DocuForge 开发者控制台",
-      title: "Typst 原生 PDF 生成，干净利落。",
+      title: "面向关键路径的文档基础设施。",
       subtitle:
-        "用代码优先的编辑器、实时预览和严格的 API 合同构建并交付 PDF 流程。简单、快速、为开发者而生。",
+        "用 Rust 渲染、版本化模板契约和可落地的安全控制，在请求链路内直接生成生产级 PDF。",
       engineLabel: "引擎",
       engineBody:
-        "Rust 驱动的 Typst 引擎（无需 Headless Chrome/Puppeteer）。更省钱、更快，并可通过程序化方式生成大规模 PDF，同时保留 Typst 的灵活性。",
+        "Rust 渲染引擎，无需 headless browser 依赖。Typst 作为底层引擎细节运行。",
       ctaDocs: "阅读 API 文档",
       ctaConsole: "打开控制台",
       stats: [
-        { label: "预览延迟", value: "渲染链路 < 500ms" },
-        { label: "引擎", value: "Rust + Typst，无 Chrome" },
-        { label: "交付", value: "仅 API" },
+        { label: "渲染路径", value: "同步 API 响应" },
+        { label: "运行时", value: "Rust 引擎，无 headless browser" },
+        { label: "变更控制", value: "版本化模板契约" },
       ],
     },
     features: {
       label: "功能",
-      title: "为速度与清晰度打造的控制台。",
+      title: "面向文档交付的基础设施能力。",
       subtitle:
-        "每个界面都在降低摩擦：没有隐藏状态，没有复杂弹窗。",
+        "通过显式契约构建、校验并发布模板，让生产行为可预测。",
       items: [
         {
-          title: "Typst 原生编辑器",
-          body: "Monaco 编辑器、语法智能与即时诊断。",
+          title: "契约优先编辑器",
+          body: "用 Monaco 编写模板，结合诊断能力，从源码直达运行时输出。",
         },
         {
-          title: "实时预览管线",
-          body: "保存即渲染或防抖渲染，保持上一次有效 PDF。",
+          title: "同步渲染路径",
+          body: "预览与生产共用同一套确定性渲染核心。",
         },
         {
           title: "资源管线",
-          body: "上传字体和图片，并通过片段快速插入。",
+          body: "字体和图片一次上传，通过稳定文件引用绑定到模板。",
         },
         {
-          title: "用量控制",
-          body: "统一查看渲染、配额与 API key。",
+          title: "运行控制",
+          body: "清晰追踪渲染、配额与 API key，并提供可观测的使用信号。",
         },
         {
-          title: "团队模板",
-          body: "Fork 官方模板或发布自己的版本。",
+          title: "版本化发布",
+          body: "通过显式发布流程推广模板版本，确保生产输出稳定。",
         },
         {
-          title: "Rust 原生引擎",
-          body: "无 Chrome。Rust + Typst 降低成本、提升吞吐，并支持大规模程序化 PDF 生成。",
+          title: "Rust 执行运行时",
+          body: "无需 headless browser worker，降低内存开销并提升吞吐可预测性。",
         },
       ],
     },
     workflow: {
       label: "流程",
-      title: "从模板到 PDF 的直线路径。",
+      title: "从源码到交付的确定性路径。",
       subtitle:
-        "三步流程还原真实系统：写、测、发。",
+        "采用与生产一致的三步发布模型：编写、验证、发布。",
       steps: [
         {
           step: "01",
           title: "结构化编写",
-          body: "Typst 模板与数据、资源并排。",
+          body: "模板与数据契约并排演进，让 schema 与版式同步迭代。",
         },
         {
           step: "02",
           title: "预览与验证",
-          body: "诊断直接定位到出错行。",
+          body: "实时渲染并通过诊断直接定位到失败行。",
         },
         {
           step: "03",
           title: "发布与交付",
-          body: "清晰版本历史，生产通过 API 渲染。",
+          body: "通过清晰审计轨迹推广版本，并经由 API 在生产渲染。",
         },
       ],
     },
@@ -3330,14 +3472,14 @@ const translations = {
       ],
     },
     cta: {
-      title: "准备好构建你的 PDF 流程了吗？",
+      title: "准备好简化你的文档管线了吗？",
       subtitle:
-        "先看文档，再打开控制台开始交付。",
+        "先从 API 参考开始，再把同一套 payload 直接用于生产路径。",
       ctaDocs: "查看 API 文档",
       ctaConsole: "打开控制台",
     },
     footer: {
-      blurb: "Typst 原生 PDF 生成，面向追求速度与清晰的团队。",
+      blurb: "面向关注运行时行为、变更控制和交付速度团队的确定性文档基础设施。",
       product: "产品",
       developers: "开发者",
       company: "公司",

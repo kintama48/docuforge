@@ -36,26 +36,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function Section({
   locale,
-  title,
-  description,
   docs,
   collection,
   readMoreLabel,
 }: {
   locale: Locale;
-  title: string;
-  description: string;
   docs: ContentDocument[];
   collection: ContentCollection;
   readMoreLabel: string;
 }) {
   return (
     <section className="mt-14">
-      <div className="mb-6 flex flex-col gap-2">
-        <h2 className="font-display text-3xl text-[var(--ink)] sm:text-4xl">{title}</h2>
-        <p className="text-sm text-[var(--muted)]">{description}</p>
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-2">
         {docs.map((doc) => (
           <Link
@@ -89,9 +80,6 @@ export default async function BlogIndexPage() {
   const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
 
   const blogMeta = getCollectionMeta("blog", locale);
-  const templateMeta = getCollectionMeta("templates", locale);
-  const compareMeta = getCollectionMeta("compare", locale);
-  const industryMeta = getCollectionMeta("industries", locale);
   const copy = getContentHubCopy(locale);
 
   const blogDocs = listContent("blog", locale);
@@ -113,8 +101,6 @@ export default async function BlogIndexPage() {
 
         <Section
           locale={locale}
-          title={blogMeta.title}
-          description={blogMeta.description}
           docs={blogDocs}
           collection="blog"
           readMoreLabel={copy.readMore}
@@ -122,8 +108,6 @@ export default async function BlogIndexPage() {
 
         <Section
           locale={locale}
-          title={templateMeta.title}
-          description={templateMeta.description}
           docs={templateDocs}
           collection="templates"
           readMoreLabel={copy.readMore}
@@ -131,8 +115,6 @@ export default async function BlogIndexPage() {
 
         <Section
           locale={locale}
-          title={compareMeta.title}
-          description={compareMeta.description}
           docs={compareDocs}
           collection="compare"
           readMoreLabel={copy.readMore}
@@ -140,8 +122,6 @@ export default async function BlogIndexPage() {
 
         <Section
           locale={locale}
-          title={industryMeta.title}
-          description={industryMeta.description}
           docs={industryDocs}
           collection="industries"
           readMoreLabel={copy.readMore}

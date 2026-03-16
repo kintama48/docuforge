@@ -150,6 +150,7 @@ export function buildRenderJobId(userId: string, idempotencyKey: string): string
 }
 
 export async function enqueueRenderJob(input: EnqueueRenderJobInput): Promise<EnqueueRenderJobResult> {
+  assertNonEmptyString('templateId', input.templateId);
   assertRenderQueuePayloadData(input.data);
   const q = getQueue();
   const jobId = buildRenderJobId(input.userId, input.idempotencyKey);
@@ -175,9 +176,11 @@ export async function enqueueRenderJob(input: EnqueueRenderJobInput): Promise<En
       status: 'queued',
       duplicate: false,
     };
-  } catch {
+  } catch (err) {
     const raced = await q.getJob(jobId);
-    if (!raced) throw new Error('Failed to enqueue render job');
+    if (!raced) {
+      throw err instanceof Error ? err : new Error('Failed to enqueue render job');
+    }
     return {
       jobId,
       status: mapJobStatus(await raced.getState()),

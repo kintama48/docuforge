@@ -28,9 +28,9 @@ describe('API Key Management', () => {
     await ctx.cleanup();
   });
 
-  describe('POST /v1/auth/keys', () => {
+  describe('POST /console/auth/keys', () => {
     it('creates new API key and returns 201 with raw key', async () => {
-      const response = await app.request('/v1/auth/keys', {
+      const response = await app.request('/console/auth/keys', {
         method: 'POST',
         headers: getAuthHeaders(user, false), // JWT auth
         body: JSON.stringify({ name: 'Production Server' }),
@@ -47,10 +47,10 @@ describe('API Key Management', () => {
     });
   });
 
-  describe('GET /v1/auth/keys', () => {
+  describe('GET /console/auth/keys', () => {
     it('lists keys without raw values (only prefix shown)', async () => {
       // Create an additional key
-      const createResponse = await app.request('/v1/auth/keys', {
+      const createResponse = await app.request('/console/auth/keys', {
         method: 'POST',
         headers: getAuthHeaders(user, false),
         body: JSON.stringify({ name: 'Second Key' }),
@@ -58,7 +58,7 @@ describe('API Key Management', () => {
       expect(createResponse.status).toBe(201);
 
       // List keys
-      const response = await app.request('/v1/auth/keys', {
+      const response = await app.request('/console/auth/keys', {
         method: 'GET',
         headers: getAuthHeaders(user, false),
       });
@@ -82,10 +82,10 @@ describe('API Key Management', () => {
     });
   });
 
-  describe('DELETE /v1/auth/keys/:id', () => {
+  describe('DELETE /console/auth/keys/:id', () => {
     it('revokes key and returns 200', async () => {
       // Create a new key to revoke
-      const createResponse = await app.request('/v1/auth/keys', {
+      const createResponse = await app.request('/console/auth/keys', {
         method: 'POST',
         headers: getAuthHeaders(user, false),
         body: JSON.stringify({ name: 'Key to Revoke' }),
@@ -93,7 +93,7 @@ describe('API Key Management', () => {
       expect(createResponse.status).toBe(201);
 
       // Get the key id from list
-      const listResponse = await app.request('/v1/auth/keys', {
+      const listResponse = await app.request('/console/auth/keys', {
         method: 'GET',
         headers: getAuthHeaders(user, false),
       });
@@ -102,7 +102,7 @@ describe('API Key Management', () => {
       expect(keyToRevoke).toBeDefined();
 
       // Revoke the key
-      const revokeResponse = await app.request(`/v1/auth/keys/${keyToRevoke.id}`, {
+      const revokeResponse = await app.request(`/console/auth/keys/${keyToRevoke.id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(user, false),
       });
@@ -113,7 +113,7 @@ describe('API Key Management', () => {
       expect(body.message).toBe('Key revoked');
 
       // Verify key is no longer in list
-      const listAfterResponse = await app.request('/v1/auth/keys', {
+      const listAfterResponse = await app.request('/console/auth/keys', {
         method: 'GET',
         headers: getAuthHeaders(user, false),
       });
@@ -124,30 +124,40 @@ describe('API Key Management', () => {
 
     it('revoked key returns 401 on subsequent use', async () => {
       // Create a template to test render
-      await createTestTemplate(ctx.db, user.id);
+      const template = await createTestTemplate(ctx.db, user.id);
 
       // First verify the key works
-      const usageResponse = await app.request('/v1/usage', {
-        method: 'GET',
+      const renderResponse = await app.request('/v1/render', {
+        method: 'POST',
         headers: {
           'X-API-Key': user.rawApiKey,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          template_id: template.id,
+          data: { customer: 'Before revoke' },
+        }),
       });
-      expect(usageResponse.status).toBe(200);
+      expect(renderResponse.status).toBe(200);
 
       // Revoke the key via the API (this also evicts from cache)
-      const revokeResponse = await app.request(`/v1/auth/keys/${user.apiKeyId}`, {
+      const revokeResponse = await app.request(`/console/auth/keys/${user.apiKeyId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(user, false), // Use JWT auth
       });
       expect(revokeResponse.status).toBe(200);
 
       // Try to use the revoked key
-      const response = await app.request('/v1/usage', {
-        method: 'GET',
+      const response = await app.request('/v1/render', {
+        method: 'POST',
         headers: {
           'X-API-Key': user.rawApiKey,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          template_id: template.id,
+          data: { customer: 'After revoke' },
+        }),
       });
 
       expect(response.status).toBe(401);
@@ -157,13 +167,13 @@ describe('API Key Management', () => {
     });
 
     it('rejects revoking an already revoked key', async () => {
-      const revokeResponse = await app.request(`/v1/auth/keys/${user.apiKeyId}`, {
+      const revokeResponse = await app.request(`/console/auth/keys/${user.apiKeyId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(user, false),
       });
       expect(revokeResponse.status).toBe(200);
 
-      const secondResponse = await app.request(`/v1/auth/keys/${user.apiKeyId}`, {
+      const secondResponse = await app.request(`/console/auth/keys/${user.apiKeyId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(user, false),
       });

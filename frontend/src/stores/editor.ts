@@ -265,11 +265,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   setRateLimitUntil: (value) => set({ rateLimitUntil: value }),
   markClean: () =>
-    set({
+    set((state) => ({
       isDirty: false,
-      lastSavedSource: get().source,
-      lastSavedLowCodeSpec: get().lowCodeSpec ? cloneLowCodeSpec(get().lowCodeSpec!) : null,
-    }),
+      lastSavedSource: state.source,
+      lastSavedLowCodeSpec: state.lowCodeSpec ? cloneLowCodeSpec(state.lowCodeSpec) : null,
+    })),
   setReadOnly: (value) => set({ readOnly: value }),
   setViewingVersion: (version) => set({ viewingVersion: version }),
   setPublishedVersion: (version) => set({ publishedVersion: version }),

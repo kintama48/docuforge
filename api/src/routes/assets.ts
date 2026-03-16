@@ -14,6 +14,7 @@ import {
   invalidateResolvedAssetCache,
 } from '../services/asset';
 import { NotFoundError, ValidationError } from '../lib/errors';
+import { assertPresent } from '../lib/assert';
 
 const assets = new Hono();
 
@@ -80,15 +81,16 @@ assets.post('/', jwtAuth, noCache, zValidator('json', confirmUploadSchema), asyn
     }
 
     const [updated] = await db.select().from(schema.assets).where(eq(schema.assets.id, existing.id));
+    const updatedAsset = assertPresent(updated, `Updated asset row not found for ${existing.id}`);
     invalidateResolvedAssetCache(userId);
 
     return c.json({
       asset: {
-        id: updated!.id,
-        name: updated!.name,
-        mime_type: updated!.mimeType,
-        size_bytes: updated!.sizeBytes,
-        hash: updated!.hash,
+        id: updatedAsset.id,
+        name: updatedAsset.name,
+        mime_type: updatedAsset.mimeType,
+        size_bytes: updatedAsset.sizeBytes,
+        hash: updatedAsset.hash,
       },
     });
   }

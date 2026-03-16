@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { invariant, assertPresent } from "../lib/assert.mjs";
 import { buildBenchmarkReportFromK6, safeParseJsonFile } from "../lib/summary-to-benchmark.mjs";
 
 function parseArgs(argv) {
@@ -27,6 +28,8 @@ function main() {
   const summaryPath = resolve(process.cwd(), args.summary);
   const outputPath = resolve(process.cwd(), args.output);
 
+  invariant(summaryPath.length > 0, "summary path must be non-empty");
+  invariant(outputPath.length > 0, "output path must be non-empty");
   const k6Summary = JSON.parse(readFileSync(summaryPath, "utf8"));
   const existingReport = safeParseJsonFile(outputPath);
 
@@ -40,9 +43,10 @@ function main() {
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
+  const docuforgeTool = assertPresent(report.tools[0], "Expected docuforge tool in benchmark report");
   console.log(`Benchmark report updated: ${outputPath}`);
-  console.log(`DocuForge speed p50: ${report.tools[0].speedMs.p50}ms`);
-  console.log(`DocuForge cold-start probe p50: ${report.tools[0].coldStartMs.p50}ms`);
+  console.log(`DocuForge speed p50: ${docuforgeTool.speedMs.p50}ms`);
+  console.log(`DocuForge cold-start probe p50: ${docuforgeTool.coldStartMs.p50}ms`);
 }
 
 main();

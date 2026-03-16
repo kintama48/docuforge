@@ -145,7 +145,7 @@ export default function PrivacyPage() {
           10. Contact
         </h2>
         <p>
-          Questions about privacy? Contact us at hello@docuforge.app.
+          Questions about privacy? Contact us at support@docuforge.app.
         </p>
       </section>
     </LegalLayout>

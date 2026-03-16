@@ -17,17 +17,18 @@ declare module 'hono' {
 // JWT secret is validated at startup via env.ts (min 32 chars required)
 // No fallback - if JWT_SECRET is missing, the app won't start
 let jwtSecretCache: Uint8Array | null = null;
+let jwtSecretCacheSource: string | null = null;
 
 function getJwtSecret(): Uint8Array {
-  if (!jwtSecretCache) {
-    jwtSecretCache = new TextEncoder().encode(env.JWT_SECRET);
+  if (!jwtSecretCache || jwtSecretCacheSource !== env.JWT_SECRET) {
+    jwtSecretCacheSource = env.JWT_SECRET;
+    jwtSecretCache = new TextEncoder().encode(jwtSecretCacheSource);
   }
   return jwtSecretCache;
 }
 
 export async function createJwt(userId: string, email: string): Promise<string> {
-  const expiry = process.env.JWT_EXPIRY || '7d';
-  const expiresIn = parseExpiry(expiry);
+  const expiresIn = parseExpiry(env.AUTH_ACCESS_TOKEN_EXPIRY || env.JWT_EXPIRY);
 
   return new SignJWT({ sub: userId, email })
     .setProtectedHeader({ alg: 'HS256' })
@@ -41,10 +42,58 @@ function parseExpiry(expiry: string): string {
   return expiry;
 }
 
+function readCookieValue(cookieHeader: string | undefined, cookieName: string): string | null {
+  if (!cookieHeader) return null;
+  const parts = cookieHeader.split(';');
+  for (const part of parts) {
+    const [rawName, ...rest] = part.trim().split('=');
+    if (rawName === cookieName) {
+      const value = rest.join('=');
+      return value ? decodeURIComponent(value) : null;
+    }
+  }
+  return null;
+}
+
+function isConsolePath(path: string): boolean {
+  return path.startsWith('/console/');
+}
+
+function assertNonEmptyToken(token: string | null, message: string): asserts token is string {
+  if (!token || token.trim().length === 0) {
+    throw new UnauthorizedError(message);
+  }
+}
+
+function normalizePlanTier(value: unknown): PlanTier {
+  if (value === 'free' || value === 'dev' || value === 'starter' || value === 'pro') {
+    return value;
+  }
+  return 'free';
+}
+
+function parseJwtPayload(payload: unknown): JwtPayload {
+  if (!payload || typeof payload !== 'object') {
+    throw new UnauthorizedError('Invalid or expired token');
+  }
+
+  const record = payload as Record<string, unknown>;
+  const sub = typeof record.sub === 'string' ? record.sub : null;
+  const email = typeof record.email === 'string' ? record.email : null;
+  const iat = typeof record.iat === 'number' ? record.iat : null;
+  const exp = typeof record.exp === 'number' ? record.exp : null;
+
+  if (!sub || !email || iat === null || exp === null) {
+    throw new UnauthorizedError('Invalid or expired token');
+  }
+
+  return { sub, email, iat, exp };
+}
+
 async function verifyJwt(token: string): Promise<JwtPayload> {
   try {
     const { payload } = await jwtVerify(token, getJwtSecret());
-    return payload as unknown as JwtPayload;
+    return parseJwtPayload(payload);
   } catch {
     throw new UnauthorizedError('Invalid or expired token');
   }
@@ -108,12 +157,12 @@ async function validateApiKey(rawKey: string): Promise<AuthContext> {
   // Cache the result
   setCachedKey(secureHash, {
     userId: keyRecord.userId,
-    planTier: keyRecord.planTier as PlanTier,
+    planTier: normalizePlanTier(keyRecord.planTier),
   });
   if (matchedHash !== secureHash) {
     setCachedKey(matchedHash, {
       userId: keyRecord.userId,
-      planTier: keyRecord.planTier as PlanTier,
+      planTier: normalizePlanTier(keyRecord.planTier),
     });
   }
 
@@ -133,7 +182,7 @@ async function validateApiKey(rawKey: string): Promise<AuthContext> {
       console.error('Failed to update API key last_used_at:', err);
     });
 
-  return { userId: keyRecord.userId, planTier: keyRecord.planTier as PlanTier };
+  return { userId: keyRecord.userId, planTier: normalizePlanTier(keyRecord.planTier) };
 }
 
 async function validateJwt(token: string): Promise<AuthContext> {
@@ -156,11 +205,22 @@ export const apiKeyAuth = createMiddleware(async (c, next) => {
 // Middleware for JWT authentication
 export const jwtAuth = createMiddleware(async (c, next) => {
   const authHeader = c.req.header('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Bearer token required');
+  const tokenFromHeader = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const tokenFromCookie = readCookieValue(c.req.header('Cookie'), env.AUTH_COOKIE_NAME);
+  const consoleRequest = isConsolePath(c.req.path);
+
+  if (consoleRequest) {
+    // Console routes are session-cookie only.
+    assertNonEmptyToken(tokenFromCookie, 'Session cookie required');
+    const auth = await validateJwt(tokenFromCookie);
+    c.set('auth', auth);
+    await next();
+    return;
   }
 
-  const token = authHeader.slice(7);
+  const token = tokenFromHeader || tokenFromCookie;
+  assertNonEmptyToken(token, 'Bearer token required');
+
   const auth = await validateJwt(token);
   c.set('auth', auth);
   await next();
@@ -168,8 +228,19 @@ export const jwtAuth = createMiddleware(async (c, next) => {
 
 // Middleware that accepts either API key or JWT
 export const flexibleAuth = createMiddleware(async (c, next) => {
+  const consoleRequest = isConsolePath(c.req.path);
   const apiKey = c.req.header('X-API-Key');
   const authHeader = c.req.header('Authorization');
+  const cookieToken = readCookieValue(c.req.header('Cookie'), env.AUTH_COOKIE_NAME);
+
+  if (consoleRequest) {
+    // Console routes are session-cookie only.
+    assertNonEmptyToken(cookieToken, 'Session cookie required');
+    const auth = await validateJwt(cookieToken);
+    c.set('auth', auth);
+    await next();
+    return;
+  }
 
   if (apiKey) {
     const auth = await validateApiKey(apiKey);
@@ -177,6 +248,9 @@ export const flexibleAuth = createMiddleware(async (c, next) => {
   } else if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     const auth = await validateJwt(token);
+    c.set('auth', auth);
+  } else if (cookieToken) {
+    const auth = await validateJwt(cookieToken);
     c.set('auth', auth);
   } else {
     throw new UnauthorizedError('Authentication required');

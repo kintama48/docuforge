@@ -179,7 +179,7 @@ export default function TermsPage() {
           13. Contact
         </h2>
         <p>
-          Questions about these terms? Contact us at hello@docuforge.app.
+          Questions about these terms? Contact us at support@docuforge.app.
         </p>
       </section>
     </LegalLayout>

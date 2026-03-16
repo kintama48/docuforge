@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assertPresent } from './assert';
 
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 const DYNAMIC_PATH_PATTERN = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*$/;
@@ -104,16 +105,17 @@ function toTypstPath(path: string): string {
 
 function toTypstLookup(path: string, fallback: string): string {
   const segments = path.split('.');
-  if (segments.length === 0 || !segments[0]) {
+  const first = segments[0];
+  if (segments.length === 0 || !first) {
     return fallback;
   }
 
   if (segments.length === 1) {
-    return `data.at(${quote(segments[0]!)}, default: ${fallback})`;
+    return `data.at(${quote(first)}, default: ${fallback})`;
   }
 
   const parentPath = segments.slice(0, -1).join('.');
-  const leaf = segments[segments.length - 1]!;
+  const leaf = assertPresent(segments.at(-1), 'Expected a final path segment');
   return `${toTypstPath(parentPath)}.at(${quote(leaf)}, default: ${fallback})`;
 }
 
@@ -251,7 +253,7 @@ export function inferLowCodeDefaults(specInput: LowCodeSpec): Record<string, unk
     const segments = path.split('.');
     let cursor: Record<string, unknown> = output;
     for (let index = 0; index < segments.length; index += 1) {
-      const segment = segments[index]!;
+      const segment = assertPresent(segments[index], `Missing path segment at index ${index}`);
       if (index === segments.length - 1) {
         cursor[segment] = '';
         break;

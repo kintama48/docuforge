@@ -1,5 +1,5 @@
 /**
- * Integration tests for POST /v1/render/preview endpoint.
+ * Integration tests for POST /console/render/preview endpoint.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { eq, and, gte } from 'drizzle-orm';
@@ -14,7 +14,7 @@ import {
   samplePreviewRequests,
 } from '../setup';
 
-describe('POST /v1/render/preview', () => {
+describe('POST /console/render/preview', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
   let user: TestUser;
@@ -30,7 +30,7 @@ describe('POST /v1/render/preview', () => {
   });
 
   it('renders from raw source and returns 200 with PDF bytes', async () => {
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false), // JWT auth
       body: JSON.stringify(samplePreviewRequests.valid),
@@ -53,7 +53,7 @@ describe('POST /v1/render/preview', () => {
   });
 
   it('requires JWT auth, rejects API key with 401', async () => {
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, true), // API key auth
       body: JSON.stringify(samplePreviewRequests.valid),
@@ -84,7 +84,7 @@ describe('POST /v1/render/preview', () => {
     const initialCount = initialLogs.length;
 
     // Render a preview
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.valid),
@@ -106,7 +106,7 @@ describe('POST /v1/render/preview', () => {
     expect(previewLog).toBeDefined();
 
     // Check usage endpoint - previews don't count against production limit
-    const usageResponse = await app.request('/v1/usage', {
+    const usageResponse = await app.request('/console/usage', {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });
@@ -118,7 +118,7 @@ describe('POST /v1/render/preview', () => {
   });
 
   it('rejects source over 100KB with 422', async () => {
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.oversized),
@@ -131,7 +131,7 @@ describe('POST /v1/render/preview', () => {
   });
 
   it('works with additional files parameter', async () => {
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.withFiles),
@@ -142,7 +142,7 @@ describe('POST /v1/render/preview', () => {
   });
 
   it('renders preview from low_code_spec', async () => {
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.lowCode),
@@ -160,7 +160,7 @@ describe('POST /v1/render/preview', () => {
   });
 
   it('works with data parameter', async () => {
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.withData),

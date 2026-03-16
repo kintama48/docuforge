@@ -19,9 +19,11 @@ import {
   shouldAutoStartRenderWorker,
   startRenderQueueWorker,
 } from './services/render-queue';
+import { isWebhookQueueEnabled, startWebhookQueueWorker } from './services/webhook';
 
 let sentryInitialized = false;
 let renderWorkerInitialized = false;
+let webhookWorkerInitialized = false;
 let ragInitStarted = false;
 
 export function createApp() {
@@ -53,8 +55,9 @@ export function createApp() {
         'Idempotency-Key',
         'X-Idempotency-Key',
         'X-Device-Id',
+        'X-Docuforge-Locale',
       ],
-      credentials: false,
+      credentials: true,
       maxAge: 86400,
     })
   );
@@ -98,13 +101,16 @@ export function createApp() {
 
   // Mount routes
   app.route('/', health);
-  app.route('/v1/auth', auth);
+  app.route('/console/auth', auth);
+  app.route('/console/templates', templates);
+  app.route('/console/assets', assets);
+  app.route('/console/ai', ai);
+  app.route('/console/webhooks', webhooksRoute);
+  app.route('/console/render', render);
+  app.route('/console', billing);
+
   app.route('/v1/render', render);
-  app.route('/v1', billing);  // Mounts /v1/usage, /v1/billing/checkout, /v1/billing/webhook
-  app.route('/v1/templates', templates);
-  app.route('/v1/assets', assets);
-  app.route('/v1/ai', ai);
-  app.route('/v1/webhooks', webhooksRoute);
+  app.route('/v1', billing); // Mounts /v1/billing/webhook
 
   // Initialize RAG vector store (non-blocking, logs warning on failure)
   if (env.RAG_ENABLED && !ragInitStarted) {
@@ -119,6 +125,12 @@ export function createApp() {
     startRenderQueueWorker();
     renderWorkerInitialized = true;
     console.log('Render queue worker auto-started in API process');
+  }
+
+  if (isWebhookQueueEnabled() && !webhookWorkerInitialized) {
+    startWebhookQueueWorker();
+    webhookWorkerInitialized = true;
+    console.log('Webhook queue worker auto-started in API process');
   }
 
   return app;

@@ -65,8 +65,8 @@ export function CreateTemplateDialog({
     const buffer = await file.arrayBuffer();
     const bytes = new Uint8Array(buffer);
     let binary = "";
-    for (let i = 0; i < bytes.length; i += 1) {
-      binary += String.fromCharCode(bytes[i]!);
+    for (const value of bytes) {
+      binary += String.fromCharCode(value);
     }
     return btoa(binary);
   };

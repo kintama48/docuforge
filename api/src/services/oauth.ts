@@ -1,11 +1,9 @@
 import { env } from '../config/env';
+import { withRedis } from './redis';
 
 export type OAuthProvider = 'google' | 'microsoft' | 'github';
 
-// SCALING NOTE (API-M3): OAuth state is stored in-memory. This means:
-// 1. State is lost on server restart (user must restart OAuth flow)
-// 2. State is not shared across multiple instances (sticky sessions required)
-// For multi-instance deployments, replace with Redis or database-backed storage.
+// Primary storage is Redis for multi-instance safety; in-memory store is fallback.
 const STATE_TTL_MS = 10 * 60 * 1000;
 const STATE_CLEANUP_INTERVAL_MS = 60 * 1000;
 const MAX_STATE_STORE_SIZE = 2048;
@@ -62,6 +60,52 @@ export function createOAuthState(provider: OAuthProvider, redirect?: string | nu
   return state;
 }
 
+type OAuthStateRecord = { provider: OAuthProvider; redirect: string | null; createdAt: number };
+
+async function createOAuthStateRedis(
+  state: string,
+  record: OAuthStateRecord
+): Promise<boolean> {
+  const persisted = await withRedis(async (redis) => {
+    const key = `oauth:state:${state}`;
+    const payload = JSON.stringify(record);
+    await redis.set(key, payload, 'PX', STATE_TTL_MS);
+    await redis.zadd('oauth:state:index', record.createdAt, state);
+    const size = await redis.zcard('oauth:state:index');
+    const overflow = size - MAX_STATE_STORE_SIZE;
+    if (overflow > 0) {
+      const oldest = await redis.zrange('oauth:state:index', 0, overflow - 1);
+      if (oldest.length > 0) {
+        const batch = redis.multi();
+        for (const stale of oldest) {
+          batch.del(`oauth:state:${stale}`);
+          batch.zrem('oauth:state:index', stale);
+        }
+        await batch.exec();
+      }
+    }
+    return true;
+  });
+  return persisted === true;
+}
+
+export async function createOAuthStateDistributed(provider: OAuthProvider, redirect?: string | null) {
+  const now = Date.now();
+  pruneExpiredStates(now);
+  enforceStateStoreLimit();
+
+  const state = crypto.randomUUID();
+  const safeRedirect = sanitizeRedirectPath(redirect);
+  const record: OAuthStateRecord = {
+    provider,
+    redirect: safeRedirect,
+    createdAt: now,
+  };
+  stateStore.set(state, record);
+  await createOAuthStateRedis(state, record);
+  return state;
+}
+
 export function consumeOAuthState(state: string) {
   pruneExpiredStates();
   const record = stateStore.get(state);
@@ -73,13 +117,58 @@ export function consumeOAuthState(state: string) {
   return record;
 }
 
+async function consumeOAuthStateRedis(
+  state: string
+): Promise<{ available: boolean; record: OAuthStateRecord | null }> {
+  const key = `oauth:state:${state}`;
+  const result = await withRedis(async (redis) => {
+    const value = await redis.get(key);
+    if (value) {
+      await redis.del(key);
+      await redis.zrem('oauth:state:index', state);
+    }
+    return { value };
+  });
+
+  if (!result) {
+    return { available: false, record: null };
+  }
+  if (!result.value) {
+    return { available: true, record: null };
+  }
+
+  try {
+    return { available: true, record: JSON.parse(result.value) as OAuthStateRecord };
+  } catch {
+    return { available: true, record: null };
+  }
+}
+
+export async function consumeOAuthStateDistributed(state: string) {
+  const { available, record } = await consumeOAuthStateRedis(state);
+  if (available) {
+    // Keep single-use semantics even if storage backends drift transiently.
+    stateStore.delete(state);
+
+    if (!record) {
+      return null;
+    }
+    if (Date.now() - record.createdAt > STATE_TTL_MS) {
+      return null;
+    }
+    return record;
+  }
+
+  return consumeOAuthState(state);
+}
+
 const cleanupHandle = setInterval(() => {
   pruneExpiredStates();
 }, STATE_CLEANUP_INTERVAL_MS);
 cleanupHandle.unref?.();
 
 function getRedirectUri(provider: OAuthProvider) {
-  return `${env.API_URL}/v1/auth/oauth/${provider}/callback`;
+  return `${env.API_URL}/console/auth/oauth/${provider}/callback`;
 }
 
 function requireConfig(value: string | undefined, label: string) {

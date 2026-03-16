@@ -110,8 +110,8 @@ export class LimitExceededError extends AppError {
 export class RateLimitedError extends AppError {
   public readonly retryAfter: number;
 
-  constructor(message: string, retryAfter: number) {
-    super('rate_limited', message, { retryAfter });
+  constructor(message: string, retryAfter: number, details?: ErrorDetails) {
+    super('rate_limited', message, { retryAfter, ...(details || {}) });
     this.name = 'RateLimitedError';
     this.retryAfter = retryAfter;
   }

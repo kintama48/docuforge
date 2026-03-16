@@ -1,8 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { http, HttpResponse } from "msw";
 import { renderWithProviders } from "../helpers/render";
-import { server } from "../helpers/msw-server";
 import PlaygroundClient from "@/src/app/playground/playground-client";
 
 const sessionResponse = {
@@ -11,22 +9,50 @@ const sessionResponse = {
   remaining_renders: 30,
 };
 
+const sessionPath = "/v1/render/public/session";
+const previewPath = "/v1/render/public/preview";
+
+function getRequestUrl(input: Parameters<typeof fetch>[0]) {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  return input.url;
+}
+
 describe("PlaygroundClient", () => {
+  const createPreviewResponse = (remainingRenders = "29") =>
+    new Response("%PDF-1.4 playground-test", {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "X-Preview-Session-Remaining-Renders": remainingRenders,
+        "X-Preview-Session-Expires-At": new Date(Date.now() + 4 * 60 * 1000).toISOString(),
+      },
+    });
+
+  const createSessionResponse = () =>
+    new Response(JSON.stringify(sessionResponse), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
   beforeEach(() => {
-    server.use(
-      http.post("http://localhost:3000/v1/render/public/session", async () =>
-        HttpResponse.json(sessionResponse)
-      ),
-      http.post("http://localhost:3000/v1/render/public/preview", async () =>
-        new HttpResponse(new Blob(["%PDF-1.4 playground-test"], { type: "application/pdf" }), {
-          headers: {
-            "Content-Type": "application/pdf",
-            "X-Preview-Session-Remaining-Renders": "29",
-            "X-Preview-Session-Expires-At": new Date(Date.now() + 4 * 60 * 1000).toISOString(),
-          },
-        })
-      )
-    );
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = getRequestUrl(input);
+
+      if (url.includes(sessionPath)) {
+        return createSessionResponse();
+      }
+
+      if (url.includes(previewPath)) {
+        return createPreviewResponse();
+      }
+
+      throw new Error(`Unhandled fetch in PlaygroundClient test: ${url}`);
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("opens Typst mode and editor when advanced button is clicked", async () => {
@@ -46,6 +72,12 @@ describe("PlaygroundClient", () => {
     renderWithProviders(<PlaygroundClient />);
 
     await waitFor(() => {
+      expect(
+        vi.mocked(globalThis.fetch).mock.calls.some(([input]) => getRequestUrl(input).includes(previewPath))
+      ).toBe(true);
+    });
+
+    await waitFor(() => {
       expect(screen.getByTitle(/docuforge playground preview/i)).toBeInTheDocument();
     }, { timeout: 4000 });
 
@@ -59,18 +91,25 @@ describe("PlaygroundClient", () => {
   it("shows console-style block controls in quick edits mode", async () => {
     const previewBodies: Array<Record<string, unknown>> = [];
 
-    server.use(
-      http.post("http://localhost:3000/v1/render/public/preview", async ({ request }) => {
-        previewBodies.push((await request.json()) as Record<string, unknown>);
-        return new HttpResponse(new Blob(["%PDF-1.4 playground-test"], { type: "application/pdf" }), {
-          headers: {
-            "Content-Type": "application/pdf",
-            "X-Preview-Session-Remaining-Renders": "29",
-            "X-Preview-Session-Expires-At": new Date(Date.now() + 4 * 60 * 1000).toISOString(),
-          },
+    vi.mocked(globalThis.fetch).mockImplementation(async (input, init) => {
+      const url = getRequestUrl(input);
+
+      if (url.includes(sessionPath)) {
+        return new Response(JSON.stringify(sessionResponse), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
         });
-      })
-    );
+      }
+
+      if (url.includes(previewPath)) {
+        if (typeof init?.body === "string") {
+          previewBodies.push(JSON.parse(init.body) as Record<string, unknown>);
+        }
+        return createPreviewResponse();
+      }
+
+      throw new Error(`Unhandled fetch in PlaygroundClient test: ${url}`);
+    });
 
     renderWithProviders(<PlaygroundClient />);
 

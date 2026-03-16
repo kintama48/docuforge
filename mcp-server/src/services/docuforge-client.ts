@@ -1,5 +1,6 @@
 import { DocuForgeHttpError } from '../lib/errors';
 import type { Logger } from '../lib/logger';
+import { assertPresent } from '../lib/assert';
 
 export interface TemplateSummary {
   id: string;
@@ -95,6 +96,15 @@ interface RequestOptions {
   traceId: string;
 }
 
+function readProtectionMode(
+  value: string | null
+): 'none' | 'client_blind' | 'server_ephemeral_legacy' {
+  if (value === 'client_blind' || value === 'server_ephemeral_legacy') {
+    return value;
+  }
+  return 'none';
+}
+
 export class DocuForgeClient {
   private readonly config: DocuForgeClientConfig;
   private readonly logger: Logger;
@@ -173,7 +183,10 @@ export class DocuForgeClient {
       },
       headers: useLegacySecure
         ? {
-            'X-Pdf-Password': input.legacyPassword as string,
+            'X-Pdf-Password': assertPresent(
+              input.legacyPassword,
+              'legacyPassword is required when protectionMode=server_ephemeral_legacy'
+            ),
           }
         : undefined,
       traceId: input.traceId,
@@ -215,13 +228,7 @@ export class DocuForgeClient {
     const bytes = new Uint8Array(await response.arrayBuffer());
     const durationHeader = response.headers.get('X-Render-Duration') ?? '0';
     const renderId = response.headers.get('X-Render-Id') ?? '';
-    const protectionModeHeader = response.headers.get('X-Pdf-Protection-Mode');
-    const protectionMode = (
-      protectionModeHeader === 'client_blind' ||
-      protectionModeHeader === 'server_ephemeral_legacy'
-        ? protectionModeHeader
-        : 'none'
-    ) as 'none' | 'client_blind' | 'server_ephemeral_legacy';
+    const protectionMode = readProtectionMode(response.headers.get('X-Pdf-Protection-Mode'));
 
     return {
       pdf: bytes,
@@ -322,15 +329,16 @@ export class DocuForgeClient {
       }
 
       const payload = (await loginResponse.json()) as { token?: string };
-      if (!payload.token) {
+      const token = payload.token;
+      if (!token) {
         throw new DocuForgeHttpError(500, 'jwt_missing', 'DocuForge login succeeded without JWT token');
       }
 
-      this.cachedJwtToken = payload.token;
+      this.cachedJwtToken = token;
       this.logger.info('docuforge.jwt.cached', {
         trace_id: traceId,
       });
-      return payload.token;
+      return token;
     }
 
     throw new DocuForgeHttpError(

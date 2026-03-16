@@ -14,6 +14,10 @@ describe("PlanSection", () => {
       screen.getByRole("heading", { name: /plan/i })
     ).toBeInTheDocument();
     expect(screen.getByText(/upgrade to dev/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /billing@docuforge\.app/i })).toHaveAttribute(
+      "href",
+      "mailto:billing@docuforge.app"
+    );
     fireEvent.click(screen.getByText(/compare paid plans/i));
     expect(onUpgrade).toHaveBeenCalledWith("dev");
   });

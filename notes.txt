@@ -1,20 +1,23 @@
-  i want you to highlight that we are using RUST as the pdf engine not headless chrome/pupeteer. making it cheaper
-  and faster and giving us the ability to programatically create a large number of pdfs along with the flexibility
-  of using typst. we need it on the landing page and on the hero. also the buttons dont look right. they are all
-  black (the bg needs to be fixed) [Image #1]. a dark mode and auto-detection is also needed. we also need to bake
-  in localization (en, fr, de, it, es, ar, chinese). want it structured well. please plan out all these items and
-  hten start based on priority. go to least to most difficult. the design is awesome but would like a little bit
-  more animations in the hero and landing page. the workflow anchor doesn't work. need test user credentials as
-  well for abdullah.baig416@gmail.com, pass: 123123123. we also need to implement github oauth (api support
-  needed), google, microsoft oauth. we have microsoft and google oauth support in api but no github. so please add
-  that. there's an issue with the sign up flow, it always says user already exists even tho im using a new email
-  and im sure it doesn't exist. seeing this in logs:
- 
-   GET /login?redirect=%2Fdashboard 200 in 61ms (compile: 29ms, render: 33ms)
-   GET /login?redirect=%2Fdashboard 200 in 18ms (compile: 3ms, render: 16ms)
-   POST /v1/auth/login 404 in 577ms (compile: 493ms, render: 84ms)
-   POST /v1/auth/login 404 in 36ms (compile: 4ms, render: 32ms)
-   GET /register 200 in 276ms (compile: 262ms, render: 14ms)
-   POST /v1/auth/register 404 in 32ms (compile: 4ms, render: 28ms)
-   POST /v1/auth/register 404 in 31ms (compile: 4ms, render: 27ms)
-   POST /v1/auth/register 404 in 30ms (compile: 4ms, render: 27ms)
+the template subjects look weird. please fix it across the board.
+
+the templates are okay design wise, but i think we can improve it further, for starters, there's no logo inside the templates. moreover the design can be improved further. also we need to add placeholders for socials (instagram, twitter, facebook, linkedin, etc.) should show the logo and hyperlink IF configured. Need to handle this smartly since we dont have these accounts yet but once i add them, they should show up. 
+
+also add a hyperlink to terms and services and privacy policy.
+
+
+3. Bring Your Own Template (BYOT) for PDFs
+While you should not touch email templates, allowing BYOT for the PDF generation is an absolute, mandatory requirement.
+
+Your /generate endpoint must accept two different payload structures:
+
+Method A: The Managed Template
+The developer passes a template_id and a data JSON object. You pull the Typst code from your Turso database and render it. This is for static, recurring documents like monthly invoices.
+
+Method B: The Raw Injection (BYOT)
+The developer passes a typst_string and completely bypasses your database.
+
+This second method is your moat for the AI market. AI agents do not log into dashboards to configure templates. An autonomous agent will write the Typst code dynamically in memory and execute a POST request containing the raw code. If you force users to only use templates saved in your UI, you completely lock yourself out of the AI agent ecosystem.
+
+Furthermore, strict engineering teams want to store their templates in their own Git repositories, not your database. By allowing them to send raw Typst code directly from their backend, they can version-control their templates locally and just use DocuForge as a dumb, hyper-fast compiler.
+
+there might be a simpler way to do this but for html to pdf and iamge to pdf we need to have passes. there'll be 3 states, we can take eitehr of three, 1. there are no error codes while rendering a pdf from a typst template, we nust return a symbol or a boolean to conserve tokens (0, or 1). the llm will consume the trace and terminal logs and a jpg generated via our existing typst pdf to image pipeline. the goal is to conserve tokens and accuracy, provide the user with an identical typst template so they never have to touch the code and set the paramteres etc. so it's just plug and play, also generate a sample curl command for each pdf template converted or a regular pdf template. so user can just pick up the reguired json and hte endpoint to hit with the id and dynamcially get converted pdfs.

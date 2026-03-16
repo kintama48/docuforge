@@ -22,7 +22,7 @@ export default function OAuthCallbackPage() {
 
     (async () => {
       try {
-        const response = await fetch(`${env.apiUrl}/v1/auth/oauth/exchange`, {
+        const response = await fetch(`${env.apiUrl}/console/auth/oauth/exchange`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

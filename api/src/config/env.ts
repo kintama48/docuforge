@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { appConfig } from './config';
 
 const envBoolean = z.preprocess((value) => {
   if (typeof value === 'boolean') return value;
@@ -39,13 +40,16 @@ const envSchema = z.object({
   R2_BUCKET: z.string().min(1),
   R2_PUBLIC_URL: z.string().url(),
 
-  // Stripe
-  STRIPE_SECRET_KEY: z.string().min(1),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1),
-  STRIPE_DEV_PRICE_ID: z.string().min(1),
-  STRIPE_STARTER_PRICE_ID: z.string().min(1),
-  STRIPE_PRO_PRICE_ID: z.string().min(1),
-  BILLING_PROVIDER: z.enum(['stripe', 'paddle', 'lemonsqueezy']).default('stripe'),
+  // Billing providers
+  BILLING_PROVIDER: z.enum(['paddle', 'lemonsqueezy']).default('paddle'),
+  PADDLE_WEBHOOK_SECRET: z.string().min(1).default('paddle-webhook-secret'),
+  PADDLE_PRICE_ID_DEV: z.string().min(1).default('paddle-dev-plan'),
+  PADDLE_PRICE_ID_STARTER: z.string().min(1).default('paddle-starter-plan'),
+  PADDLE_PRICE_ID_PRO: z.string().min(1).default('paddle-pro-plan'),
+  LEMONSQUEEZY_WEBHOOK_SECRET: z.string().min(1).default('lemonsqueezy-webhook-secret'),
+  LEMONSQUEEZY_VARIANT_ID_DEV: z.string().min(1).default('lemon-dev-plan'),
+  LEMONSQUEEZY_VARIANT_ID_STARTER: z.string().min(1).default('lemon-starter-plan'),
+  LEMONSQUEEZY_VARIANT_ID_PRO: z.string().min(1).default('lemon-pro-plan'),
 
   // AI
   AI_ENABLED: envBoolean.default(true),
@@ -60,6 +64,7 @@ const envSchema = z.object({
   // Auth
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRY: z.string().default('7d'),
+  AUTH_ACCESS_TOKEN_EXPIRY: z.string().default('15m'),
   AUTH_EMAIL_VERIFICATION_REQUIRED: envBoolean.default(process.env.NODE_ENV === 'test' ? false : true),
   AUTH_2FA_REQUIRED: envBoolean.default(process.env.NODE_ENV === 'test' ? false : true),
   AUTH_OTP_TTL_MS: z.coerce.number().int().positive().default(10 * 60 * 1000),
@@ -69,10 +74,26 @@ const envSchema = z.object({
   AUTH_MAX_ACCOUNTS_PER_FINGERPRINT: z.coerce.number().int().positive().default(3),
   AUTH_MAX_SIGNUPS_PER_FINGERPRINT_PER_DAY: z.coerce.number().int().positive().default(3),
   AUTH_MAX_SIGNUPS_PER_IP_PER_DAY: z.coerce.number().int().positive().default(6),
+  AUTH_COOKIE_NAME: z.string().min(1).default('docuforge_session'),
+  AUTH_COOKIE_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+  AUTH_REFRESH_COOKIE_NAME: z.string().min(1).default('docuforge_refresh'),
+  AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 3),
+  AUTH_COOKIE_DOMAIN: z.string().optional(),
+  AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('strict'),
 
   // Transactional email
   EMAIL_PROVIDER: z.enum(['mock', 'resend']).default('mock'),
   EMAIL_FROM: z.string().email().default('noreply@docuforge.app'),
+  EMAIL_FROM_NOREPLY: z.string().email().default('noreply@docuforge.app'),
+  EMAIL_FROM_SUPPORT: z.string().email().default('support@docuforge.app'),
+  EMAIL_FROM_HELLO: z.string().email().default('hello@docuforge.app'),
+  EMAIL_FROM_BILLING: z.string().email().default('billing@docuforge.app'),
+  EMAIL_RESEND_MAX_PER_SECOND: z.coerce.number().int().positive().default(1),
+  EMAIL_RESEND_MAX_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  EMAIL_RESEND_MAX_PER_DAY: z.coerce.number().int().positive().default(90),
+  EMAIL_RESEND_MAX_RETRIES: z.coerce.number().int().positive().default(6),
+  EMAIL_RESEND_RETRY_BASE_MS: z.coerce.number().int().positive().default(750),
+  EMAIL_RESEND_RETRY_MAX_MS: z.coerce.number().int().positive().default(10_000),
   RESEND_API_KEY: z.string().optional(),
 
   // OAuth
@@ -86,6 +107,11 @@ const envSchema = z.object({
   // Webhooks
   WEBHOOK_TIMEOUT_MS: z.coerce.number().default(5000),
   WEBHOOK_MAX_PER_USER: z.coerce.number().default(10),
+  WEBHOOK_QUEUE_ENABLED: z.coerce.boolean().default(true),
+  WEBHOOK_QUEUE_NAME: z.string().min(1).default('docuforge-webhook-delivery'),
+  WEBHOOK_QUEUE_CONCURRENCY: z.coerce.number().int().positive().default(10),
+  WEBHOOK_QUEUE_ATTEMPTS: z.coerce.number().int().positive().default(3),
+  WEBHOOK_QUEUE_BACKOFF_MS: z.coerce.number().int().positive().default(30000),
 
   // Render queue
   REDIS_URL: z.string().url().default('redis://127.0.0.1:6379'),
@@ -103,15 +129,15 @@ const envSchema = z.object({
   RAG_EMBEDDING_MODEL: z.string().default('text-embedding-004'),
 
   // Limits
-  FREE_MONTHLY_LIMIT: z.coerce.number().default(1000),
-  DEV_MONTHLY_LIMIT: z.coerce.number().default(3000),
-  STARTER_MONTHLY_LIMIT: z.coerce.number().default(10000),
-  PRO_MONTHLY_LIMIT: z.coerce.number().default(50000),
-  FREE_MONTHLY_AI_CREDITS: z.coerce.number().default(5),
-  DEV_MONTHLY_AI_CREDITS: z.coerce.number().default(25),
-  STARTER_MONTHLY_AI_CREDITS: z.coerce.number().default(120),
-  PRO_MONTHLY_AI_CREDITS: z.coerce.number().default(600),
-  MAX_UPLOAD_SIZE_MB: z.coerce.number().default(10),
+  FREE_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.free),
+  DEV_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.dev),
+  STARTER_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.starter),
+  PRO_MONTHLY_LIMIT: z.coerce.number().default(appConfig.planMonthlyRenderLimits.pro),
+  FREE_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.free),
+  DEV_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.dev),
+  STARTER_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.starter),
+  PRO_MONTHLY_AI_CREDITS: z.coerce.number().default(appConfig.planMonthlyAiCreditLimits.pro),
+  MAX_UPLOAD_SIZE_MB: z.coerce.number().default(appConfig.maxUploadSizeMb),
 
   // Public preview hardening
   PUBLIC_PREVIEW_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(1800),
@@ -169,5 +195,18 @@ export function getPlanLimit(planTier: string): number {
       return env.DEV_MONTHLY_LIMIT;
     default:
       return env.FREE_MONTHLY_LIMIT;
+  }
+}
+
+export function getPlanAiCreditLimit(planTier: string): number {
+  switch (planTier) {
+    case 'pro':
+      return env.PRO_MONTHLY_AI_CREDITS;
+    case 'starter':
+      return env.STARTER_MONTHLY_AI_CREDITS;
+    case 'dev':
+      return env.DEV_MONTHLY_AI_CREDITS;
+    default:
+      return env.FREE_MONTHLY_AI_CREDITS;
   }
 }

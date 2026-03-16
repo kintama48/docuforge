@@ -247,7 +247,7 @@ fn compile_and_export(
 }
 
 fn encrypt_pdf_in_memory(
-    plaintext_pdf: &mut Vec<u8>,
+    plaintext_pdf: &mut [u8],
     encryption: &mut EncryptionOptions,
 ) -> Result<Vec<u8>, EngineError> {
     if plaintext_pdf.is_empty() {
