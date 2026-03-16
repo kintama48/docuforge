@@ -40,7 +40,7 @@ const FEATURE_ROWS: Array<
 > = [
   {
     feature: "Template language",
-    docuforge: "Typst",
+    docuforge: "Typst (contract-first)",
     puppeteer: "HTML/CSS",
     wkhtmltopdf: "HTML/CSS",
     weasyprint: "HTML/CSS",
@@ -107,7 +107,7 @@ const PAIN_POINTS = [
     icon: FileCode,
     title: "HTML print edge cases",
     problem: "Page breaks, long tables, and running headers require repeated CSS workarounds.",
-    solution: "Typst keeps document layout rules explicit and versionable.",
+    solution: "Contract-first templates keep document layout rules explicit and versionable.",
   },
   {
     icon: Lightning,
@@ -130,7 +130,7 @@ const HONESTY_ITEMS = [
   },
   {
     title: "Large existing HTML template estate",
-    body: "Migrating legacy templates to Typst takes planning. Keep Puppeteer for legacy output during transition.",
+    body: "Migrating a large HTML template estate takes planning. Keep browser rendering for legacy output during transition.",
   },
   {
     title: "Live webpage to PDF",
@@ -211,13 +211,13 @@ export function CompareShowcase({
 
         <div className="relative mx-auto w-full max-w-[1200px] px-6 pb-16 pt-16 text-center sm:pb-20 sm:pt-20">
           <p className="inline-flex items-center rounded-full border border-[var(--inverse-line)] bg-[var(--inverse-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
-            PDF generation benchmark and comparison
+            Deterministic pipeline benchmark and comparison
           </p>
           <h1 className="mx-auto mt-6 max-w-4xl text-balance font-display text-4xl sm:text-6xl">
-            DocuForge vs browser PDF stacks
+            Deterministic document pipelines vs browser-driven stacks
           </h1>
           <p className="font-script mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-[var(--inverse-muted)] sm:text-lg">
-            A direct, engineering-level comparison focused on throughput, memory, template control, and production reliability.
+            Engineering-focused guidance on throughput, memory, template control, and operational reliability under production load.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -237,14 +237,14 @@ export function CompareShowcase({
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                Why teams switch
+                Category guide
               </p>
               <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
-                Common bottlenecks with browser-driven PDF pipelines
+                Where browser-driven PDF stacks create operational drag
               </h2>
             </div>
             <p className="font-script max-w-xl text-pretty text-base leading-relaxed text-[var(--muted)]">
-              Most PDF issues are operational. Latency, memory, and brittle templates create incident load as document volume grows.
+              Most PDF incidents are operational. Latency variance, memory pressure, and brittle templates compound as volume grows.
             </p>
           </div>
 
@@ -348,7 +348,7 @@ export function CompareShowcase({
             Capability matrix
           </p>
           <h2 className="mt-3 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
-            Feature-by-feature comparison
+            Capability matrix across common stacks
           </h2>
 
           <div className="mt-8 overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { createApp } from '../../src/app';
-import { reloadEnv } from '../../src/config/env';
+import { env, reloadEnv } from '../../src/config/env';
 import { clearMockEmails, listMockEmails } from '../../src/services/email';
 import { createTestContext, type TestContext } from '../setup';
 
@@ -15,11 +15,19 @@ function extractOtpCode(text: string): string {
 describe('Auth security flows', () => {
   let ctx: TestContext;
   let app: ReturnType<typeof createApp>;
+  let authMutationHeaders: Record<string, string>;
 
   beforeEach(async () => {
     ctx = await createTestContext();
     app = createApp();
     clearMockEmails();
+    authMutationHeaders = {
+      'Content-Type': 'application/json',
+      'X-Device-Id': `auth-security-${crypto.randomUUID()}`,
+      'User-Agent': 'auth-security-suite',
+      'Accept-Language': 'en-US',
+      'X-Forwarded-For': '198.51.100.40',
+    };
   });
 
   afterEach(async () => {
@@ -34,9 +42,9 @@ describe('Auth security flows', () => {
     process.env.EMAIL_PROVIDER = 'mock';
     reloadEnv();
 
-    const registerResponse = await app.request('/v1/auth/register', {
+    const registerResponse = await app.request('/console/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         email: 'secure-user@example.com',
         password: 'securepassword123',
@@ -50,11 +58,15 @@ describe('Auth security flows', () => {
 
     const verificationEmail = listMockEmails().at(-1);
     expect(verificationEmail).toBeDefined();
+    expect(verificationEmail?.subject).toBe('Verify your DocuForge email');
+    expect(verificationEmail?.from).toBe('noreply@test.docuforge.local');
+    expect(verificationEmail?.html).toBeDefined();
     const verificationCode = extractOtpCode(verificationEmail!.text);
+    expect(verificationEmail?.html).toContain(verificationCode);
 
-    const verifyEmailResponse = await app.request('/v1/auth/verify-email', {
+    const verifyEmailResponse = await app.request('/console/auth/verify-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: registerBody.challenge_id,
         code: verificationCode,
@@ -62,14 +74,21 @@ describe('Auth security flows', () => {
     });
 
     expect(verifyEmailResponse.status).toBe(200);
+    expect(verifyEmailResponse.headers.get('Set-Cookie')).toContain(`${env.AUTH_COOKIE_NAME}=`);
     const verifyEmailBody = await verifyEmailResponse.json();
     expect(verifyEmailBody.email_verified).toBe(true);
     expect(verifyEmailBody.token).toBeDefined();
     expect(verifyEmailBody.api_key?.raw_key).toMatch(/^docu_live_/);
 
-    const loginResponse = await app.request('/v1/auth/login', {
+    const welcomeEmail = listMockEmails().at(-1);
+    expect(welcomeEmail).toBeDefined();
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
+    expect(welcomeEmail?.replyTo).toBe('hello@test.docuforge.local');
+
+    const loginResponse = await app.request('/console/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         email: 'secure-user@example.com',
         password: 'securepassword123',
@@ -81,20 +100,22 @@ describe('Auth security flows', () => {
     expect(loginBody.two_factor_required).toBe(true);
     expect(loginBody.challenge_id).toMatch(/^otp_/);
 
-    const resendTooSoon = await app.request('/v1/auth/2fa/resend', {
+    const resendTooSoon = await app.request('/console/auth/2fa/resend', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: loginBody.challenge_id,
       }),
     });
-    expect(resendTooSoon.status).toBe(429);
+    expect(resendTooSoon.status).toBe(200);
+    const resendTooSoonBody = await resendTooSoon.json();
+    expect(resendTooSoonBody.sent).toBe(false);
 
     await Bun.sleep(220);
 
-    const resendOk = await app.request('/v1/auth/2fa/resend', {
+    const resendOk = await app.request('/console/auth/2fa/resend', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: loginBody.challenge_id,
       }),
@@ -103,11 +124,15 @@ describe('Auth security flows', () => {
 
     const secondFactorEmail = listMockEmails().at(-1);
     expect(secondFactorEmail).toBeDefined();
+    expect(secondFactorEmail?.subject).toBe('Your DocuForge login verification code');
+    expect(secondFactorEmail?.from).toBe('noreply@test.docuforge.local');
+    expect(secondFactorEmail?.html).toBeDefined();
     const secondFactorCode = extractOtpCode(secondFactorEmail!.text);
+    expect(secondFactorEmail?.html).toContain(secondFactorCode);
 
-    const verify2faResponse = await app.request('/v1/auth/2fa/verify', {
+    const verify2faResponse = await app.request('/console/auth/2fa/verify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authMutationHeaders,
       body: JSON.stringify({
         challenge_id: loginBody.challenge_id,
         code: secondFactorCode,
@@ -115,9 +140,60 @@ describe('Auth security flows', () => {
     });
 
     expect(verify2faResponse.status).toBe(200);
+    expect(verify2faResponse.headers.get('Set-Cookie')).toContain(`${env.AUTH_COOKIE_NAME}=`);
     const verify2faBody = await verify2faResponse.json();
     expect(verify2faBody.token).toBeDefined();
     expect(verify2faBody.user.email).toBe('secure-user@example.com');
+  });
+
+  it('uses request locale when rendering verification emails', async () => {
+    process.env.AUTH_EMAIL_VERIFICATION_REQUIRED = 'true';
+    process.env.AUTH_2FA_REQUIRED = 'false';
+    process.env.EMAIL_PROVIDER = 'mock';
+    reloadEnv();
+
+    const response = await app.request('/console/auth/register', {
+      method: 'POST',
+      headers: {
+        ...authMutationHeaders,
+        'Accept-Language': 'fr-FR,fr;q=0.9',
+      },
+      body: JSON.stringify({
+        email: 'locale-user@example.com',
+        password: 'securepassword123',
+      }),
+    });
+
+    expect(response.status).toBe(202);
+    const email = listMockEmails().at(-1);
+    expect(email).toBeDefined();
+    expect(email?.subject).toBe('Verifiez votre email DocuForge');
+    expect(email?.from).toBe('noreply@test.docuforge.local');
+    expect(email?.text).toContain('Votre code de verification DocuForge est');
+    expect(email?.html).toContain('Code de verification');
+  });
+
+  it('sends welcome email when email verification is disabled', async () => {
+    process.env.AUTH_EMAIL_VERIFICATION_REQUIRED = 'false';
+    process.env.AUTH_2FA_REQUIRED = 'false';
+    process.env.EMAIL_PROVIDER = 'mock';
+    reloadEnv();
+
+    const response = await app.request('/console/auth/register', {
+      method: 'POST',
+      headers: authMutationHeaders,
+      body: JSON.stringify({
+        email: 'welcome-user@example.com',
+        password: 'securepassword123',
+      }),
+    });
+
+    expect(response.status).toBe(201);
+    const welcomeEmail = listMockEmails().at(-1);
+    expect(welcomeEmail).toBeDefined();
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
+    expect(welcomeEmail?.replyTo).toBe('hello@test.docuforge.local');
   });
 
   it('blocks repeated account creation from the same fingerprint', async () => {
@@ -135,7 +211,7 @@ describe('Auth security flows', () => {
       'X-Forwarded-For': '203.0.113.10',
     };
 
-    const firstRegister = await app.request('/v1/auth/register', {
+    const firstRegister = await app.request('/console/auth/register', {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -145,7 +221,7 @@ describe('Auth security flows', () => {
     });
     expect(firstRegister.status).toBe(201);
 
-    const secondRegister = await app.request('/v1/auth/register', {
+    const secondRegister = await app.request('/console/auth/register', {
       method: 'POST',
       headers,
       body: JSON.stringify({

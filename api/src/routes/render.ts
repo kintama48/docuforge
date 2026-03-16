@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
-import { createHash } from 'node:crypto';
+import type { Context } from 'hono';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { apiKeyAuth, jwtAuth } from '../middleware/auth';
-import { renderRateLimit, previewRateLimit } from '../middleware/rate-limit';
+import { renderRateLimit } from '../middleware/rate-limit';
 import { noCache } from '../middleware/cache';
 import {
   zValidator,
@@ -37,6 +38,28 @@ import {
 
 const render = new Hono();
 type PasswordProtectionMode = 'none' | 'client_blind' | 'server_ephemeral_legacy';
+type RenderNamespace = 'consumer' | 'console';
+
+function toHttpBody(binary: Buffer): Uint8Array<ArrayBuffer> {
+  return Uint8Array.from(binary);
+}
+
+function assertRenderNamespace(c: Context, namespace: RenderNamespace): void {
+  const path = c.req.path;
+  if (namespace === 'consumer' && path.startsWith('/v1/render')) return;
+  if (namespace === 'console' && path.startsWith('/console/render')) return;
+  throw new NotFoundError('Not found');
+}
+
+async function requireConsumerRenderPath(c: Context, next: () => Promise<void>) {
+  assertRenderNamespace(c, 'consumer');
+  await next();
+}
+
+async function requireConsoleRenderPath(c: Context, next: () => Promise<void>) {
+  assertRenderNamespace(c, 'console');
+  await next();
+}
 
 function getPdfPasswordOrThrow(headerValue: string | undefined): string {
   if (!headerValue) {
@@ -98,7 +121,7 @@ function applyPublicPreviewWatermark(source: string): string {
 }
 
 // POST /v1/render - Production render with API key
-render.post('/', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSchema), async (c) => {
+render.post('/', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSchema), async (c) => {
   const { template_id, data, password_protection_mode } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
@@ -223,11 +246,11 @@ render.post('/', apiKeyAuth, renderRateLimit, noCache, zValidator('json', render
   c.header('X-Render-Id', logId);
   c.header('X-Pdf-Protection-Mode', protectionMode);
 
-  return c.body(result.pdf);
+  return c.body(toHttpBody(result.pdf));
 });
 
 // POST /v1/render/image - Production image render with API key
-render.post('/image', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderImageSchema), async (c) => {
+render.post('/image', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderImageSchema), async (c) => {
   const { template_id, data, format, dpi, quality, page_numbers } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
@@ -328,7 +351,7 @@ render.post('/image', apiKeyAuth, renderRateLimit, noCache, zValidator('json', r
     c.header('X-Image-Page-Count', String(imageResult.pageCount));
     c.header('X-Image-Archive', imageResult.archive ? 'true' : 'false');
     c.header('X-Pdf-Protection-Mode', 'none');
-    return c.body(imageResult.body);
+    return c.body(toHttpBody(imageResult.body));
   } catch (err) {
     const errorLogId = await logRender({
       userId,
@@ -351,7 +374,7 @@ render.post('/image', apiKeyAuth, renderRateLimit, noCache, zValidator('json', r
 });
 
 // POST /v1/render/secure - Production render with in-memory PDF encryption
-render.post('/secure', apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSecureSchema), async (c) => {
+render.post('/secure', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSecureSchema), async (c) => {
   const { template_id, data } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
@@ -489,15 +512,15 @@ render.post('/secure', apiKeyAuth, renderRateLimit, noCache, zValidator('json', 
   c.header('X-Pdf-Protection-Mode', 'server_ephemeral_legacy');
   c.header('X-Pdf-Protection-Legacy', 'true');
 
-  return c.body(result.pdf);
+  return c.body(toHttpBody(result.pdf));
 });
 
 // POST /v1/render/public/session - Issue a short-lived public preview session
-render.post('/public/session', noCache, async (c) => {
+render.post('/public/session', requireConsumerRenderPath, noCache, async (c) => {
   assertTrustedPublicPreviewOrigin(c);
   const client = getPublicPreviewClientFingerprint(c);
-  const rate = enforcePublicPreviewSessionCreationRateLimit(client.ip);
-  const session = createPublicPreviewSession(client);
+  const rate = await enforcePublicPreviewSessionCreationRateLimit(client.ip);
+  const session = await createPublicPreviewSession(client);
 
   c.header('X-RateLimit-Limit', String(rate.limit));
   c.header('X-RateLimit-Remaining', String(rate.remaining));
@@ -515,7 +538,7 @@ render.post('/public/session', noCache, async (c) => {
 });
 
 // POST /v1/render/public/preview - Public preview render (session protected, watermarked)
-render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema), async (c) => {
+render.post('/public/preview', requireConsumerRenderPath, noCache, zValidator('json', renderPreviewSchema), async (c) => {
   assertTrustedPublicPreviewOrigin(c);
 
   const sessionId = c.req.header('X-Preview-Session');
@@ -524,10 +547,10 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
   }
 
   const client = getPublicPreviewClientFingerprint(c);
-  const session = getPublicPreviewSessionOrThrow(sessionId, client);
-  const ipRate = enforcePublicPreviewIpRateLimit(client.ip);
-  const sessionRate = enforcePublicPreviewSessionRateLimit(session.sessionId);
-  const quota = consumePublicPreviewSessionQuota(session.sessionId);
+  const session = await getPublicPreviewSessionOrThrow(sessionId, client);
+  const ipRate = await enforcePublicPreviewIpRateLimit(client.ip);
+  const sessionRate = await enforcePublicPreviewSessionRateLimit(session.sessionId);
+  const quota = await consumePublicPreviewSessionQuota(session.sessionId);
 
   const { source, low_code_spec, files, data } = c.req.valid('json');
   const previewSource = source ?? (low_code_spec ? compileLowCodeSpec(low_code_spec) : null);
@@ -558,7 +581,7 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
   };
 
   const result = await renderPdf(payload);
-  const renderId = `pub_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const renderId = `pub_${randomUUID()}`;
 
   c.header('Content-Type', 'application/pdf');
   c.header('Content-Disposition', 'inline; filename="preview.public.pdf"');
@@ -574,11 +597,17 @@ render.post('/public/preview', noCache, zValidator('json', renderPreviewSchema),
   c.header('X-RateLimit-Reset', String(Math.ceil(sessionRate.resetAt / 1000)));
   c.header('X-Preview-IP-RateLimit-Remaining', String(ipRate.remaining));
 
-  return c.body(result.pdf);
+  return c.body(toHttpBody(result.pdf));
 });
 
 // POST /v1/render/preview - Preview render with JWT
-render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', renderPreviewSchema), async (c) => {
+render.post(
+  '/preview',
+  requireConsoleRenderPath,
+  jwtAuth,
+  noCache,
+  zValidator('json', renderPreviewSchema),
+  async (c) => {
   const { source, low_code_spec, files, data } = c.req.valid('json');
   const { userId } = c.get('auth');
   const previewSource = source ?? (low_code_spec ? compileLowCodeSpec(low_code_spec) : null);
@@ -640,14 +669,14 @@ render.post('/preview', jwtAuth, previewRateLimit, noCache, zValidator('json', r
   c.header('X-Render-Id', logId);
   c.header('X-Pdf-Protection-Mode', 'none');
 
-  return c.body(result.pdf);
+  return c.body(toHttpBody(result.pdf));
 });
 
 // POST /v1/render/preview/image - Preview image render with JWT
 render.post(
   '/preview/image',
+  requireConsoleRenderPath,
   jwtAuth,
-  previewRateLimit,
   noCache,
   zValidator('json', renderImagePreviewSchema),
   async (c) => {
@@ -704,7 +733,7 @@ render.post(
       c.header('X-Image-Page-Count', String(imageResult.pageCount));
       c.header('X-Image-Archive', imageResult.archive ? 'true' : 'false');
       c.header('X-Pdf-Protection-Mode', 'none');
-      return c.body(imageResult.body);
+      return c.body(toHttpBody(imageResult.body));
     } catch (err) {
       await logRender({
         userId,

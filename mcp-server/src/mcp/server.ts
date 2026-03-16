@@ -13,6 +13,24 @@ interface CreateServerDeps {
   pdfInlineMaxBytes: number;
 }
 
+type ToolContentItem =
+  | { type: 'text'; text: string }
+  | {
+      type: 'resource';
+      resource: {
+        uri: string;
+        name: string;
+        mimeType: string;
+        blob: string;
+      };
+    }
+  | {
+      type: 'resource_link';
+      uri: string;
+      name: string;
+      mimeType: string;
+    };
+
 function summarizeTemplateList(templateCount: number, page: number, total: number): string {
   return `Found ${templateCount} template(s) on page ${page}. Total templates visible: ${total}.`;
 }
@@ -35,8 +53,13 @@ export function createDocuForgeMcpServer(deps: CreateServerDeps): McpServer {
       'Use DocuForge tools for PDF generation. Prefer preview first for untrusted templates, then final render when user confirms.',
   });
 
-  const safeToolHandler = (handler: (...args: any[]) => Promise<any>) => {
-    return async (...args: any[]): Promise<any> => {
+  const safeToolHandler = <
+    TArgs extends unknown[],
+    TResult extends { content: unknown[]; structuredContent?: unknown }
+  >(
+    handler: (...args: TArgs) => Promise<TResult>
+  ) => {
+    return async (...args: TArgs): Promise<TResult> => {
       try {
         return await handler(...args);
       } catch (error) {
@@ -250,7 +273,7 @@ export function createDocuForgeMcpServer(deps: CreateServerDeps): McpServer {
       const artifact = deps.artifactStore.put(result.pdf, fileName);
       const shouldInline = result.pdf.byteLength <= deps.pdfInlineMaxBytes;
 
-      const content: Array<Record<string, unknown>> = [
+      const content: ToolContentItem[] = [
         {
           type: 'text',
           text: `PDF rendered successfully. Render ID: ${result.renderId || 'unknown'}. Size: ${result.pdf.byteLength} bytes. Protection mode: ${result.protectionMode}.`,
@@ -284,7 +307,7 @@ export function createDocuForgeMcpServer(deps: CreateServerDeps): McpServer {
       }
 
       return {
-        content: content as any,
+        content,
         structuredContent: {
           render_id: result.renderId,
           duration_ms: result.durationMs,
@@ -335,7 +358,7 @@ export function createDocuForgeMcpServer(deps: CreateServerDeps): McpServer {
       const artifact = deps.artifactStore.put(result.pdf, fileName);
       const shouldInline = result.pdf.byteLength <= deps.pdfInlineMaxBytes;
 
-      const content: Array<Record<string, unknown>> = [
+      const content: ToolContentItem[] = [
         {
           type: 'text',
           text: `Preview rendered successfully. Render ID: ${result.renderId || 'unknown'}. Size: ${result.pdf.byteLength} bytes.`,
@@ -362,7 +385,7 @@ export function createDocuForgeMcpServer(deps: CreateServerDeps): McpServer {
       }
 
       return {
-        content: content as any,
+        content,
         structuredContent: {
           render_id: result.renderId,
           duration_ms: result.durationMs,

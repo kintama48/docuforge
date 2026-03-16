@@ -1,19 +1,20 @@
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
 import { searchDocs, isInitialized, type SearchResult } from './vector-store';
 import type { EngineErrorResponse } from '../types';
+import { env } from '../config/env';
 
 let geminiClient: GoogleGenerativeAI | null = null;
 
 function getGeminiClient(): GoogleGenerativeAI {
   if (!geminiClient) {
-    geminiClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+    geminiClient = new GoogleGenerativeAI(env.GEMINI_API_KEY);
   }
   return geminiClient;
 }
 
 function getGeminiModel(modelName?: string): GenerativeModel {
   const client = getGeminiClient();
-  const model = modelName || process.env.AI_MODEL || 'gemini-2.5-flash';
+  const model = modelName || env.AI_MODEL;
   return client.getGenerativeModel({ model });
 }
 

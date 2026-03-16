@@ -10,7 +10,7 @@ describe("guided template flow", () => {
     let postedBody: Record<string, unknown> | null = null;
 
     server.use(
-      http.post("http://localhost:3000/v1/templates", async ({ request }) => {
+      http.post("http://localhost:3000/console/templates", async ({ request }) => {
         postedBody = (await request.json()) as Record<string, unknown>;
         return HttpResponse.json({
           template: {

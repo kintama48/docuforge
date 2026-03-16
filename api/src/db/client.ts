@@ -2,20 +2,16 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { sql } from 'drizzle-orm';
 import { createClient } from '@libsql/client';
 import * as schema from './schema';
+import { env } from '../config/env';
 
 let dbClient: ReturnType<typeof createClient> | null = null;
 let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export function getDbClient() {
   if (!dbClient) {
-    const url = process.env.DATABASE_URL;
-    if (!url) {
-      throw new Error('DATABASE_URL is required');
-    }
-
     dbClient = createClient({
-      url,
-      authToken: process.env.DATABASE_AUTH_TOKEN,
+      url: env.DATABASE_URL,
+      authToken: env.DATABASE_AUTH_TOKEN,
     });
   }
   return dbClient;
@@ -220,6 +216,22 @@ export async function initTestDb() {
     sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_pins_user_fingerprint ON user_pins(user_id, fingerprint_hash)`
   );
   await db.run(sql`CREATE INDEX IF NOT EXISTS idx_user_pins_fingerprint ON user_pins(fingerprint_hash, last_seen_at)`);
+
+  await db.run(sql`
+    CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash TEXT UNIQUE NOT NULL,
+      expires_at INTEGER NOT NULL,
+      last_used_at INTEGER,
+      revoked_at INTEGER,
+      replaced_by_token_hash TEXT,
+      created_at INTEGER NOT NULL
+    )
+  `);
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_user ON auth_refresh_tokens(user_id)`);
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_expires ON auth_refresh_tokens(expires_at)`);
+  await db.run(sql`CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_revoked ON auth_refresh_tokens(revoked_at)`);
 
   await db.run(sql`
     CREATE TABLE IF NOT EXISTS webhooks (

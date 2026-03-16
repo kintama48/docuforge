@@ -1,3 +1,5 @@
+import { invariant } from "./assert.mjs";
+
 function parsePositiveInt(raw, fallback) {
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || parsed < 1) return fallback;
@@ -83,7 +85,7 @@ export function resolveLoadTestConfig(rawEnv = {}) {
     },
   }[profile];
 
-  return {
+  const config = {
     profile,
     apiBaseUrl: parseBaseUrl(rawEnv.K6_API_BASE_URL),
     originHeader: String(rawEnv.K6_ORIGIN || "http://localhost:5173"),
@@ -100,6 +102,11 @@ export function resolveLoadTestConfig(rawEnv = {}) {
     previewP95BudgetMs: parsePositiveFloat(rawEnv.K6_PREVIEW_P95_BUDGET_MS, 1800),
     previewErrorBudget: parsePositiveFloat(rawEnv.K6_PREVIEW_ERROR_BUDGET, 0.02),
   };
+
+  invariant(config.steadyRate > 0, "steadyRate must be > 0");
+  invariant(config.preAllocatedVUs > 0, "preAllocatedVUs must be > 0");
+  invariant(config.maxVUs >= config.preAllocatedVUs, "maxVUs must be >= preAllocatedVUs");
+  return config;
 }
 
 export function buildK6Options(config) {

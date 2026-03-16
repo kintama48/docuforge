@@ -68,6 +68,10 @@ impl TemplateCache {
         self.cache.entry_count()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     fn compute_template_hash(template: &Template) -> String {
         let mut hasher = Sha256::new();
         hasher.update(template.main.as_bytes());

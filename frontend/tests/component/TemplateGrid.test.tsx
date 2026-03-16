@@ -13,7 +13,7 @@ describe("TemplateGrid", () => {
 
   it("shows empty state when no templates", async () => {
     server.use(
-      http.get("http://localhost:3000/v1/templates", async () =>
+      http.get("http://localhost:3000/console/templates", async () =>
         HttpResponse.json({
           templates: [],
           pagination: { page: 1, limit: 20, total: 0 },

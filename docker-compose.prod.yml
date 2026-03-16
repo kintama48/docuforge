@@ -1,0 +1,108 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/nginx-health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-DocuForge}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL}
+        NEXT_PUBLIC_CONSOLE_URL: ${NEXT_PUBLIC_CONSOLE_URL}
+        NEXT_PUBLIC_BILLING_ENABLED: ${NEXT_PUBLIC_BILLING_ENABLED:-false}
+        NEXT_PUBLIC_BILLING_PROVIDER: ${NEXT_PUBLIC_BILLING_PROVIDER:-none}
+        NEXT_PUBLIC_BILLING_PORTAL_URL: ${NEXT_PUBLIC_BILLING_PORTAL_URL:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    expose:
+      - "5173"
+    env_file:
+      - ./frontend/.env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 1.00
+
+  api:
+    build: ./api
+    expose:
+      - "3000"
+    env_file:
+      - ./api/.env
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      ENGINE_URL: http://engine:3001
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - api-data:/data
+    depends_on:
+      engine:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1.50
+
+  engine:
+    build:
+      context: ./engine
+      dockerfile: docker/Dockerfile
+    expose:
+      - "3001"
+    env_file:
+      - ./engine/.env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3001
+      RUST_LOG: info
+      LOG_FORMAT: json
+    restart: unless-stopped
+    mem_limit: 1024m
+    cpus: 2.00
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.50
+
+volumes:
+  api-data:
+  redis-data:

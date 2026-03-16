@@ -77,7 +77,7 @@ describePipeline('API -> Engine pipeline (real engine)', () => {
     const db = getDb() as any;
     const user = await createTestUser(db);
 
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.valid),
@@ -93,7 +93,7 @@ describePipeline('API -> Engine pipeline (real engine)', () => {
     const db = getDb() as any;
     const user = await createTestUser(db);
 
-    const response = await app.request('/v1/render/preview', {
+    const response = await app.request('/console/render/preview', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify(samplePreviewRequests.lowCode),

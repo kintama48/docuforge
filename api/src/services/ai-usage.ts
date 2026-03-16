@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
-import { env } from '../config/env';
+import { getPlanAiCreditLimit } from '../config/env';
 import { generateLogId } from '../lib/id';
 import { LimitExceededError } from '../lib/errors';
 
@@ -21,19 +21,6 @@ function getMonthBounds(): { start: number; end: number } {
   const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   return { start: start.getTime(), end: end.getTime() };
-}
-
-function getPlanAiLimit(planTier: string): number {
-  switch (planTier) {
-    case 'pro':
-      return env.PRO_MONTHLY_AI_CREDITS;
-    case 'starter':
-      return env.STARTER_MONTHLY_AI_CREDITS;
-    case 'dev':
-      return env.DEV_MONTHLY_AI_CREDITS;
-    default:
-      return env.FREE_MONTHLY_AI_CREDITS;
-  }
 }
 
 export async function checkAiCredits(userId: string): Promise<AiCreditCheckResult> {
@@ -57,7 +44,7 @@ export async function checkAiCredits(userId: string): Promise<AiCreditCheckResul
     };
   }
 
-  const limit = getPlanAiLimit(user.planTier);
+  const limit = getPlanAiCreditLimit(user.planTier);
 
   const [result] = await db
     .select({ count: sql<number>`COALESCE(SUM(${schema.aiUsageLogs.creditsUsed}), 0)` })
@@ -148,4 +135,3 @@ export function formatAiUsageResponse(credits: AiCreditCheckResult) {
     },
   };
 }
-

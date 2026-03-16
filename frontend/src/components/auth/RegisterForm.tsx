@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,12 +18,25 @@ import { useI18n } from "@/src/lib/i18n";
 type FormValues = { email: string; password: string; confirmPassword: string };
 type RegisterStep = "credentials" | "verify-email";
 
+function parseApiError(error: unknown): ApiError | null {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as Record<string, unknown>;
+  const errorCode = typeof candidate.error === "string" ? candidate.error : "unknown_error";
+  const message = typeof candidate.message === "string" ? candidate.message : "";
+  const details =
+    candidate.details && typeof candidate.details === "object"
+      ? (candidate.details as Record<string, unknown>)
+      : undefined;
+  return { error: errorCode, message, details };
+}
+
 export function RegisterForm() {
   const { messages } = useI18n();
   const [step, setStep] = useState<RegisterStep>("credentials");
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [resendRemainingMs, setResendRemainingMs] = useState<number>(0);
 
   const schema = z
     .object({
@@ -51,7 +64,7 @@ export function RegisterForm() {
   const errorMessage = (() => {
     if (step !== "credentials") return null;
     if (!registerMutation.isError) return null;
-    const error = registerMutation.error as unknown as ApiError | undefined;
+    const error = parseApiError(registerMutation.error);
     if (error?.error === "conflict") {
       return messages.auth.errorEmailExists;
     }
@@ -67,17 +80,29 @@ export function RegisterForm() {
     if (verifyEmail.isError) {
       return extractApiErrorMessage(
         verifyEmail.error,
-        "Unable to verify your email code. Please try again."
+        messages.auth.errorVerifyEmailCode
       );
     }
     if (resendEmail.isError) {
       return extractApiErrorMessage(
         resendEmail.error,
-        "Unable to resend verification code."
+        messages.auth.errorResendVerificationCode
       );
     }
     return null;
   })();
+
+  useEffect(() => {
+    if (resendRemainingMs <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setResendRemainingMs((current) =>
+        current <= 1000 ? 0 : current - 1000
+      );
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendRemainingMs]);
 
   async function submitRegistration(values: FormValues) {
     setStatusMessage(null);
@@ -91,6 +116,7 @@ export function RegisterForm() {
       if (isVerificationRequiredResponse(response)) {
         setStep("verify-email");
         setChallengeId(response.challenge_id);
+        setResendRemainingMs(Math.max(0, response.resend_after_ms));
         setVerificationCode("");
       }
     } catch {
@@ -121,7 +147,8 @@ export function RegisterForm() {
         challenge_id: challengeId,
       });
       setChallengeId(response.challenge_id);
-      setStatusMessage("A new verification code has been sent.");
+      setResendRemainingMs(Math.max(0, response.resend_after_ms));
+      setStatusMessage(response.sent ? messages.auth.resendSuccess : null);
     } catch {
       // Mutation error state is rendered by the form.
     }
@@ -130,11 +157,19 @@ export function RegisterForm() {
   function resetToCredentials() {
     setStep("credentials");
     setChallengeId(null);
+    setResendRemainingMs(0);
     setVerificationCode("");
     setStatusMessage(null);
     verifyEmail.reset();
     resendEmail.reset();
   }
+
+  const resendRemainingSeconds = Math.ceil(resendRemainingMs / 1000);
+  const resendButtonLabel = resendEmail.isPending
+    ? messages.auth.resendingButton
+    : resendRemainingMs > 0
+      ? messages.auth.resendCodeIn.replace("{seconds}", String(resendRemainingSeconds))
+      : messages.auth.resendCodeButton;
 
   return (
     <div className="space-y-4">
@@ -224,15 +259,15 @@ export function RegisterForm() {
           className="space-y-4"
         >
           <div>
-            <h2 className="text-sm font-semibold text-white">Verify your email</h2>
+            <h2 className="text-sm font-semibold text-white">{messages.auth.verifyEmailTitle}</h2>
             <p className="mt-1 text-xs text-[#a1a1aa]">
-              Enter the 6-digit code sent to your email to activate your account.
+              {messages.auth.registerVerifyEmailSubtitle}
             </p>
           </div>
 
           <div>
             <label htmlFor="verificationCode" className="text-sm text-[#a1a1aa]">
-              Verification code
+              {messages.auth.verificationCodeLabel}
             </label>
             <input
               id="verificationCode"
@@ -259,24 +294,24 @@ export function RegisterForm() {
             disabled={verifyEmail.isPending || verificationCode.length !== 6}
             className="w-full rounded-md bg-[#3b82f6] py-2 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:opacity-60"
           >
-            {verifyEmail.isPending ? "Verifying..." : "Verify email"}
+            {verifyEmail.isPending ? messages.auth.verifyingButton : messages.auth.verifyEmailButton}
           </button>
 
           <button
             type="button"
             onClick={() => void resendCode()}
-            disabled={resendEmail.isPending || !challengeId}
-            className="w-full rounded-md border border-[#27272a] py-2 text-sm font-semibold text-white transition hover:border-[#3f3f46] disabled:opacity-60"
+            disabled={resendEmail.isPending || !challengeId || resendRemainingMs > 0}
+            className="w-full rounded-md border border-[#27272a] bg-transparent py-2 text-sm font-semibold text-white transition hover:border-[#3f3f46] disabled:opacity-60"
           >
-            {resendEmail.isPending ? "Resending..." : "Resend code"}
+            {resendButtonLabel}
           </button>
 
           <button
             type="button"
             onClick={resetToCredentials}
-            className="w-full rounded-md border border-transparent py-2 text-xs text-[#a1a1aa] transition hover:text-white"
+            className="w-full rounded-md border border-transparent bg-transparent py-2 text-xs text-[#a1a1aa] transition hover:text-white"
           >
-            Use a different email
+            {messages.auth.useDifferentEmail}
           </button>
         </form>
       )}

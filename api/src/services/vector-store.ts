@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { loadAndChunkDocs, type RawChunk } from './typst-docs';
+import { env } from '../config/env';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -79,10 +80,7 @@ async function hashChunks(rawChunks: RawChunk[]): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function embedTexts(texts: string[], model: string): Promise<number[][]> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is required for RAG embeddings');
-
-  const client = new GoogleGenerativeAI(apiKey);
+  const client = new GoogleGenerativeAI(env.GEMINI_API_KEY);
   const embeddingModel = client.getGenerativeModel({ model });
   const embeddings: number[][] = [];
 
@@ -130,7 +128,7 @@ async function saveCache(cache: EmbeddingCache): Promise<void> {
  * Uses cached embeddings if available and docs haven't changed.
  */
 export async function initVectorStore(): Promise<void> {
-  const embeddingModel = process.env.RAG_EMBEDDING_MODEL || 'text-embedding-004';
+  const embeddingModel = env.RAG_EMBEDDING_MODEL;
 
   console.log('RAG: Loading Typst documentation...');
   const rawChunks = await loadAndChunkDocs();
@@ -181,8 +179,8 @@ export function isInitialized(): boolean {
 export async function searchDocs(query: string, topK?: number): Promise<SearchResult[]> {
   if (!initialized || chunks.length === 0) return [];
 
-  const k = topK ?? parseInt(process.env.RAG_TOP_K || '5', 10);
-  const embeddingModel = process.env.RAG_EMBEDDING_MODEL || 'text-embedding-004';
+  const k = topK ?? env.RAG_TOP_K;
+  const embeddingModel = env.RAG_EMBEDDING_MODEL;
 
   // Embed the query
   const [queryEmbedding] = await embedTexts([query], embeddingModel);

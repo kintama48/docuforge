@@ -33,7 +33,7 @@ export function OAuthButtons() {
           key={provider.id}
           type="button"
           onClick={() => {
-            const url = new URL(`${env.apiUrl}/v1/auth/oauth/${provider.id}`);
+            const url = new URL(`${env.apiUrl}/console/auth/oauth/${provider.id}`);
             url.searchParams.set("redirect", redirect);
             window.location.href = url.toString();
           }}

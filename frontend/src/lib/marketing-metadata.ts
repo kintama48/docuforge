@@ -15,10 +15,10 @@ export type MarketingMeta = {
 const marketingMeta: Record<Locale, MarketingMeta> = {
   en: {
     landing: {
-      title: "DocuForge · Typst-native PDF API",
+      title: "DocuForge · Deterministic Document Infrastructure",
       description:
-        "Rust-powered Typst PDF engine for fast, low-cost, programmatic rendering. Build workflows with a clean API and a developer-first console.",
-      ogAlt: "DocuForge — Typst-native PDF API",
+        "Rust-powered PDF rendering for synchronous production workflows, versioned template contracts, and practical security controls.",
+      ogAlt: "DocuForge — Deterministic Document Infrastructure",
     },
     pricing: {
       title: "DocuForge Pricing · Plans for every team",
@@ -35,10 +35,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   fr: {
     landing: {
-      title: "DocuForge · API PDF Typst native",
+      title: "DocuForge · Infrastructure documentaire déterministe",
       description:
-        "Moteur PDF Typst en Rust pour un rendu rapide et économique. API propre, console pensée pour les développeurs.",
-      ogAlt: "DocuForge — API PDF Typst native",
+        "Rendu PDF en Rust pour des workflows synchrones, des templates versionnés et des contrôles de sécurité pragmatiques.",
+      ogAlt: "DocuForge — Infrastructure documentaire déterministe",
     },
     pricing: {
       title: "Tarifs DocuForge · Plans pour chaque équipe",
@@ -55,10 +55,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   de: {
     landing: {
-      title: "DocuForge · Typst-native PDF-API",
+      title: "DocuForge · Deterministische Dokument-Infrastruktur",
       description:
-        "Rust-basierte Typst-PDF-Engine für schnelles, kostengünstiges Rendering. Saubere API und Entwicklerkonsole.",
-      ogAlt: "DocuForge — Typst-native PDF-API",
+        "Rust-basiertes PDF-Rendering für synchrone Produktions-Workflows, versionierte Template-Verträge und praxisnahe Sicherheitskontrollen.",
+      ogAlt: "DocuForge — Deterministische Dokument-Infrastruktur",
     },
     pricing: {
       title: "DocuForge Preise · Pläne für jedes Team",
@@ -75,10 +75,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   it: {
     landing: {
-      title: "DocuForge · API PDF Typst nativa",
+      title: "DocuForge · Infrastruttura documentale deterministica",
       description:
-        "Motore PDF Typst in Rust per rendering veloce ed economico. API pulita e console per sviluppatori.",
-      ogAlt: "DocuForge — API PDF Typst nativa",
+        "Rendering PDF in Rust per workflow sincroni in produzione, contratti template versionati e controlli di sicurezza pratici.",
+      ogAlt: "DocuForge — Infrastruttura documentale deterministica",
     },
     pricing: {
       title: "Prezzi DocuForge · Piani per ogni team",
@@ -95,10 +95,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   es: {
     landing: {
-      title: "DocuForge · API PDF Typst nativa",
+      title: "DocuForge · Infraestructura documental determinista",
       description:
-        "Motor PDF Typst en Rust para renderizado rápido y económico. API limpia y consola para desarrolladores.",
-      ogAlt: "DocuForge — API PDF Typst nativa",
+        "Renderizado PDF en Rust para flujos síncronos en producción, contratos de plantillas versionados y controles de seguridad prácticos.",
+      ogAlt: "DocuForge — Infraestructura documental determinista",
     },
     pricing: {
       title: "Precios DocuForge · Planes para cada equipo",
@@ -115,10 +115,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   ar: {
     landing: {
-      title: "DocuForge · واجهة PDF Typst أصلية",
+      title: "DocuForge · بنية مستندات حتمية",
       description:
-        "محرك Typst بلغة Rust لتوليد PDF سريع ومنخفض التكلفة. واجهة API نظيفة ولوحة تحكم للمطورين.",
-      ogAlt: "DocuForge — واجهة PDF Typst أصلية",
+        "رندر PDF مبني على Rust لمسارات إنتاج متزامنة، مع قوالب بإصدارات واضحة وضوابط أمان عملية.",
+      ogAlt: "DocuForge — بنية مستندات حتمية",
     },
     pricing: {
       title: "أسعار DocuForge · خطط لكل فريق",
@@ -135,10 +135,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   zh: {
     landing: {
-      title: "DocuForge · Typst 原生 PDF API",
+      title: "DocuForge · 确定性文档基础设施",
       description:
-        "Rust 驱动的 Typst PDF 引擎，渲染更快更省。清晰的 API 与开发者控制台。",
-      ogAlt: "DocuForge — Typst 原生 PDF API",
+        "Rust 驱动的 PDF 渲染能力，面向同步生产流程、版本化模板契约与务实的安全控制。",
+      ogAlt: "DocuForge — 确定性文档基础设施",
     },
     pricing: {
       title: "DocuForge 定价 · 适合各类团队",

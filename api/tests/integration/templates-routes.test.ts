@@ -34,7 +34,7 @@ describe('Templates routes', () => {
     await createOfficialTemplate(db as any, { name: 'Official Template' });
 
     const response = await app.request(
-      '/v1/templates?page=1&limit=10&include_official=true',
+      '/console/templates?page=1&limit=10&include_official=true',
       {
         method: 'GET',
         headers: getAuthHeaders(user, false),
@@ -53,7 +53,7 @@ describe('Templates routes', () => {
     await createTestTemplate(db as any, user.id, { name: 'User Template' });
     await createOfficialTemplate(db as any, { name: 'Official Template' });
 
-    const response = await app.request('/v1/templates?page=1&limit=10&include_official=false', {
+    const response = await app.request('/console/templates?page=1&limit=10&include_official=false', {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });
@@ -72,7 +72,7 @@ describe('Templates routes', () => {
       files: { 'cover.typ': '= Cover' },
     });
 
-    const response = await app.request(`/v1/templates/${template.id}`, {
+    const response = await app.request(`/console/templates/${template.id}`, {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });
@@ -84,7 +84,7 @@ describe('Templates routes', () => {
   });
 
   it('creates a template from low_code_spec without explicit source', async () => {
-    const response = await app.request('/v1/templates', {
+    const response = await app.request('/console/templates', {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -125,7 +125,7 @@ describe('Templates routes', () => {
       description: 'Old description',
     });
 
-    const response = await app.request(`/v1/templates/${template.id}`, {
+    const response = await app.request(`/console/templates/${template.id}`, {
       method: 'PATCH',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ name: 'New Name', description: 'New description' }),
@@ -142,7 +142,7 @@ describe('Templates routes', () => {
     const template = await createTestTemplate(db as any, user.id, { name: 'Template A' });
     await createTestTemplate(db as any, user.id, { name: 'Template B' });
 
-    const response = await app.request(`/v1/templates/${template.id}`, {
+    const response = await app.request(`/console/templates/${template.id}`, {
       method: 'PATCH',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ name: 'Template B' }),
@@ -155,7 +155,7 @@ describe('Templates routes', () => {
     const db = getDb();
     const official = await createOfficialTemplate(db as any, { name: 'Official Template' });
 
-    const response = await app.request(`/v1/templates/${official.id}/fork`, {
+    const response = await app.request(`/console/templates/${official.id}/fork`, {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ name: 'Forked Template' }),
@@ -179,7 +179,7 @@ describe('Templates routes', () => {
       source: '#let data = sys.inputs\n= "Initial"',
     });
 
-    const response = await app.request(`/v1/templates/${template.id}/publish`, {
+    const response = await app.request(`/console/templates/${template.id}/publish`, {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({
@@ -202,7 +202,7 @@ describe('Templates routes', () => {
     const body = await response.json();
     expect(body.version.low_code_spec).toBeDefined();
 
-    const responseTemplate = await app.request(`/v1/templates/${template.id}`, {
+    const responseTemplate = await app.request(`/console/templates/${template.id}`, {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });
@@ -218,7 +218,7 @@ describe('Templates routes', () => {
     const otherUser = await createTestUser(db as any);
     const otherTemplate = await createTestTemplate(db as any, otherUser.id, { name: 'Private' });
 
-    const response = await app.request(`/v1/templates/${otherTemplate.id}/fork`, {
+    const response = await app.request(`/console/templates/${otherTemplate.id}/fork`, {
       method: 'POST',
       headers: getAuthHeaders(user, false),
       body: JSON.stringify({ name: 'Should Fail' }),
@@ -231,14 +231,14 @@ describe('Templates routes', () => {
     const db = getDb();
     const template = await createTestTemplate(db as any, user.id, { name: 'Delete Me' });
 
-    const response = await app.request(`/v1/templates/${template.id}`, {
+    const response = await app.request(`/console/templates/${template.id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(user, false),
     });
 
     expect(response.status).toBe(200);
 
-    const after = await app.request(`/v1/templates/${template.id}`, {
+    const after = await app.request(`/console/templates/${template.id}`, {
       method: 'GET',
       headers: getAuthHeaders(user, false),
     });
@@ -249,7 +249,7 @@ describe('Templates routes', () => {
     const db = getDb();
     const official = await createOfficialTemplate(db as any, { name: 'Official' });
 
-    const response = await app.request(`/v1/templates/${official.id}`, {
+    const response = await app.request(`/console/templates/${official.id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(user, false),
     });

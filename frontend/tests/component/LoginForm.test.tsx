@@ -19,7 +19,7 @@ describe("LoginForm", () => {
 
   it("shows error on invalid credentials", async () => {
     server.use(
-      http.post("http://localhost:3000/v1/auth/login", async () =>
+      http.post("http://localhost:3000/console/auth/login", async () =>
         HttpResponse.json(
           { error: "invalid", message: "Invalid email or password" },
           { status: 401 }

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
+import { setCookie, deleteCookie, getCookie } from 'hono/cookie';
 import { eq, and } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { generateUserId, generateApiKeyId, generateOauthId } from '../lib/id';
@@ -7,6 +8,7 @@ import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../lib/api-key'
 import { evictCachedKey } from '../services/key-cache';
 import { createJwt, jwtAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
+import { consoleAuthAbuseProtection } from '../middleware/abuse-protection';
 import {
   zValidator,
   registerSchema,
@@ -20,16 +22,24 @@ import {
 import { ConflictError, UnauthorizedError, NotFoundError, ForbiddenError } from '../lib/errors';
 import { env, getPlanLimit } from '../config/env';
 import { sendTransactionalEmail } from '../services/email';
+import { resolveEmailLocale, type EmailLocale } from '../services/email-locale';
+import {
+  renderEmailTemplate,
+  type EmailTemplateId,
+  type EmailTemplateInputById,
+} from '../services/email-templates';
+import { resolveEmailSenderForTemplate } from '../services/email-sender';
 import {
   buildAuthUrl,
-  consumeOAuthState,
-  createOAuthState,
+  consumeOAuthStateDistributed,
+  createOAuthStateDistributed,
   exchangeOAuthCode,
   fetchOAuthProfile,
   sanitizeRedirectPath,
   type OAuthProvider,
 } from '../services/oauth';
 import { createExchangeCode, consumeExchangeCode } from '../services/oauth-exchange';
+import { issueRefreshToken, rotateRefreshToken, revokeRefreshToken } from '../services/refresh-token';
 import {
   canonicalizeEmail,
   createOtpChallenge,
@@ -46,6 +56,7 @@ const auth = new Hono();
 
 // All auth endpoints are mutations — never cache
 auth.use('*', noCache);
+auth.use('*', consoleAuthAbuseProtection);
 
 const oauthProviders: OAuthProvider[] = ['google', 'microsoft', 'github'];
 const trustedBrowserOrigins = new Set([new URL(env.APP_URL).origin]);
@@ -101,22 +112,118 @@ async function createDefaultApiKey(
   return { rawKey, keyPrefix, name };
 }
 
-async function sendEmailVerificationCode(email: string, code: string): Promise<void> {
-  const ttlMinutes = getOtpLifetimeMinutes();
-  await sendTransactionalEmail({
-    to: email,
-    subject: 'Verify your DocuForge email',
-    text: `Your DocuForge verification code is ${code}. It expires in ${ttlMinutes} minute(s).`,
+function resolveRequestEmailLocale(c: Context): EmailLocale {
+  return resolveEmailLocale({
+    headerLocale: c.req.header('x-docuforge-locale'),
+    cookieLocale: getCookie(c, 'docuforge-locale') || null,
+    acceptLanguage: c.req.header('Accept-Language'),
   });
 }
 
-async function sendLoginCode(email: string, code: string): Promise<void> {
-  const ttlMinutes = getOtpLifetimeMinutes();
+async function sendTemplatedEmail<K extends EmailTemplateId>(
+  templateId: K,
+  email: string,
+  input: EmailTemplateInputById[K]
+): Promise<void> {
+  const template = renderEmailTemplate(templateId, input);
+  const sender = resolveEmailSenderForTemplate(templateId);
   await sendTransactionalEmail({
     to: email,
-    subject: 'Your DocuForge login verification code',
-    text: `Your DocuForge login code is ${code}. It expires in ${ttlMinutes} minute(s).`,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+    from: sender.from,
+    replyTo: sender.replyTo,
   });
+}
+
+async function sendEmailVerificationCode(email: string, code: string, locale: EmailLocale): Promise<void> {
+  const ttlMinutes = getOtpLifetimeMinutes();
+  await sendTemplatedEmail('email_verification', email, {
+    locale,
+    code,
+    ttlMinutes,
+  });
+}
+
+async function sendLoginCode(email: string, code: string, locale: EmailLocale): Promise<void> {
+  const ttlMinutes = getOtpLifetimeMinutes();
+  await sendTemplatedEmail('login_2fa', email, {
+    locale,
+    code,
+    ttlMinutes,
+  });
+}
+
+async function sendWelcomeEmail(email: string, locale: EmailLocale): Promise<void> {
+  try {
+    await sendTemplatedEmail('welcome_first_message', email, {
+      locale,
+      dashboardUrl: `${env.APP_URL}/`,
+    });
+  } catch (err) {
+    console.error('Failed to send welcome email', err);
+  }
+}
+
+function setSessionCookie(c: Context, token: string) {
+  if (!token || token.trim().length === 0) {
+    throw new Error('Session token must be provided');
+  }
+  if (env.AUTH_COOKIE_MAX_AGE_SECONDS <= 0) {
+    throw new Error('AUTH_COOKIE_MAX_AGE_SECONDS must be positive');
+  }
+
+  setCookie(c, env.AUTH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.AUTH_COOKIE_SAME_SITE,
+    path: '/',
+    maxAge: env.AUTH_COOKIE_MAX_AGE_SECONDS,
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+function setRefreshCookie(c: Context, token: string) {
+  if (!token || token.trim().length === 0) {
+    throw new Error('Refresh token must be provided');
+  }
+  if (env.AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS <= 0) {
+    throw new Error('AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS must be positive');
+  }
+
+  setCookie(c, env.AUTH_REFRESH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.AUTH_COOKIE_SAME_SITE,
+    path: '/',
+    maxAge: env.AUTH_REFRESH_TOKEN_MAX_AGE_SECONDS,
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+function clearSessionCookie(c: Context) {
+  deleteCookie(c, env.AUTH_COOKIE_NAME, {
+    path: '/',
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+function clearRefreshCookie(c: Context) {
+  deleteCookie(c, env.AUTH_REFRESH_COOKIE_NAME, {
+    path: '/',
+    ...(env.AUTH_COOKIE_DOMAIN ? { domain: env.AUTH_COOKIE_DOMAIN } : {}),
+  });
+}
+
+async function issueSessionForUser(c: Context, user: { id: string; email: string }) {
+  const accessToken = await createJwt(user.id, user.email);
+  const { refreshToken } = await issueRefreshToken(user.id);
+
+  setSessionCookie(c, accessToken);
+  setRefreshCookie(c, refreshToken);
+
+  return accessToken;
 }
 
 // POST /v1/auth/register
@@ -125,6 +232,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
   const { email: rawEmail, password } = c.req.valid('json');
   const db = getDb();
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const email = normalizeEmail(rawEmail);
   const emailCanonical = canonicalizeEmail(email);
   const fingerprint = getAuthFingerprint(c);
@@ -173,7 +281,7 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
       },
     });
 
-    await sendEmailVerificationCode(email, challenge.code);
+    await sendEmailVerificationCode(email, challenge.code, locale);
 
     return c.json(
       {
@@ -191,12 +299,14 @@ auth.post('/register', zValidator('json', registerSchema), async (c) => {
     );
   }
 
+  await sendWelcomeEmail(email, locale);
+
   const defaultKey = await createDefaultApiKey(userId, now);
   if (!defaultKey) {
     throw new UnauthorizedError('Unable to provision default API key');
   }
 
-  const token = await createJwt(userId, email);
+  const token = await issueSessionForUser(c, { id: userId, email });
 
   return c.json(
     {
@@ -225,6 +335,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
   const email = normalizeEmail(rawEmail);
   const emailCanonical = canonicalizeEmail(email);
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const fingerprint = getAuthFingerprint(c);
 
   // Find user
@@ -255,7 +366,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
       },
     });
 
-    await sendEmailVerificationCode(user.email, challenge.code);
+    await sendEmailVerificationCode(user.email, challenge.code, locale);
 
     return c.json(
       {
@@ -279,7 +390,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
       },
     });
 
-    await sendLoginCode(user.email, challenge.code);
+    await sendLoginCode(user.email, challenge.code, locale);
 
     return c.json({
       two_factor_required: true,
@@ -297,7 +408,7 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
   await upsertUserPin(user.id, fingerprint.fingerprintHash, fingerprint.ipHash, now);
 
   // Generate JWT
-  const token = await createJwt(user.id, user.email);
+  const token = await issueSessionForUser(c, { id: user.id, email: user.email });
 
   return c.json({
     token,
@@ -314,6 +425,7 @@ auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id, code } = c.req.valid('json');
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const verified = await verifyOtpChallenge(challenge_id, 'email_verification', code);
   const db = getDb();
 
@@ -322,7 +434,8 @@ auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
     throw new UnauthorizedError('Invalid verification challenge');
   }
 
-  if (!user.emailVerifiedAt) {
+  const wasUnverified = !user.emailVerifiedAt;
+  if (wasUnverified) {
     await db
       .update(schema.users)
       .set({
@@ -337,8 +450,12 @@ auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
     await upsertUserPin(user.id, verified.metadata.fingerprint_hash, ipHash, now);
   }
 
+  if (wasUnverified) {
+    await sendWelcomeEmail(user.email, locale);
+  }
+
   const defaultKey = await createDefaultApiKey(user.id, now);
-  const token = await createJwt(user.id, user.email);
+  const token = await issueSessionForUser(c, { id: user.id, email: user.email });
 
   return c.json({
     email_verified: true,
@@ -360,15 +477,21 @@ auth.post('/verify-email', zValidator('json', verifyEmailSchema), async (c) => {
 });
 
 // POST /v1/auth/resend-verification - Resend signup verification code
-auth.post('/resend-verification', zValidator('json', resendEmailVerificationSchema), async (c) => {
+auth.post(
+  '/resend-verification',
+  zValidator('json', resendEmailVerificationSchema),
+  async (c) => {
   assertTrustedBrowserOrigin(c);
   const { challenge_id } = c.req.valid('json');
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const resent = await resendOtpChallenge(challenge_id, 'email_verification');
-  await sendEmailVerificationCode(resent.email, resent.code);
+  if (resent.status === 'sent' && resent.email && resent.code) {
+    await sendEmailVerificationCode(resent.email, resent.code, locale);
+  }
 
   return c.json({
-    sent: true,
+    sent: resent.status === 'sent',
     challenge_id: resent.challengeId,
     expires_in_ms: Math.max(0, resent.expiresAt - now),
     resend_after_ms: Math.max(0, resent.resendAvailableAt - now),
@@ -393,7 +516,7 @@ auth.post('/2fa/verify', zValidator('json', verifyTwoFactorSchema), async (c) =>
     await upsertUserPin(user.id, verified.metadata.fingerprint_hash, ipHash, now);
   }
 
-  const token = await createJwt(user.id, user.email);
+  const token = await issueSessionForUser(c, { id: user.id, email: user.email });
   return c.json({
     token,
     user: {
@@ -409,11 +532,14 @@ auth.post('/2fa/resend', zValidator('json', resendTwoFactorSchema), async (c) =>
   assertTrustedBrowserOrigin(c);
   const { challenge_id } = c.req.valid('json');
   const now = Date.now();
+  const locale = resolveRequestEmailLocale(c);
   const resent = await resendOtpChallenge(challenge_id, 'login_2fa');
-  await sendLoginCode(resent.email, resent.code);
+  if (resent.status === 'sent' && resent.email && resent.code) {
+    await sendLoginCode(resent.email, resent.code, locale);
+  }
 
   return c.json({
-    sent: true,
+    sent: resent.status === 'sent',
     challenge_id: resent.challengeId,
     expires_in_ms: Math.max(0, resent.expiresAt - now),
     resend_after_ms: Math.max(0, resent.resendAvailableAt - now),
@@ -428,7 +554,7 @@ auth.get('/oauth/:provider', async (c) => {
   }
 
   const redirect = c.req.query('redirect');
-  const state = createOAuthState(provider, redirect);
+  const state = await createOAuthStateDistributed(provider, redirect);
   const url = buildAuthUrl(provider, state);
   return c.redirect(url);
 });
@@ -446,7 +572,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
     return c.redirect(`${env.APP_URL}/login?error=oauth_failed`);
   }
 
-  const stateRecord = consumeOAuthState(state);
+  const stateRecord = await consumeOAuthStateDistributed(state);
   if (!stateRecord || stateRecord.provider !== provider) {
     return c.redirect(`${env.APP_URL}/login?error=oauth_invalid_state`);
   }
@@ -456,6 +582,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
     const profile = await fetchOAuthProfile(provider, accessToken);
     const db = getDb();
     const now = Date.now();
+    const locale = resolveRequestEmailLocale(c);
 
     // Find user by OAuth account
     const [oauthAccount] = await db
@@ -470,6 +597,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
 
     let user = null;
     let rawKey: string | null = null;
+    let createdUser = false;
 
     if (oauthAccount) {
       const [existingUser] = await db
@@ -503,6 +631,7 @@ auth.get('/oauth/:provider/callback', async (c) => {
       };
 
       await db.insert(schema.users).values(user);
+      createdUser = true;
 
       rawKey = generateRawApiKey();
       const keyHash = hashApiKey(rawKey);
@@ -530,11 +659,15 @@ auth.get('/oauth/:provider/callback', async (c) => {
       });
     }
 
+    if (createdUser) {
+      await sendWelcomeEmail(user.email, locale);
+    }
+
     const token = await createJwt(user.id, user.email);
 
     // Create a short-lived exchange code instead of passing sensitive data in URL
     // This prevents tokens from being logged in browser history, server logs, referrer headers
-    const exchangeCode = createExchangeCode({
+    const exchangeCode = await createExchangeCode({
       token,
       userId: user.id,
       email: user.email,
@@ -563,13 +696,15 @@ auth.post('/oauth/exchange', async (c) => {
     throw new UnauthorizedError('Exchange code required');
   }
 
-  const data = consumeExchangeCode(code);
+  const data = await consumeExchangeCode(code);
   if (!data) {
     throw new UnauthorizedError('Invalid or expired exchange code');
   }
 
+  const token = await issueSessionForUser(c, { id: data.userId, email: data.email });
+
   const response: Record<string, unknown> = {
-    token: data.token,
+    token,
     user: {
       id: data.userId,
       email: data.email,
@@ -587,6 +722,65 @@ auth.post('/oauth/exchange', async (c) => {
   }
 
   return c.json(response);
+});
+
+// POST /v1/auth/refresh - Rotate refresh token and issue new access token
+auth.post('/refresh', async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const rawRefreshToken = getCookie(c, env.AUTH_REFRESH_COOKIE_NAME);
+  if (!rawRefreshToken) {
+    clearSessionCookie(c);
+    clearRefreshCookie(c);
+    throw new UnauthorizedError('Refresh token required');
+  }
+
+  const rotated = await rotateRefreshToken(rawRefreshToken);
+  if (!rotated) {
+    clearSessionCookie(c);
+    clearRefreshCookie(c);
+    throw new UnauthorizedError('Invalid or expired refresh token');
+  }
+
+  const db = getDb();
+  const [user] = await db
+    .select({
+      id: schema.users.id,
+      email: schema.users.email,
+      planTier: schema.users.planTier,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, rotated.userId));
+
+  if (!user) {
+    clearSessionCookie(c);
+    clearRefreshCookie(c);
+    throw new UnauthorizedError('Refresh token user not found');
+  }
+
+  const token = await createJwt(user.id, user.email);
+  setSessionCookie(c, token);
+  setRefreshCookie(c, rotated.refreshToken);
+
+  return c.json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      plan: user.planTier,
+    },
+  });
+});
+
+// POST /v1/auth/logout - clear browser session cookie
+auth.post('/logout', async (c) => {
+  assertTrustedBrowserOrigin(c);
+  const rawRefreshToken = getCookie(c, env.AUTH_REFRESH_COOKIE_NAME);
+  if (rawRefreshToken) {
+    await revokeRefreshToken(rawRefreshToken);
+  }
+  clearSessionCookie(c);
+  clearRefreshCookie(c);
+  return c.json({ message: 'Logged out' });
 });
 
 // POST /v1/auth/keys - Create new API key
