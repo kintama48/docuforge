@@ -53,7 +53,13 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/next.config.ts ./next.config.ts
 COPY --from=deps /app/node_modules ./node_modules
-RUN adduser --disabled-password --gecos "" docuforge \
+RUN if command -v adduser >/dev/null 2>&1; then \
+      adduser --disabled-password --gecos "" docuforge; \
+    elif command -v useradd >/dev/null 2>&1; then \
+      useradd --create-home --shell /bin/bash docuforge; \
+    else \
+      echo "No supported user creation command found" && exit 1; \
+    fi \
     && chown -R docuforge:docuforge /app
 USER docuforge
 EXPOSE 5173
