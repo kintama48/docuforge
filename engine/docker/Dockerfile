@@ -6,15 +6,23 @@ WORKDIR /build
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# region agent log H1/H4
+RUN /bin/sh -lc 'echo "{\"sessionId\":\"178efd\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H1\",\"location\":\"engine/docker/Dockerfile:13\",\"message\":\"builder_tools_presence\",\"data\":{\"curl_path\":\"$(command -v curl || echo missing)\",\"pkg_config_path\":\"$(command -v pkg-config || echo missing)\"},\"timestamp\":$(date +%s)000}"'
+# endregion
 
 # Copy manifests first for dependency caching
 COPY Cargo.toml Cargo.lock ./
 
 # Create dummy src to build dependencies
 RUN mkdir src && echo "fn main() {}" > src/main.rs
+# region agent log H2/H3
+RUN /bin/sh -lc 'echo "{\"sessionId\":\"178efd\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H3\",\"location\":\"engine/docker/Dockerfile:23\",\"message\":\"swagger_env_probe\",\"data\":{\"swagger_url\":\"${SWAGGER_UI_DOWNLOAD_URL:-unset}\"},\"timestamp\":$(date +%s)000}"'
+# endregion
 RUN cargo build --release && rm -rf src target/release/docuforge-engine*
 
 # Copy actual source and build
