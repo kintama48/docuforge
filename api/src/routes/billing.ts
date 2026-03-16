@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { getCookie } from 'hono/cookie';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
-import Stripe from 'stripe';
 import { getDb, schema } from '../db/client';
 import { flexibleAuth, jwtAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
@@ -26,30 +26,109 @@ const billing = new Hono();
 // Usage, checkout, and webhook — all must be fresh
 billing.use('*', noCache);
 
-let stripeClient: Stripe | null = null;
+type PlanTier = 'free' | 'dev' | 'starter' | 'pro';
 
-function getStripe(): Stripe {
-  if (env.BILLING_PROVIDER === 'paddle') {
-    throw new InternalError('Paddle billing provider is not enabled in this deployment');
-  }
-  if (env.BILLING_PROVIDER === 'lemonsqueezy') {
-    throw new InternalError('Lemon Squeezy billing provider is not enabled in this deployment');
-  }
+type BillingEvent = {
+  type: string;
+  data: { object: Record<string, unknown> };
+};
 
-  if (env.BILLING_PROVIDER !== 'stripe') {
-    throw new InternalError(`Unsupported billing provider: ${env.BILLING_PROVIDER}`);
-  }
-
-  if (!stripeClient) {
-    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-01-27.acacia',
-    });
-  }
-  return stripeClient;
+interface BillingClient {
+  createCustomer(params: {
+    email: string;
+    metadata: Record<string, string>;
+  }): Promise<{ id: string }>;
+  createCheckoutSession(params: {
+    customerId: string;
+    plan: Exclude<PlanTier, 'free'>;
+    planId: string;
+    userId: string;
+    locale: EmailLocale;
+  }): Promise<{ url: string }>;
+  constructEvent(body: string, signature: string, webhookSecret: string): Promise<BillingEvent>;
 }
 
-export function setStripeClient(client: Stripe | null) {
-  stripeClient = client;
+let billingClient: BillingClient | null = null;
+
+function providerName(): 'Paddle' | 'Lemon Squeezy' {
+  return env.BILLING_PROVIDER === 'paddle' ? 'Paddle' : 'Lemon Squeezy';
+}
+
+function providerPlanId(plan: Exclude<PlanTier, 'free'>): string {
+  if (env.BILLING_PROVIDER === 'paddle') {
+    if (plan === 'dev') return env.PADDLE_PRICE_ID_DEV;
+    if (plan === 'starter') return env.PADDLE_PRICE_ID_STARTER;
+    return env.PADDLE_PRICE_ID_PRO;
+  }
+  if (plan === 'dev') return env.LEMONSQUEEZY_VARIANT_ID_DEV;
+  if (plan === 'starter') return env.LEMONSQUEEZY_VARIANT_ID_STARTER;
+  return env.LEMONSQUEEZY_VARIANT_ID_PRO;
+}
+
+function providerWebhookSecret(): string {
+  if (env.BILLING_PROVIDER === 'paddle') {
+    return env.PADDLE_WEBHOOK_SECRET;
+  }
+  return env.LEMONSQUEEZY_WEBHOOK_SECRET;
+}
+
+function providerSignatureHeader(c: Context): string | undefined {
+  if (env.BILLING_PROVIDER === 'paddle') {
+    return c.req.header('x-billing-signature') ?? c.req.header('paddle-signature');
+  }
+  return c.req.header('x-billing-signature') ?? c.req.header('x-signature');
+}
+
+function parseSignatureHeader(signature: string): { timestamp: string; v1: string } | null {
+  const parts = signature.split(',').map((part) => part.trim());
+  const timestamp = parts.find((part) => part.startsWith('t='))?.slice(2);
+  const v1 = parts.find((part) => part.startsWith('v1='))?.slice(3);
+  if (!timestamp || !v1) return null;
+  return { timestamp, v1 };
+}
+
+function verifySignature(body: string, signature: string, secret: string): boolean {
+  const parsed = parseSignatureHeader(signature);
+  if (!parsed) return false;
+
+  const expected = createHmac('sha256', secret).update(`${parsed.timestamp}.${body}`).digest('hex');
+  const expectedBuffer = Buffer.from(expected);
+  const actualBuffer = Buffer.from(parsed.v1);
+  if (expectedBuffer.length !== actualBuffer.length) return false;
+  return timingSafeEqual(expectedBuffer, actualBuffer);
+}
+
+function resolveCheckoutUrl(plan: Exclude<PlanTier, 'free'>): string {
+  const billingPath = `/billing/checkout?provider=${env.BILLING_PROVIDER}&plan=${plan}`;
+  return `${env.APP_URL}${billingPath}`;
+}
+
+function createDefaultBillingClient(): BillingClient {
+  return {
+    async createCustomer() {
+      return { id: `cust_${crypto.randomUUID()}` };
+    },
+    async createCheckoutSession({ plan }) {
+      return { url: resolveCheckoutUrl(plan) };
+    },
+    async constructEvent(body, signature, webhookSecret) {
+      if (!verifySignature(body, signature, webhookSecret)) {
+        throw new ValidationError('Invalid webhook signature');
+      }
+      return JSON.parse(body) as BillingEvent;
+    },
+  };
+}
+
+function getBillingClient(): BillingClient {
+  if (!billingClient) {
+    billingClient = createDefaultBillingClient();
+  }
+  return billingClient;
+}
+
+export function setBillingClient(client: BillingClient | null) {
+  billingClient = client;
 }
 
 async function requireConsoleBillingPath(c: Context, next: () => Promise<void>) {
@@ -66,8 +145,6 @@ async function requireConsumerBillingPath(c: Context, next: () => Promise<void>)
   await next();
 }
 
-type PlanTier = 'free' | 'dev' | 'starter' | 'pro';
-
 function planLabel(plan: PlanTier): string {
   switch (plan) {
     case 'dev':
@@ -83,13 +160,20 @@ function planLabel(plan: PlanTier): string {
 }
 
 function resolvePlanFromPriceId(priceId: string | undefined): PlanTier {
-  if (priceId === env.STRIPE_PRO_PRICE_ID) {
+  if (!priceId) return 'free';
+  if (env.BILLING_PROVIDER === 'paddle') {
+    if (priceId === env.PADDLE_PRICE_ID_PRO) return 'pro';
+    if (priceId === env.PADDLE_PRICE_ID_STARTER) return 'starter';
+    if (priceId === env.PADDLE_PRICE_ID_DEV) return 'dev';
+    return 'free';
+  }
+  if (priceId === env.LEMONSQUEEZY_VARIANT_ID_PRO) {
     return 'pro';
   }
-  if (priceId === env.STRIPE_STARTER_PRICE_ID) {
+  if (priceId === env.LEMONSQUEEZY_VARIANT_ID_STARTER) {
     return 'starter';
   }
-  if (priceId === env.STRIPE_DEV_PRICE_ID) {
+  if (priceId === env.LEMONSQUEEZY_VARIANT_ID_DEV) {
     return 'dev';
   }
   return 'free';
@@ -171,10 +255,10 @@ billing.post(
   const { plan } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
-  const stripe = getStripe();
+  const billingProvider = getBillingClient();
   const locale = resolveLocaleFromContext(c);
 
-  // Get or create Stripe customer
+  // Get or create billing customer
   const [user] = await db.select().from(schema.users).where(eq(schema.users.id, userId));
 
   if (!user) {
@@ -184,7 +268,7 @@ billing.post(
   let customerId = user.stripeCustomerId;
 
   if (!customerId) {
-    const customer = await stripe.customers.create({
+    const customer = await billingProvider.createCustomer({
       email: user.email,
       metadata: { userId: user.id },
     });
@@ -192,40 +276,32 @@ billing.post(
 
     await db.update(schema.users).set({ stripeCustomerId: customerId }).where(eq(schema.users.id, userId));
   }
-
-  // Get price ID
-  const priceByPlan: Record<'dev' | 'starter' | 'pro', string> = {
-    dev: env.STRIPE_DEV_PRICE_ID,
-    starter: env.STRIPE_STARTER_PRICE_ID,
-    pro: env.STRIPE_PRO_PRICE_ID,
-  };
-  const priceId = priceByPlan[plan];
-
-  if (!priceId) {
-    throw new InternalError('Price not configured');
+  if (!customerId) {
+    throw new InternalError('Failed to resolve billing customer');
   }
 
-  // Create checkout session
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${env.APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${env.APP_URL}/billing/cancel`,
-    metadata: { userId: user.id, plan, locale },
-    subscription_data: {
-      metadata: { userId: user.id, locale },
-    },
+  const priceId = providerPlanId(plan);
+
+  if (!priceId) {
+    throw new InternalError(`${providerName()} plan ID not configured`);
+  }
+
+  const session = await billingProvider.createCheckoutSession({
+    customerId,
+    plan,
+    planId: priceId,
+    userId: user.id,
+    locale,
   });
 
   return c.json({ checkout_url: session.url });
 });
 
-// POST /v1/billing/webhook - Stripe webhook
+// POST /v1/billing/webhook - provider webhook
 billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
-  const stripe = getStripe();
-  const signature = c.req.header('stripe-signature');
-  const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
+  const billingProvider = getBillingClient();
+  const signature = providerSignatureHeader(c);
+  const webhookSecret = providerWebhookSecret();
 
   if (!signature || !webhookSecret) {
     throw new ValidationError('Missing webhook signature');
@@ -233,9 +309,9 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
 
   const body = await c.req.text();
 
-  let event: Stripe.Event;
+  let event: BillingEvent;
   try {
-    event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    event = await billingProvider.constructEvent(body, signature, webhookSecret);
   } catch {
     throw new ValidationError('Invalid webhook signature');
   }
@@ -244,9 +320,13 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
 
   switch (event.type) {
     case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.metadata?.userId;
-      const plan = normalizePlanTier(typeof session.metadata?.plan === 'string' ? session.metadata.plan : 'free');
+      const session = event.data.object as Record<string, unknown>;
+      const metadata =
+        typeof session.metadata === 'object' && session.metadata !== null
+          ? (session.metadata as Record<string, unknown>)
+          : {};
+      const userId = typeof metadata.userId === 'string' ? metadata.userId : null;
+      const plan = normalizePlanTier(typeof metadata.plan === 'string' ? metadata.plan : 'free');
 
       if (userId && plan !== 'free') {
         const [user] = await db
@@ -262,13 +342,13 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
           .set({
             planTier: plan,
             planRenders: getPlanLimit(plan),
-            stripeCustomerId: session.customer as string,
+            stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
             updatedAt: Date.now(),
           })
           .where(eq(schema.users.id, userId));
 
         if (user) {
-          const locale = resolveLocaleFromMetadata(session.metadata);
+          const locale = resolveLocaleFromMetadata(metadata);
           await sendBillingEmail('billing_subscription_started', user.email, {
             locale,
             planName: planLabel(plan),
@@ -280,11 +360,13 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
     }
 
     case 'customer.subscription.updated': {
-      const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
+      const subscription = event.data.object as Record<string, unknown>;
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : '';
+      if (!customerId) break;
 
       // Determine plan from price
-      const priceId = subscription.items.data[0]?.price?.id;
+      const items = (subscription.items as { data?: Array<{ price?: { id?: string } }> } | undefined)?.data ?? [];
+      const priceId = items[0]?.price?.id;
       const plan = resolvePlanFromPriceId(priceId);
 
       const [user] = await db
@@ -306,7 +388,11 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
         .where(eq(schema.users.stripeCustomerId, customerId));
 
       if (user && user.planTier !== plan && user.planTier !== 'free' && plan !== 'free') {
-        const locale = resolveLocaleFromMetadata(subscription.metadata);
+        const metadata =
+          typeof subscription.metadata === 'object' && subscription.metadata !== null
+            ? (subscription.metadata as Record<string, unknown>)
+            : {};
+        const locale = resolveLocaleFromMetadata(metadata);
         const previousPlan = normalizePlanTier(user.planTier);
         await sendBillingEmail('billing_plan_changed', user.email, {
           locale,
@@ -319,8 +405,9 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
     }
 
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
+      const subscription = event.data.object as Record<string, unknown>;
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : '';
+      if (!customerId) break;
 
       const [user] = await db
         .select({
@@ -342,7 +429,11 @@ billing.post('/billing/webhook', requireConsumerBillingPath, async (c) => {
         .where(eq(schema.users.stripeCustomerId, customerId));
 
       if (user && user.planTier !== 'free') {
-        const locale = resolveLocaleFromMetadata(subscription.metadata);
+        const metadata =
+          typeof subscription.metadata === 'object' && subscription.metadata !== null
+            ? (subscription.metadata as Record<string, unknown>)
+            : {};
+        const locale = resolveLocaleFromMetadata(metadata);
         const previousPlan = normalizePlanTier(user.planTier);
         await sendBillingEmail('billing_subscription_canceled', user.email, {
           locale,

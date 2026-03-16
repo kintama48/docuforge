@@ -6,40 +6,32 @@ import { createApp } from '../../src/app';
 import { initTestDb, getDb, resetDb, schema } from '../../src/db/client';
 import { setupTestEnv, createTestUser, getAuthHeaders } from '../setup';
 import { createTestJwt } from '../helpers/auth';
-import { setStripeClient } from '../../src/routes/billing';
+import { setBillingClient } from '../../src/routes/billing';
 import { env } from '../../src/config/env';
 import { eq } from 'drizzle-orm';
 import { clearMockEmails, listMockEmails } from '../../src/services/email';
 
 const originalEnv = { ...process.env };
 
-function createStripeStub() {
+function createBillingStub() {
   let customerCreateCalls = 0;
   let sessionCreateCalls = 0;
   let shouldThrowSignature = false;
 
   const stub = {
-    customers: {
-      create: async () => {
-        customerCreateCalls += 1;
-        return { id: 'cus_test' };
-      },
+    createCustomer: async () => {
+      customerCreateCalls += 1;
+      return { id: 'cus_test' };
     },
-    checkout: {
-      sessions: {
-        create: async () => {
-          sessionCreateCalls += 1;
-          return { url: 'https://checkout.test/session' };
-        },
-      },
+    createCheckoutSession: async () => {
+      sessionCreateCalls += 1;
+      return { url: 'https://checkout.test/session' };
     },
-    webhooks: {
-      constructEventAsync: async (body: string) => {
-        if (shouldThrowSignature) {
-          throw new Error('invalid signature');
-        }
-        return JSON.parse(body);
-      },
+    constructEvent: async (body: string) => {
+      if (shouldThrowSignature) {
+        throw new Error('invalid signature');
+      }
+      return JSON.parse(body);
     },
     __state: {
       get customerCalls() {
@@ -59,20 +51,20 @@ function createStripeStub() {
 
 describe('Billing checkout and webhook', () => {
   let app: ReturnType<typeof createApp>;
-  let stripeStub: ReturnType<typeof createStripeStub>;
+  let billingStub: ReturnType<typeof createBillingStub>;
 
   beforeEach(async () => {
     setupTestEnv('http://127.0.0.1:3001');
     await initTestDb();
-    stripeStub = createStripeStub();
-    setStripeClient(stripeStub as any);
+    billingStub = createBillingStub();
+    setBillingClient(billingStub as any);
     app = createApp();
     clearMockEmails();
   });
 
   afterEach(() => {
     clearMockEmails();
-    setStripeClient(null);
+    setBillingClient(null);
     resetDb();
     for (const key of Object.keys(process.env)) {
       if (!(key in originalEnv)) {
@@ -94,8 +86,8 @@ describe('Billing checkout and webhook', () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.checkout_url).toBe('https://checkout.test/session');
-    expect(stripeStub.__state.customerCalls).toBe(1);
-    expect(stripeStub.__state.sessionCalls).toBe(1);
+    expect(billingStub.__state.customerCalls).toBe(1);
+    expect(billingStub.__state.sessionCalls).toBe(1);
 
     const db = getDb();
     const [record] = await db.select().from(schema.users).where(eq(schema.users.id, user.id));
@@ -132,8 +124,8 @@ describe('Billing checkout and webhook', () => {
   });
 
   it('fails when price is not configured', async () => {
-    const originalPriceId = env.STRIPE_STARTER_PRICE_ID;
-    env.STRIPE_STARTER_PRICE_ID = '';
+    const originalPriceId = env.PADDLE_PRICE_ID_STARTER;
+    env.PADDLE_PRICE_ID_STARTER = '';
 
     const user = await createTestUser(getDb() as any);
     const db = getDb();
@@ -148,7 +140,7 @@ describe('Billing checkout and webhook', () => {
       body: JSON.stringify({ plan: 'starter' }),
     });
 
-    env.STRIPE_STARTER_PRICE_ID = originalPriceId;
+    env.PADDLE_PRICE_ID_STARTER = originalPriceId;
     expect(response.status).toBe(500);
   });
 
@@ -162,11 +154,11 @@ describe('Billing checkout and webhook', () => {
   });
 
   it('rejects webhook with invalid signature', async () => {
-    stripeStub.__state.setThrowSignature(true);
+    billingStub.__state.setThrowSignature(true);
 
     const response = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
+      headers: { 'x-billing-signature': 'sig' },
       body: JSON.stringify({ type: 'checkout.session.completed', data: { object: {} } }),
     });
 
@@ -188,7 +180,7 @@ describe('Billing checkout and webhook', () => {
 
     const response = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
+      headers: { 'x-billing-signature': 'sig' },
       body: JSON.stringify(event),
     });
 
@@ -219,14 +211,14 @@ describe('Billing checkout and webhook', () => {
       data: {
         object: {
           customer: 'cus_sub',
-          items: { data: [{ price: { id: process.env.STRIPE_PRO_PRICE_ID } }] },
+          items: { data: [{ price: { id: process.env.PADDLE_PRICE_ID_PRO } }] },
         },
       },
     };
 
     const updateResponse = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
+      headers: { 'x-billing-signature': 'sig' },
       body: JSON.stringify(updateEvent),
     });
     expect(updateResponse.status).toBe(200);
@@ -239,14 +231,14 @@ describe('Billing checkout and webhook', () => {
       data: {
         object: {
           customer: 'cus_sub',
-          items: { data: [{ price: { id: process.env.STRIPE_DEV_PRICE_ID } }] },
+          items: { data: [{ price: { id: process.env.PADDLE_PRICE_ID_DEV } }] },
         },
       },
     };
 
     const devUpdateResponse = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
+      headers: { 'x-billing-signature': 'sig' },
       body: JSON.stringify(devUpdateEvent),
     });
     expect(devUpdateResponse.status).toBe(200);
@@ -270,7 +262,7 @@ describe('Billing checkout and webhook', () => {
 
     const deleteResponse = await app.request('/v1/billing/webhook', {
       method: 'POST',
-      headers: { 'stripe-signature': 'sig' },
+      headers: { 'x-billing-signature': 'sig' },
       body: JSON.stringify(deleteEvent),
     });
     expect(deleteResponse.status).toBe(200);

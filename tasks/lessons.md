@@ -29,3 +29,4 @@
 - For frontend cookie-session (`/console/*`) user flows, avoid hard 429 rate-limit UX throttles; enforce abuse/bot protection passively and reserve hard blocks for clearly abusive traffic.
 - Before recommending Cloudflare Workers deployment for `frontend`, verify the generated Worker bundle fits platform size limits; if it does not, switch immediately to the temporary zero-cost single-droplet plan instead of pushing a broken Workers path.
 - For Docker prod orchestration in this repo, prefer root `.env` (not `.env.prod`) and wire compose to service-level `.env` files directly where possible.
+- If user mandates dropping Stripe, remove Stripe package imports and `STRIPE_*` env usage from runtime + tests together; otherwise Bun reports cascading "Unhandled error between tests" from module-load failure.

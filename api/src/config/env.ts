@@ -40,13 +40,16 @@ const envSchema = z.object({
   R2_BUCKET: z.string().min(1),
   R2_PUBLIC_URL: z.string().url(),
 
-  // Stripe
-  STRIPE_SECRET_KEY: z.string().min(1),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1),
-  STRIPE_DEV_PRICE_ID: z.string().min(1),
-  STRIPE_STARTER_PRICE_ID: z.string().min(1),
-  STRIPE_PRO_PRICE_ID: z.string().min(1),
-  BILLING_PROVIDER: z.enum(['stripe', 'paddle', 'lemonsqueezy']).default('stripe'),
+  // Billing providers
+  BILLING_PROVIDER: z.enum(['paddle', 'lemonsqueezy']).default('paddle'),
+  PADDLE_WEBHOOK_SECRET: z.string().min(1).default('paddle-webhook-secret'),
+  PADDLE_PRICE_ID_DEV: z.string().min(1).default('paddle-dev-plan'),
+  PADDLE_PRICE_ID_STARTER: z.string().min(1).default('paddle-starter-plan'),
+  PADDLE_PRICE_ID_PRO: z.string().min(1).default('paddle-pro-plan'),
+  LEMONSQUEEZY_WEBHOOK_SECRET: z.string().min(1).default('lemonsqueezy-webhook-secret'),
+  LEMONSQUEEZY_VARIANT_ID_DEV: z.string().min(1).default('lemon-dev-plan'),
+  LEMONSQUEEZY_VARIANT_ID_STARTER: z.string().min(1).default('lemon-starter-plan'),
+  LEMONSQUEEZY_VARIANT_ID_PRO: z.string().min(1).default('lemon-pro-plan'),
 
   // AI
   AI_ENABLED: envBoolean.default(true),

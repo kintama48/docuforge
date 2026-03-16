@@ -5,7 +5,7 @@
  * 1. Register as free user
  * 2. Fill render_logs to simulate 1000 renders (use fillRenderLogs helper)
  * 3. POST /v1/render -> Expect 402 Payment Required
- * 4. Simulate Stripe webhook (checkout.session.completed, plan=starter)
+ * 4. Simulate billing webhook (checkout.session.completed, plan=starter)
  * 5. Verify plan_tier updated to "starter"
  * 6. POST /v1/render -> Expect 200 (limit is now 10K)
  */
@@ -66,7 +66,7 @@ describe('E2E: Billing Flow', () => {
     resetDb();
   });
 
-  test('free user hits limit, upgrades via Stripe, and can render again', async () => {
+  test('free user hits limit, upgrades via billing webhook, and can render again', async () => {
     // Step 1: Register as free user
     const registerResponse = await fetch(`${baseUrl}/console/auth/register`, {
       method: 'POST',
@@ -143,14 +143,14 @@ describe('E2E: Billing Flow', () => {
     expect(blockedData.usage.plan).toBe('free');
     expect(blockedData.upgrade_url).toBe('https://www.docuforge.app/pricing');
 
-    // Step 4: Simulate Stripe webhook for upgrade to starter
+    // Step 4: Simulate billing webhook for upgrade to starter
     const stripeCustomerId = `cus_billing_${Date.now()}`;
     const stripeSubscriptionId = `sub_billing_${Date.now()}`;
 
     const webhookEvent = createCheckoutCompletedEvent({
       customerId: stripeCustomerId,
       subscriptionId: stripeSubscriptionId,
-      priceId: process.env.STRIPE_STARTER_PRICE_ID || 'price_starter_test',
+      priceId: process.env.PADDLE_PRICE_ID_STARTER || 'paddle_price_starter_test',
       planTier: 'starter',
     });
 
@@ -169,7 +169,7 @@ describe('E2E: Billing Flow', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'stripe-signature': signature,
+        'x-billing-signature': signature,
       },
       body: webhookBody,
     });
@@ -237,7 +237,7 @@ describe('E2E: Billing Flow', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'stripe-signature': 't=123,v1=invalid_signature',
+        'x-billing-signature': 't=123,v1=invalid_signature',
       },
       body: webhookBody,
     });
