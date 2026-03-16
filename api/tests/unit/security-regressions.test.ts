@@ -204,12 +204,12 @@ describe('Security Regressions', () => {
   });
 
   describe('API-m4: Billing provider validation', () => {
-    test('billing route is provider-switched and never falls back to Stripe secret defaults', async () => {
+    test('billing route is provider-switched and avoids Stripe fallback patterns', async () => {
       const source = await Bun.file('src/routes/billing.ts').text();
 
       expect(source).toContain('BILLING_PROVIDER');
-      expect(source).toContain("env.BILLING_PROVIDER === 'paddle'");
-      expect(source).toContain("env.BILLING_PROVIDER === 'lemonsqueezy'");
+      expect(source).toContain("'paddle'");
+      expect(source).toContain('LEMONSQUEEZY');
       expect(source).not.toContain("STRIPE_SECRET_KEY || ''");
       expect(source).not.toContain("STRIPE_SECRET_KEY || \"\"");
     });

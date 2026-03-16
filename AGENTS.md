@@ -80,6 +80,7 @@
 - **Frontend Deploy Target**: Prefer deploying `frontend/` to Cloudflare Workers (OpenNext) over Cloudflare Pages unless the user explicitly says otherwise.
 - **Early-Stage Infra Override**: Until DocuForge exceeds five paying users, keep infra spend at zero by running `frontend`, `api`, `engine`, and local Redis on the same free DigitalOcean droplet behind nginx, with Cloudflare as authoritative DNS/proxy and `www` + `api` pointing to the droplet. Revisit Workers or split services only after that threshold.
 - **Transactional Email Standard**: Use Resend for user-facing transactional emails and keep localized, branded HTML+text templates in API code.
+- **Billing Provider Policy**: Remove Stripe-specific runtime/env integration; support Paddle and Lemon Squeezy with a provider switch.
 - **Transactional Sender Map**: Use `noreply@docuforge.app` for one-way auth/security emails, `hello@docuforge.app` for welcome/onboarding emails, `billing@docuforge.app` for billing events, and `support@docuforge.app` for user support correspondence.
 - **Icon Consistency**: Use Phosphor icons as the default icon library on product surfaces unless explicitly overridden.
 - **Session Security**: Keep auth flows persistent and secure: expose logout in authenticated surfaces, sanitize redirect targets, and verify security headers/caching behavior after auth changes.
