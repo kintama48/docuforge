@@ -1,36 +1,21 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import HomeClient from "./home-client";
-import { normalizeLocale } from "@/src/lib/i18n-config";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const meta = getMarketingMeta(locale).landing;
-  const ogImage = `/og/${locale}`;
-
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.home,
     title: meta.title,
     description: meta.description,
-    openGraph: {
-      title: meta.title,
-      description: meta.description,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: meta.ogAlt,
-        },
-      ],
-    },
-    twitter: {
-      title: meta.title,
-      description: meta.description,
-      images: [ogImage],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: meta.ogAlt,
+  });
 }
 
 export default function HomePage() {

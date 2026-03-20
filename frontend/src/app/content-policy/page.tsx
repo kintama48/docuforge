@@ -1,39 +1,24 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { LegalLayout } from "../components/legal-layout";
-import { normalizeLocale } from "@/src/lib/i18n-config";
+import { ContactEmailLink } from "@/src/components/contact/ContactEmailLink";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 const lastUpdated = "February 14, 2026";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
-  const ogImage = `/og/${locale}`;
+  const locale = await getRequestLocale();
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.contentPolicy,
     title: "Content Policy",
     description:
       "Rules for content and usage on DocuForge to keep the platform safe and compliant.",
-    openGraph: {
-      title: "Content Policy · DocuForge",
-      description:
-        "Rules for content and usage on DocuForge to keep the platform safe and compliant.",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: "DocuForge content policy",
-        },
-      ],
-    },
-    twitter: {
-      title: "Content Policy · DocuForge",
-      description:
-        "Rules for content and usage on DocuForge to keep the platform safe and compliant.",
-      images: [ogImage],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: "DocuForge content policy",
+  });
 }
 
 export default function ContentPolicyPage() {
@@ -44,7 +29,7 @@ export default function ContentPolicyPage() {
       lastUpdated={lastUpdated}
     >
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           1. Prohibited content
         </h2>
         <p>
@@ -60,7 +45,7 @@ export default function ContentPolicyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           2. Prohibited behavior
         </h2>
         <p>
@@ -74,7 +59,7 @@ export default function ContentPolicyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           3. Enforcement
         </h2>
         <p>
@@ -85,17 +70,25 @@ export default function ContentPolicyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           4. Reporting concerns
         </h2>
         <p>
           If you believe content on DocuForge violates this policy, contact us
-          at support@docuforge.app with relevant details.
+          via our{" "}
+          <ContactEmailLink
+            localPart="support"
+            domain="docuforge.app"
+            label="support@docuforge.app"
+            fallbackLabel="support team"
+            className="underline decoration-[var(--line-hover)] underline-offset-2"
+          />{" "}
+          with relevant details.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           5. Changes to this policy
         </h2>
         <p>

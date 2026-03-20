@@ -10,6 +10,10 @@ import {
 } from "@/src/lib/content-hub";
 import { withLocale } from "@/src/lib/locale-path";
 import type { Locale } from "@/src/lib/i18n-config";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 
 function localizeHref(href: string, locale: Locale) {
   if (/^https?:\/\//.test(href)) return href;
@@ -48,8 +52,8 @@ function RenderBlock({ block, locale }: { block: ContentBlock; locale: Locale })
   if (block.kind === "paragraph") {
     return (
       <section>
-        <h2 className="font-display text-2xl text-[var(--ink)]">{block.title}</h2>
-        <div className="mt-3 space-y-3 text-base text-[var(--muted)]">
+        <h2 className="heading-section">{block.title}</h2>
+        <div className="mt-3 space-y-3 text-base leading-7 text-[var(--muted)]">
           {block.paragraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
@@ -61,7 +65,7 @@ function RenderBlock({ block, locale }: { block: ContentBlock; locale: Locale })
   if (block.kind === "list") {
     return (
       <section>
-        <h2 className="font-display text-2xl text-[var(--ink)]">{block.title}</h2>
+        <h2 className="heading-section">{block.title}</h2>
         <ul className="mt-4 space-y-2 text-sm text-[var(--muted)]">
           {block.items.map((item) => (
             <li
@@ -79,7 +83,7 @@ function RenderBlock({ block, locale }: { block: ContentBlock; locale: Locale })
   if (block.kind === "code") {
     return (
       <section>
-        <h2 className="font-display text-2xl text-[var(--ink)]">{block.title}</h2>
+        <h2 className="heading-section">{block.title}</h2>
         <CodeBlock language={block.language} code={block.code} />
       </section>
     );
@@ -87,7 +91,7 @@ function RenderBlock({ block, locale }: { block: ContentBlock; locale: Locale })
 
   return (
     <section>
-      <h2 className="font-display text-2xl text-[var(--ink)]">{block.title}</h2>
+      <h2 className="heading-section">{block.title}</h2>
       <LinksBlock links={block.links} locale={locale} />
     </section>
   );
@@ -97,7 +101,7 @@ function FaqSection({ faq }: { faq: ContentFaq[] }) {
   if (faq.length === 0) return null;
   return (
     <section>
-      <h2 className="font-display text-2xl text-[var(--ink)]">FAQ</h2>
+      <h2 className="heading-section">FAQ</h2>
       <div className="mt-4 space-y-4">
         {faq.map((item) => (
           <div
@@ -123,8 +127,8 @@ function CtaSection({
   return (
     <section>
       <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8">
-        <h2 className="font-display text-2xl text-[var(--ink)]">{document.ctaTitle}</h2>
-        <p className="mt-3 text-base text-[var(--muted)]">{document.ctaBody}</p>
+        <h2 className="heading-section">{document.ctaTitle}</h2>
+        <p className="mt-3 text-base leading-7 text-[var(--muted)]">{document.ctaBody}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={localizeHref(document.ctaPrimaryHref, locale)}
@@ -154,20 +158,15 @@ export function ContentDocumentPage({
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-12 lg:pt-16">
-        <article className="mx-auto max-w-3xl space-y-12">
-          <header>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              {document.collection}
-            </p>
-            <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">
-              {document.title}
-            </h1>
-            <p className="mt-4 text-base text-[var(--muted)]">{document.intro}</p>
-            <p className="mt-4 text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-              Updated {document.updatedAt}
-            </p>
-          </header>
+      <Container as="main" width="article" className="pb-20 pt-12 lg:pt-16">
+        <article className="space-y-12">
+          <PageIntro
+            eyebrow={document.collection}
+            title={document.title}
+            description={document.intro}
+            width="reading"
+            meta={<p className="eyebrow">Updated {document.updatedAt}</p>}
+          />
 
           {document.blocks.map((block) => (
             <RenderBlock key={`${block.kind}:${block.title}`} block={block} locale={locale} />
@@ -177,14 +176,14 @@ export function ContentDocumentPage({
 
           {document.related.length > 0 && (
             <section>
-              <h2 className="font-display text-2xl text-[var(--ink)]">Related guides</h2>
+              <h2 className="heading-section">Related guides</h2>
               <LinksBlock links={document.related} locale={locale} />
             </section>
           )}
 
           <CtaSection locale={locale} document={document} />
         </article>
-      </main>
+      </Container>
       <SiteFooter />
     </div>
   );
@@ -210,14 +209,13 @@ export function ContentCollectionPage({
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-12 lg:pt-16">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-            {label}
-          </p>
-          <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">{title}</h1>
-          <p className="mt-4 text-base text-[var(--muted)]">{description}</p>
-        </div>
+      <Container as="main" width="marketing" className="pb-20 pt-12 lg:pt-16">
+        <PageIntro
+          eyebrow={label}
+          title={title}
+          description={description}
+          width="reading"
+        />
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {docs.map((doc) => (
@@ -243,7 +241,7 @@ export function ContentCollectionPage({
             </Link>
           ))}
         </div>
-      </main>
+      </Container>
       <SiteFooter />
     </div>
   );

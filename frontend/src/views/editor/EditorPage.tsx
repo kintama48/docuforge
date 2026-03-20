@@ -5,7 +5,10 @@ import { useParams } from "next/navigation";
 import { ProtectedRoute } from "@/src/components/auth/ProtectedRoute";
 import { CommandPalette } from "@/src/components/editor/CommandPalette";
 import { DocuMasterWidget } from "@/src/components/editor/DocuMasterWidget";
-import { EditorLayout } from "@/src/components/editor/EditorLayout";
+import {
+  EditorLayout,
+  type EditorPane,
+} from "@/src/components/editor/EditorLayout";
 import { EditorStatusBar } from "@/src/components/editor/EditorStatusBar";
 import { EditorToolbar } from "@/src/components/editor/EditorToolbar";
 import { ImageExportDialog } from "@/src/components/editor/ImageExportDialog";
@@ -86,6 +89,7 @@ export default function EditorPage() {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showRightPane, setShowRightPane] = useState(true);
   const [showImageExport, setShowImageExport] = useState(false);
+  const [mobilePane, setMobilePane] = useState<EditorPane>("editor");
 
   useEffect(() => {
     if (data?.template) {
@@ -193,7 +197,11 @@ export default function EditorPage() {
         ctrl: true,
         shift: true,
         handler: () =>
-          setActiveTab((prev) => (prev === "data" ? "preview" : "data")),
+          setActiveTab((prev) => {
+            const next = prev === "data" ? "preview" : "data";
+            setMobilePane(next);
+            return next;
+          }),
       },
       {
         key: "\\",
@@ -232,7 +240,9 @@ export default function EditorPage() {
     onToggleActiveTab: (newTab) => {
       setActiveTab((prev) => {
         const nextTab = normalizeTab(newTab);
-        return normalizeTab(prev) === nextTab ? "preview" : nextTab;
+        const finalTab = normalizeTab(prev) === nextTab ? "preview" : nextTab;
+        setMobilePane(finalTab);
+        return finalTab;
       });
     },
     onOpenPublish: () => setShowPublish(true),
@@ -300,12 +310,19 @@ export default function EditorPage() {
           onOpenBlocks={() => {
             setShowRightPane(true);
             setActiveTab(normalizeTab("blocks"));
+            setMobilePane(normalizeTab("blocks"));
           }}
         />
         <div className="min-h-0 flex-1">
           <EditorLayout
             activeTab={effectiveActiveTab}
-            onTabChange={(tab) => setActiveTab(normalizeTab(tab))}
+            onTabChange={(tab) => {
+              const nextTab = normalizeTab(tab);
+              setActiveTab(nextTab);
+              setMobilePane(nextTab);
+            }}
+            mobilePane={mobilePane}
+            onMobilePaneChange={setMobilePane}
             showSidebar={showSidebar}
             showRightPane={showRightPane}
             onOpenAi={() => setShowAi((prev) => !prev)}

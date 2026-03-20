@@ -30,3 +30,5 @@
 - Before recommending Cloudflare Workers deployment for `frontend`, verify the generated Worker bundle fits platform size limits; if it does not, switch immediately to the temporary zero-cost single-droplet plan instead of pushing a broken Workers path.
 - For Docker prod orchestration in this repo, prefer root `.env` (not `.env.prod`) and wire compose to service-level `.env` files directly where possible.
 - If user mandates dropping Stripe, remove Stripe package imports and `STRIPE_*` env usage from runtime + tests together; otherwise Bun reports cascading "Unhandled error between tests" from module-load failure.
+- If the user narrows scope to the current working directory and asks for no unrelated changes, keep every edit and verification step inside that repo path and avoid expanding the task boundary on your own.
+- For public localization on crawlable pages, keep locale auto-detection to the neutral root entry point and let explicit locale URLs win; header-driven redirects on every deep link make canonical, hreflang, and sitemap behavior unstable.

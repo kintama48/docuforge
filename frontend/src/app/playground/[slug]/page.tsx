@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { normalizeLocale } from "@/src/lib/i18n-config";
-import { withLocale } from "@/src/lib/locale-path";
 import { SiteHeader } from "@/src/app/components/site-header";
 import { SiteFooter } from "@/src/app/components/site-footer";
 import PlaygroundClient from "@/src/app/playground/playground-client";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { getRequestLocale } from "@/src/lib/request-locale";
 import {
   getPlaygroundPresetBySlug,
   listPlaygroundPresetSlugs,
@@ -24,8 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const preset = getPlaygroundPresetBySlug(slug);
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
 
   if (!preset) {
     return {
@@ -34,25 +32,14 @@ export async function generateMetadata({
     };
   }
 
-  const canonical = withLocale(`/playground/${preset.slug}`, locale);
-
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: `/playground/${preset.slug}`,
     title: preset.seoTitle,
     description: preset.seoDescription,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title: preset.seoTitle,
-      description: preset.seoDescription,
-      images: [`/og/${locale}`],
-    },
-    twitter: {
-      title: preset.seoTitle,
-      description: preset.seoDescription,
-      images: [`/og/${locale}`],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: preset.title,
+  });
 }
 
 export default async function PlaygroundTemplatePage({

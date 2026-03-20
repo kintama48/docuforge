@@ -1,19 +1,24 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { SiteFooter } from "../components/site-footer";
 import { SiteHeader } from "../components/site-header";
-import { normalizeLocale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { getDocsContent } from "./docs-content";
 import { getMarketingMeta } from "@/src/lib/marketing-metadata";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 import {
   getMcpLinks,
   getMcpTools,
   getSecurityAndMcpCopy,
   getSecurityCapabilities,
 } from "@/src/lib/security-mcp-content";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 
 function CodeBlock({ children }: { children: string }) {
   return (
@@ -24,35 +29,20 @@ function CodeBlock({ children }: { children: string }) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const marketing = getMarketingMeta(locale).docs;
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.docs,
     title: marketing.title,
     description: marketing.description,
-    openGraph: {
-      title: marketing.title,
-      description: marketing.description,
-      images: [
-        {
-          url: `/og/docs/${locale}`,
-          width: 1200,
-          height: 630,
-          alt: marketing.ogAlt,
-        },
-      ],
-    },
-    twitter: {
-      title: marketing.title,
-      description: marketing.description,
-      images: [`/og/docs/${locale}`],
-    },
-  };
+    ogImage: `/og/docs/${locale}`,
+    ogAlt: marketing.ogAlt,
+  });
 }
 
 export default async function DocsPage() {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const content = getDocsContent(locale);
   const localePath = (path: string) => withLocale(path, locale);
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
@@ -79,17 +69,40 @@ export default async function DocsPage() {
     <div className="min-h-screen page-background">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-12 lg:pt-16">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-            {content.label}
-          </p>
-          <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">
-            {content.title}
-          </h1>
-          <p className="font-script mt-4 text-pretty text-base leading-relaxed text-[var(--muted)]">
-            {content.subtitle}
-          </p>
+      <Container as="main" width="wide" className="pb-20 pt-12 lg:pt-16">
+        <PageIntro
+          eyebrow={content.label}
+          title={content.title}
+          description={content.subtitle}
+          width="reading"
+        />
+
+        <div className="mt-8 lg:hidden">
+          <details className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4">
+            <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--ink)]">
+              {content.navLabel}
+            </summary>
+            <nav className="mt-4 grid gap-2 text-sm text-[var(--muted)]">
+              {publicNav.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 hover:text-[var(--ink)]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              {extraNav.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 hover:text-[var(--ink)]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </details>
         </div>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[240px_1fr]">
@@ -130,10 +143,10 @@ export default async function DocsPage() {
 
           <div className="space-y-16">
             <section id="overview">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {content.overview.title}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 {content.overview.body}
               </p>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -152,20 +165,20 @@ export default async function DocsPage() {
             </section>
 
             <section id="auth">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {content.auth.title}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 {content.auth.noteKeys}
               </p>
               <CodeBlock>{`X-API-Key: docu_live_your_api_key`}</CodeBlock>
             </section>
 
             <section id="quick-start">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {content.quickStart.title}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 Render a production PDF from a published template ID and JSON data.
               </p>
               <CodeBlock>{`curl -X POST "$DOCUFORGE_API_URL/v1/render" \\
@@ -176,10 +189,10 @@ export default async function DocsPage() {
             </section>
 
             <section id="render">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {content.render.title}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 Production rendering endpoints are available under the consumer API surface.
               </p>
               <div className="mt-6 grid gap-4">
@@ -200,10 +213,10 @@ export default async function DocsPage() {
             </section>
 
             <section id="errors">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {content.errors.title}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 {content.errors.body}
               </p>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -226,10 +239,10 @@ export default async function DocsPage() {
             </section>
 
             <section id="security">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {securityMcpCopy.securityTitle}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 {securityMcpCopy.securitySubtitle}
               </p>
               <ul className="mt-6 space-y-3 text-sm text-[var(--muted)]">
@@ -245,10 +258,10 @@ export default async function DocsPage() {
             </section>
 
             <section id="mcp">
-              <h2 className="font-display text-2xl text-[var(--ink)]">
+              <h2 className="heading-section">
                 {securityMcpCopy.mcpTitle}
               </h2>
-              <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+              <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                 {securityMcpCopy.mcpSubtitle}
               </p>
 
@@ -306,10 +319,10 @@ export default async function DocsPage() {
 
             <section>
               <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8">
-                <h2 className="font-display text-2xl text-[var(--ink)]">
+                <h2 className="heading-section">
                   {content.cta.title}
                 </h2>
-                <p className="mt-3 text-pretty text-base text-[var(--muted)]">
+                <p className="mt-3 text-pretty text-base leading-7 text-[var(--muted)]">
                   {content.cta.body}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -330,7 +343,7 @@ export default async function DocsPage() {
             </section>
           </div>
         </div>
-      </main>
+      </Container>
 
       <SiteFooter />
     </div>

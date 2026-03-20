@@ -6,6 +6,11 @@ import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 import { getContentHubCopy } from "@/src/lib/content-hub";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
+import { Container } from "@/src/components/layout/page-primitives";
+import {
+  publicAnchorRoutes,
+  publicRoutes,
+} from "@/src/lib/public-route-contract";
 
 export function SiteFooter() {
   const { messages, locale } = useI18n();
@@ -14,7 +19,7 @@ export function SiteFooter() {
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
   return (
     <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
-      <div className="mx-auto w-full max-w-[1400px] px-6 py-12 xl:px-8">
+      <Container width="marketing" className="py-12">
         <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
@@ -38,16 +43,28 @@ export function SiteFooter() {
               {messages.footer.product}
             </p>
             <div className="mt-3 flex flex-col gap-2 text-[var(--muted)]">
-              <Link href={localePath("/#features")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicAnchorRoutes.features)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.features}
               </Link>
-              <Link href={localePath("/#workflow")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicAnchorRoutes.workflow)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.workflow}
               </Link>
-              <Link href={localePath("/pricing")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.pricing)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.pricing}
               </Link>
-              <Link href={localePath("/blog")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.blog)}
+                className="hover:text-[var(--ink)]"
+              >
                 {contentCopy.navBlogs}
               </Link>
               <Link href={consoleUrl} className="hover:text-[var(--ink)]">
@@ -61,16 +78,28 @@ export function SiteFooter() {
               {messages.footer.developers}
             </p>
             <div className="mt-3 flex flex-col gap-2 text-[var(--muted)]">
-              <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.docs)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.apiDocs}
               </Link>
-              <Link href={localePath("/playground")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.playground)}
+                className="hover:text-[var(--ink)]"
+              >
                 {contentCopy.navPlayground}
               </Link>
-              <Link href={localePath("/#api")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicAnchorRoutes.api)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.quickStart}
               </Link>
-              <Link href={localePath("/templates")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.templates)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.templates}
               </Link>
             </div>
@@ -81,13 +110,22 @@ export function SiteFooter() {
               {messages.footer.company}
             </p>
             <div className="mt-3 flex flex-col gap-2 text-[var(--muted)]">
-              <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.docs)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.principles}
               </Link>
-              <Link href={localePath("/compare")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.compare)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.system}
               </Link>
-              <Link href={localePath("/docs")} className="hover:text-[var(--ink)]">
+              <Link
+                href={localePath(publicRoutes.docs)}
+                className="hover:text-[var(--ink)]"
+              >
                 {messages.footer.links.status}
               </Link>
             </div>
@@ -99,13 +137,22 @@ export function SiteFooter() {
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
               {messages.footer.legal}
             </span>
-            <Link href={localePath("/terms")} className="hover:text-[var(--ink)]">
+            <Link
+              href={localePath(publicRoutes.terms)}
+              className="hover:text-[var(--ink)]"
+            >
               {messages.footer.links.terms}
             </Link>
-            <Link href={localePath("/privacy")} className="hover:text-[var(--ink)]">
+            <Link
+              href={localePath(publicRoutes.privacy)}
+              className="hover:text-[var(--ink)]"
+            >
               {messages.footer.links.privacy}
             </Link>
-            <Link href={localePath("/content-policy")} className="hover:text-[var(--ink)]">
+            <Link
+              href={localePath(publicRoutes.contentPolicy)}
+              className="hover:text-[var(--ink)]"
+            >
               {messages.footer.links.contentPolicy}
             </Link>
           </div>
@@ -115,7 +162,7 @@ export function SiteFooter() {
             <span>{messages.footer.tagline}</span>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

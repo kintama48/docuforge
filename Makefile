@@ -1,4 +1,4 @@
-.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
+.PHONY: help env install dev build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry clean clean-engine clean-check docker-up docker-up-bg docker-down docker-build docker-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins docker-deploy-individual
 
 help:
 	@echo "DocuForge commands:"
@@ -155,3 +155,9 @@ dev-shopify:
 
 test-shopify:
 	cd plugins/shopify && npm test
+
+docker-deploy-individual:
+	@case "$(SERVICE)" in \
+		frontend|api|engine) docker compose --env-file .env -f docker-compose.prod.yml up -d --build --no-deps "$(SERVICE)" ;; \
+		*) echo "SERVICE must be frontend, api, or engine" ; exit 2 ;; \
+	esac

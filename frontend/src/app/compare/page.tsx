@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { normalizeLocale } from "@/src/lib/i18n-config";
 import { SiteFooter } from "@/src/app/components/site-footer";
 import { SiteHeader } from "@/src/app/components/site-header";
 import {
@@ -8,31 +6,26 @@ import {
   listContent,
 } from "@/src/lib/content-hub";
 import { CompareShowcase } from "@/src/app/compare/compare-showcase";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const meta = getCollectionMeta("compare", locale);
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.compare,
     title: `${meta.title} | DocuForge`,
     description: meta.description,
-    openGraph: {
-      title: meta.title,
-      description: meta.description,
-      images: [`/og/${locale}`],
-    },
-    twitter: {
-      title: meta.title,
-      description: meta.description,
-      images: [`/og/${locale}`],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: meta.title,
+  });
 }
 
 export default async function CompareIndexPage() {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const docs = listContent("compare", locale);
 
   return (

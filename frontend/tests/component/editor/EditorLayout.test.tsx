@@ -2,8 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithProviders } from "@/tests/helpers/render";
 import { EditorLayout } from "@/src/components/editor/EditorLayout";
+import { useMediaQuery } from "@/src/hooks/use-media-query";
 import { useEditorStore } from "@/src/stores/editor";
 
+vi.mock("@/src/hooks/use-media-query", () => ({
+  useMediaQuery: vi.fn(),
+}));
 vi.mock("@/src/components/editor/FileExplorer", () => ({
   FileExplorer: () => <div data-testid="file-explorer" />,
 }));
@@ -29,26 +33,41 @@ vi.mock("@/src/components/editor/LowCodeBlocksPanel", () => ({
   LowCodeBlocksPanel: () => <div data-testid="low-code-blocks" />,
 }));
 
+const mockedUseMediaQuery = vi.mocked(useMediaQuery);
+
 beforeEach(() => {
+  mockedUseMediaQuery.mockReturnValue(true);
   useEditorStore.setState({ insertSnippet: vi.fn() as any } as any);
 });
 
-describe("EditorLayout", () => {
-  it("renders sidebar snippets and triggers insertSnippet", () => {
-    const onTabChange = vi.fn();
-    const onOpenAi = vi.fn();
+function renderEditorLayout(
+  overrides: Partial<Parameters<typeof EditorLayout>[0]> = {}
+) {
+  const onTabChange = overrides.onTabChange ?? vi.fn();
+  const onMobilePaneChange = overrides.onMobilePaneChange ?? vi.fn();
+  const onOpenAi = overrides.onOpenAi ?? vi.fn();
 
-    renderWithProviders(
-      <EditorLayout
-        activeTab="preview"
-        onTabChange={onTabChange}
-        showSidebar={true}
-        showRightPane={true}
-        onOpenAi={onOpenAi}
-        editorMode="code"
-        advancedTypstEnabled={false}
-      />
-    );
+  renderWithProviders(
+    <EditorLayout
+      activeTab="preview"
+      onTabChange={onTabChange}
+      mobilePane="editor"
+      onMobilePaneChange={onMobilePaneChange}
+      showSidebar={true}
+      showRightPane={true}
+      onOpenAi={onOpenAi}
+      editorMode="code"
+      advancedTypstEnabled={false}
+      {...overrides}
+    />
+  );
+
+  return { onTabChange, onMobilePaneChange, onOpenAi };
+}
+
+describe("EditorLayout", () => {
+  it("renders desktop sidebar snippets and triggers insertSnippet", () => {
+    const { onTabChange } = renderEditorLayout();
 
     fireEvent.click(screen.getByText(/Page setup/i));
     const insertSnippet = useEditorStore.getState().insertSnippet as unknown as ReturnType<
@@ -60,21 +79,8 @@ describe("EditorLayout", () => {
     expect(onTabChange).toHaveBeenCalledWith("data");
   });
 
-  it("invokes all snippet actions and opens AI assistant", () => {
-    const onTabChange = vi.fn();
-    const onOpenAi = vi.fn();
-
-    renderWithProviders(
-      <EditorLayout
-        activeTab="preview"
-        onTabChange={onTabChange}
-        showSidebar={true}
-        showRightPane={true}
-        onOpenAi={onOpenAi}
-        editorMode="code"
-        advancedTypstEnabled={false}
-      />
-    );
+  it("invokes all desktop snippet actions and opens AI assistant", () => {
+    const { onOpenAi } = renderEditorLayout();
 
     const snippetLabels = [
       /page setup/i,
@@ -97,19 +103,11 @@ describe("EditorLayout", () => {
     expect(onOpenAi).toHaveBeenCalled();
   });
 
-  it("renders right pane tabs and hides sidebar when disabled", () => {
-    const onTabChange = vi.fn();
-    renderWithProviders(
-      <EditorLayout
-        activeTab="diag"
-        onTabChange={onTabChange}
-        showSidebar={false}
-        showRightPane={true}
-        onOpenAi={() => {}}
-        editorMode="code"
-        advancedTypstEnabled={false}
-      />
-    );
+  it("renders desktop right pane tabs and hides sidebar when disabled", () => {
+    const { onTabChange } = renderEditorLayout({
+      activeTab: "diag",
+      showSidebar: false,
+    });
 
     expect(screen.queryByTestId("file-explorer")).not.toBeInTheDocument();
     expect(screen.getByTestId("diag-panel")).toBeInTheDocument();
@@ -117,36 +115,40 @@ describe("EditorLayout", () => {
     expect(onTabChange).toHaveBeenCalledWith("preview");
   });
 
-  it("omits the right pane when disabled", () => {
-    renderWithProviders(
-      <EditorLayout
-        activeTab="preview"
-        onTabChange={() => {}}
-        showSidebar={true}
-        showRightPane={false}
-        onOpenAi={() => {}}
-        editorMode="code"
-        advancedTypstEnabled={false}
-      />
-    );
+  it("omits the desktop right pane when disabled", () => {
+    renderEditorLayout({
+      showRightPane: false,
+    });
 
     expect(screen.queryByTestId("pdf-preview")).not.toBeInTheDocument();
     expect(screen.queryByTestId("data-editor")).not.toBeInTheDocument();
     expect(screen.queryByTestId("diag-panel")).not.toBeInTheDocument();
   });
 
-  it("shows blocks panel in low-code mode", () => {
-    renderWithProviders(
-      <EditorLayout
-        activeTab="blocks"
-        onTabChange={() => {}}
-        showSidebar={true}
-        showRightPane={true}
-        onOpenAi={() => {}}
-        editorMode="low-code"
-        advancedTypstEnabled={false}
-      />
-    );
+  it("renders mobile pane tabs and routes pane changes through responsive plumbing", () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    const { onTabChange, onMobilePaneChange } = renderEditorLayout({
+      mobilePane: "editor",
+    });
+
+    expect(screen.getByRole("button", { name: /^Files$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Editor$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Preview$/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /^Files$/i }));
+    expect(onMobilePaneChange).toHaveBeenCalledWith("files");
+
+    fireEvent.click(screen.getByRole("button", { name: /^Data$/i }));
+    expect(onTabChange).toHaveBeenCalledWith("data");
+    expect(onMobilePaneChange).toHaveBeenCalledWith("data");
+  });
+
+  it("shows blocks guidance and blocks panel in low-code desktop mode", () => {
+    renderEditorLayout({
+      activeTab: "blocks",
+      mobilePane: "blocks",
+      editorMode: "low-code",
+    });
 
     expect(screen.getByTestId("low-code-blocks")).toBeInTheDocument();
     expect(

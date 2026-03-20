@@ -1,5 +1,86 @@
 # Task Plan
 
+## SEO Crawl Remediation + Root-Only Locale Detection Plan (2026-03-20)
+
+- [x] Centralize the public route and SEO contract so sitemap, canonical/hreflang, nav links, and locale handling all derive from the same source of truth.
+- [x] Refactor frontend middleware for same-host console detection, root-only locale auto-detection, locale-path rewrites, and app-owned robots handling.
+- [x] Remove route-dependent SEO generation from the root layout and wire shared public metadata helpers into all crawlable public routes.
+- [x] Fix broken MCP GitHub links and harden public contact/email output so crawl HTML does not point at false 404 targets.
+- [x] Align frontend env/config references with the current same-host deployment model without introducing deployment-only behavior into app logic.
+- [x] Add regression coverage for locale helpers, route/nav contracts, middleware SEO behavior, sitemap integrity, and public route metadata.
+- [x] Run focused frontend quality gates, review the SEO/crawl diff, and document manual Cloudflare follow-ups in the review notes below.
+
+## SEO Crawl Remediation + Root-Only Locale Detection Review (2026-03-20)
+
+- Centralized the crawlable public contract:
+  - `frontend/src/lib/public-route-contract.ts` now defines public routes, sitemap-safe static paths, and marketing vs console path classification.
+  - `frontend/src/lib/public-seo.ts` now owns canonical, `x-default`, locale alternates, and OG/Twitter URL generation for public pages.
+  - `frontend/src/lib/locale-routing.ts` now owns root-only locale auto-detection and explicit-locale normalization rules.
+- Fixed the routing layer in `frontend/src/proxy.ts`:
+  - moved the runtime entrypoint into `src/proxy.ts` so Next 16 actually compiles and runs the proxy logic for this `src/app` project
+  - locale-prefixed routes like `/fr/blog` now rewrite to their underlying route handlers instead of 404ing
+  - `/` now uses cookie-first then `Accept-Language` auto-detection with a `307` redirect and `Vary: Cookie, Accept-Language`
+  - unprefixed public deep links stay English canonical even when a locale cookie exists
+  - same-host console detection is path-based, so public pages on `www.docuforge.app` no longer inherit console `noindex`
+  - public `robots.txt` now includes `Sitemap: https://www.docuforge.app/sitemap.xml`
+  - public responses now emit `Content-Language`; console responses keep `X-Robots-Tag: noindex, nofollow`
+- Fixed metadata and crawl-visible links:
+  - removed route-dependent canonical/hreflang generation from the root layout and moved it into page metadata across landing, pricing, docs, blog, content hub, MCP docs, playground, and legal pages
+  - aligned `frontend/.env` and `frontend/.env.prod` with the current same-host deployment model
+  - corrected MCP GitHub links to `kintama48/docuforge`
+  - replaced crawl-visible public `mailto:` output on pricing/legal pages with a hydrated contact-link helper so source HTML no longer invites Cloudflare `/cdn-cgi/l/email-protection` crawl errors
+- Added regression coverage:
+  - unit: `public-route-contract`, `locale-routing`, `public-seo`, updated `i18n`
+  - component: `SiteHeader`, new `SiteFooter`
+  - functional: `frontend/e2e/seo-contract.spec.ts` covering root auto-detection, locale-prefixed public routes, canonical/hreflang output, robots/sitemap presence, and crawl-clean HTML
+- Verification:
+  - `cd frontend && npm run lint` (pass, with one pre-existing warning from generated `coverage/block-navigation.js`)
+  - `cd frontend && npm run test:run` (pass: `87` files, `311` tests)
+  - `cd frontend && npm run build` (pass; proxy recognized by Next 16)
+  - `cd frontend && npm run start -- --port 5173` + `npx playwright test e2e/landing.spec.ts e2e/docs.spec.ts e2e/seo-contract.spec.ts` (pass)
+  - `curl -I -H 'Accept-Language: fr-FR,fr;q=0.9' http://localhost:5173/` now returns `307 Location: /fr`
+  - `curl -I http://localhost:5173/fr/blog` now returns `200` with `content-language: fr`
+- Manual follow-ups for deployment:
+  - disable or align any Cloudflare-managed `robots.txt` override so the app-served `robots.txt` is authoritative
+  - disable Cloudflare Email Address Obfuscation so future public contact links are not rewritten into `/cdn-cgi/l/email-protection`
+
+## Responsive System + Readable Content Typography Plan (2026-03-18)
+
+- [x] Add a centralized responsive foundation in the frontend with shared spacing/container/type utilities and reusable page primitives.
+- [x] Refactor shared marketing chrome (`SiteHeader`, `SiteFooter`, common page intro/layout wrappers) to use the centralized responsive system.
+- [x] Update public surfaces (`home`, `docs`, `content hub`, `legal`, `pricing`, `compare`, `playground`) for mobile/tablet/desktop behavior and readable content headings.
+- [x] Refactor authenticated console shell (`AppShell`, sidebar/top bar/mobile navigation) and adapt editor to a constrained mobile/tablet mode.
+- [x] Add regression coverage for responsive chrome, readable heading roles, and mobile/tablet/desktop critical paths.
+- [x] Run frontend quality gates (`lint`, targeted/unit/component tests, e2e, build`) and document review outcomes below.
+
+## Responsive System + Readable Content Typography Review (2026-03-18)
+
+- Added a centralized frontend responsive contract:
+  - `frontend/src/components/layout/page-primitives.tsx` for shared `Container`, `Section`, and `PageIntro` primitives.
+  - `frontend/src/lib/responsive.ts` for canonical viewport presets and shared desktop breakpoint metadata.
+  - `frontend/src/hooks/use-media-query.ts` for the editor/shell breakpoint plumbing that truly needs runtime awareness.
+- Consolidated responsive spacing, container widths, intro widths, and heading roles in `frontend/src/app/globals.css` so page-level responsiveness is CSS-first instead of scattered inline.
+- Shifted display typography usage:
+  - Michroma-style display treatment stays on hero/display moments.
+  - Reading-heavy subheads moved to shared readable roles (`heading-page`, `heading-section`, `text-lead`) across docs, legal, content hub, compare, pricing, playground, and homepage sections.
+- Refactored shared chrome and shells:
+  - marketing header/footer and page intro wrappers now consume the shared primitives
+  - console shell now supports drawer-based navigation below desktop
+  - editor now keeps desktop resizable panels at desktop widths and switches to a tabbed single-pane workspace on smaller screens
+- Added/updated regression coverage:
+  - responsive editor desktop/mobile behavior
+  - mobile console drawer behavior
+  - centralized page primitive contracts
+  - updated landing e2e assertion to current hero copy
+- Verification:
+  - `cd frontend && npm run lint` (pass with one pre-existing warning from generated `coverage/block-navigation.js`)
+  - `cd frontend && npm run test:run -- tests/component/SiteHeader.test.tsx tests/component/layout/MobileNav.test.tsx tests/component/layout/TopBar.test.tsx tests/component/layout/PagePrimitives.test.tsx tests/component/editor/EditorLayout.test.tsx tests/component/editor/EditorToolbar.test.tsx tests/component/PricingPage.test.tsx` (pass)
+  - `cd frontend && npm run test:run` (pass: `83` files, `298` tests)
+  - `cd frontend && npm run build` (pass)
+  - `cd frontend && npm run start -- --port 5173` + `npx playwright test e2e/landing.spec.ts e2e/docs.spec.ts` (pass)
+- Remaining verification gap:
+  - `frontend/e2e/editor-version-revert.spec.ts` was not run in this pass because it depends on the API being available at `http://localhost:3000`; this responsive change set is frontend-scoped and was otherwise verified end-to-end on the public surfaces.
+
 ## Local Redis + Email Logo Hardening Plan (2026-03-09)
 
 - [x] Ensure local development boot flow provisions Redis reliably (compose + make target wiring).
