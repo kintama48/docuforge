@@ -1,39 +1,24 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { LegalLayout } from "../components/legal-layout";
-import { normalizeLocale } from "@/src/lib/i18n-config";
+import { ContactEmailLink } from "@/src/components/contact/ContactEmailLink";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 const lastUpdated = "February 14, 2026";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
-  const ogImage = `/og/${locale}`;
+  const locale = await getRequestLocale();
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.privacy,
     title: "Privacy Policy",
     description:
       "How DocuForge collects, uses, and protects your personal information.",
-    openGraph: {
-      title: "Privacy Policy · DocuForge",
-      description:
-        "How DocuForge collects, uses, and protects your personal information.",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: "DocuForge privacy policy",
-        },
-      ],
-    },
-    twitter: {
-      title: "Privacy Policy · DocuForge",
-      description:
-        "How DocuForge collects, uses, and protects your personal information.",
-      images: [ogImage],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: "DocuForge privacy policy",
+  });
 }
 
 export default function PrivacyPage() {
@@ -44,7 +29,7 @@ export default function PrivacyPage() {
       lastUpdated={lastUpdated}
     >
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           1. Information we collect
         </h2>
         <p>
@@ -55,7 +40,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           2. Content and files
         </h2>
         <p>
@@ -66,7 +51,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           3. How we use information
         </h2>
         <p>
@@ -77,7 +62,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           4. Sharing and disclosures
         </h2>
         <p>
@@ -88,7 +73,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           5. Data retention
         </h2>
         <p>
@@ -99,7 +84,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           6. Security
         </h2>
         <p>
@@ -110,7 +95,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           7. Your rights
         </h2>
         <p>
@@ -121,7 +106,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           8. International transfers
         </h2>
         <p>
@@ -131,7 +116,7 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           9. Changes to this policy
         </h2>
         <p>
@@ -141,11 +126,19 @@ export default function PrivacyPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           10. Contact
         </h2>
         <p>
-          Questions about privacy? Contact us at support@docuforge.app.
+          Questions about privacy? Contact our{" "}
+          <ContactEmailLink
+            localPart="support"
+            domain="docuforge.app"
+            label="support@docuforge.app"
+            fallbackLabel="support team"
+            className="underline decoration-[var(--line-hover)] underline-offset-2"
+          />
+          .
         </p>
       </section>
     </LegalLayout>

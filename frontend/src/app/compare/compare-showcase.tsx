@@ -18,6 +18,7 @@ import {
   getCompareBenchmarkModel,
   type BenchmarkToolId,
 } from "@/src/lib/benchmark-report";
+import { Container } from "@/src/components/layout/page-primitives";
 
 type CompareDocSummary = {
   slug: string;
@@ -209,14 +210,14 @@ export function CompareShowcase({
           <div className="absolute -left-28 bottom-0 h-64 w-64 rounded-full bg-[color-mix(in_oklab,var(--accent),black_72%)] blur-3xl" />
         </div>
 
-        <div className="relative mx-auto w-full max-w-[1200px] px-6 pb-16 pt-16 text-center sm:pb-20 sm:pt-20">
+        <Container width="marketing" className="relative pb-16 pt-16 text-center sm:pb-20 sm:pt-20">
           <p className="inline-flex items-center rounded-full border border-[var(--inverse-line)] bg-[var(--inverse-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
             Deterministic pipeline benchmark and comparison
           </p>
-          <h1 className="mx-auto mt-6 max-w-4xl text-balance font-display text-4xl sm:text-6xl">
+          <h1 className="heading-display mx-auto mt-6 max-w-4xl text-balance text-[var(--inverse-ink)] sm:text-[clamp(3.25rem,7vw,5rem)]">
             Deterministic document pipelines vs browser-driven stacks
           </h1>
-          <p className="font-script mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-[var(--inverse-muted)] sm:text-lg">
+          <p className="text-lead mx-auto mt-5 max-w-2xl text-pretty text-[var(--inverse-muted)]">
             Engineering-focused guidance on throughput, memory, template control, and operational reliability under production load.
           </p>
 
@@ -229,21 +230,21 @@ export function CompareShowcase({
               Try playground
             </Link>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="section-pad">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
+        <Container width="marketing">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                 Category guide
               </p>
-              <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+              <h2 className="heading-page mt-3 max-w-xl text-balance">
                 Where browser-driven PDF stacks create operational drag
               </h2>
             </div>
-            <p className="font-script max-w-xl text-pretty text-base leading-relaxed text-[var(--muted)]">
+            <p className="text-lead max-w-xl text-pretty">
               Most PDF incidents are operational. Latency variance, memory pressure, and brittle templates compound as volume grows.
             </p>
           </div>
@@ -266,18 +267,18 @@ export function CompareShowcase({
               );
             })}
           </div>
-        </div>
+        </Container>
       </section>
 
       <section id="benchmarks" className="section-pad border-y border-[var(--line)] bg-[var(--surface)]">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
+        <Container width="marketing">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
             Benchmarks
           </p>
-          <h2 className="mt-3 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+          <h2 className="heading-page mt-3 text-balance">
             Real performance profile
           </h2>
-          <p className="font-script mt-4 max-w-2xl text-pretty text-base leading-relaxed text-[var(--muted)]">
+          <p className="text-lead mt-4 max-w-2xl text-pretty">
             Snapshot metrics are shown below to guide evaluation quickly. A full reproducible benchmark report can be linked when your latest run is published.
           </p>
           <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
@@ -339,19 +340,51 @@ export function CompareShowcase({
               </div>
             ) : null}
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="section-pad">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
+        <Container width="marketing">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
             Capability matrix
           </p>
-          <h2 className="mt-3 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+          <h2 className="heading-page mt-3 text-balance">
             Capability matrix across common stacks
           </h2>
 
-          <div className="mt-8 overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
+          <div className="mt-8 grid gap-4 xl:hidden">
+            {list.map((row) => (
+              <div
+                key={`mobile-${row.feature}`}
+                className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5"
+              >
+                <p className="text-sm font-semibold text-[var(--ink)]">
+                  {row.feature}
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {(
+                    Object.keys(TOOL_META) as BenchmarkToolId[]
+                  ).map((tool) => (
+                    <div
+                      key={`${row.feature}-${tool}-mobile`}
+                      className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] px-4 py-3"
+                    >
+                      <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                        tool === "docuforge" ? "text-[var(--accent)]" : "text-[var(--muted)]"
+                      }`}>
+                        {TOOL_META[tool].name}
+                      </p>
+                      <div className="mt-2 text-sm text-[var(--ink)]">
+                        <FeatureValue value={row[tool]} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 hidden overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)] xl:block">
             <table className="w-full min-w-[760px] border-collapse text-sm">
               <thead className="bg-[var(--surface-2)]">
                 <tr>
@@ -395,16 +428,16 @@ export function CompareShowcase({
               Show full matrix
             </button>
           ) : null}
-        </div>
+        </Container>
       </section>
 
       <section className="section-pad border-y border-[var(--line)] bg-[var(--surface)]">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
+        <Container width="marketing">
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface-2)] p-8 sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--warn)]">
               Full transparency
             </p>
-            <h2 className="mt-3 text-balance font-display text-3xl text-[var(--ink)] sm:text-4xl">
+            <h2 className="heading-section mt-3 text-balance text-[2.35rem]">
               When browser stacks can still be the better fit
             </h2>
             <div className="mt-8 grid gap-5 md:grid-cols-2">
@@ -416,15 +449,15 @@ export function CompareShowcase({
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="section-pad">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
+        <Container width="marketing">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
             Developer experience
           </p>
-          <h2 className="mt-3 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+          <h2 className="heading-page mt-3 text-balance">
             Invoice render flow in practice
           </h2>
 
@@ -468,17 +501,17 @@ await browser.close();
               </pre>
             </article>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="section-pad border-y border-[var(--line)] bg-[var(--surface)]">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
+        <Container width="marketing">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                 Deep dives
               </p>
-              <h2 className="mt-3 text-balance font-display text-3xl text-[var(--ink)] sm:text-4xl">
+              <h2 className="heading-section mt-3 text-balance text-[2.3rem]">
                 Tool-by-tool breakdowns
               </h2>
             </div>
@@ -504,16 +537,16 @@ await browser.close();
               </Link>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       <section className="section-pad">
-        <div className="mx-auto w-full max-w-[980px] px-6">
+        <Container width="article">
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8 text-center shadow-[var(--shadow)] sm:p-10">
-            <h2 className="text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+            <h2 className="heading-page text-balance">
               Validate your PDF pipeline quickly
             </h2>
-            <p className="font-script mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted)]">
+            <p className="text-lead mx-auto mt-4 max-w-2xl">
               Open the playground with real template starters, then move the same payload into production API calls.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -525,7 +558,7 @@ await browser.close();
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     </main>
   );

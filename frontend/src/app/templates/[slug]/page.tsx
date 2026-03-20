@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { normalizeLocale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { env } from "@/src/config/env";
 import { ContentDocumentPage } from "@/src/app/components/content-hub-page";
 import { buildArticleJsonLd } from "@/src/lib/content-hub-seo";
 import { getContentBySlug } from "@/src/lib/content-hub";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 type Params = { slug: string };
 
@@ -16,8 +16,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const doc = getContentBySlug("templates", slug, locale);
 
   if (!doc) {
@@ -27,23 +26,15 @@ export async function generateMetadata({
     };
   }
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: `/templates/${doc.slug}`,
     title: doc.metaTitle,
     description: doc.metaDescription,
-    alternates: {
-      canonical: withLocale(`/templates/${doc.slug}`, locale),
-    },
-    openGraph: {
-      title: doc.metaTitle,
-      description: doc.metaDescription,
-      images: [`/og/${locale}`],
-    },
-    twitter: {
-      title: doc.metaTitle,
-      description: doc.metaDescription,
-      images: [`/og/${locale}`],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: doc.title,
+    openGraphType: "article",
+  });
 }
 
 export default async function TemplateArticlePage({
@@ -52,8 +43,7 @@ export default async function TemplateArticlePage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const doc = getContentBySlug("templates", slug, locale);
 
   if (!doc) {

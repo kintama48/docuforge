@@ -4,6 +4,7 @@ import { locales } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { listAllContentPaths } from "@/src/lib/content-hub";
 import { listPlaygroundPresetSlugs } from "@/src/app/playground/playground-presets";
+import { publicStaticSitemapRoutes } from "@/src/lib/public-route-contract";
 
 function absolute(path: string) {
   const base = env.marketingUrl.endsWith("/")
@@ -15,10 +16,8 @@ function absolute(path: string) {
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const baseRoutes = ["/", "/pricing", "/docs", "/playground", "/blog", "/templates", "/compare", "/industries"];
-
   const localizedBase = locales.flatMap((locale) =>
-    baseRoutes.map((path) => ({
+    publicStaticSitemapRoutes.map((path) => ({
       url: absolute(withLocale(path, locale)),
       lastModified: now,
       changeFrequency: "weekly" as const,

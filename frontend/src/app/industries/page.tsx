@@ -1,37 +1,30 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { normalizeLocale } from "@/src/lib/i18n-config";
 import { ContentCollectionPage } from "@/src/app/components/content-hub-page";
 import {
   getCollectionMeta,
   getContentHubCopy,
   listContent,
 } from "@/src/lib/content-hub";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const meta = getCollectionMeta("industries", locale);
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.industries,
     title: `${meta.title} | DocuForge`,
     description: meta.description,
-    openGraph: {
-      title: meta.title,
-      description: meta.description,
-      images: [`/og/${locale}`],
-    },
-    twitter: {
-      title: meta.title,
-      description: meta.description,
-      images: [`/og/${locale}`],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: meta.title,
+  });
 }
 
 export default async function IndustriesIndexPage() {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const docs = listContent("industries", locale);
   const meta = getCollectionMeta("industries", locale);
   const copy = getContentHubCopy(locale);

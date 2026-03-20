@@ -29,6 +29,7 @@ import {
 } from "@/src/lib/security-mcp-content";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
 import { getHomeBenchmarkModel } from "@/src/lib/benchmark-report";
+import { Container } from "@/src/components/layout/page-primitives";
 
 const featureIcons = [BracketsCurly, TerminalWindow, Stack, Gauge, Database, RocketLaunch] as const;
 const featureTags = [
@@ -107,7 +108,7 @@ export default function Home() {
             <div className="absolute right-6 top-10 h-64 w-64 rounded-full bg-[var(--surface)] blur-3xl float-slower" />
           </div>
 
-          <div className="mx-auto w-full max-w-[1400px] px-6 pb-16 pt-14 xl:px-8 lg:pb-20 lg:pt-20">
+          <Container width="marketing" className="pb-16 pt-14 lg:pb-20 lg:pt-20">
             <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_580px] xl:gap-14">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)] fade-up">
@@ -115,14 +116,14 @@ export default function Home() {
                 </div>
 
                 <h1
-                  className="mt-6 max-w-3xl text-balance font-display text-5xl leading-[1.02] text-[var(--ink)] sm:text-6xl xl:text-7xl fade-up"
+                  className="heading-display mt-6 max-w-3xl text-balance text-[var(--ink)] fade-up sm:text-[clamp(3.6rem,7vw,5rem)]"
                   style={{ animationDelay: "90ms" }}
                 >
                   {messages.hero.title}
                 </h1>
 
                 <p
-                  className="font-script mt-5 max-w-xl text-pretty text-lg leading-relaxed text-[var(--muted)] fade-up"
+                  className="text-lead mt-5 max-w-xl text-pretty fade-up"
                   style={{ animationDelay: "180ms" }}
                 >
                   {compactCopy(messages.hero.subtitle, 1)}
@@ -237,20 +238,20 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
+          </Container>
         </section>
 
         <section className="section-pad border-y border-[var(--line)] bg-[var(--surface)]">
-          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+          <Container width="marketing">
             <div className="grid gap-8 xl:grid-cols-[1fr_520px]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   Why PDF stacks fail in production
                 </p>
-                <h2 className="mt-3 max-w-2xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                <h2 className="heading-page mt-3 max-w-2xl text-balance">
                   Design for synchronous execution, not queue-first workarounds.
                 </h2>
-                <p className="mt-4 max-w-2xl text-pretty text-base text-[var(--muted)]">
+                <p className="text-lead mt-4 max-w-2xl text-pretty">
                   Treat PDF generation as infrastructure: stable request contracts, predictable runtime behavior, and controlled version promotion.
                 </p>
 
@@ -313,21 +314,21 @@ export default function Home() {
                 </Link>
               </aside>
             </div>
-          </div>
+          </Container>
         </section>
 
         <section id="features" className="section-pad scroll-mt-24">
-          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+          <Container width="marketing">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   {messages.features.label}
                 </p>
-                <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                <h2 className="heading-page mt-3 max-w-xl text-balance">
                   {messages.features.title}
                 </h2>
               </div>
-              <p className="max-w-xl text-pretty text-base text-[var(--muted)]">
+              <p className="text-lead max-w-xl text-pretty">
                 {compactCopy(messages.features.subtitle, 1)}
               </p>
             </div>
@@ -355,24 +356,24 @@ export default function Home() {
                 );
               })}
             </div>
-          </div>
+          </Container>
         </section>
 
         <section
           id="workflow"
           className="section-pad scroll-mt-24 border-y border-[var(--line)] bg-[var(--surface)]"
         >
-          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+          <Container width="marketing">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   {messages.workflow.label}
                 </p>
-                <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                <h2 className="heading-page mt-3 max-w-xl text-balance">
                   {messages.workflow.title}
                 </h2>
               </div>
-              <p className="max-w-xl text-pretty text-base text-[var(--muted)]">
+              <p className="text-lead max-w-xl text-pretty">
                 {compactCopy(messages.workflow.subtitle, 1)}
               </p>
             </div>
@@ -403,22 +404,22 @@ export default function Home() {
                 );
               })}
             </div>
-          </div>
+          </Container>
         </section>
 
         <section
           id="api"
           className="section-pad scroll-mt-24 bg-[var(--inverse-bg)] text-[var(--inverse-ink)]"
         >
-          <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-6 xl:grid-cols-[1.08fr_0.92fr] xl:px-8">
+          <Container width="marketing" className="grid gap-8 xl:grid-cols-[1.08fr_0.92fr]">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--inverse-muted)]">
                 Security, API and MCP
               </p>
-              <h2 className="mt-3 max-w-xl text-balance font-display text-4xl text-[var(--inverse-ink)] sm:text-5xl">
+              <h2 className="heading-page mt-3 max-w-xl text-balance text-[var(--inverse-ink)]">
                 Ship sensitive PDFs without security drag.
               </h2>
-              <p className="mt-4 max-w-2xl text-base text-[var(--inverse-muted)]">
+              <p className="text-lead mt-4 max-w-2xl text-[var(--inverse-muted)]">
                 Protect customer documents by default and keep audit conversations short. DocuForge gives teams secure delivery controls without slowing down shipping velocity.
               </p>
 
@@ -478,17 +479,17 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </div>
+          </Container>
         </section>
 
         <section id="blog" className="section-pad scroll-mt-24">
-          <div className="mx-auto w-full max-w-[1400px] px-6 xl:px-8">
+          <Container width="marketing">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   Blogs
                 </p>
-                <h2 className="mt-3 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                <h2 className="heading-page mt-3 text-balance">
                   Learn by shipping.
                 </h2>
               </div>
@@ -517,11 +518,11 @@ export default function Home() {
                 </article>
               ))}
             </div>
-          </div>
+          </Container>
         </section>
 
         <section className="section-pad">
-          <div className="mx-auto w-full max-w-[1200px] px-6 xl:px-8">
+          <Container width="marketing">
             <div className="relative overflow-hidden rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8 shadow-[var(--shadow)] sm:p-10 lg:p-12">
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute -right-14 -top-20 h-52 w-52 rounded-full bg-[var(--accent-soft)] blur-3xl opacity-70" />
@@ -532,10 +533,10 @@ export default function Home() {
                 <p className="inline-flex items-center rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   Production-ready workflow
                 </p>
-                <h2 className="mt-5 text-balance font-display text-4xl text-[var(--ink)] sm:text-5xl">
+                <h2 className="heading-page mt-5 text-balance">
                   {messages.cta.title}
                 </h2>
-                <p className="font-script mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted)]">
+                <p className="text-lead mx-auto mt-4 max-w-2xl">
                   {compactCopy(messages.cta.subtitle, 1)}
                 </p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -566,7 +567,7 @@ export default function Home() {
                 })}
               </div>
             </div>
-          </div>
+          </Container>
         </section>
       </main>
 

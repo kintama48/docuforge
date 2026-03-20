@@ -1,39 +1,24 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { LegalLayout } from "../components/legal-layout";
-import { normalizeLocale } from "@/src/lib/i18n-config";
+import { ContactEmailLink } from "@/src/components/contact/ContactEmailLink";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
 
 const lastUpdated = "February 14, 2026";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const locale = normalizeLocale(headersList.get("x-docuforge-locale"));
-  const ogImage = `/og/${locale}`;
+  const locale = await getRequestLocale();
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.terms,
     title: "Terms of Service",
     description:
       "Terms governing access to DocuForge, including accounts, billing, and acceptable use.",
-    openGraph: {
-      title: "Terms of Service · DocuForge",
-      description:
-        "Terms governing access to DocuForge, including accounts, billing, and acceptable use.",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: "DocuForge terms of service",
-        },
-      ],
-    },
-    twitter: {
-      title: "Terms of Service · DocuForge",
-      description:
-        "Terms governing access to DocuForge, including accounts, billing, and acceptable use.",
-      images: [ogImage],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: "DocuForge terms of service",
+  });
 }
 
 export default function TermsPage() {
@@ -44,7 +29,7 @@ export default function TermsPage() {
       lastUpdated={lastUpdated}
     >
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           1. Agreement to these terms
         </h2>
         <p>
@@ -55,7 +40,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           2. Eligibility and accounts
         </h2>
         <p>
@@ -66,7 +51,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           3. Subscriptions, billing, and taxes
         </h2>
         <p>
@@ -78,7 +63,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           4. Acceptable use
         </h2>
         <p>
@@ -89,7 +74,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           5. Your content and data
         </h2>
         <p>
@@ -100,7 +85,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           6. Intellectual property
         </h2>
         <p>
@@ -111,7 +96,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           7. Third-party services
         </h2>
         <p>
@@ -122,7 +107,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           8. Disclaimers
         </h2>
         <p>
@@ -133,7 +118,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           9. Limitation of liability
         </h2>
         <p>
@@ -144,7 +129,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           10. Indemnification
         </h2>
         <p>
@@ -155,7 +140,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           11. Termination
         </h2>
         <p>
@@ -165,7 +150,7 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           12. Changes to these terms
         </h2>
         <p>
@@ -175,11 +160,19 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-[var(--ink)]">
+        <h2 className="heading-section">
           13. Contact
         </h2>
         <p>
-          Questions about these terms? Contact us at support@docuforge.app.
+          Questions about these terms? Contact our{" "}
+          <ContactEmailLink
+            localPart="support"
+            domain="docuforge.app"
+            label="support@docuforge.app"
+            fallbackLabel="support team"
+            className="underline decoration-[var(--line-hover)] underline-offset-2"
+          />
+          .
         </p>
       </section>
     </LegalLayout>

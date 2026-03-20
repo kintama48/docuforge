@@ -57,6 +57,14 @@ describe("I18nProvider", () => {
     await waitFor(() => expect(screen.getByTestId("locale").textContent).toBe("it"));
   });
 
+  it("does not override an unprefixed public deep link from storage", async () => {
+    localStorage.setItem("docuforge-locale", "it");
+    window.history.replaceState({}, "", "/pricing");
+    renderWithLocale("en");
+
+    await waitFor(() => expect(screen.getByTestId("locale").textContent).toBe("en"));
+  });
+
   it("falls back to navigator language", async () => {
     Object.defineProperty(navigator, "language", {
       value: "es-ES",

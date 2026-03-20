@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { Locale, normalizeLocale } from "@/src/lib/i18n-config";
+import { shouldUseClientLocalePreference } from "@/src/lib/locale-routing";
 import { stripLocalePath } from "@/src/lib/locale-path";
 
 const translations = {
@@ -3520,14 +3521,21 @@ function resolveInitialLocale(initialLocale?: Locale): Locale {
   if (initialLocale) return initialLocale;
   if (typeof window === "undefined") return "en";
 
-  const { locale: pathLocale } = stripLocalePath(window.location?.pathname ?? "/");
+  const { locale: pathLocale, basePath } = stripLocalePath(
+    window.location?.pathname ?? "/"
+  );
   const stored = localStorage.getItem("docuforge-locale");
   const queryLocale = new URLSearchParams(window.location.search).get("lang");
 
   if (pathLocale) return pathLocale;
   if (queryLocale) return normalizeLocale(queryLocale);
-  if (stored) return normalizeLocale(stored);
-  if (typeof navigator !== "undefined") {
+  if (shouldUseClientLocalePreference(basePath) && stored) {
+    return normalizeLocale(stored);
+  }
+  if (
+    shouldUseClientLocalePreference(basePath) &&
+    typeof navigator !== "undefined"
+  ) {
     return normalizeLocale(navigator.language);
   }
   return "en";
@@ -3545,13 +3553,19 @@ export function I18nProvider({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const { locale: pathLocale } = stripLocalePath(window.location?.pathname ?? "/");
+    const { locale: pathLocale, basePath } = stripLocalePath(
+      window.location?.pathname ?? "/"
+    );
     const queryLocale = new URLSearchParams(window.location.search).get("lang");
     const stored = localStorage.getItem("docuforge-locale");
 
     const detected = pathLocale
       ?? (queryLocale ? normalizeLocale(queryLocale) : null)
-      ?? (stored ? normalizeLocale(stored) : null);
+      ?? (
+        shouldUseClientLocalePreference(basePath) && stored
+          ? normalizeLocale(stored)
+          : null
+      );
 
     if (detected && detected !== locale) {
       const timer = window.setTimeout(() => {

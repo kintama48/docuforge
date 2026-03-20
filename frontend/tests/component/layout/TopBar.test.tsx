@@ -21,7 +21,11 @@ describe("TopBar", () => {
   });
 
   it("shows a logout button and clears auth state", () => {
-    renderWithProviders(<TopBar />);
+    const onOpenNavigation = vi.fn();
+    renderWithProviders(<TopBar onOpenNavigation={onOpenNavigation} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /open navigation/i }));
+    expect(onOpenNavigation).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole("button", { name: /log out/i }));
     expect(useAuthStore.getState().token).toBeNull();

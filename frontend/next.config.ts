@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         value: "public, max-age=0, s-maxage=604800, stale-while-revalidate=86400",
       },
     ];
+    const globalHeaders = [
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
+      },
+    ];
     const cachedRoutes = [
       "/blog",
       "/blog/:slug*",
@@ -25,10 +31,13 @@ const nextConfig: NextConfig = {
     ];
     const localePrefix = "/:locale(fr|de|it|es|ar|zh)";
 
-    return cachedRoutes.flatMap((source) => [
-      { source, headers: edgeCache },
-      { source: `${localePrefix}${source}`, headers: edgeCache },
-    ]);
+    return [
+      { source: "/:path*", headers: globalHeaders },
+      ...cachedRoutes.flatMap((source) => [
+        { source, headers: edgeCache },
+        { source: `${localePrefix}${source}`, headers: edgeCache },
+      ]),
+    ];
   },
 };
 

@@ -1,0 +1,515 @@
+Link type,Is nofollow,Source URL,Source HTTP status code,Target URL,Target HTTP status code,Anchor,Hreflang attribute,Target final redirect URL,Target final redirect HTTP status code,Is source canonical,Is source noindex,Is target canonical,Is target noindex,Is link internal
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/packing-list-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/resume-cv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-pdf-receipts-from-stripe-webhooks,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-automate-report-generation-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-invoices-programmatically-with-an-api,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/register,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/building-a-saas-invoice-system-with-docuforge-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/dashboard,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/sales-quote-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-personalized-letters-in-bulk,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/pdfmonkey,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/terms,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/blog,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/wkhtmltopdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/completion-certificate-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/technical-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/boarding-pass,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/login,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/,200,https://www.docuforge.app/fr,404,,fr,,,true,true,true,false,true
+Hreflang,false,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/codex,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-dynamic-reports-from-json-data,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/,200,https://www.docuforge.app/it,404,,it,,,true,true,true,false,true
+Hreflang,false,https://www.docuforge.app/pricing,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/carbone-io,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/anvil-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/resume-cv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/contract-agreement,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/register,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/invoice,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/best-pdf-generation-library-2026,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/industries,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/cursor,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/claude,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/shipping-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/return-label,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/compare,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/contract-agreement,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-multi-page-pdf-statements,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/education,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/healthcare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/purchase-order,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/freight-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/building-a-saas-invoice-system-with-docuforge-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/shipping-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/warehouse-pick-list,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-invoices-programmatically-in-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/legal,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-invoices-programmatically-in-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/sales-quote-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/pricing,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/packing-list-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/packing-slip,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/login,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-custom-quotes-and-proposals-automatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/return-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-shipping-labels-at-scale,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/industries,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-shipping-labels-at-scale,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/shipping-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/pdf-generation-for-ecommerce-receipts-packing-slips-and-returns,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/register,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/docs,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-shipping-labels-at-scale,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/industries,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/packing-list-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/shopify-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/healthcare,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/pricing,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-let-users-design-their-own-pdf-templates-without-code,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/receipt,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/privacy,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/purchase-order-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/carbone-io,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/cursor,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Href link,true,https://www.docuforge.app/terms,200,https://www.docuforge.app/cdn-cgi/l/email-protection,404,[email protected],,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/certificate,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/resume-cv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/finance,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/service-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-invoices-programmatically-in-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-pdf-receipts-from-stripe-webhooks,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/sales-quote-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-invoices-programmatically-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/sales-quote-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-multi-page-pdf-statements,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/puppeteer-pdf-slow-performance-fix,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/completion-certificate-template,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/terms,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-multi-page-pdf-statements,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/playground,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/register,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/nda-agreement-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/ticket-event-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/completion-certificate-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/healthcare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/return-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/finance,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-pdf-receipts-from-stripe-webhooks,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/logistics,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/codex,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/industries,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/receipt,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/wkhtmltopdf,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/generate-beautiful-pdf-reports-from-json-in-under-5-minutes,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/react-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/purchase-order-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/hr,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/pricing,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/pricing,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/packing-slip,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/pdfmonkey,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/technical-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/wkhtmltopdf,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/cursor,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/puppeteer,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/terms,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/logistics,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/compare,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/resume-cv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-bulk-certificates-from-a-csv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/anvil-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/business-card,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/anvil-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/freight-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/purchase-order,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/dashboard,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/contract-agreement,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-bulk-certificates-from-a-csv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/warehouse-pick-list,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-barcoded-warehouse-labels,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/business-card,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/finance,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/,200,https://www.docuforge.app/es,404,,es,,,true,true,true,false,true
+Hreflang,false,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-multi-page-pdf-statements,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-invoices-programmatically-in-2026,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/claude,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/completion-certificate-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/packing-list-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/prescription-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-multi-page-pdf-statements,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-automate-report-generation-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/carbone-io,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/industries,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/pricing,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-dynamic-reports-from-json-data,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-dynamic-reports-from-json-data,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-pdf-receipts-from-stripe-webhooks,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-invoices-programmatically-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-let-users-design-their-own-pdf-templates-without-code,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/business-card,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/blog,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/templates,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/terms,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/best-pdf-generation-library-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/prescription-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/warehouse-pick-list,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/pdfmonkey,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/login,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/codex,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-let-users-design-their-own-pdf-templates-without-code,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-automate-report-generation-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/ticket-event-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/purchase-order-template,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/templates,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/puppeteer-pdf-slow-performance-fix,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/typst-vs-html-css-for-pdf-templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/nda-agreement-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/purchase-order,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/codex,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/boarding-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/latex,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-custom-quotes-and-proposals-automatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/legal,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/receipt,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/technical-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/blog,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-automate-report-generation-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/ecommerce,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/latex,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-barcoded-warehouse-labels,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/prescription-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/docs,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/warehouse-pick-list,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/building-a-saas-invoice-system-with-docuforge-api,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/cursor,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-custom-quotes-and-proposals-automatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/packing-slip,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/service-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-pdf-receipts-from-stripe-webhooks,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/invoice,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/service-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/shopify-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/report,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/login,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-invoices-programmatically-in-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/nda-agreement-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/wkhtmltopdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/pdfmonkey,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/certificate,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/receipt,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-shipping-labels-at-scale,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-pdf-receipts-from-stripe-webhooks,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/contract-agreement,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/prescription-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/packing-slip,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/dashboard,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/register,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/invoice,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/nda-agreement-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/latex,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/hr,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/education,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-shipping-labels-at-scale,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/report,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/certificate,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/logistics,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/terms,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/business-card,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/certificate,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/business-card,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/playground,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/pricing,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/shipping-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/shipping-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/logistics,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-personalized-letters-in-bulk,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/puppeteer-pdf-slow-performance-fix,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/purchase-order-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-tax-documents-programmatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/legal,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/puppeteer-pdf-slow-performance-fix,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/compare,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/report,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/,200,https://www.docuforge.app/zh,404,,zh,,,true,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/finance,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/logistics,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/shopify-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/pdf-generation-for-ecommerce-receipts-packing-slips-and-returns,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/compare,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/typst-vs-html-css-for-pdf-templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-tax-documents-programmatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/puppeteer-pdf-slow-performance-fix,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/playground,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/puppeteer-pdf-slow-performance-fix,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/building-a-saas-invoice-system-with-docuforge-api,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/pricing,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/finance,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-tax-documents-programmatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/resume-cv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/sales-quote-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/resume-cv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/purchase-order-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-custom-quotes-and-proposals-automatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/anvil-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/report,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/pdf-generation-for-ecommerce-receipts-packing-slips-and-returns,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-custom-quotes-and-proposals-automatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/react-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/freight-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/legal,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-tax-documents-programmatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-dynamic-reports-from-json-data,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/latex,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/ecommerce,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/education,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/typst-vs-html-css-for-pdf-templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/packing-slip,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/carbone-io,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/ecommerce,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/docs,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/blog,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/packing-list-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-bulk-certificates-from-a-csv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/return-label,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/carbone-io,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/invoice,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/industries,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/hr,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/blog,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/ecommerce,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/templates,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/how-to-generate-personalized-letters-in-bulk,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/report,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/hr,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-bulk-certificates-from-a-csv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/packing-list-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/register,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/typst-vs-html-css-for-pdf-templates,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/claude,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/shopify-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-shipping-labels-at-scale,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/service-report-template,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/templates,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/dashboard,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/compare/puppeteer,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/contract-agreement,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/templates,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-custom-quotes-and-proposals-automatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-multi-page-pdf-statements,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/terms,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/anvil-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/healthcare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/purchase-order,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/templates,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/sales-quote-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/nda-agreement-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-barcoded-warehouse-labels,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-let-users-design-their-own-pdf-templates-without-code,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/invoice,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/building-a-saas-invoice-system-with-docuforge-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/boarding-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-tax-documents-programmatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/boarding-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/purchase-order-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/pricing,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/react-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/shopify-invoice-template,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/compare,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/boarding-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-personalized-letters-in-bulk,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-invoices-programmatically-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/certificate,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/completion-certificate-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/receipt,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/pdfmonkey,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative,404,,,,,true,false,true,false,true
+Href link,true,https://www.docuforge.app/privacy,200,https://www.docuforge.app/cdn-cgi/l/email-protection,404,[email protected],,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-dynamic-reports-from-json-data,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/legal,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/claude,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-invoices-programmatically-with-an-api,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-personalized-letters-in-bulk,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/purchase-order,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/business-card,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/pdf-generation-for-ecommerce-receipts-packing-slips-and-returns,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-dynamic-reports-from-json-data,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-let-users-design-their-own-pdf-templates-without-code,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/playground/freight-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/report,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/pdf-generation-for-ecommerce-receipts-packing-slips-and-returns,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/templates/receipt,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/,200,https://www.docuforge.app/ar,404,,ar,,,true,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/playground/technical-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/return-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-barcoded-warehouse-labels,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/warehouse-pick-list,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/typst-vs-html-css-for-pdf-templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-barcoded-warehouse-labels,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/codex,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/privacy,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/puppeteer,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/docs,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare/puppeteer,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/blog,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-bulk-certificates-from-a-csv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/technical-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/prescription-label,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/claude,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/wkhtmltopdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/puppeteer,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/best-pdf-generation-library-2026,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/compare,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/service-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/docs,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/ticket-event-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/latex,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/freight-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/dashboard,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/certificate,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/dashboard,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/playground,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/compare/react-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/generate-beautiful-pdf-reports-from-json-in-under-5-minutes,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/ticket-event-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/purchase-order,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/pdfmonkey,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/privacy,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/anvil-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-barcoded-warehouse-labels,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/ticket-event-pass,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/privacy,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Href link,true,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/cdn-cgi/l/email-protection,404,[email protected],,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/privacy,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/puppeteer,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/hr,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/login,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/finance,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/freight-invoice-template,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/why-we-built-docuforge-pdf-generation-shouldnt-be-this-hard,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/best-pdf-generation-library-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/templates/ticket-event-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/contract-agreement,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/how-to-generate-bulk-certificates-from-a-csv,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/healthcare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/prescription-label,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/healthcare,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/shipping-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/building-a-saas-invoice-system-with-docuforge-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/docs,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/templates/return-label,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/warehouse-pick-list,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/pricing,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/cursor,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates/invoice,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog/generate-beautiful-pdf-reports-from-json-in-under-5-minutes,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/pricing,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/pdf-generation-for-ecommerce-receipts-packing-slips-and-returns,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/puppeteer-pdf-generation-is-slow-heres-a-faster-alternative,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/playground,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/pricing,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/generate-beautiful-pdf-reports-from-json-in-under-5-minutes,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/industries/legal,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/playground/nda-agreement-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/wkhtmltopdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/playground/technical-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-automate-report-generation-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-generate-personalized-letters-in-bulk,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-generate-invoices-programmatically-with-an-api,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/playground,200,https://www.docuforge.app/es,404,,es,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/completion-certificate-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/education,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/playground/shopify-invoice-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/playground/service-report-template,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/best-pdf-generation-library-2026,404,,,,,true,false,true,false,true
+Href link,true,https://www.docuforge.app/pricing,200,https://www.docuforge.app/cdn-cgi/l/email-protection,404,Contact sales,,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/hr,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/blog/how-to-generate-tax-documents-programmatically,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/industries/ecommerce,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/generate-beautiful-pdf-reports-from-json-in-under-5-minutes,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/blog,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/industries/education,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/compare/react-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/best-pdf-generation-library-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/compare/latex,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog/how-to-automate-report-generation-with-an-api,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/carbone-io,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/industries/education,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar/compare/react-pdf,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/blog/how-to-generate-invoices-programmatically-in-2026,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/zh/blog,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/templates/boarding-pass,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/templates/packing-slip,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/cursor,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/ar,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/fr/industries/logistics,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/how-to-let-users-design-their-own-pdf-templates-without-code,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/industries/ecommerce,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/login,200,https://www.docuforge.app/de,404,,de,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/de/blog/typst-vs-html-css-for-pdf-templates,404,,,,,true,false,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/it/blog/generate-beautiful-pdf-reports-from-json-in-under-5-minutes,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/,200,https://www.docuforge.app/de,404,,de,,,true,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/codex,200,https://www.docuforge.app/zh,404,,zh,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/docs/mcp/claude,200,https://www.docuforge.app/it,404,,it,,,false,true,true,false,true
+Hreflang,false,https://www.docuforge.app/content-policy,200,https://www.docuforge.app/ar,404,,ar,,,false,true,true,false,true
+Sitemap URL,false,https://www.docuforge.app/sitemap.xml,200,https://www.docuforge.app/es/compare,404,,,,,true,false,true,false,true
+Hreflang,false,https://www.docuforge.app/privacy,200,https://www.docuforge.app/fr,404,,fr,,,false,true,true,false,true

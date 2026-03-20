@@ -12,6 +12,10 @@ import {
 } from "@phosphor-icons/react";
 import { env } from "@/src/config/env";
 import { LowCodeBlocksEditor } from "@/src/components/editor/LowCodeBlocksEditor";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 import { useDebounce } from "@/src/hooks/use-debounce";
 import { useI18n } from "@/src/lib/i18n";
 import type { LowCodeSpec } from "@/src/lib/low-code";
@@ -302,11 +306,13 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
   }, [debouncedDataJson, debouncedLowCodeSpec, debouncedSource, mode]);
 
   return (
-    <div className="mx-auto w-full max-w-[1460px] px-6 pb-20 pt-10 lg:pt-14">
-      <div className="max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Template gallery</p>
-        <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">Find a PDF template and preview instantly.</h1>
-      </div>
+    <Container width="wide" className="pb-20 pt-10 lg:pt-14">
+      <PageIntro
+        eyebrow="Template gallery"
+        title="Find a PDF template and preview instantly."
+        description="Start from a real starter, make quick edits, and validate the render path before you move into the full console."
+        width="reading"
+      />
 
       <section className="mt-7 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -381,7 +387,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
         </div>
       </section>
 
-      <div className={`mt-6 grid gap-6 ${isEditorOpen ? "xl:grid-cols-[390px_minmax(0,1fr)]" : "grid-cols-1"}`}>
+      <div className={`mt-6 grid gap-6 ${isEditorOpen ? "lg:grid-cols-[380px_minmax(0,1fr)]" : "grid-cols-1"}`}>
         {isEditorOpen ? (
           <aside className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
             <div className="flex items-center justify-between gap-3">
@@ -520,7 +526,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
           {pdfUrl ? (
             <div
               data-testid="playground-preview-frame"
-              className="mt-4 h-[780px] overflow-hidden rounded-xl border border-[var(--line)] bg-white isolate [contain:paint]"
+              className="mt-4 h-[58vh] min-h-[460px] overflow-hidden rounded-xl border border-[var(--line)] bg-white isolate sm:h-[720px] [contain:paint]"
             >
               <iframe
                 src={pdfUrl}
@@ -529,7 +535,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
               />
             </div>
           ) : (
-            <div className="mt-4 flex h-[780px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 text-center text-sm text-[var(--muted)]">
+            <div className="mt-4 flex h-[58vh] min-h-[460px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 text-center text-sm text-[var(--muted)] sm:h-[720px]">
               {isRunning ? "Rendering preview..." : "Preview renders automatically as you edit."}
             </div>
           )}
@@ -546,7 +552,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
       </div>
 
       <div
-        className={`pointer-events-none fixed bottom-6 right-6 z-20 max-w-[320px] rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-500 ${
+        className={`pointer-events-none fixed bottom-4 left-4 right-4 z-20 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-500 sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-[320px] ${
           showHint ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
         }`}
         role="status"
@@ -555,6 +561,6 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Hint</p>
         <p className="mt-1 leading-relaxed">{activePreset.hints[0] ?? "Edit fields, then render again."}</p>
       </div>
-    </div>
+    </Container>
   );
 }

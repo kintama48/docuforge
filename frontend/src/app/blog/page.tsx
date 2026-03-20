@@ -1,9 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { SiteHeader } from "@/src/app/components/site-header";
 import { SiteFooter } from "@/src/app/components/site-footer";
-import { type Locale, normalizeLocale } from "@/src/lib/i18n-config";
+import { type Locale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import {
   type ContentCollection,
@@ -12,26 +11,26 @@ import {
   getContentHubCopy,
   listContent,
 } from "@/src/lib/content-hub";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const meta = getCollectionMeta("blog", locale);
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.blog,
     title: `${meta.title} | DocuForge`,
     description: meta.description,
-    openGraph: {
-      title: meta.title,
-      description: meta.description,
-      images: [`/og/${locale}`],
-    },
-    twitter: {
-      title: meta.title,
-      description: meta.description,
-      images: [`/og/${locale}`],
-    },
-  };
+    ogImage: `/og/${locale}`,
+    ogAlt: meta.title,
+  });
 }
 
 function Section({
@@ -76,8 +75,7 @@ function Section({
 }
 
 export default async function BlogIndexPage() {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
 
   const blogMeta = getCollectionMeta("blog", locale);
   const copy = getContentHubCopy(locale);
@@ -90,14 +88,13 @@ export default async function BlogIndexPage() {
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-12 lg:pt-16">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-            {blogMeta.label}
-          </p>
-          <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">{blogMeta.title}</h1>
-          <p className="mt-4 text-base text-[var(--muted)]">{blogMeta.description}</p>
-        </div>
+      <Container as="main" width="marketing" className="pb-20 pt-12 lg:pt-16">
+        <PageIntro
+          eyebrow={blogMeta.label}
+          title={blogMeta.title}
+          description={blogMeta.description}
+          width="reading"
+        />
 
         <Section
           locale={locale}
@@ -126,7 +123,7 @@ export default async function BlogIndexPage() {
           collection="industries"
           readMoreLabel={copy.readMore}
         />
-      </main>
+      </Container>
       <SiteFooter />
     </div>
   );

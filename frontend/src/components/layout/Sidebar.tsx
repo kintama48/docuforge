@@ -6,17 +6,22 @@ import { FileText, GearSix, SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/src/lib/utils";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
 
-const navItems = [
+export const consoleNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
   { href: "/editor", label: "Editor", icon: FileText },
   { href: "/settings", label: "Settings", icon: GearSix },
 ];
 
-export function Sidebar() {
+export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-60 border-r border-[var(--line)] bg-[var(--surface-2)] px-4 py-6 lg:block">
+    <aside
+      className={cn(
+        "hidden w-60 border-r border-[var(--line)] bg-[var(--surface-2)] px-4 py-6 lg:block",
+        className
+      )}
+    >
       <div className="flex items-center gap-3 px-2">
         <BrandLogo className="h-10 w-10" />
         <div>
@@ -26,7 +31,7 @@ export function Sidebar() {
       </div>
 
       <nav className="mt-10 flex flex-col gap-2">
-        {navItems.map((item) => {
+        {consoleNavItems.map((item) => {
           const Icon = item.icon;
           const active = pathname?.startsWith(item.href);
           return (
