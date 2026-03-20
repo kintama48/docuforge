@@ -9,6 +9,11 @@ import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { planLimits } from "@/src/lib/constants";
 import { formatBytes } from "@/src/lib/utils";
 import { getDevPlanCopy } from "@/src/lib/dev-plan-content";
+import { ContactEmailLink } from "@/src/components/contact/ContactEmailLink";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 
 function fmtLimit(v: number | null): string {
   if (v === null) return "Unlimited";
@@ -158,20 +163,109 @@ export default function PricingPage() {
 
       <main>
         <section className="section-pad">
-          <div className="mx-auto w-full max-w-[1460px] px-6 xl:px-8">
-            <div className="max-w-4xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-                {messages.pricing.label}
-              </p>
-              <h1 className="mt-3 font-heading text-balance text-4xl text-[var(--ink)] sm:text-5xl xl:text-6xl">
-                {messages.pricing.title}
-              </h1>
-              <p className="font-script mt-4 max-w-3xl text-pretty text-lg leading-relaxed text-[var(--muted)]">
-                {messages.pricing.subtitle}
-              </p>
+          <Container width="wide">
+            <PageIntro
+              eyebrow={messages.pricing.label}
+              title={messages.pricing.title}
+              description={messages.pricing.subtitle}
+              variant="display"
+              width="reading"
+            />
+
+            <div className="mt-10 grid gap-5 xl:hidden md:grid-cols-2">
+              {planOrder.map((key) => {
+                const plan = localizedPlans[key];
+                const limits = planLimits[key];
+                const featured = key === "dev";
+                const isCustom = key === "enterprise";
+
+                return (
+                  <article
+                    key={`mobile-${key}`}
+                    className={`relative rounded-[28px] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] ${
+                      featured
+                        ? "bg-[color-mix(in_oklab,var(--accent-soft),var(--surface)_65%)]"
+                        : ""
+                    }`}
+                  >
+                    {featured ? (
+                      <p className="mb-4 inline-flex rounded-full bg-[var(--ink)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
+                        {messages.pricing.popularLabel}
+                      </p>
+                    ) : null}
+                    <h2 className="heading-section text-[2rem]">{plan.name}</h2>
+                    <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                      {plan.description}
+                    </p>
+                    <div className="mt-5">
+                      {isCustom ? (
+                        <>
+                          <p className="heading-section text-[2.4rem] leading-none">
+                            Custom
+                          </p>
+                          <p className="mt-2 text-sm text-[var(--muted)]">
+                            Annual contract
+                          </p>
+                        </>
+                      ) : (
+                        <p className="flex items-end gap-1 text-[3rem] font-semibold leading-[0.9] text-[var(--ink)]">
+                          {plan.price}
+                          <span className="pb-1 text-sm font-medium text-[var(--muted)]">
+                            {messages.pricing.perMonth}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                    {isCustom ? (
+                      <ContactEmailLink
+                        localPart="hello"
+                        domain="docuforge.app"
+                        label={plan.cta}
+                        className={`mt-5 inline-flex h-12 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold ${
+                          featured
+                            ? "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)]"
+                            : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+                        }`}
+                      />
+                    ) : (
+                      <Link
+                        href={consoleRegisterUrl}
+                        className={`mt-5 inline-flex h-12 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold ${
+                          featured
+                            ? "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)]"
+                            : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+                        }`}
+                      >
+                        {plan.cta}
+                      </Link>
+                    )}
+                    <ul className="mt-6 space-y-2 text-sm text-[var(--ink)]">
+                      {planBenefits[key].map((benefit) => (
+                        <li key={benefit} className="flex items-start gap-2">
+                          <Check
+                            className="phosphor-icon mt-0.5 h-4 w-4 text-[var(--good)]"
+                            weight="bold"
+                            aria-hidden="true"
+                          />
+                          <span className="leading-6">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <ul className="mt-5 space-y-1.5 border-t border-[var(--line)] pt-5 text-sm leading-6 text-[var(--muted)]">
+                      <li>{fmtLimit(limits.renders)} {messages.pricing.rendersPerMonth}</li>
+                      <li>{fmtLimit(limits.aiCredits)} {messages.pricing.aiCreditsPerMonth}</li>
+                      <li>{fmtLimit(limits.templates)} {messages.pricing.templatesLabel}</li>
+                      <li>
+                        {limits.assetsBytes !== null ? formatBytes(limits.assetsBytes) : "Unlimited"}{" "}
+                        {messages.pricing.assetsLabel}
+                      </li>
+                    </ul>
+                  </article>
+                );
+              })}
             </div>
 
-            <div className="mt-10 overflow-x-auto pb-2">
+            <div className="mt-10 hidden overflow-x-auto pb-2 xl:block">
               <div className="min-w-[1260px] rounded-[30px] border border-[var(--line)] bg-[var(--surface)]">
                 <div className="grid grid-cols-5">
                   {planOrder.map((key, index) => {
@@ -220,16 +314,29 @@ export default function PricingPage() {
                           )}
                         </div>
 
-                        <Link
-                          href={isCustom ? "mailto:hello@docuforge.app" : consoleRegisterUrl}
-                          className={`mt-4 inline-flex h-12 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold ${
-                            featured
-                              ? "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)]"
-                              : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
-                          }`}
-                        >
-                          {plan.cta}
-                        </Link>
+                        {isCustom ? (
+                          <ContactEmailLink
+                            localPart="hello"
+                            domain="docuforge.app"
+                            label={plan.cta}
+                            className={`mt-4 inline-flex h-12 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold ${
+                              featured
+                                ? "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)]"
+                                : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+                            }`}
+                          />
+                        ) : (
+                          <Link
+                            href={consoleRegisterUrl}
+                            className={`mt-4 inline-flex h-12 w-full items-center justify-center rounded-lg px-4 text-sm font-semibold ${
+                              featured
+                                ? "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)]"
+                                : "border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+                            }`}
+                          >
+                            {plan.cta}
+                          </Link>
+                        )}
 
                         <div className="mt-6 border-t border-[var(--line)] pt-5">
                           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -266,14 +373,52 @@ export default function PricingPage() {
             </div>
 
             <div className="mt-5 max-w-3xl text-sm text-[var(--muted)]">
-              <span className="font-script">{messages.pricing.footnote}</span>
+              <span>{messages.pricing.footnote}</span>
             </div>
 
             <div className="mt-16">
-              <h2 className="font-heading text-3xl text-[var(--ink)] sm:text-4xl">
+              <h2 className="heading-section">
                 Compare plan limits at a glance
               </h2>
-              <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
+              <div className="mt-6 grid gap-4 xl:hidden">
+                {compareRows.map((row) => (
+                  <div
+                    key={`mobile-${row.label}`}
+                    className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5"
+                  >
+                    <p className="text-sm font-semibold text-[var(--ink)]">
+                      {row.label}
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {planOrder.map((key) => {
+                        const value = row.values[key];
+                        return (
+                          <div
+                            key={`${row.label}-${key}-mobile`}
+                            className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] px-4 py-3"
+                          >
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                              {localizedPlans[key].name}
+                            </p>
+                            <div className="mt-2 text-sm text-[var(--ink)]">
+                              {typeof value === "boolean" ? (
+                                value ? (
+                                  <Check className="phosphor-icon h-4 w-4 text-[var(--good)]" weight="bold" aria-label="Included" />
+                                ) : (
+                                  <span aria-label="Not included">-</span>
+                                )
+                              ) : (
+                                value
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)] xl:block">
                 <table className="w-full min-w-[980px] border-collapse text-sm">
                   <thead className="bg-[var(--surface-2)]">
                     <tr>
@@ -321,7 +466,7 @@ export default function PricingPage() {
                 </table>
               </div>
             </div>
-          </div>
+          </Container>
         </section>
       </main>
 

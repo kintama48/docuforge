@@ -8,6 +8,7 @@ import { TemplatePickerStep } from "@/src/components/onboarding/TemplatePickerSt
 import { ApiKeyRevealStep } from "@/src/components/onboarding/ApiKeyRevealStep";
 import { QuickStartStep } from "@/src/components/onboarding/QuickStartStep";
 import { useI18n } from "@/src/lib/i18n";
+import { Container } from "@/src/components/layout/page-primitives";
 
 export default function OnboardingPage() {
   const { messages } = useI18n();
@@ -29,7 +30,7 @@ export default function OnboardingPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-[#0a0a0b] px-6 py-12 text-white">
-        <div className="mx-auto w-full max-w-4xl">
+        <Container width="article">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold">
               {messages.onboarding.title}
@@ -73,7 +74,7 @@ export default function OnboardingPage() {
           {step === 3 && (
             <QuickStartStep apiKey={apiKey} templateId={forkedTemplateId} />
           )}
-        </div>
+        </Container>
       </div>
     </ProtectedRoute>
   );

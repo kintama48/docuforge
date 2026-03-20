@@ -91,8 +91,9 @@ export function EditorToolbar({
   }, [openMenu]);
 
   return (
-    <header className="relative z-30 flex items-center justify-between border-b border-[var(--line)] bg-[var(--surface-2)] px-4 py-3">
-      <div className="flex items-center gap-4">
+    <header className="relative z-30 border-b border-[var(--line)] bg-[var(--surface-2)] px-4 py-3">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex min-w-0 items-start gap-4 sm:items-center">
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2 text-sm text-[var(--muted)] hover:text-[var(--ink)]"
@@ -100,10 +101,10 @@ export function EditorToolbar({
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)]">
             <ArrowLeft className="h-3.5 w-3.5" />
           </span>
-          <span>{dashboardLabel}</span>
+          <span className="hidden sm:inline">{dashboardLabel}</span>
         </Link>
-        <div>
-          <p className="text-sm font-semibold text-[var(--ink)]">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-[var(--ink)]">
             {templateName || messages.editor.untitledTemplate}
           </p>
           <p className="text-xs text-[var(--muted-dim)]">
@@ -115,7 +116,7 @@ export function EditorToolbar({
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
         <ThemeToggle />
         {isLowCodeMode && (
           <>
@@ -224,6 +225,7 @@ export function EditorToolbar({
             </div>
           )}
         </div>
+      </div>
       </div>
     </header>
   );

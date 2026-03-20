@@ -2,6 +2,10 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
 import type { ReactNode } from "react";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 
 type LegalLayoutProps = {
   title: string;
@@ -20,26 +24,23 @@ export function LegalLayout({
     <div className="min-h-screen page-background">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-5xl px-6 pb-20 pt-12 lg:pt-16">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-            Legal
-          </p>
-          <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">
-            {title}
-          </h1>
-          <p className="mt-4 text-pretty text-base text-[var(--muted)]">
-            {subtitle}
-          </p>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-            Last updated: {lastUpdated}
-          </p>
-        </div>
+      <Container as="main" width="article" className="pb-20 pt-12 lg:pt-16">
+        <PageIntro
+          eyebrow="Legal"
+          title={title}
+          description={subtitle}
+          width="reading"
+          meta={
+            <p className="eyebrow text-[var(--muted)]">
+              Last updated: {lastUpdated}
+            </p>
+          }
+        />
 
-        <div className="mt-10 space-y-10 text-sm text-[var(--muted)]">
+        <div className="mt-10 space-y-10 text-sm leading-7 text-[var(--muted)]">
           {children}
         </div>
-      </main>
+      </Container>
 
       <SiteFooter />
     </div>

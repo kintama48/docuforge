@@ -74,6 +74,7 @@
 - **Simplicity First**: Make every change as simple as possible. Impact minimal code.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Working Directory Discipline**: Stay in the current working directory for the active task and do not make unrelated changes unless the user explicitly expands scope.
 - **Proof Over Hope**: Enforce correctness with assertions; use tests where assertions can't reach.
 - **API Boundary Contract**: Dashboard API must live under `/console/*` with cookie-session-only auth, while consumer API remains under `/v1/*`.
 - **Console UX Protection**: Do not hard-rate-limit normal `/console/*` cookie-session UX paths with user-facing 429s; use abuse/bot protection and internal safeguards instead.
@@ -84,6 +85,8 @@
 - **Transactional Sender Map**: Use `noreply@docuforge.app` for one-way auth/security emails, `hello@docuforge.app` for welcome/onboarding emails, `billing@docuforge.app` for billing events, and `support@docuforge.app` for user support correspondence.
 - **Icon Consistency**: Use Phosphor icons as the default icon library on product surfaces unless explicitly overridden.
 - **Session Security**: Keep auth flows persistent and secure: expose logout in authenticated surfaces, sanitize redirect targets, and verify security headers/caching behavior after auth changes.
+- **Public Locale Routing Standard**: For crawlable frontend pages, treat the URL as the locale source of truth; only auto-detect locale on the root entry path using the locale cookie first, then `Accept-Language`, and never auto-redirect deep links based on `Referer` or geolocation headers.
+- **Responsive System Standard**: Centralize responsiveness in shared layout, spacing, shell, and typography primitives; do not scatter breakpoint logic across individual components, and keep display typography off reading-heavy subheads/content headings.
 - **PDF Import Strategy**: For PDF import, do not add OCR-first complexity unless explicitly requested. Use deterministic converter output plus user input, then run in-house LLM/RAG best-effort reconstruction with a clear user review step.
 - **Consumer-Only API Docs**: Public API documentation should only include consumer-facing `/v1/*` endpoints; do not document `/console/*` routes or console-only endpoints.
 - **Config Hygiene**: Keep `.env` focused on secrets/deployment-specific values; move non-secret default knobs (especially plan quotas and request limits) into typed `config.ts` objects.

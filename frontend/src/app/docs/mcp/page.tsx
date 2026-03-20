@@ -1,40 +1,46 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { headers } from "next/headers";
-import { normalizeLocale } from "@/src/lib/i18n-config";
 import { withLocale } from "@/src/lib/locale-path";
 import { SiteHeader } from "@/src/app/components/site-header";
 import { SiteFooter } from "@/src/app/components/site-footer";
 import { getMcpGuide } from "@/src/app/docs/mcp/mcp-guides";
+import { buildPublicMetadata } from "@/src/lib/public-seo";
+import { publicRoutes } from "@/src/lib/public-route-contract";
+import { getRequestLocale } from "@/src/lib/request-locale";
+import {
+  Container,
+  PageIntro,
+} from "@/src/components/layout/page-primitives";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const guide = getMcpGuide(locale, "overview");
 
-  return {
+  return buildPublicMetadata({
+    locale,
+    pathname: publicRoutes.docsMcp,
     title: `${guide.title} | DocuForge`,
     description: guide.description,
-  };
+    ogImage: `/og/docs/${locale}`,
+    ogAlt: guide.title,
+  });
 }
 
 export default async function McpOverviewPage() {
-  const headerList = await headers();
-  const locale = normalizeLocale(headerList.get("x-docuforge-locale"));
+  const locale = await getRequestLocale();
   const guide = getMcpGuide(locale, "overview");
   const localePath = (path: string) => withLocale(path, locale);
 
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-4xl px-6 pb-20 pt-12 lg:pt-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          MCP
-        </p>
-        <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">
-          {guide.title}
-        </h1>
-        <p className="mt-4 text-base text-[var(--muted)]">{guide.description}</p>
+      <Container as="main" width="article" className="pb-20 pt-12 lg:pt-16">
+        <PageIntro
+          eyebrow="MCP"
+          title={guide.title}
+          description={guide.description}
+          width="reading"
+        />
 
         <ol className="mt-8 space-y-3 text-sm text-[var(--muted)]">
           {guide.steps.map((step) => (
@@ -78,7 +84,7 @@ export default async function McpOverviewPage() {
             Open full MCP operations doc on GitHub
           </a>
         </div>
-      </main>
+      </Container>
       <SiteFooter />
     </div>
   );
