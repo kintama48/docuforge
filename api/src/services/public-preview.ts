@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import type { Context } from 'hono';
 import { env } from '../config/env';
+import { getTrustedPublicPreviewOrigins } from '../lib/browser-origins';
 import { ForbiddenError, RateLimitedError, UnauthorizedError, ValidationError } from '../lib/errors';
 import { withRedis } from './redis';
 
@@ -31,20 +32,6 @@ const ipLimiter = new Map<string, RateLimitEntry>();
 const sessionLimiter = new Map<string, RateLimitEntry>();
 const sessionCreationLimiter = new Map<string, RateLimitEntry>();
 const SESSION_INDEX_KEY = 'pps:sessions:index';
-
-const trustedOrigins = new Set([new URL(env.APP_URL).origin]);
-if (env.PUBLIC_PREVIEW_ALLOWED_ORIGINS) {
-  for (const origin of env.PUBLIC_PREVIEW_ALLOWED_ORIGINS.split(',')) {
-    const normalized = origin.trim();
-    if (!normalized) continue;
-    trustedOrigins.add(normalized);
-  }
-}
-if (env.NODE_ENV === 'development') {
-  trustedOrigins.add('http://localhost:5173');
-  trustedOrigins.add('http://127.0.0.1:5173');
-  trustedOrigins.add('http://localhost:3000');
-}
 
 function nowMs(): number {
   return Date.now();
@@ -298,7 +285,7 @@ export function assertTrustedPublicPreviewOrigin(c: Context): void {
     }
     return;
   }
-  if (!trustedOrigins.has(origin)) {
+  if (!getTrustedPublicPreviewOrigins().includes(origin)) {
     throw new ForbiddenError('Cross-origin preview request blocked');
   }
 }

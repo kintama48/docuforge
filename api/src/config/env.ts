@@ -23,6 +23,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   APP_URL: z.string().url().default('http://localhost:5173'),
+  APP_ALLOWED_ORIGINS: z.string().optional(),
   API_URL: z.string().url().default('http://localhost:3000'),
 
   // Database

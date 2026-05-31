@@ -4,6 +4,7 @@ import { compress } from 'hono/compress';
 import { errorHandler } from './middleware/error-handler';
 import { requestLogger } from './middleware/logger';
 import { env } from './config/env';
+import { getTrustedBrowserOrigins } from './lib/browser-origins';
 import { initSentry } from './lib/sentry';
 import { initVectorStore } from './services/vector-store';
 import health from './routes/health';
@@ -36,11 +37,7 @@ export function createApp() {
   const app = new Hono();
 
   // Global middleware - Configure CORS with specific allowed origins
-  const allowedOrigins = [env.APP_URL];
-  // Allow localhost in development
-  if (env.NODE_ENV === 'development') {
-    allowedOrigins.push('http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173');
-  }
+  const allowedOrigins = getTrustedBrowserOrigins();
 
   app.use(
     '*',

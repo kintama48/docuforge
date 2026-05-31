@@ -29,6 +29,7 @@ import {
   type EmailTemplateInputById,
 } from '../services/email-templates';
 import { resolveEmailSenderForTemplate } from '../services/email-sender';
+import { getTrustedBrowserOrigins } from '../lib/browser-origins';
 import {
   buildAuthUrl,
   consumeOAuthStateDistributed,
@@ -59,12 +60,6 @@ auth.use('*', noCache);
 auth.use('*', consoleAuthAbuseProtection);
 
 const oauthProviders: OAuthProvider[] = ['google', 'microsoft', 'github'];
-const trustedBrowserOrigins = new Set([new URL(env.APP_URL).origin]);
-if (env.NODE_ENV === 'development') {
-  trustedBrowserOrigins.add('http://localhost:5173');
-  trustedBrowserOrigins.add('http://127.0.0.1:5173');
-  trustedBrowserOrigins.add('http://localhost:3000');
-}
 
 function isValidProvider(provider: string): provider is OAuthProvider {
   return oauthProviders.includes(provider as OAuthProvider);
@@ -73,7 +68,7 @@ function isValidProvider(provider: string): provider is OAuthProvider {
 function assertTrustedBrowserOrigin(c: Context) {
   const origin = c.req.header('Origin');
   if (!origin) return;
-  if (!trustedBrowserOrigins.has(origin)) {
+  if (!getTrustedBrowserOrigins().includes(origin)) {
     throw new ForbiddenError('Cross-origin auth request blocked');
   }
 }
