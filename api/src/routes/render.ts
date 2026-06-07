@@ -121,11 +121,17 @@ function applyPublicPreviewWatermark(source: string): string {
 }
 
 // POST /v1/render - Production render with API key
+// Accepts two mutually-exclusive body shapes (XOR enforced by the validator):
+//   Method A — Managed:  { template_id, data?, password_protection_mode? }
+//   Method B — BYOT:     { typst_string, data?, password_protection_mode? }
 render.post('/', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache, zValidator('json', renderSchema), async (c) => {
-  const { template_id, data, password_protection_mode } = c.req.valid('json');
+  const { template_id, typst_string, data, password_protection_mode } = c.req.valid('json');
   const { userId } = c.get('auth');
   const db = getDb();
   const protectionMode: PasswordProtectionMode = password_protection_mode || 'none';
+
+  // Telemetry: distinguish managed vs BYOT renders in logs/dashboards.
+  const renderMode: 'managed' | 'byot' = typst_string !== undefined ? 'byot' : 'managed';
 
   // Check credits
   const credits = await checkCredits(userId);
@@ -141,112 +147,196 @@ render.post('/', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache
     });
   }
 
-  // Resolve template
-  const [template] = await db
-    .select()
-    .from(schema.templates)
-    .where(eq(schema.templates.id, template_id));
+  let templateId: string | null = null;
+  let templateVersionId: string | null = null;
+  let typstSource: string;
 
-  if (!template) {
-    throw new NotFoundError('Template not found');
-  }
+  if (renderMode === 'managed') {
+    // Resolve template from DB
+    const [template] = await db
+      .select()
+      .from(schema.templates)
+      .where(eq(schema.templates.id, template_id!));
 
-  // Check ownership (user's template or official)
-  if (template.userId !== null && template.userId !== userId) {
-    throw new NotFoundError('Template not found');
-  }
+    if (!template) {
+      throw new NotFoundError('Template not found');
+    }
 
-  // Get live version
-  if (!template.liveVersionId) {
-    throw new NotFoundError('Template has no published version');
-  }
+    // Check ownership (user's template or official)
+    if (template.userId !== null && template.userId !== userId) {
+      throw new NotFoundError('Template not found');
+    }
 
-  const [version] = await db
-    .select()
-    .from(schema.templateVersions)
-    .where(eq(schema.templateVersions.id, template.liveVersionId));
+    // Get live version
+    if (!template.liveVersionId) {
+      throw new NotFoundError('Template has no published version');
+    }
 
-  if (!version) {
-    throw new NotFoundError('Template version not found');
-  }
+    const [version] = await db
+      .select()
+      .from(schema.templateVersions)
+      .where(eq(schema.templateVersions.id, template.liveVersionId));
 
-  // Resolve assets
-  const assets = await resolveUserAssets(userId);
-  const templateFingerprint = computeTemplateFingerprint(version.id, version.source, version.files || null);
+    if (!version) {
+      throw new NotFoundError('Template version not found');
+    }
 
-  // Build engine payload
-  const payload: EnginePayload = {
-    template: {
-      main: 'main.typ',
-      files: {
-        'main.typ': version.source,
-        ...(version.files || {}),
+    templateId = template.id;
+    templateVersionId = version.id;
+    typstSource = version.source;
+
+    // Resolve assets
+    const assets = await resolveUserAssets(userId);
+    const templateFingerprint = computeTemplateFingerprint(version.id, version.source, version.files || null);
+
+    console.log(`[render] mode=managed userId=${userId} templateId=${templateId} versionId=${templateVersionId}`);
+
+    // Build engine payload
+    const payload: EnginePayload = {
+      template: {
+        main: 'main.typ',
+        files: {
+          'main.typ': typstSource,
+          ...(version.files || {}),
+        },
       },
-    },
-    data: data || {},
-    assets,
-    options: {
-      timeout_ms: env.ENGINE_TIMEOUT_MS,
-      cache: {
-        cacheable: true,
-        template_fingerprint: templateFingerprint,
-        version_id: version.id,
+      data: data || {},
+      assets,
+      options: {
+        timeout_ms: env.ENGINE_TIMEOUT_MS,
+        cache: {
+          cacheable: true,
+          template_fingerprint: templateFingerprint,
+          version_id: version.id,
+        },
       },
-    },
-  };
+    };
 
-  // Render
-  let result;
-  let logId: string;
+    let result;
+    let logId: string;
 
-  try {
-    result = await renderPdf(payload);
-    logId = await logRender({
-      userId,
-      templateId: template.id,
-      templateVersionId: version.id,
-      status: 'success',
-      durationMs: result.durationMs,
-    });
+    try {
+      result = await renderPdf(payload);
+      logId = await logRender({
+        userId,
+        templateId,
+        templateVersionId,
+        status: 'success',
+        durationMs: result.durationMs,
+      });
 
-    // Fire webhook asynchronously (don't block the response)
-    dispatchWebhookEvent(userId, 'render.completed', {
-      render_id: logId,
-      template_id: template.id,
-      template_version_id: version.id,
-      status: 'success',
-      duration_ms: result.durationMs,
-      password_protection_mode: protectionMode,
-    }).catch((e) => console.error('Webhook dispatch error:', e));
-  } catch (err) {
-    const errorLogId = await logRender({
-      userId,
-      templateId: template.id,
-      templateVersionId: version.id,
-      status: 'error',
-      durationMs: 0,
-      errorMessage: err instanceof Error ? err.message : 'Unknown error',
-    });
+      dispatchWebhookEvent(userId, 'render.completed', {
+        render_id: logId,
+        template_id: templateId,
+        template_version_id: templateVersionId,
+        status: 'success',
+        duration_ms: result.durationMs,
+        password_protection_mode: protectionMode,
+        mode: renderMode,
+      }).catch((e) => console.error('Webhook dispatch error:', e));
+    } catch (err) {
+      const errorLogId = await logRender({
+        userId,
+        templateId,
+        templateVersionId,
+        status: 'error',
+        durationMs: 0,
+        errorMessage: err instanceof Error ? err.message : 'Unknown error',
+      });
 
-    // Fire webhook for failure
-    dispatchWebhookEvent(userId, 'render.failed', {
-      render_id: errorLogId,
-      template_id: template.id,
-      error: err instanceof Error ? err.message : 'Unknown error',
-      password_protection_mode: protectionMode,
-    }).catch((e) => console.error('Webhook dispatch error:', e));
+      dispatchWebhookEvent(userId, 'render.failed', {
+        render_id: errorLogId,
+        template_id: templateId,
+        error: err instanceof Error ? err.message : 'Unknown error',
+        password_protection_mode: protectionMode,
+        mode: renderMode,
+      }).catch((e) => console.error('Webhook dispatch error:', e));
 
-    throw err;
+      throw err;
+    }
+
+    c.header('Content-Type', 'application/pdf');
+    c.header('Content-Disposition', 'inline; filename="document.pdf"');
+    c.header('X-Render-Duration', String(result.durationMs));
+    c.header('X-Render-Id', logId);
+    c.header('X-Pdf-Protection-Mode', protectionMode);
+    c.header('X-Render-Mode', 'managed');
+
+    return c.body(toHttpBody(result.pdf));
+  } else {
+    // BYOT: raw Typst injection — skip DB entirely, pipe directly into compile pipeline.
+    console.log(`[render] mode=byot userId=${userId} typst_string_length=${typst_string!.length}`);
+
+    const assets = await resolveUserAssets(userId);
+
+    const payload: EnginePayload = {
+      template: {
+        main: 'main.typ',
+        files: {
+          'main.typ': typst_string!,
+        },
+      },
+      data: data || {},
+      assets,
+      options: {
+        timeout_ms: env.ENGINE_TIMEOUT_MS,
+        cache: {
+          // BYOT payloads are not cached — the caller owns the source and can
+          // vary it freely between requests, making caching counterproductive.
+          cacheable: false,
+        },
+      },
+    };
+
+    let result;
+    let logId: string;
+
+    try {
+      result = await renderPdf(payload);
+      logId = await logRender({
+        userId,
+        templateId: null,
+        templateVersionId: null,
+        status: 'success',
+        durationMs: result.durationMs,
+      });
+
+      dispatchWebhookEvent(userId, 'render.completed', {
+        render_id: logId,
+        status: 'success',
+        duration_ms: result.durationMs,
+        password_protection_mode: protectionMode,
+        mode: renderMode,
+      }).catch((e) => console.error('Webhook dispatch error:', e));
+    } catch (err) {
+      const errorLogId = await logRender({
+        userId,
+        templateId: null,
+        templateVersionId: null,
+        status: 'error',
+        durationMs: 0,
+        errorMessage: err instanceof Error ? err.message : 'Unknown error',
+      });
+
+      dispatchWebhookEvent(userId, 'render.failed', {
+        render_id: errorLogId,
+        error: err instanceof Error ? err.message : 'Unknown error',
+        password_protection_mode: protectionMode,
+        mode: renderMode,
+      }).catch((e) => console.error('Webhook dispatch error:', e));
+
+      throw err;
+    }
+
+    c.header('Content-Type', 'application/pdf');
+    c.header('Content-Disposition', 'inline; filename="document.pdf"');
+    c.header('X-Render-Duration', String(result.durationMs));
+    c.header('X-Render-Id', logId);
+    c.header('X-Pdf-Protection-Mode', protectionMode);
+    c.header('X-Render-Mode', 'byot');
+
+    return c.body(toHttpBody(result.pdf));
   }
-
-  // Return PDF
-  c.header('Content-Type', 'application/pdf');
-  c.header('Content-Disposition', 'inline; filename="document.pdf"');
-  c.header('X-Render-Duration', String(result.durationMs));
-  c.header('X-Render-Id', logId);
-  c.header('X-Pdf-Protection-Mode', protectionMode);
-
-  return c.body(toHttpBody(result.pdf));
 });
 
 // POST /v1/render/image - Production image render with API key
