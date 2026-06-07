@@ -327,7 +327,7 @@ const translations = {
     },
     features: {
       label: "Features",
-      title: "Built for invoices, receipts, and reports.",
+      title: "Infrastructure primitives for document delivery.",
       subtitle:
         "Build, validate, and ship templates with explicit contracts and predictable production behavior.",
       items: [
@@ -359,7 +359,7 @@ const translations = {
     },
     workflow: {
       label: "Workflow",
-      title: "From JSON to PDF in one POST.",
+      title: "A deterministic path from source to delivery.",
       subtitle:
         "Follow a three-step release model that mirrors production behavior: author, validate, publish.",
       steps: [
@@ -489,7 +489,7 @@ const translations = {
     },
     footer: {
       blurb:
-        "DocuForge generates PDFs from JSON via a single API call — for invoices, receipts, reports, and contracts.",
+        "Deterministic document infrastructure for teams that care about runtime behavior, change control, and delivery speed.",
       product: "Product",
       developers: "Developers",
       company: "Company",
@@ -828,7 +828,7 @@ const translations = {
     },
     features: {
       label: "Fonctionnalités",
-      title: "Conçu pour les factures, reçus et rapports.",
+      title: "Des primitives d’infrastructure pour la livraison documentaire.",
       subtitle:
         "Construisez, validez et publiez des templates avec des contrats explicites et un comportement prévisible en production.",
       items: [
@@ -860,7 +860,7 @@ const translations = {
     },
     workflow: {
       label: "Flux",
-      title: "Du JSON au PDF en un seul POST.",
+      title: "Un chemin déterministe de la source à la livraison.",
       subtitle:
         "Suivez un modèle en trois étapes qui reflète la production: écrire, valider, publier.",
       steps: [
@@ -990,7 +990,7 @@ const translations = {
     },
     footer: {
       blurb:
-        "DocuForge génère des PDF à partir de JSON via un seul appel API — pour les factures, reçus, rapports et contrats.",
+        "Infrastructure documentaire déterministe pour les équipes qui exigent un runtime prévisible, un contrôle des changements et une livraison rapide.",
       product: "Produit",
       developers: "Développeurs",
       company: "Entreprise",
@@ -1329,7 +1329,7 @@ const translations = {
     },
     features: {
       label: "Funktionen",
-      title: "Entwickelt für Rechnungen, Belege und Berichte.",
+      title: "Infrastrukturbausteine für die Dokumentauslieferung.",
       subtitle:
         "Templates mit expliziten Verträgen bauen, validieren und ausrollen, damit das Produktionsverhalten vorhersagbar bleibt.",
       items: [
@@ -1361,7 +1361,7 @@ const translations = {
     },
     workflow: {
       label: "Workflow",
-      title: "Von JSON zu PDF mit einem einzigen POST.",
+      title: "Ein deterministischer Weg von der Quelle zur Auslieferung.",
       subtitle:
         "Ein dreistufiges Release-Modell wie in Produktion: erstellen, validieren, veröffentlichen.",
       steps: [
@@ -1491,7 +1491,7 @@ const translations = {
     },
     footer: {
       blurb:
-        "DocuForge generiert PDFs aus JSON über einen einzigen API-Aufruf — für Rechnungen, Belege, Berichte und Verträge.",
+        "Deterministische Dokument-Infrastruktur für Teams, die Laufzeitverhalten, Change Control und Liefergeschwindigkeit ernst nehmen.",
       product: "Produkt",
       developers: "Entwickler",
       company: "Unternehmen",
@@ -1830,7 +1830,7 @@ const translations = {
     },
     features: {
       label: "Funzionalità",
-      title: "Progettato per fatture, ricevute e report.",
+      title: "Primitive infrastrutturali per la delivery documentale.",
       subtitle:
         "Costruisci, valida e rilascia template con contratti espliciti e comportamento prevedibile in produzione.",
       items: [
@@ -1862,7 +1862,7 @@ const translations = {
     },
     workflow: {
       label: "Workflow",
-      title: "Da JSON a PDF con un solo POST.",
+      title: "Un percorso deterministico da sorgente a consegna.",
       subtitle:
         "Segui un modello in tre fasi che riflette la produzione: scrivi, valida, pubblica.",
       steps: [
@@ -1992,7 +1992,7 @@ const translations = {
     },
     footer: {
       blurb:
-        "DocuForge genera PDF da JSON tramite una singola chiamata API — per fatture, ricevute, report e contratti.",
+        "Infrastruttura documentale deterministica per team che richiedono comportamento runtime prevedibile, change control e velocità di delivery.",
       product: "Prodotto",
       developers: "Sviluppatori",
       company: "Azienda",
@@ -2331,7 +2331,7 @@ const translations = {
     },
     features: {
       label: "Funciones",
-      title: "Diseñado para facturas, recibos e informes.",
+      title: "Primitivas de infraestructura para la entrega documental.",
       subtitle:
         "Construye, valida y publica plantillas con contratos explícitos y comportamiento predecible en producción.",
       items: [
@@ -2363,7 +2363,7 @@ const translations = {
     },
     workflow: {
       label: "Flujo",
-      title: "De JSON a PDF con un solo POST.",
+      title: "Una ruta determinista desde el origen hasta la entrega.",
       subtitle:
         "Sigue un modelo de tres pasos que refleja producción: escribir, validar, publicar.",
       steps: [
@@ -2493,7 +2493,7 @@ const translations = {
     },
     footer: {
       blurb:
-        "DocuForge genera PDFs desde JSON con una sola llamada API — para facturas, recibos, informes y contratos.",
+        "Infraestructura documental determinista para equipos que exigen comportamiento de runtime predecible, control de cambios y velocidad de entrega.",
       product: "Producto",
       developers: "Desarrolladores",
       company: "Empresa",
@@ -2829,7 +2829,7 @@ const translations = {
     },
     features: {
       label: "الميزات",
-      title: "مصمم للفواتير والإيصالات والتقارير.",
+      title: "مكوّنات بنية أساسية لتسليم المستندات.",
       subtitle:
         "ابنِ القوالب وتحقق منها وانشرها بعقود صريحة وسلوك متوقع في الإنتاج.",
       items: [
@@ -2861,7 +2861,7 @@ const translations = {
     },
     workflow: {
       label: "سير العمل",
-      title: "من JSON إلى PDF في طلب POST واحد.",
+      title: "مسار حتمي من المصدر إلى التسليم.",
       subtitle:
         "اتبع نموذج إصدار من ثلاث مراحل يعكس الإنتاج: اكتب، تحقق، انشر.",
       steps: [
@@ -2991,7 +2991,7 @@ const translations = {
     },
     footer: {
       blurb:
-        "يُنشئ DocuForge ملفات PDF من JSON عبر استدعاء API واحد — للفواتير والإيصالات والتقارير والعقود.",
+        "بنية مستندات حتمية للفرق التي تهتم بسلوك وقت التشغيل وضبط التغييرات وسرعة التسليم.",
       product: "المنتج",
       developers: "المطورون",
       company: "الشركة",
@@ -3319,7 +3319,7 @@ const translations = {
     },
     features: {
       label: "功能",
-      title: "为发票、收据和报告而生。",
+      title: "面向文档交付的基础设施能力。",
       subtitle:
         "通过显式契约构建、校验并发布模板，让生产行为可预测。",
       items: [
@@ -3351,7 +3351,7 @@ const translations = {
     },
     workflow: {
       label: "流程",
-      title: "一个 POST 请求，从 JSON 到 PDF。",
+      title: "从源码到交付的确定性路径。",
       subtitle:
         "采用与生产一致的三步发布模型：编写、验证、发布。",
       steps: [
@@ -3479,7 +3479,7 @@ const translations = {
       ctaConsole: "打开控制台",
     },
     footer: {
-      blurb: "DocuForge 通过单次 API 调用将 JSON 生成 PDF — 适用于发票、收据、报告和合同。",
+      blurb: "面向关注运行时行为、变更控制和交付速度团队的确定性文档基础设施。",
       product: "产品",
       developers: "开发者",
       company: "公司",

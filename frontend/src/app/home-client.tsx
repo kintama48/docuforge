@@ -55,7 +55,7 @@ const switchPainPoints = [
   {
     title: "Release drift",
     problem: "Template edits without clear promotion rules create regressions in production.",
-    solution: "Store templates in your own git repo. Send the Typst source directly with each request, or save it once and reference by ID.",
+    solution: "Versioned template contracts keep changes explicit and auditable.",
   },
 ] as const;
 const ctaHighlights = [
