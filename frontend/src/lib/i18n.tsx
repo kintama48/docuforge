@@ -311,18 +311,18 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Developer Console",
-      title: "Document infrastructure for the critical path.",
+      title: "Generate invoices, receipts, and reports from JSON.",
       subtitle:
-        "Generate production PDFs inline with Rust-powered rendering, versioned template contracts, and practical security controls.",
+        "One POST to the API returns a PDF — no headless browser, no queue, no Puppeteer.",
       engineLabel: "Engine",
       engineBody:
         "Rust-powered rendering engine with no headless browser dependency.",
-      ctaDocs: "Read the API docs",
+      ctaDocs: "Generate your first PDF",
       ctaConsole: "Open the console",
       stats: [
         { label: "Render path", value: "Synchronous API responses" },
         { label: "Runtime", value: "Rust engine, no headless browser" },
-        { label: "Change control", value: "Versioned template contracts" },
+        { label: "Change control", value: "Versioned template releases" },
       ],
     },
     features: {

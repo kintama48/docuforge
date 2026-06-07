@@ -15,10 +15,10 @@ export type MarketingMeta = {
 const marketingMeta: Record<Locale, MarketingMeta> = {
   en: {
     landing: {
-      title: "DocuForge · Deterministic Document Infrastructure",
+      title: "DocuForge · Generate PDFs via API. Without Puppeteer.",
       description:
-        "Rust-powered PDF rendering for synchronous production workflows, versioned template contracts, and practical security controls.",
-      ogAlt: "DocuForge — Deterministic Document Infrastructure",
+        "Generate invoices, receipts, and reports from JSON with a single API call. Rust-powered, no headless browser, no queue.",
+      ogAlt: "DocuForge — Generate PDFs via API. Without Puppeteer.",
     },
     pricing: {
       title: "DocuForge Pricing · Plans for every team",
