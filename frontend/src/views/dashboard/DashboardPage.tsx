@@ -8,11 +8,15 @@ import { QuickStartCard } from "@/src/components/dashboard/QuickStartCard";
 import { TemplateGrid } from "@/src/components/dashboard/TemplateGrid";
 import { OfficialTemplateGallery } from "@/src/components/dashboard/OfficialTemplateGallery";
 import { CreateTemplateDialog } from "@/src/components/dashboard/CreateTemplateDialog";
+import { OnboardingFlow } from "@/src/components/onboarding/OnboardingFlow";
+import { useOnboardingState } from "@/src/hooks/use-onboarding-state";
 import { useI18n } from "@/src/lib/i18n";
 
 export default function DashboardPage() {
   const { messages } = useI18n();
   const [openCreate, setOpenCreate] = useState(false);
+  const { showFlow, currentStep, hydrated, goToStep, finish, skip } =
+    useOnboardingState();
   return (
     <ProtectedRoute>
       <AppShell>
@@ -54,6 +58,14 @@ export default function DashboardPage() {
           open={openCreate}
           onClose={() => setOpenCreate(false)}
         />
+        {hydrated && showFlow && (
+          <OnboardingFlow
+            currentStep={currentStep}
+            onStep={goToStep}
+            onFinish={finish}
+            onSkip={skip}
+          />
+        )}
       </AppShell>
     </ProtectedRoute>
   );
