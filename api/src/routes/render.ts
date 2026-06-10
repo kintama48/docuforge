@@ -14,6 +14,7 @@ import {
   renderPreviewSchema,
   renderImageSchema,
   renderImagePreviewSchema,
+  renderValidateSchema,
 } from '../lib/validation';
 import { compileLowCodeSpec } from '../lib/low-code';
 import { renderPdf } from '../services/engine';
@@ -744,6 +745,109 @@ render.post(
         errorMessage: err instanceof Error ? err.message : 'Unknown error',
       });
       throw err;
+    }
+  }
+);
+
+const VALIDATE_TRACE_MAX_BYTES = 2048;
+
+function truncateTrace(message: string): string {
+  if (Buffer.byteLength(message, 'utf8') <= VALIDATE_TRACE_MAX_BYTES) {
+    return message;
+  }
+  // Slice by bytes, then decode to avoid splitting a multi-byte character
+  return Buffer.from(message, 'utf8').subarray(0, VALIDATE_TRACE_MAX_BYTES).toString('utf8') + '\n[trace truncated]';
+}
+
+// POST /v1/render/validate - Token-efficient compile check for AI agent feedback loops
+// Returns { status: 0 } on success (no PDF payload).
+// Returns { status: 1, trace, image_url } on failure (trace capped at 2KB; image_url is null for now).
+// Always 200 — callers inspect the status field rather than relying on HTTP error codes.
+render.post(
+  '/validate',
+  requireConsumerRenderPath,
+  apiKeyAuth,
+  renderRateLimit,
+  noCache,
+  zValidator('json', renderValidateSchema),
+  async (c) => {
+    const { template_id, typst_string, data } = c.req.valid('json');
+    const { userId } = c.get('auth');
+    const db = getDb();
+
+    let enginePayload: EnginePayload;
+
+    if (template_id) {
+      // Managed-template path — resolve from DB (same as /v1/render)
+      const [template] = await db
+        .select()
+        .from(schema.templates)
+        .where(eq(schema.templates.id, template_id));
+
+      if (!template) {
+        throw new NotFoundError('Template not found');
+      }
+      if (template.userId !== null && template.userId !== userId) {
+        throw new NotFoundError('Template not found');
+      }
+      if (!template.liveVersionId) {
+        throw new NotFoundError('Template has no published version');
+      }
+
+      const [version] = await db
+        .select()
+        .from(schema.templateVersions)
+        .where(eq(schema.templateVersions.id, template.liveVersionId));
+
+      if (!version) {
+        throw new NotFoundError('Template version not found');
+      }
+
+      const assets = await resolveUserAssets(userId);
+
+      enginePayload = {
+        template: {
+          main: 'main.typ',
+          files: {
+            'main.typ': version.source,
+            ...(version.files || {}),
+          },
+        },
+        data: data || {},
+        assets,
+        options: {
+          timeout_ms: env.ENGINE_TIMEOUT_MS,
+          cache: { cacheable: false },
+        },
+      };
+    } else {
+      // BYOT path — typst_string provided directly
+      const assets = await resolveUserAssets(userId);
+
+      enginePayload = {
+        template: {
+          main: 'main.typ',
+          files: {
+            'main.typ': typst_string as string,
+          },
+        },
+        data: data || {},
+        assets,
+        options: {
+          timeout_ms: env.ENGINE_TIMEOUT_MS,
+          cache: { cacheable: false },
+        },
+      };
+    }
+
+    try {
+      await renderPdf(enginePayload);
+      return c.json({ status: 0 as const });
+    } catch (err) {
+      const rawMessage = err instanceof Error ? err.message : 'Unknown compilation error';
+      const trace = truncateTrace(rawMessage);
+      // image_url: null — image-on-failure deferred to follow-up (see PR description)
+      return c.json({ status: 1 as const, trace, image_url: null as string | null });
     }
   }
 );
