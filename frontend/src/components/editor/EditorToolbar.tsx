@@ -134,6 +134,21 @@ export function EditorToolbar({
           </>
         )}
         <button
+          onClick={onToggleAutoRender}
+          title={
+            autoRender
+              ? "Auto-preview ON — click to disable"
+              : "Auto-preview OFF — click to enable"
+          }
+          className={`rounded-md border px-3 py-2 text-xs transition ${
+            autoRender
+              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)] hover:opacity-80"
+              : "border-[var(--line)] text-[var(--muted)] hover:border-[var(--line-hover)] hover:text-[var(--ink)]"
+          }`}
+        >
+          Auto-preview: {autoRender ? "ON" : "OFF"}
+        </button>
+        <button
           onClick={() => {
             if (!pdfBlob) return;
             const url = URL.createObjectURL(pdfBlob);
