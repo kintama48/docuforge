@@ -1,0 +1,73 @@
+name: deploy-prod
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci-reusable.yml
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push api
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docuforge-api:latest
+            ghcr.io/${{ github.repository_owner }}/docuforge-api:prod-${{ steps.sha.outputs.short }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docuforge-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/docuforge-frontend:prod-${{ steps.sha.outputs.short }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api.docuforge.app
+            NEXT_PUBLIC_APP_NAME=DocuForge
+            NEXT_PUBLIC_APP_URL=https://www.docuforge.app
+            NEXT_PUBLIC_MARKETING_URL=https://www.docuforge.app
+            NEXT_PUBLIC_CONSOLE_URL=https://www.docuforge.app
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to prod
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST_PROD }}
+          username: ${{ secrets.SSH_USER_PROD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+          script: |
+            cd ${{ secrets.SSH_DEPLOY_PATH_PROD }}
+            bash deploy/deploy.sh prod ${{ steps.sha.outputs.short }}
