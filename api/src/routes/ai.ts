@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 
 import { jwtAuth } from '../middleware/auth';
 import { noCache } from '../middleware/cache';
+import { aiRateLimit } from '../middleware/rate-limit';
 import { zValidator, aiEditSchema, aiGenerateSchema } from '../lib/validation';
 import { aiEditCode, aiGenerateFromImage } from '../services/ai';
 import { env } from '../config/env';
@@ -20,7 +21,7 @@ ai.use('*', async (c, next) => {
 });
 
 // POST /v1/ai/edit - AI-powered code editing
-ai.post('/edit', jwtAuth, zValidator('json', aiEditSchema), async (c) => {
+ai.post('/edit', jwtAuth, aiRateLimit, zValidator('json', aiEditSchema), async (c) => {
   const data = c.req.valid('json');
 
   const result = await aiEditCode({
@@ -36,7 +37,7 @@ ai.post('/edit', jwtAuth, zValidator('json', aiEditSchema), async (c) => {
 });
 
 // POST /v1/ai/generate - AI-powered template generation from image
-ai.post('/generate', jwtAuth, zValidator('json', aiGenerateSchema), async (c) => {
+ai.post('/generate', jwtAuth, aiRateLimit, zValidator('json', aiGenerateSchema), async (c) => {
   const data = c.req.valid('json');
 
   const result = await aiGenerateFromImage({
