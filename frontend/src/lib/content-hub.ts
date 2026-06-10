@@ -408,13 +408,13 @@ const compareSpecs: CompareSpec[] = [
   {
     slug: "puppeteer",
     target: "Puppeteer",
-    subtitle: "Browser rendering flexibility vs deterministic API throughput and maintenance.",
+    subtitle: "Browser rendering flexibility vs API-first throughput and maintenance.",
     priority: true,
   },
   {
     slug: "wkhtmltopdf",
     target: "wkhtmltopdf",
-    subtitle: "Legacy HTML conversion compatibility vs deterministic template control.",
+    subtitle: "Legacy HTML conversion compatibility vs reliable template control.",
   },
   {
     slug: "latex",
@@ -439,7 +439,7 @@ const compareSpecs: CompareSpec[] = [
   {
     slug: "carbone-io",
     target: "Carbone.io",
-    subtitle: "Data-driven document generation vs deterministic implementation simplicity.",
+    subtitle: "Data-driven document generation vs straightforward implementation simplicity.",
   },
 ];
 
@@ -513,9 +513,9 @@ const copyByLocale: Record<Locale, ContentHubCopy> = {
       },
       compare: {
         label: "Comparisons",
-        title: "Deterministic document pipeline comparisons",
+        title: "Head-to-head: DocuForge vs the alternatives",
         description:
-          "Implementation-level guidance to help engineering teams evaluate deterministic and browser-driven rendering stacks.",
+          "Implementation-level guidance to help engineering teams evaluate API-first and browser-driven rendering stacks.",
       },
       industries: {
         label: "Industry guides",
@@ -531,7 +531,7 @@ const copyByLocale: Record<Locale, ContentHubCopy> = {
       industry: (industry) => `PDF Generation for ${industry}`,
     },
     cta: {
-      title: "Ship faster with deterministic document infrastructure",
+      title: "Stop hand-crafting PDF pipelines — use DocuForge",
       body: "Use the DocuForge playground to validate templates live, then run the same payloads in production.",
       primary: "Try DocuForge free",
       secondary: "Open playground",
@@ -1007,7 +1007,7 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
   const title = normalizeTitle(locale, spec);
   const metaTitle = `${title} | DocuForge`;
   const metaDescription = `${spec.excerpt} Learn implementation patterns, code examples, and rollout guidance for ${spec.keyword}.`;
-  const intro = `If you are evaluating ${spec.keyword}, the core challenge is rarely generating one PDF. The real problem is shipping and operating the workflow when traffic increases, templates evolve, and incidents need fast diagnosis. This guide focuses on production behavior: predictable templates, queue-safe rendering, and secure API usage with clear failure modes.`;
+  const intro = `When your PDF pipeline cracks at 2 AM and customers are waiting on invoices, debugging headless Chromium is the last thing you want to do. This guide cuts to what actually matters for ${spec.keyword} in production: templates that render the same way every time, render jobs that survive queue spikes, and an API surface with clear failure modes so on-call is boring.`;
 
   const profileByCategory: Record<
     BlogSpec["category"],
@@ -1029,7 +1029,7 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
         "Use preview rendering for iteration and production rendering for published versions only. That split avoids accidental draft leakage.",
       ],
       takeaways: [
-        "Deterministic Typst templates are easier to reason about than browser-rendered print CSS.",
+        "Typst templates render the same way every time — no surprises from print CSS quirks.",
         "Versioned publish flow keeps document behavior auditable.",
         "Typed responses and stable error payloads reduce debugging time.",
         "Queue-friendly render routes keep throughput predictable under load.",
@@ -1254,7 +1254,7 @@ function buildTemplateDocument(spec: TemplateSpec, locale: Locale): ContentDocum
   const title = copy.titles.howToCreate(spec.topic);
   const metaTitle = `${title} | DocuForge`;
   const metaDescription = `Learn how to create and generate ${spec.topic.toLowerCase()} PDFs programmatically using Typst templates and the DocuForge API.`;
-  const intro = `${spec.useCase} This tutorial shows a full template workflow you can ship today: preview the target output, copy the Typst template, pass dynamic data via API, and productionize with repeatable request payloads. The structure is intentionally practical and optimized for developer onboarding, search visibility, and AI-assisted retrieval.`;
+  const intro = `${spec.useCase} This tutorial shows a full template workflow you can ship today: preview the target output, copy the Typst template, pass dynamic data via API, and productionize with repeatable request payloads.`;
 
   const slugSafe = spec.slug.replaceAll("-", "_");
   const blocks: ContentBlock[] = [
