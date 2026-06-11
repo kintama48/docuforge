@@ -5,3 +5,7 @@ dist/
 nginx/ssl/*
 !nginx/ssl/.gitkeep
 config.bat
+
+# Raw provider credential bundles — extract values into .env files instead, never commit these.
+client_secret_*.json
+*.googleusercontent.com.json

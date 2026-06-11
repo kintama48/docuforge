@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { LegalLayout } from "../components/legal-layout";
 import { normalizeLocale } from "@/src/lib/i18n-config";
 
-const lastUpdated = "February 14, 2026";
+const lastUpdated = "June 12, 2026";
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
@@ -51,6 +51,36 @@ export default function PrivacyPage() {
           We collect information you provide directly, such as your name, email
           address, company, and billing details. We also collect usage data like
           API requests, template activity, and performance metrics.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-display text-2xl text-[var(--ink)]">
+          1a. Third-party sign-in (Google)
+        </h2>
+        <p>
+          If you sign in to DocuForge with Google, Google shares your name,
+          email address, profile picture URL, and Google account ID with us. We
+          use this information solely to identify your DocuForge account,
+          populate your profile, and personalise your experience.
+        </p>
+        <p>
+          We do not sell or share this data with third parties. We do not use it
+          for advertising, profiling, or any purpose unrelated to operating
+          DocuForge. If you revoke DocuForge&apos;s access via your Google account
+          settings, we retain your DocuForge profile but stop accepting new
+          Google sign-ins until you re-authorise.
+        </p>
+        <p>
+          You can request deletion of your account and associated data at any
+          time by contacting{" "}
+          <a
+            href="mailto:support@docuforge.app"
+            className="text-[var(--accent)] underline underline-offset-2"
+          >
+            support@docuforge.app
+          </a>{" "}
+          — see the &quot;Your rights&quot; section below.
         </p>
       </section>
 
