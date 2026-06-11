@@ -1,0 +1,76 @@
+networks:
+  stag-net:
+    name: stag-net
+  engine-net:
+    external: true
+
+services:
+  api:
+    container_name: stag-api
+    build: ./api
+    networks:
+      - stag-net
+      - engine-net
+    env_file:
+      - ./api/.env.stag
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      ENGINE_URL: http://engine:3001
+      REDIS_URL: redis://stag-redis:6379
+    volumes:
+      - stag-api-data:/data
+    depends_on:
+      stag-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 384m
+    cpus: 0.5
+
+  frontend:
+    container_name: stag-frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: https://api.stag.docuforge.app
+        NEXT_PUBLIC_APP_NAME: DocuForge Staging
+        NEXT_PUBLIC_APP_URL: https://console.stag.docuforge.app
+        NEXT_PUBLIC_MARKETING_URL: https://stag.docuforge.app
+        NEXT_PUBLIC_CONSOLE_URL: https://console.stag.docuforge.app
+        NEXT_PUBLIC_BILLING_ENABLED: "false"
+        NEXT_PUBLIC_BILLING_PROVIDER: none
+    expose:
+      - "5173"
+    networks:
+      - stag-net
+    env_file:
+      - ./frontend/.env.stag
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+
+  stag-redis:
+    container_name: stag-redis
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    expose:
+      - "6379"
+    networks:
+      - stag-net
+    volumes:
+      - stag-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.25
+
+volumes:
+  stag-api-data:
+  stag-redis-data:
