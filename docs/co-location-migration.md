@@ -82,7 +82,7 @@ Verify it's healthy:
 
 ```bash
 docker ps | grep engine
-docker exec engine wget -qO- http://localhost:3001/health
+docker exec engine curl -f http://localhost:3001/health
 ```
 
 ### Step 3 — Re-up prod (now uses external engine-net)

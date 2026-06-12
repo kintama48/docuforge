@@ -1,0 +1,210 @@
+FOLLOWING ARE THE CERTBOTS' RESULTS ON MY MAC NOT ON DROPLET.
+
+
+/Users/abdullah/.zshrc:source:11: no such file or directory: /Users/abdullah/.openclaw/completions/openclaw.zsh
+abdullah@MAbaig innovative-consultants % sudo certbot certonly --manual --preferred-challenges dns \
+  -d "*.stag.docuforge.app" \
+  -d "stag.docuforge.app"
+Password:
+Sorry, try again.
+Password:
+sudo: certbot: command not found
+abdullah@MAbaig innovative-consultants % 
+abdullah@MAbaig innovative-consultants % brew install --cask certbot
+✔︎ JSON API packages.arm64_tahoe.jws.json             Downloaded   15.2MB/ 15.2MB
+Warning: Cask 'certbot' is unavailable: No Cask with this name exists.
+==> Searching for similarly named casks...
+==> Casks
+cernbox
+
+To install cernbox, run:
+  brew install --cask cernbox
+abdullah@MAbaig innovative-consultants % brew install certbot
+Warning: The following taps are not trusted:
+  antoniorodr/memo
+  hashicorp/tap
+  openclaw/tap
+  openhue/cli
+  steipete/tap
+  yakitrak/yakitrak
+
+Homebrew is currently ignoring formulae, casks and commands from these taps because tap trust is required.
+Trust specific formulae, casks or commands with:
+  brew trust --formula <user>/<tap>/<formula>
+  brew trust --cask <user>/<tap>/<cask>
+  brew trust --command <user>/<tap>/<command>
+or trust installed formulae from these taps with:
+  brew trust --formula hashicorp/tap/terraform
+  brew trust --formula steipete/tap/camsnap steipete/tap/gifgrep steipete/tap/imsg steipete/tap/ordercli steipete/tap/peekaboo steipete/tap/remindctl steipete/tap/sag steipete/tap/songsee steipete/tap/summarize
+  brew trust --formula openclaw/tap/gogcli openclaw/tap/goplaces openclaw/tap/wacli
+  brew trust --formula antoniorodr/memo/memo
+  brew trust --formula yakitrak/yakitrak/obsidian-cli
+  brew trust --formula openhue/cli/openhue-cli
+You can trust all formulae, casks and commands from these taps with:
+  brew trust antoniorodr/memo hashicorp/tap openclaw/tap openhue/cli steipete/tap yakitrak/yakitrak
+Prefer trusting only the specific formulae, casks or commands you need.
+Untap them with:
+  brew untap antoniorodr/memo hashicorp/tap openclaw/tap openhue/cli steipete/tap yakitrak/yakitrak
+To disable trust checks:
+  export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
+This is not recommended and will be removed in a later release.
+==> Would install 1 formula:
+certbot
+==> Downloading https://ghcr.io/v2/homebrew/core/certbot/manifests/5.6.0_1
+######################################################################### 100.0%
+==> Would install 10 dependencies for certbot:
+augeas
+ca-certificates
+certifi
+pycparser
+cffi
+openssl@3
+cryptography
+pydantic
+sqlite
+python@3.14
+==> Do you want to proceed with the installation? [y/n]
+==> Fetching downloads for: certbot
+
+✔︎ Bottle Manifest augeas (1.14.1_1)                  Downloaded    9.9KB/  9.9KB
+✔︎ Bottle Manifest ca-certificates (2026-05-14)       Downloaded    1.7KB/  1.7KB
+✔︎ Bottle Manifest certifi (2026.5.20)                Downloaded    1.9KB/  1.9KB
+✔︎ Bottle Manifest pycparser (3.0)                    Downloaded    2.0KB/  2.0KB
+✔︎ Bottle Manifest cffi (2.0.0_1)                     Downloaded   10.5KB/ 10.5KB
+✔︎ Bottle Manifest openssl@3 (3.6.2)                  Downloaded   12.0KB/ 12.0KB
+✔︎ Bottle Manifest pydantic (2.13.4)                  Downloaded    7.1KB/  7.1KB
+✔︎ Bottle Manifest sqlite (3.53.2)                    Downloaded   11.8KB/ 11.8KB
+✔︎ Bottle Manifest cryptography (48.0.1)              Downloaded   11.8KB/ 11.8KB
+✔︎ Bottle Manifest python@3.14 (3.14.5)               Downloaded   31.1KB/ 31.1KB
+✔︎ Bottle certifi (2026.5.20)                         Downloaded    5.7KB/  5.7KB
+✔︎ Bottle ca-certificates (2026-05-14)                Downloaded  112.1KB/112.1KB
+✔︎ Bottle pycparser (3.0)                             Downloaded  103.8KB/103.8KB
+✔︎ Bottle cffi (2.0.0_1)                              Downloaded  522.8KB/522.8KB
+✔︎ Bottle augeas (1.14.1_1)                           Downloaded    1.2MB/  1.2MB
+✔︎ Bottle sqlite (3.53.2)                             Downloaded    2.4MB/  2.4MB
+✔︎ Bottle cryptography (48.0.1)                       Downloaded    3.9MB/  3.9MB
+✔︎ Bottle pydantic (2.13.4)                           Downloaded    4.7MB/  4.7MB
+✔︎ Bottle certbot (5.6.0_1)                           Downloaded    3.8MB/  3.8MB
+✔︎ Bottle openssl@3 (3.6.2)                           Downloaded   10.9MB/ 10.9MB
+✔︎ Bottle python@3.14 (3.14.5)                        Downloaded   19.2MB/ 19.2MB
+==> Installing dependencies for certbot: augeas, ca-certificates, certifi, pycparser, cffi, openssl@3, cryptography, pydantic, sqlite and python@3.14
+==> Installing certbot dependency: augeas
+==> Pouring augeas--1.14.1_1.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/augeas/1.14.1_1: 493 files, 4.2MB
+==> Installing certbot dependency: ca-certificates
+==> Pouring ca-certificates--2026-05-14.all.bottle.tar.gz
+
+==> Regenerating CA certificate bundle from keychain, this may take a while...
+🍺  /opt/homebrew/Cellar/ca-certificates/2026-05-14: 4 files, 199.2KB
+==> Installing certbot dependency: certifi
+==> Pouring certifi--2026.5.20.all.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/certifi/2026.5.20: 38 files, 17.9KB
+==> Installing certbot dependency: pycparser
+==> Pouring pycparser--3.0.all.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/pycparser/3.0: 53 files, 464.8KB
+==> Installing certbot dependency: cffi
+==> Pouring cffi--2.0.0_1.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/cffi/2.0.0_1: 99 files, 1.8MB
+==> Installing certbot dependency: openssl@3
+==> Pouring openssl@3--3.6.2.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/openssl@3/3.6.2: 7,627 files, 37.6MB
+==> Installing certbot dependency: cryptography
+==> Pouring cryptography--48.0.1.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/cryptography/48.0.1: 242 files, 12.5MB
+==> Installing certbot dependency: pydantic
+==> Pouring pydantic--2.13.4.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/pydantic/2.13.4: 298 files, 13.8MB
+==> Installing certbot dependency: sqlite
+==> Pouring sqlite--3.53.2.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/sqlite/3.53.2: 13 files, 5.3MB
+==> Installing certbot dependency: python@3.14
+==> Pouring python@3.14--3.14.5.arm64_tahoe.bottle.1.tar.gz
+🍺  /opt/homebrew/Cellar/python@3.14/3.14.5: 3,745 files, 75.6MB
+==> Installing certbot
+==> Pouring certbot--5.6.0_1.arm64_tahoe.bottle.tar.gz
+🍺  /opt/homebrew/Cellar/certbot/5.6.0_1: 6,129 files, 36.9MB
+==> Running `brew cleanup certbot`...
+Disable this behaviour by setting `HOMEBREW_NO_INSTALL_CLEANUP=1`.
+Hide these hints with `HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+abdullah@MAbaig innovative-consultants % sudo certbot certonly --manual --preferred-challenges dns \
+  -d "*.stag.docuforge.app" \
+  -d "stag.docuforge.app"
+abdullah@MAbaig innovative-consultants % cd ../docuforge 
+abdullah@MAbaig docuforge % 
+abdullah@MAbaig docuforge % sudo certbot certonly --manual --preferred-challenges dns \
+  -d "*.stag.docuforge.app" \
+  -d "stag.docuforge.app"
+Password:
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Enter email address or hit Enter to skip.
+ (Enter 'c' to cancel): abdullah.baig416@gmail.com
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Please read the Terms of Service at:
+https://letsencrypt.org/documents/LE-SA-v1.7-June-04-2026.pdf
+You must agree in order to register with the ACME server. Do you agree?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: Y
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Would you be willing, once your first certificate is successfully issued, to
+share your email address with the Electronic Frontier Foundation, a founding
+partner of the Let's Encrypt project and the non-profit organization that
+develops Certbot? We'd like to send you email about our work encrypting the web,
+EFF news, campaigns, and ways to support digital freedom.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: Y
+Account registered.
+Requesting a certificate for *.stag.docuforge.app and stag.docuforge.app
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Please deploy a DNS TXT record under the name:
+
+_acme-challenge.stag.docuforge.app.
+
+with the following value:
+
+4lg1gf5P9P7pxfScGBP2gIuoA1J-p38ua__yw4s72Iw
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Press Enter to Continue
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Please deploy a DNS TXT record under the name:
+
+_acme-challenge.stag.docuforge.app.
+
+with the following value:
+
+96SX4-UD-HubH6MZjHoGoJ_h6P7DsFurmrvrEgE5JI8
+
+(This must be set up in addition to the previous challenges; do not remove,
+replace, or undo the previous challenge tasks yet. Note that you might be
+asked to create multiple distinct TXT records with the same name. This is
+permitted by DNS standards.)
+
+Before continuing, verify the TXT record has been deployed. Depending on the DNS
+provider, this may take some time, from a few seconds to multiple minutes. You can
+check if it has finished deploying with aid of online tools, such as the Google
+Admin Toolbox: https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.stag.docuforge.app.
+Look for one or more bolded line(s) below the line ';ANSWER'. It should show the
+value(s) you've just added.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Press Enter to Continue
+
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/stag.docuforge.app/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/stag.docuforge.app/privkey.pem
+This certificate expires on 2026-09-10.
+These files will be updated when the certificate renews.
+
+NEXT STEPS:
+- This certificate will not be renewed automatically. Autorenewal of --manual certificates requires the use of an authentication hook script (--manual-auth-hook) but one was not provided. To renew this certificate, repeat this same certbot command before the certificate's expiry date.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+If you like Certbot, please consider supporting our work by:
+ * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+ * Donating to EFF:                    https://eff.org/donate-le
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+abdullah@MAbaig docuforge % 
