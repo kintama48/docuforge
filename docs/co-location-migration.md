@@ -86,28 +86,34 @@ After cert issuance, copy the files to the repo path on the droplet:
 
 ```bash
 sudo cp /etc/letsencrypt/live/stag.docuforge.app/fullchain.pem \
-        /root/docuforge/nginx/ssl/stag/fullchain.pem
+        /root/docuforge-prod/nginx/ssl/stag/fullchain.pem
 sudo cp /etc/letsencrypt/live/stag.docuforge.app/privkey.pem \
-        /root/docuforge/nginx/ssl/stag/privkey.pem
-sudo chmod 644 /root/docuforge/nginx/ssl/stag/*.pem
+        /root/docuforge-prod/nginx/ssl/stag/privkey.pem
+sudo chmod 644 /root/docuforge-prod/nginx/ssl/stag/*.pem
 ```
 
 ---
 
 ## Droplet rollout sequence
 
-All commands run as root on the droplet in `/root/docuforge`.
+All commands run as root on the droplet. Prod commands run from `/root/docuforge-prod`; stag commands run from `/root/docuforge-stag`.
 
-### Step 1 — Pull latest dev
+### Step 1 — Pull both branches
 
 ```bash
-cd /root/docuforge
+cd /root/docuforge-prod
+git checkout main
+git pull origin main
+
+cd /root/docuforge-stag
+git checkout dev
 git pull origin dev
 ```
 
-### Step 2 — Bring up the shared engine
+### Step 2 — Bring up the shared engine from prod/main
 
 ```bash
+cd /root/docuforge-prod
 make docker-engine-up
 ```
 
@@ -118,10 +124,25 @@ docker ps | grep engine
 docker exec engine curl -f http://localhost:3001/health
 ```
 
-### Step 3 — Re-up prod (now uses external engine-net)
+### Step 3 — Bring up stag
+
+Bring up stag before prod so `stag-net` exists for shared nginx to join.
 
 ```bash
-make docker-prod-down
+cd /root/docuforge-stag
+make docker-stag-up-bg
+```
+
+Verify containers started:
+
+```bash
+docker ps | grep stag
+```
+
+### Step 4 — Bring up prod + shared nginx
+
+```bash
+cd /root/docuforge-prod
 make docker-prod-up-bg
 ```
 
@@ -132,29 +153,18 @@ curl -sf https://api.docuforge.app/health && echo "prod api ok"
 curl -sf https://www.docuforge.app/ -o /dev/null && echo "prod frontend ok"
 ```
 
-### Step 4 — Bring up stag
-
-```bash
-make docker-stag-up-bg
-```
-
-Verify containers started:
-
-```bash
-docker ps | grep stag
-```
-
 ### Step 5 — Issue wildcard cert (see Certbot section above)
 
-Complete certbot DNS-01 challenge and drop certs at `nginx/ssl/stag/`.
+Complete certbot DNS-01 challenge and drop certs at `/root/docuforge-prod/nginx/ssl/stag/`.
 
 ### Step 6 — Uncomment stag nginx server blocks + reload
 
-Edit `nginx/nginx.conf` and uncomment the four stag server blocks (HTTP redirect + three HTTPS blocks for `stag.`, `www.stag.`, `console.stag.`, `api.stag.`).
+Edit `/root/docuforge-prod/nginx/nginx.conf` and uncomment the stag upstreams plus the four stag server blocks (HTTP redirect + three HTTPS blocks for `stag.`, `www.stag.`, `console.stag.`, `api.stag.`).
 
 Reload nginx without downtime:
 
 ```bash
+cd /root/docuforge-prod
 make docker-prod-nginx-reload
 ```
 
