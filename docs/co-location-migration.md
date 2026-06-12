@@ -4,18 +4,41 @@ Single droplet hosting prod + stag side-by-side with a shared stateless engine.
 
 ---
 
+## Branch and environment model
+
+Prod and stag must be separated on two axes:
+
+| Environment | Branch | API env | Frontend build env | Compose file |
+|-------------|--------|---------|--------------------|--------------|
+| prod        | `main` | `api/.env.prod` | `frontend/.env.prod` | `docker-compose.prod.yml` |
+| stag        | `dev`  | `api/.env.stag` | `frontend/.env.stag` | `docker-compose.stag.yml` |
+
+A single checkout cannot be both `main` and `dev` at the same time. For steady-state deploys, prefer separate worktrees or clones on the droplet, for example:
+
+```text
+/root/docuforge-prod  -> main
+/root/docuforge-stag  -> dev
+```
+
+If both environments are built from one `/root/docuforge` checkout, whichever branch is currently checked out is the code that will be baked into both prod and stag images during `--build`.
+
+The shared engine has the same limitation: one engine container can only run one code version. Keep it deployed from `main` unless staging specifically needs to validate engine changes; in that case, run a separate staging engine instead of sharing it with prod.
+
+---
+
 ## Prerequisites
 
 Before running the rollout sequence on the droplet:
 
 1. **KAN-15** — Stag Turso DB must exist. Confirm `api/.env.stag` has a valid `DATABASE_URL` pointing to the stag database (not prod).
 2. **KAN-16** — Stag R2 bucket must exist. Confirm `api/.env.stag` has `R2_BUCKET` (and `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) pointing to the stag bucket (not prod).
-3. **DNS** — The following records must resolve to the droplet IP (already added):
+3. **Environment files** — Prod uses `api/.env.prod` + `frontend/.env.prod`; stag uses `api/.env.stag` + `frontend/.env.stag`.
+4. **DNS** — The following records must resolve to the droplet IP (already added):
    - `stag.docuforge.app`
    - `www.stag.docuforge.app`
    - `console.stag.docuforge.app`
    - `api.stag.docuforge.app`
-4. **Wildcard cert** — Must be issued before uncommenting stag nginx server blocks (see step 6 below).
+5. **Wildcard cert** — Must be issued before uncommenting stag nginx server blocks (see step 6 below).
 
 ---
 
@@ -75,7 +98,7 @@ git pull origin dev
 ### Step 2 — Bring up the shared engine
 
 ```bash
-docker compose -f docker-compose.engine.yml up -d --build
+make docker-engine-up
 ```
 
 Verify it's healthy:
@@ -88,8 +111,8 @@ docker exec engine curl -f http://localhost:3001/health
 ### Step 3 — Re-up prod (now uses external engine-net)
 
 ```bash
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d
+make docker-prod-down
+make docker-prod-up-bg
 ```
 
 Smoke test prod:
@@ -102,7 +125,7 @@ curl -sf https://www.docuforge.app/ -o /dev/null && echo "prod frontend ok"
 ### Step 4 — Bring up stag
 
 ```bash
-docker compose -f docker-compose.stag.yml up -d --build
+make docker-stag-up-bg
 ```
 
 Verify containers started:
@@ -122,8 +145,7 @@ Edit `nginx/nginx.conf` and uncomment the four stag server blocks (HTTP redirect
 Reload nginx without downtime:
 
 ```bash
-docker exec docuforge-nginx-1 nginx -t && \
-docker exec docuforge-nginx-1 nginx -s reload
+make docker-prod-nginx-reload
 ```
 
 ### Step 7 — Smoke test stag end-to-end
@@ -145,7 +167,7 @@ Confirm stag API is hitting the stag R2 bucket (check `R2_BUCKET` in `api/.env.s
 | Step 2 (engine up) | `docker compose -f docker-compose.engine.yml down` |
 | Step 3 (prod re-up) | `git checkout HEAD~1 -- docker-compose.prod.yml && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d` |
 | Step 4 (stag up) | `docker compose -f docker-compose.stag.yml down` |
-| Step 6 (nginx reload) | Re-comment stag blocks in nginx.conf, then `docker exec docuforge-nginx-1 nginx -s reload` |
+| Step 6 (nginx reload) | Re-comment stag blocks in nginx.conf, then `docker compose -f docker-compose.prod.yml exec nginx nginx -s reload` |
 | Full rollback to pre-migration prod | Restore `docker-compose.prod.yml` from the commit before this one; rebuild with original engine block inline |
 
 ---
@@ -153,5 +175,5 @@ Confirm stag API is hitting the stag R2 bucket (check `R2_BUCKET` in `api/.env.s
 ## Notes
 
 - The engine is verified stateless: no volumes, no DB connection, in-memory template cache keyed on SHA-256 of template source. A single engine instance safely serves both prod and stag.
-- Nginx joins both `engine-net` and `stag-net` so it can route to both stag and prod services via a single container.
+- Nginx joins `prod-net` and `stag-net` so it can route to both prod and stag services via a single container. The prod API also joins `engine-net` to call the shared engine.
 - Real-estate project and mongod were removed in the same pass as this migration. Backup at `~/Backups/realestate-mongodump-20260611T200204Z.archive.gz` on local machine.

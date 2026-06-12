@@ -1,4 +1,4 @@
-.PHONY: help env install dev dev-redis build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-destroy docker-build docker-logs docker-prod-up docker-prod-up-bg docker-prod-down docker-prod-build docker-prod-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
+.PHONY: help env install dev dev-redis build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-destroy docker-build docker-logs docker-engine-up docker-engine-down docker-engine-logs docker-prod-up docker-prod-up-bg docker-prod-down docker-prod-build docker-prod-logs docker-prod-nginx-reload docker-stag-up docker-stag-up-bg docker-stag-down docker-stag-build docker-stag-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
 
 help:
 	@echo "DocuForge commands:"
@@ -38,11 +38,20 @@ help:
 	@echo "  make docker-destroy - Stop dev stack and delete volumes"
 	@echo "  make docker-build   - Build dev docker images"
 	@echo "  make docker-logs    - Tail dev docker logs"
-	@echo "  make docker-prod-up - Build and run prod stack (foreground, requires .env)"
-	@echo "  make docker-prod-up-bg - Build and run prod stack (detached, requires .env)"
+	@echo "  make docker-engine-up - Build and run shared engine stack"
+	@echo "  make docker-engine-down - Stop shared engine stack"
+	@echo "  make docker-engine-logs - Tail shared engine logs"
+	@echo "  make docker-prod-up - Build and run prod stack (foreground)"
+	@echo "  make docker-prod-up-bg - Build and run prod stack (detached)"
 	@echo "  make docker-prod-down - Stop prod stack and keep volumes"
-	@echo "  make docker-prod-build - Build prod docker images (requires .env)"
+	@echo "  make docker-prod-build - Build prod docker images"
 	@echo "  make docker-prod-logs - Tail prod docker logs"
+	@echo "  make docker-prod-nginx-reload - Test and reload prod nginx"
+	@echo "  make docker-stag-up - Build and run stag stack (foreground)"
+	@echo "  make docker-stag-up-bg - Build and run stag stack (detached)"
+	@echo "  make docker-stag-down - Stop stag stack and keep volumes"
+	@echo "  make docker-stag-build - Build stag docker images"
+	@echo "  make docker-stag-logs - Tail stag docker logs"
 
 env:
 	@test -f api/.env || cp api/.env.example api/.env
@@ -125,20 +134,48 @@ docker-build:
 docker-logs:
 	docker compose logs -f
 
+docker-engine-up:
+	docker compose -f docker-compose.engine.yml up -d --build
+
+docker-engine-down:
+	docker compose -f docker-compose.engine.yml down
+
+docker-engine-logs:
+	docker compose -f docker-compose.engine.yml logs -f
+
 docker-prod-up:
-	docker compose --env-file .env -f docker-compose.prod.yml up --build
+	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml up --build
 
 docker-prod-up-bg:
-	docker compose --env-file .env -f docker-compose.prod.yml up -d --build
+	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml up -d --build
 
 docker-prod-down:
-	docker compose --env-file .env -f docker-compose.prod.yml down
+	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml down
 
 docker-prod-build:
-	docker compose --env-file .env -f docker-compose.prod.yml build
+	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml build
 
 docker-prod-logs:
-	docker compose --env-file .env -f docker-compose.prod.yml logs -f
+	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml logs -f
+
+docker-prod-nginx-reload:
+	docker compose -f docker-compose.prod.yml exec nginx nginx -t
+	docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+
+docker-stag-up:
+	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml up --build
+
+docker-stag-up-bg:
+	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml up -d --build
+
+docker-stag-down:
+	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml down
+
+docker-stag-build:
+	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml build
+
+docker-stag-logs:
+	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml logs -f
 
 clean:
 	cd engine && cargo clean

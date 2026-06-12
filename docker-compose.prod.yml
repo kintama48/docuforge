@@ -1,4 +1,6 @@
 networks:
+  prod-net:
+    name: prod-net
   engine-net:
     external: true
   stag-net:
@@ -11,7 +13,7 @@ services:
       - "80:80"
       - "443:443"
     networks:
-      - engine-net
+      - prod-net
       - stag-net
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
@@ -46,7 +48,9 @@ services:
     expose:
       - "5173"
     env_file:
-      - ./frontend/.env
+      - ./frontend/.env.prod
+    networks:
+      - prod-net
     environment:
       NODE_ENV: production
     depends_on:
@@ -61,6 +65,7 @@ services:
     expose:
       - "3000"
     networks:
+      - prod-net
       - engine-net
     env_file:
       - ./api/.env.prod
@@ -83,6 +88,8 @@ services:
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     expose:
       - "6379"
+    networks:
+      - prod-net
     volumes:
       - redis-data:/data
     healthcheck:

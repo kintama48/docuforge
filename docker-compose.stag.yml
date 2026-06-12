@@ -32,13 +32,15 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_API_URL: https://api.stag.docuforge.app
-        NEXT_PUBLIC_APP_NAME: DocuForge Staging
-        NEXT_PUBLIC_APP_URL: https://console.stag.docuforge.app
-        NEXT_PUBLIC_MARKETING_URL: https://stag.docuforge.app
-        NEXT_PUBLIC_CONSOLE_URL: https://console.stag.docuforge.app
-        NEXT_PUBLIC_BILLING_ENABLED: "false"
-        NEXT_PUBLIC_BILLING_PROVIDER: none
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-DocuForge Staging}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL}
+        NEXT_PUBLIC_CONSOLE_URL: ${NEXT_PUBLIC_CONSOLE_URL}
+        NEXT_PUBLIC_BILLING_ENABLED: ${NEXT_PUBLIC_BILLING_ENABLED:-false}
+        NEXT_PUBLIC_BILLING_PROVIDER: ${NEXT_PUBLIC_BILLING_PROVIDER:-none}
+        NEXT_PUBLIC_BILLING_PORTAL_URL: ${NEXT_PUBLIC_BILLING_PORTAL_URL:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     expose:
       - "5173"
     networks:
