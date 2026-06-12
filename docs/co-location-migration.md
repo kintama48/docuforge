@@ -24,6 +24,16 @@ If both environments are built from one `/root/docuforge` checkout, whichever br
 
 The shared engine has the same limitation: one engine container can only run one code version. Keep it deployed from `main` unless staging specifically needs to validate engine changes; in that case, run a separate staging engine instead of sharing it with prod.
 
+Make targets pin Compose project names so stack operations are isolated:
+
+| Stack | Compose project |
+|-------|-----------------|
+| engine | `docuforge-engine` |
+| prod | `docuforge-prod` |
+| stag | `docuforge-stag` |
+
+Do not run bare `docker compose ... down` for prod/stag from a shared checkout; without `-p`, Compose uses the directory name and can remove containers from the other environment.
+
 ---
 
 ## Prerequisites
@@ -164,10 +174,10 @@ Confirm stag API is hitting the stag R2 bucket (check `R2_BUCKET` in `api/.env.s
 
 | Step | Rollback one-liner |
 |------|-------------------|
-| Step 2 (engine up) | `docker compose -f docker-compose.engine.yml down` |
-| Step 3 (prod re-up) | `git checkout HEAD~1 -- docker-compose.prod.yml && docker compose -f docker-compose.prod.yml down && docker compose -f docker-compose.prod.yml up -d` |
-| Step 4 (stag up) | `docker compose -f docker-compose.stag.yml down` |
-| Step 6 (nginx reload) | Re-comment stag blocks in nginx.conf, then `docker compose -f docker-compose.prod.yml exec nginx nginx -s reload` |
+| Step 2 (engine up) | `make docker-engine-down` |
+| Step 3 (prod re-up) | `git checkout HEAD~1 -- docker-compose.prod.yml && make docker-prod-down && make docker-prod-up-bg` |
+| Step 4 (stag up) | `make docker-stag-down` |
+| Step 6 (nginx reload) | Re-comment stag blocks in nginx.conf, then `make docker-prod-nginx-reload` |
 | Full rollback to pre-migration prod | Restore `docker-compose.prod.yml` from the commit before this one; rebuild with original engine block inline |
 
 ---

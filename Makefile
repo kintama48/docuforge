@@ -1,5 +1,9 @@
 .PHONY: help env install dev dev-redis build test test-api test-api-pipeline test-frontend test-engine test-e2e test-mcp install-mcp dev-mcp validate-mcp-registry assertions-check clean clean-engine clean-check docker-up docker-up-bg docker-down docker-destroy docker-build docker-logs docker-engine-up docker-engine-down docker-engine-logs docker-prod-up docker-prod-up-bg docker-prod-down docker-prod-build docker-prod-logs docker-prod-nginx-reload docker-stag-up docker-stag-up-bg docker-stag-down docker-stag-build docker-stag-logs install-zapier test-zapier validate-zapier install-shopify dev-shopify test-shopify install-plugins
 
+ENGINE_COMPOSE = docker compose -p docuforge-engine -f docker-compose.engine.yml
+PROD_COMPOSE = docker compose -p docuforge-prod --env-file ./frontend/.env.prod -f docker-compose.prod.yml
+STAG_COMPOSE = docker compose -p docuforge-stag --env-file ./frontend/.env.stag -f docker-compose.stag.yml
+
 help:
 	@echo "DocuForge commands:"
 	@echo ""
@@ -135,47 +139,47 @@ docker-logs:
 	docker compose logs -f
 
 docker-engine-up:
-	docker compose -f docker-compose.engine.yml up -d --build
+	$(ENGINE_COMPOSE) up -d --build
 
 docker-engine-down:
-	docker compose -f docker-compose.engine.yml down
+	$(ENGINE_COMPOSE) down
 
 docker-engine-logs:
-	docker compose -f docker-compose.engine.yml logs -f
+	$(ENGINE_COMPOSE) logs -f
 
 docker-prod-up:
-	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml up --build
+	$(PROD_COMPOSE) up --build
 
 docker-prod-up-bg:
-	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml up -d --build
+	$(PROD_COMPOSE) up -d --build
 
 docker-prod-down:
-	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml down
+	$(PROD_COMPOSE) down
 
 docker-prod-build:
-	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml build
+	$(PROD_COMPOSE) build
 
 docker-prod-logs:
-	docker compose --env-file ./frontend/.env.prod -f docker-compose.prod.yml logs -f
+	$(PROD_COMPOSE) logs -f
 
 docker-prod-nginx-reload:
-	docker compose -f docker-compose.prod.yml exec nginx nginx -t
-	docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+	$(PROD_COMPOSE) exec nginx nginx -t
+	$(PROD_COMPOSE) exec nginx nginx -s reload
 
 docker-stag-up:
-	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml up --build
+	$(STAG_COMPOSE) up --build
 
 docker-stag-up-bg:
-	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml up -d --build
+	$(STAG_COMPOSE) up -d --build
 
 docker-stag-down:
-	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml down
+	$(STAG_COMPOSE) down
 
 docker-stag-build:
-	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml build
+	$(STAG_COMPOSE) build
 
 docker-stag-logs:
-	docker compose --env-file ./frontend/.env.stag -f docker-compose.stag.yml logs -f
+	$(STAG_COMPOSE) logs -f
 
 clean:
 	cd engine && cargo clean
