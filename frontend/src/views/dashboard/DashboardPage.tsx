@@ -7,6 +7,7 @@ import { UsageCard } from "@/src/components/dashboard/UsageCard";
 import { QuickStartCard } from "@/src/components/dashboard/QuickStartCard";
 import { TemplateGrid } from "@/src/components/dashboard/TemplateGrid";
 import { OfficialTemplateGallery } from "@/src/components/dashboard/OfficialTemplateGallery";
+import { StarterTemplatePicker } from "@/src/components/dashboard/StarterTemplatePicker";
 import { CreateTemplateDialog } from "@/src/components/dashboard/CreateTemplateDialog";
 import { useI18n } from "@/src/lib/i18n";
 
@@ -21,6 +22,8 @@ export default function DashboardPage() {
             <UsageCard />
             <QuickStartCard />
           </section>
+
+          <StarterTemplatePicker />
 
           <section>
             <div className="flex items-center justify-between">
