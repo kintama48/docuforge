@@ -75,10 +75,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   it: {
     landing: {
-      title: "DocuForge · Infrastruttura documentale deterministica",
+      title: "DocuForge · Genera PDF da JSON con un'API",
       description:
-        "Rendering PDF in Rust per workflow sincroni in produzione, contratti template versionati e controlli di sicurezza pratici.",
-      ogAlt: "DocuForge — Infrastruttura documentale deterministica",
+        "Genera fatture, ricevute e report da JSON con una sola chiamata API. Niente browser headless, niente coda — solo un POST.",
+      ogAlt: "DocuForge — Genera PDF da JSON con un'API",
     },
     pricing: {
       title: "Prezzi DocuForge · Piani per ogni team",

@@ -5,9 +5,10 @@ networks:
 services:
   engine:
     container_name: engine
-    build:
-      context: ./engine
-      dockerfile: docker/Dockerfile
+    # Image is built and pushed by CI (deploy-staging.yml / deploy-prod.yml).
+    # Override IMAGE_TAG via .env to pin a specific build; defaults to whatever
+    # the deploy script pulled most recently for the current environment.
+    image: ghcr.io/kintama48/docuforge-engine:${IMAGE_TAG:-latest}
     networks:
       - engine-net
     expose:

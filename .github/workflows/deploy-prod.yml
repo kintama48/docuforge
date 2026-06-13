@@ -3,13 +3,36 @@ name: deploy-prod
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".gitignore"
+      - "CODEOWNERS"
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false  # don't cancel an in-flight prod deploy
 
 jobs:
   test:
     uses: ./.github/workflows/ci-reusable.yml
 
+  trufflehog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@v3.82.13
+        with:
+          path: ./
+          base: ${{ github.event.before }}
+          head: ${{ github.sha }}
+          extra_args: --only-verified
+
   build-and-deploy:
-    needs: test
+    needs: [test, trufflehog]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,6 +45,23 @@ jobs:
         id: sha
         run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api:
+              - 'api/**'
+              - 'docker-compose.prod.yml'
+            frontend:
+              - 'frontend/**'
+              - 'docker-compose.prod.yml'
+            engine:
+              - 'engine/**'
+              - 'docker-compose.engine.yml'
+            mcp:
+              - 'mcp-server/**'
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -33,6 +73,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push api
+        if: steps.changes.outputs.api == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./api
@@ -41,10 +82,11 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/docuforge-api:latest
             ghcr.io/${{ github.repository_owner }}/docuforge-api:prod-${{ steps.sha.outputs.short }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=api-prod
+          cache-to: type=gha,mode=max,scope=api-prod
 
       - name: Build and push frontend
+        if: steps.changes.outputs.frontend == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
@@ -59,8 +101,34 @@ jobs:
             NEXT_PUBLIC_APP_URL=https://www.docuforge.app
             NEXT_PUBLIC_MARKETING_URL=https://www.docuforge.app
             NEXT_PUBLIC_CONSOLE_URL=https://www.docuforge.app
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend-prod
+          cache-to: type=gha,mode=max,scope=frontend-prod
+
+      - name: Build and push engine
+        if: steps.changes.outputs.engine == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./engine
+          file: ./engine/docker/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docuforge-engine:latest
+            ghcr.io/${{ github.repository_owner }}/docuforge-engine:prod-${{ steps.sha.outputs.short }}
+          cache-from: type=gha,scope=engine
+          cache-to: type=gha,mode=max,scope=engine
+
+      - name: Build and push mcp-server
+        if: steps.changes.outputs.mcp == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./mcp-server
+          file: ./mcp-server/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docuforge-mcp-server:latest
+            ghcr.io/${{ github.repository_owner }}/docuforge-mcp-server:prod-${{ steps.sha.outputs.short }}
+          cache-from: type=gha,scope=mcp-prod
+          cache-to: type=gha,mode=max,scope=mcp-prod
 
       - name: Deploy to prod
         uses: appleboy/ssh-action@v1
