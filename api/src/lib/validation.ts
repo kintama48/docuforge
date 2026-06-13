@@ -286,6 +286,30 @@ export const pdfImportCreateSchema = z.object({
   commit_message: z.string().max(200).optional(),
 });
 
+// Render validate schema (KAN-42) — XOR: exactly one of template_id or typst_string
+const renderValidateBaseSchema = z.object({
+  template_id: z.string().min(1).optional(),
+  typst_string: sourceFieldSchema(102400, 'typst_string must be under 100KB').optional(),
+  data: z.record(z.unknown()).optional().default({}),
+});
+
+export const renderValidateSchema = renderValidateBaseSchema.superRefine((val, ctx) => {
+  const hasTemplateId = val.template_id !== undefined;
+  const hasTypstString = val.typst_string !== undefined;
+  if (hasTemplateId && hasTypstString) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Provide either template_id or typst_string, not both',
+    });
+  }
+  if (!hasTemplateId && !hasTypstString) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Either template_id or typst_string is required',
+    });
+  }
+});
+
 // Webhook schemas
 export const webhookEvents = ['render.completed', 'render.failed'] as const;
 
@@ -329,5 +353,6 @@ export type PdfImportAnalyzeInput = z.infer<typeof pdfImportAnalyzeSchema>;
 export type PdfImportCreateInput = z.infer<typeof pdfImportCreateSchema>;
 export type RenderImageInput = z.infer<typeof renderImageSchema>;
 export type RenderImagePreviewInput = z.infer<typeof renderImagePreviewSchema>;
+export type RenderValidateInput = z.infer<typeof renderValidateSchema>;
 export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
 export type UpdateWebhookInput = z.infer<typeof updateWebhookSchema>;
