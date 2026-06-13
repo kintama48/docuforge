@@ -6,6 +6,7 @@ import {
 } from "react-resizable-panels";
 import { ApiCurlPanel } from "@/src/components/editor/ApiCurlPanel";
 import { AssetPanel } from "@/src/components/editor/AssetPanel";
+import { LiveCurlPanel } from "@/src/components/editor/LiveCurlPanel";
 import { DataEditor } from "@/src/components/editor/DataEditor";
 import { DiagnosticsPanel } from "@/src/components/editor/DiagnosticsPanel";
 import { FileExplorer } from "@/src/components/editor/FileExplorer";
@@ -165,8 +166,15 @@ export function EditorLayout({
                   </button>
                 ))}
               </div>
-              <div className="flex-1">
-                {activeTab === "preview" && <PdfPreview />}
+              <div className="flex-1 overflow-y-auto">
+                {activeTab === "preview" && (
+                  <div className="flex h-full flex-col">
+                    <div className="min-h-0 flex-1">
+                      <PdfPreview />
+                    </div>
+                    <LiveCurlPanel />
+                  </div>
+                )}
                 {activeTab === "data" && <DataEditor />}
                 {activeTab === "diag" && <DiagnosticsPanel />}
                 {activeTab === "api" && <ApiCurlPanel />}

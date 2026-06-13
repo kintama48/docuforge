@@ -41,6 +41,7 @@ type EditorState = {
   rateLimitUntil: number | null;
   pdfBlob: Blob | null;
   pdfUrl: string | null;
+  renderCount: number;
   readOnly: boolean;
   viewingVersion: number | null;
   dataError: string | null;
@@ -101,6 +102,7 @@ const initialState = {
   rateLimitUntil: null,
   pdfBlob: null,
   pdfUrl: null,
+  renderCount: 0,
   readOnly: false,
   viewingVersion: null,
   dataError: null,
@@ -238,13 +240,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const currentUrl = get().pdfUrl;
     if (currentUrl) URL.revokeObjectURL(currentUrl);
     const pdfUrl = URL.createObjectURL(blob);
-    set({
+    set((state) => ({
       pdfBlob: blob,
       pdfUrl,
       renderDuration: duration,
       renderStatus: "success",
       renderError: null,
-    });
+      renderCount: state.renderCount + 1,
+    }));
   },
   setRenderError: (error) => {
     if (!error) {
