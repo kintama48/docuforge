@@ -8,6 +8,7 @@ import { DocuMasterWidget } from "@/src/components/editor/DocuMasterWidget";
 import { EditorLayout } from "@/src/components/editor/EditorLayout";
 import { EditorStatusBar } from "@/src/components/editor/EditorStatusBar";
 import { EditorToolbar } from "@/src/components/editor/EditorToolbar";
+import { TemplateCurlSnippet } from "@/src/components/editor/TemplateCurlSnippet";
 import { ImageExportDialog } from "@/src/components/editor/ImageExportDialog";
 import { KeyboardShortcutsModal } from "@/src/components/editor/KeyboardShortcutsModal";
 import { PublishDialog } from "@/src/components/editor/PublishDialog";
@@ -302,6 +303,7 @@ export default function EditorPage() {
             setActiveTab(normalizeTab("blocks"));
           }}
         />
+        <TemplateCurlSnippet template={data.template} />
         <div className="min-h-0 flex-1">
           <EditorLayout
             activeTab={effectiveActiveTab}
