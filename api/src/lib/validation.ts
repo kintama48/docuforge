@@ -65,13 +65,46 @@ export const resendTwoFactorSchema = z.object({
 // Render schemas
 export const passwordProtectionModeSchema = z.enum(['none', 'client_blind']);
 
+// Maximum raw Typst string length: 1 MB (1,048,576 characters).
+// Larger payloads would exhaust the Typst compiler memory budget for a single
+// request. Use the managed template path for large template sources.
+const BYOT_MAX_CHARS = 1_048_576;
+
+/**
+ * POST /v1/render — polymorphic body.
+ *
+ * Exactly one of `template_id` (managed path) or `typst_string` (BYOT/raw
+ * injection path) must be present. Providing both or neither is a 422.
+ */
+export const renderSchema = z
+  .object({
+    template_id: z.string().min(1).optional(),
+    typst_string: z
+      .string()
+      .max(
+        BYOT_MAX_CHARS,
+        `typst_string must be ≤ 1 MB (${BYOT_MAX_CHARS} characters)`
+      )
+      .optional(),
+    data: z.record(z.unknown()).optional().default({}),
+    password_protection_mode: passwordProtectionModeSchema.optional().default('none'),
+  })
+  .refine(
+    (body) => {
+      const hasTemplateId = typeof body.template_id === 'string';
+      const hasTypstString = typeof body.typst_string === 'string';
+      return hasTemplateId !== hasTypstString; // XOR
+    },
+    {
+      message:
+        'Provide exactly one of template_id (managed) or typst_string (raw BYOT). Both or neither is not allowed.',
+      path: ['template_id'],
+    }
+  );
+
 const renderBaseSchema = z.object({
   template_id: z.string().min(1, 'template_id is required'),
   data: z.record(z.unknown()).optional().default({}),
-});
-
-export const renderSchema = renderBaseSchema.extend({
-  password_protection_mode: passwordProtectionModeSchema.optional().default('none'),
 });
 
 export const renderSecureSchema = renderBaseSchema;
