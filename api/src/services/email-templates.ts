@@ -1,4 +1,5 @@
 import type { EmailLocale } from './email-locale';
+import { env } from '../config/env';
 
 export const otpEmailTemplateIds = ['email_verification', 'login_2fa'] as const;
 export type OtpEmailTemplateId = (typeof otpEmailTemplateIds)[number];
@@ -698,6 +699,19 @@ function renderBrandHeader(brand: string, align: 'left' | 'right'): string {
       <p style="margin:0;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(248,250,252,0.68);font-weight:600;text-align:${align};">${escapeHtml(brand)}</p>
     </td>
   </tr>
+</table>`;
+}
+
+// Wire renderLegalFooter() into the email shells once KAN-37/38/39 merge.
+export function renderLegalFooter(): string {
+  const termsUrl = escapeHtml(env.LEGAL_TERMS_URL);
+  const privacyUrl = escapeHtml(env.LEGAL_PRIVACY_URL);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 16px 0;">
+  <tr><td align="center" style="font-size: 12px; color: #666;">
+    <a href="${termsUrl}" style="color: #666; text-decoration: underline; margin: 0 8px;">Terms of Service</a>
+    ·
+    <a href="${privacyUrl}" style="color: #666; text-decoration: underline; margin: 0 8px;">Privacy Policy</a>
+  </td></tr>
 </table>`;
 }
 

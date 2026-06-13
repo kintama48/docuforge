@@ -82,6 +82,10 @@ const envSchema = z.object({
   AUTH_COOKIE_DOMAIN: z.string().optional(),
   AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('strict'),
 
+  // Legal URLs (used in email footers — always rendered, defaults to marketing site)
+  LEGAL_TERMS_URL: z.string().url().default('https://docuforge.app/terms'),
+  LEGAL_PRIVACY_URL: z.string().url().default('https://docuforge.app/privacy'),
+
   // Transactional email
   EMAIL_PROVIDER: z.enum(['mock', 'resend']).default('mock'),
   EMAIL_FROM: z.string().email().default('noreply@docuforge.app'),
