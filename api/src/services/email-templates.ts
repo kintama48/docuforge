@@ -120,7 +120,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     },
     standardTemplates: {
       welcome_first_message: {
-        subject: 'Welcome to DocuForge',
+        subject: 'Welcome to DocuForge — your workspace is ready',
         title: 'Your DocuForge workspace is ready',
         intro: 'Welcome aboard. Your account is active and ready for production document workflows.',
         bodyLines: [
@@ -183,13 +183,13 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     otpFooterLabel: 'Notification de securite DocuForge',
     otpTemplates: {
       email_verification: {
-        subject: 'Verifiez votre email DocuForge',
+        subject: 'Vérifiez votre adresse e-mail DocuForge',
         title: 'Verification de l\'email',
         intro: 'Utilisez ce code a 6 chiffres pour verifier votre compte DocuForge.',
         textPrefix: 'Votre code de verification DocuForge est',
       },
       login_2fa: {
-        subject: 'Votre code de connexion DocuForge',
+        subject: 'Votre code de connexion à DocuForge',
         title: 'Authentification a deux facteurs',
         intro: 'Utilisez ce code a 6 chiffres pour finaliser la connexion a votre console DocuForge.',
         textPrefix: 'Votre code de connexion DocuForge est',
@@ -197,7 +197,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     },
     standardTemplates: {
       welcome_first_message: {
-        subject: 'Bienvenue sur DocuForge',
+        subject: 'Bienvenue sur DocuForge — votre espace est prêt',
         title: 'Votre espace DocuForge est pret',
         intro: 'Bienvenue. Votre compte est actif et pret pour vos workflows documentaires.',
         bodyLines: [
@@ -208,7 +208,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Message de bienvenue DocuForge',
       },
       billing_subscription_started: {
-        subject: 'Votre abonnement DocuForge est actif',
+        subject: 'Votre abonnement DocuForge est activé',
         title: 'Abonnement confirme',
         intro: 'Votre plan {{plan_name}} est maintenant actif.',
         bodyLines: [
@@ -219,7 +219,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Mise a jour de facturation DocuForge',
       },
       billing_plan_changed: {
-        subject: 'Votre plan DocuForge a ete mis a jour',
+        subject: 'Votre plan DocuForge a été mis à jour',
         title: 'Changement de plan confirme',
         intro: 'Votre plan est passe de {{previous_plan_name}} a {{plan_name}}.',
         bodyLines: [
@@ -230,7 +230,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Mise a jour de facturation DocuForge',
       },
       billing_subscription_canceled: {
-        subject: 'Votre abonnement DocuForge a ete resilie',
+        subject: 'Votre abonnement DocuForge a été résilié',
         title: 'Abonnement resilie',
         intro: 'Votre abonnement {{previous_plan_name}} est termine et votre espace repasse au plan Free.',
         bodyLines: [
@@ -241,7 +241,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Mise a jour de facturation DocuForge',
       },
       support_acknowledgement: {
-        subject: 'Nous avons recu votre demande DocuForge',
+        subject: 'Nous avons bien reçu votre demande DocuForge',
         title: 'Demande de support recue',
         intro: 'Merci de nous avoir contactes. Votre ticket est {{ticket_id}}.',
         bodyLines: [
@@ -260,13 +260,13 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     otpFooterLabel: 'Sicherheitsbenachrichtigung von DocuForge',
     otpTemplates: {
       email_verification: {
-        subject: 'Bestaetigen Sie Ihre DocuForge E-Mail',
+        subject: 'Bestätigen Sie Ihre DocuForge-E-Mail-Adresse',
         title: 'E-Mail-Bestaetigung',
         intro: 'Verwenden Sie diesen 6-stelligen Code, um Ihr DocuForge-Konto zu bestaetigen.',
         textPrefix: 'Ihr DocuForge-Bestaetigungscode lautet',
       },
       login_2fa: {
-        subject: 'Ihr DocuForge Login-Bestaetigungscode',
+        subject: 'Ihr DocuForge-Anmelde-Bestätigungscode',
         title: 'Zwei-Faktor-Authentifizierung',
         intro: 'Verwenden Sie diesen 6-stelligen Code, um die Anmeldung bei Ihrer DocuForge-Konsole abzuschliessen.',
         textPrefix: 'Ihr DocuForge-Login-Code lautet',
@@ -274,7 +274,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     },
     standardTemplates: {
       welcome_first_message: {
-        subject: 'Willkommen bei DocuForge',
+        subject: 'Willkommen bei DocuForge — Ihr Workspace ist bereit',
         title: 'Ihr DocuForge Workspace ist bereit',
         intro: 'Willkommen. Ihr Konto ist aktiv und bereit fuer produktive Dokument-Workflows.',
         bodyLines: [
@@ -285,7 +285,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Willkommensnachricht von DocuForge',
       },
       billing_subscription_started: {
-        subject: 'Ihr DocuForge Abonnement ist aktiv',
+        subject: 'Ihr DocuForge-Abonnement ist jetzt aktiv',
         title: 'Abonnement bestaetigt',
         intro: 'Ihr {{plan_name}} Plan ist jetzt aktiv.',
         bodyLines: [
@@ -296,7 +296,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Abrechnungsupdate von DocuForge',
       },
       billing_plan_changed: {
-        subject: 'Ihr DocuForge Plan wurde aktualisiert',
+        subject: 'Ihr DocuForge-Plan wurde aktualisiert',
         title: 'Planwechsel bestaetigt',
         intro: 'Ihr Plan wurde von {{previous_plan_name}} auf {{plan_name}} geaendert.',
         bodyLines: [
@@ -307,7 +307,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Abrechnungsupdate von DocuForge',
       },
       billing_subscription_canceled: {
-        subject: 'Ihr DocuForge Abonnement wurde beendet',
+        subject: 'Ihr DocuForge-Abonnement wurde beendet',
         title: 'Abonnement beendet',
         intro: 'Ihr {{previous_plan_name}} Abonnement wurde beendet und Ihr Workspace laeuft jetzt im Free-Plan.',
         bodyLines: [
@@ -318,7 +318,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Abrechnungsupdate von DocuForge',
       },
       support_acknowledgement: {
-        subject: 'Wir haben Ihre DocuForge Anfrage erhalten',
+        subject: 'Wir haben Ihre DocuForge-Anfrage erhalten',
         title: 'Supportanfrage erhalten',
         intro: 'Danke fuer Ihre Nachricht. Ihr Ticket lautet {{ticket_id}}.',
         bodyLines: [
@@ -362,7 +362,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Messaggio di benvenuto DocuForge',
       },
       billing_subscription_started: {
-        subject: 'Il tuo abbonamento DocuForge e attivo',
+        subject: 'Il tuo abbonamento DocuForge è attivo',
         title: 'Abbonamento confermato',
         intro: 'Il tuo piano {{plan_name}} e ora attivo.',
         bodyLines: [
@@ -373,7 +373,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Aggiornamento fatturazione DocuForge',
       },
       billing_plan_changed: {
-        subject: 'Il tuo piano DocuForge e stato aggiornato',
+        subject: 'Il tuo piano DocuForge è stato aggiornato',
         title: 'Cambio piano confermato',
         intro: 'Il tuo piano e passato da {{previous_plan_name}} a {{plan_name}}.',
         bodyLines: [
@@ -384,7 +384,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Aggiornamento fatturazione DocuForge',
       },
       billing_subscription_canceled: {
-        subject: 'Il tuo abbonamento DocuForge e stato annullato',
+        subject: 'Il tuo abbonamento DocuForge è stato annullato',
         title: 'Abbonamento annullato',
         intro: 'Il tuo abbonamento {{previous_plan_name}} e terminato e il workspace e tornato al piano Free.',
         bodyLines: [
@@ -414,13 +414,13 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     otpFooterLabel: 'Notificacion de seguridad de DocuForge',
     otpTemplates: {
       email_verification: {
-        subject: 'Verifica tu email de DocuForge',
+        subject: 'Verifica tu dirección de correo en DocuForge',
         title: 'Verificacion de email',
         intro: 'Usa este codigo de 6 digitos para verificar tu cuenta de DocuForge.',
         textPrefix: 'Tu codigo de verificacion de DocuForge es',
       },
       login_2fa: {
-        subject: 'Tu codigo de acceso de DocuForge',
+        subject: 'Tu código de acceso a DocuForge',
         title: 'Autenticacion de dos factores',
         intro: 'Usa este codigo de 6 digitos para completar el inicio de sesion en tu consola de DocuForge.',
         textPrefix: 'Tu codigo de acceso de DocuForge es',
@@ -428,7 +428,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
     },
     standardTemplates: {
       welcome_first_message: {
-        subject: 'Bienvenido a DocuForge',
+        subject: 'Bienvenido a DocuForge — tu espacio está listo',
         title: 'Tu espacio de DocuForge esta listo',
         intro: 'Bienvenido. Tu cuenta ya esta activa para flujos documentales en produccion.',
         bodyLines: [
@@ -439,7 +439,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Mensaje de bienvenida de DocuForge',
       },
       billing_subscription_started: {
-        subject: 'Tu suscripcion de DocuForge esta activa',
+        subject: 'Tu suscripción de DocuForge está activa',
         title: 'Suscripcion confirmada',
         intro: 'Tu plan {{plan_name}} ya esta activo.',
         bodyLines: [
@@ -450,7 +450,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Actualizacion de facturacion DocuForge',
       },
       billing_plan_changed: {
-        subject: 'Tu plan de DocuForge fue actualizado',
+        subject: 'Tu plan de DocuForge fue actualizado con éxito',
         title: 'Cambio de plan confirmado',
         intro: 'Tu plan cambio de {{previous_plan_name}} a {{plan_name}}.',
         bodyLines: [
@@ -461,7 +461,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Actualizacion de facturacion DocuForge',
       },
       billing_subscription_canceled: {
-        subject: 'Tu suscripcion de DocuForge fue cancelada',
+        subject: 'Tu suscripción de DocuForge fue cancelada',
         title: 'Suscripcion cancelada',
         intro: 'Tu suscripcion {{previous_plan_name}} finalizo y tu espacio ahora esta en el plan Free.',
         bodyLines: [
@@ -472,7 +472,7 @@ const copyByLocale: Record<EmailLocale, LocaleCopy> = {
         footerLabel: 'Actualizacion de facturacion DocuForge',
       },
       support_acknowledgement: {
-        subject: 'Recibimos tu solicitud de DocuForge',
+        subject: 'Recibimos tu solicitud en DocuForge',
         title: 'Solicitud de soporte recibida',
         intro: 'Gracias por escribirnos. Tu ticket es {{ticket_id}}.',
         bodyLines: [
