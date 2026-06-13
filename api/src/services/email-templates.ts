@@ -725,6 +725,49 @@ export function renderLegalFooter(): string {
     <a href="${privacyUrl}" style="color: #666; text-decoration: underline; margin: 0 8px;">Privacy Policy</a>
   </td></tr>
 </table>`;
+
+// Wire renderSocialFooter() into the email shells (renderOtpHtml, renderStandardHtml) once KAN-38 merges.
+// KAN-38 adds renderLogoHeader(); wiring both at the same time avoids a merge conflict on the shell functions.
+const SOCIAL_ICON_BASE_URL = 'https://www.docuforge.app/brand/social';
+
+const SOCIAL_PLATFORMS = [
+  { key: 'SOCIAL_INSTAGRAM_URL', platform: 'instagram', label: 'Instagram' },
+  { key: 'SOCIAL_TWITTER_URL',   platform: 'twitter',   label: 'Twitter'   },
+  { key: 'SOCIAL_FACEBOOK_URL',  platform: 'facebook',  label: 'Facebook'  },
+  { key: 'SOCIAL_LINKEDIN_URL',  platform: 'linkedin',  label: 'LinkedIn'  },
+  { key: 'SOCIAL_YOUTUBE_URL',   platform: 'youtube',   label: 'YouTube'   },
+  { key: 'SOCIAL_GITHUB_URL',    platform: 'github',    label: 'GitHub'    },
+] as const satisfies ReadonlyArray<{ key: keyof typeof env; platform: string; label: string }>;
+
+/**
+ * Renders a centered row of 24×24 social icon links for every platform whose
+ * env var is set. Returns an empty string when no social URLs are configured,
+ * so the calling template produces no dead whitespace.
+ *
+ * Icon assets are CDN-hosted at:
+ *   https://www.docuforge.app/brand/social/<platform>.png
+ * Upload those files before setting the corresponding env vars in production.
+ */
+export function renderSocialFooter(): string {
+  const icons = SOCIAL_PLATFORMS
+    .filter(({ key }) => Boolean(env[key]))
+    .map(({ key, platform, label }) => {
+      const href = escapeHtml(env[key] as string);
+      const src  = `${SOCIAL_ICON_BASE_URL}/${platform}.png`;
+      return (
+        `<a href="${href}" style="text-decoration:none;margin:0 8px;">` +
+        `<img src="${src}" alt="${label}" width="24" height="24" style="display:inline-block;border:0;" />` +
+        `</a>`
+      );
+    });
+
+  if (icons.length === 0) return '';
+
+  return (
+    `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">` +
+    `<tr><td align="center">${icons.join('')}</td></tr>` +
+    `</table>`
+  );
 }
 
 function renderOtpHtml(

@@ -101,6 +101,14 @@ const envSchema = z.object({
   EMAIL_RESEND_RETRY_MAX_MS: z.coerce.number().int().positive().default(10_000),
   RESEND_API_KEY: z.string().optional(),
 
+  // Social links (optional — only render email footer icons when set)
+  SOCIAL_INSTAGRAM_URL: z.string().url().optional(),
+  SOCIAL_TWITTER_URL: z.string().url().optional(),
+  SOCIAL_FACEBOOK_URL: z.string().url().optional(),
+  SOCIAL_LINKEDIN_URL: z.string().url().optional(),
+  SOCIAL_YOUTUBE_URL: z.string().url().optional(),
+  SOCIAL_GITHUB_URL: z.string().url().optional(),
+
   // OAuth
   OAUTH_GOOGLE_CLIENT_ID: z.string().optional(),
   OAUTH_GOOGLE_CLIENT_SECRET: z.string().optional(),
