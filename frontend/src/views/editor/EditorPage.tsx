@@ -31,6 +31,11 @@ import { useI18n } from "@/src/lib/i18n";
 
 type EditorTab = "preview" | "data" | "diag" | "api" | "blocks";
 
+/** Cheap hash for identical-input guard — avoids redundant renders */
+function hashInputs(source: string, data: string): string {
+  return `${source.length}:${data.length}:${source.slice(0, 64)}:${data.slice(0, 64)}`;
+}
+
 export default function EditorPage() {
   const { messages } = useI18n();
   const params = useParams<{ id: string }>();
@@ -64,8 +69,9 @@ export default function EditorPage() {
   const isLowCodeMode = editorMode === "low-code";
   const blockMode = isLowCodeMode && !advancedTypstEnabled;
 
-  const debouncedSource = useDebounce(source, 300);
-  const debouncedData = useDebounce(dataString, 300);
+  // 500ms debounce: fast enough to feel live, slow enough not to hammer the server
+  const debouncedSource = useDebounce(source, 500);
+  const debouncedData = useDebounce(dataString, 500);
   const previewRender = usePreviewRender();
   const previewImageRender = usePreviewImageRender();
 
@@ -75,6 +81,9 @@ export default function EditorPage() {
   useEffect(() => {
     previewRenderRef.current = previewRender.mutate;
   }, [previewRender.mutate]);
+
+  // Identical-input guard: skip redundant renders when nothing changed
+  const lastRenderHashRef = useRef<string>("");
 
   const [activeTab, setActiveTab] = useState<EditorTab>("preview");
   const [showSidebar, setShowSidebar] = useState(true);
@@ -121,6 +130,11 @@ export default function EditorPage() {
     } catch {
       return;
     }
+    // Identical-input guard: skip render when source + data haven't changed
+    const currentHash = hashInputs(debouncedSource ?? "", debouncedData ?? "");
+    if (currentHash === lastRenderHashRef.current) return;
+    lastRenderHashRef.current = currentHash;
+
     if (blockMode) {
       if (!lowCodeSpec) return;
       previewRenderRef.current({
