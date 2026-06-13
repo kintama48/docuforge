@@ -725,6 +725,7 @@ export function renderLegalFooter(): string {
     <a href="${privacyUrl}" style="color: #666; text-decoration: underline; margin: 0 8px;">Privacy Policy</a>
   </td></tr>
 </table>`;
+}
 
 // Wire renderSocialFooter() into the email shells (renderOtpHtml, renderStandardHtml) once KAN-38 merges.
 // KAN-38 adds renderLogoHeader(); wiring both at the same time avoids a merge conflict on the shell functions.
@@ -818,6 +819,8 @@ function renderOtpHtml(
             <tr>
               <td style="padding:12px 28px 20px 28px;border-top:1px solid rgba(248,250,252,0.12);text-align:${align};">
                 <p style="margin:0;font-size:11px;line-height:1.5;color:rgba(248,250,252,0.58);">${escapeHtml(footerLabel)}</p>
+                ${renderLegalFooter()}
+                ${renderSocialFooter()}
               </td>
             </tr>
           </table>
@@ -878,6 +881,8 @@ function renderStandardHtml(
             <tr>
               <td style="padding:12px 28px 20px 28px;border-top:1px solid rgba(248,250,252,0.12);text-align:${align};">
                 <p style="margin:0;font-size:11px;line-height:1.5;color:rgba(248,250,252,0.58);">${escapeHtml(footerLabel)}</p>
+                ${renderLegalFooter()}
+                ${renderSocialFooter()}
               </td>
             </tr>
           </table>

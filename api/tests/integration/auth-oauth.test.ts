@@ -132,7 +132,7 @@ describe('OAuth routes', () => {
 
     const welcomeEmail = listMockEmails().at(-1);
     expect(welcomeEmail).toBeDefined();
-    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge — your workspace is ready');
     expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
 
     const db = getDb();

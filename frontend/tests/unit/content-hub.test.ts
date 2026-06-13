@@ -42,13 +42,13 @@ describe("content hub", () => {
     expect(getContentBySlug("blog", "does-not-exist", "en")).toBeNull();
   });
 
-  it("keeps compare positioning deterministic-pipeline-first", () => {
+  it("keeps compare positioning concrete and not Typst-first", () => {
     const meta = getCollectionMeta("compare", "en");
-    expect(meta.title).toContain("Deterministic document pipeline");
+    expect(meta.title).toContain("DocuForge vs the alternatives");
 
     const doc = getContentBySlug("compare", "puppeteer", "en");
     expect(doc).not.toBeNull();
-    expect(doc?.excerpt).toContain("deterministic API throughput");
+    expect(doc?.excerpt).toContain("API-first throughput");
     expect(doc?.excerpt).not.toContain("Typst-first");
   });
 });

@@ -20,6 +20,7 @@ import { compileLowCodeSpec } from '../lib/low-code';
 import { renderPdf } from '../services/engine';
 import { checkCredits, logRender } from '../services/usage';
 import { resolveUserAssets } from '../services/asset';
+import { assertPresent } from '../lib/assert';
 import { NotFoundError, LimitExceededError, UnauthorizedError, ValidationError } from '../lib/errors';
 import { env } from '../config/env';
 import { dispatchWebhookEvent } from '../services/webhook';
@@ -153,11 +154,16 @@ render.post('/', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache
   let typstSource: string;
 
   if (renderMode === 'managed') {
+    const managedTemplateId = assertPresent(
+      template_id,
+      'renderSchema must provide template_id in managed render mode'
+    );
+
     // Resolve template from DB
     const [template] = await db
       .select()
       .from(schema.templates)
-      .where(eq(schema.templates.id, template_id!));
+      .where(eq(schema.templates.id, managedTemplateId));
 
     if (!template) {
       throw new NotFoundError('Template not found');
@@ -265,8 +271,13 @@ render.post('/', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache
 
     return c.body(toHttpBody(result.pdf));
   } else {
+    const byotTypstString = assertPresent(
+      typst_string,
+      'renderSchema must provide typst_string in BYOT render mode'
+    );
+
     // BYOT: raw Typst injection — skip DB entirely, pipe directly into compile pipeline.
-    console.log(`[render] mode=byot userId=${userId} typst_string_length=${typst_string!.length}`);
+    console.log(`[render] mode=byot userId=${userId} typst_string_length=${byotTypstString.length}`);
 
     const assets = await resolveUserAssets(userId);
 
@@ -274,7 +285,7 @@ render.post('/', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, noCache
       template: {
         main: 'main.typ',
         files: {
-          'main.typ': typst_string!,
+          'main.typ': byotTypstString,
         },
       },
       data: data || {},

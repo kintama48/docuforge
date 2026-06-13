@@ -136,7 +136,8 @@ describe('Security Regressions', () => {
       expect(source).toContain('allowedOrigins');
 
       // Should use env.APP_URL
-      expect(source).toContain('env.APP_URL');
+      const originSource = await Bun.file('src/lib/browser-origins.ts').text();
+      expect(originSource).toContain('env.APP_URL');
     });
   });
 

@@ -17,8 +17,9 @@ describe("marketing metadata", () => {
 
   it("keeps English landing description tied to reality-based value props", () => {
     const en = getMarketingMeta("en");
-    expect(en.landing.title).toContain("Deterministic Document Infrastructure");
-    expect(en.landing.description).toContain("Rust-powered PDF rendering");
-    expect(en.landing.description).toContain("synchronous production workflows");
+    expect(en.landing.title).toContain("Generate PDFs via API");
+    expect(en.landing.description).toContain("invoices, receipts, and reports");
+    expect(en.landing.description).toContain("Rust-powered");
+    expect(en.landing.description).toContain("no headless browser");
   });
 });

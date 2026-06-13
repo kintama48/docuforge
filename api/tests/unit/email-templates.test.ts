@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { reloadEnv } from '../../src/config/env';
 import { emailLocales } from '../../src/services/email-locale';
 import {
   emailTemplateIds,
@@ -9,6 +10,33 @@ import {
 } from '../../src/services/email-templates';
 
 const DOCUFORGE_LOGO_URL = 'https://www.docuforge.app/brand/logo-square-64.png';
+
+function withEnv(updates: Record<string, string | undefined>, fn: () => void): void {
+  const previous = Object.fromEntries(
+    Object.keys(updates).map((key) => [key, process.env[key]])
+  );
+
+  try {
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+    reloadEnv();
+    fn();
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+    reloadEnv();
+  }
+}
 
 function buildInput<K extends EmailTemplateId>(templateId: K, locale: (typeof emailLocales)[number]): EmailTemplateInputById[K] {
   switch (templateId) {
@@ -113,5 +141,36 @@ describe('email templates', () => {
         manageBillingUrl: '/settings',
       })
     ).toThrow('absolute URL');
+  });
+
+  test('renders legal and configured social footer links in HTML shells', () => {
+    withEnv(
+      {
+        LEGAL_TERMS_URL: 'https://www.docuforge.app/terms',
+        LEGAL_PRIVACY_URL: 'https://www.docuforge.app/privacy',
+        SOCIAL_LINKEDIN_URL: 'https://www.linkedin.com/company/docuforge',
+        SOCIAL_GITHUB_URL: 'https://github.com/kintama48/docuforge',
+      },
+      () => {
+        const standard = renderEmailTemplate('welcome_first_message', {
+          locale: 'en',
+          dashboardUrl: 'https://console.docuforge.app/',
+        });
+        const otp = renderOtpEmailTemplate('email_verification', {
+          locale: 'en',
+          code: '123456',
+          ttlMinutes: 10,
+        });
+
+        for (const rendered of [standard, otp]) {
+          expect(rendered.html).toContain('https://www.docuforge.app/terms');
+          expect(rendered.html).toContain('https://www.docuforge.app/privacy');
+          expect(rendered.html).toContain('https://www.linkedin.com/company/docuforge');
+          expect(rendered.html).toContain('https://github.com/kintama48/docuforge');
+          expect(rendered.html).toContain('/brand/social/linkedin.png');
+          expect(rendered.html).toContain('/brand/social/github.png');
+        }
+      }
+    );
   });
 });

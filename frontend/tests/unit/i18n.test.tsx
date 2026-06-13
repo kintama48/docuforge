@@ -88,7 +88,7 @@ describe("I18nProvider", () => {
     expect(() => render(<LocaleDisplay />)).toThrow(/useI18n/i);
   });
 
-  it("uses the critical-path hero headline in English", async () => {
+  it("uses the concrete-use-case hero headline in English", async () => {
     render(
       <I18nProvider initialLocale="en">
         <HeroTitleDisplay />
@@ -97,7 +97,7 @@ describe("I18nProvider", () => {
 
     await waitFor(() =>
       expect(screen.getByTestId("hero-title").textContent).toBe(
-        "Document infrastructure for the critical path."
+        "Generate invoices, receipts, and reports from JSON."
       )
     );
   });

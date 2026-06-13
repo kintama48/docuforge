@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useTemplates, useForkTemplate } from "@/src/hooks/use-templates";

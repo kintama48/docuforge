@@ -82,7 +82,7 @@ describe('Auth security flows', () => {
 
     const welcomeEmail = listMockEmails().at(-1);
     expect(welcomeEmail).toBeDefined();
-    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge — your workspace is ready');
     expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
     expect(welcomeEmail?.replyTo).toBe('hello@test.docuforge.local');
 
@@ -167,7 +167,7 @@ describe('Auth security flows', () => {
     expect(response.status).toBe(202);
     const email = listMockEmails().at(-1);
     expect(email).toBeDefined();
-    expect(email?.subject).toBe('Verifiez votre email DocuForge');
+    expect(email?.subject).toBe('Vérifiez votre adresse e-mail DocuForge');
     expect(email?.from).toBe('noreply@test.docuforge.local');
     expect(email?.text).toContain('Votre code de verification DocuForge est');
     expect(email?.html).toContain('Code de verification');
@@ -191,7 +191,7 @@ describe('Auth security flows', () => {
     expect(response.status).toBe(201);
     const welcomeEmail = listMockEmails().at(-1);
     expect(welcomeEmail).toBeDefined();
-    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge');
+    expect(welcomeEmail?.subject).toBe('Welcome to DocuForge — your workspace is ready');
     expect(welcomeEmail?.from).toBe('hello@test.docuforge.local');
     expect(welcomeEmail?.replyTo).toBe('hello@test.docuforge.local');
   });
