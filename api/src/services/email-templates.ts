@@ -96,6 +96,8 @@ interface LocaleCopy {
 }
 
 const DOCUFORGE_LOGO_URL = 'https://www.docuforge.app/brand/logo-square-64.png';
+const DOCUFORGE_LOGO_HERO_URL = 'https://www.docuforge.app/brand/logo-square-256.png';
+const DOCUFORGE_SITE_URL = 'https://docuforge.app';
 
 const copyByLocale: Record<EmailLocale, LocaleCopy> = {
   en: {
@@ -688,6 +690,16 @@ function interpolateLines(lines: string[], tokens: Record<string, string | numbe
   return lines.map((line) => interpolate(line, tokens));
 }
 
+function renderLogoHeader(): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:24px;">
+  <tr><td align="center">
+    <a href="${DOCUFORGE_SITE_URL}" style="text-decoration:none;">
+      <img src="${DOCUFORGE_LOGO_HERO_URL}" alt="DocuForge" height="40" style="display:block;height:40px;max-height:40px;border:0;outline:none;" />
+    </a>
+  </td></tr>
+</table>`;
+}
+
 function renderBrandHeader(brand: string, align: 'left' | 'right'): string {
   const imagePadding = align === 'right' ? '0 0 0 10px' : '0 10px 0 0';
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 10px 0;">
@@ -741,6 +753,9 @@ function renderOtpHtml(
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#05070d;padding:28px 12px;">
       <tr>
         <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;">
+            <tr><td>${renderLogoHeader()}</td></tr>
+          </table>
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;border:1px solid rgba(248,250,252,0.16);border-radius:20px;background:#0f1117;box-shadow:0 24px 70px rgba(0,0,0,0.45);overflow:hidden;">
             <tr>
               <td style="padding:28px 28px 10px 28px;text-align:${align};">
@@ -804,6 +819,9 @@ function renderStandardHtml(
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#05070d;padding:28px 12px;">
       <tr>
         <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;">
+            <tr><td>${renderLogoHeader()}</td></tr>
+          </table>
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;border:1px solid rgba(248,250,252,0.16);border-radius:20px;background:#0f1117;box-shadow:0 24px 70px rgba(0,0,0,0.45);overflow:hidden;">
             <tr>
               <td style="padding:28px 28px 20px 28px;text-align:${align};">
