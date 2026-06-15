@@ -3,6 +3,15 @@ name: ci
 on:
   pull_request:
     branches: [dev, main]
+    paths:
+      - "api/**"
+      - "frontend/**"
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/ci-reusable.yml"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   api-tests:
