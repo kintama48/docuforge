@@ -15,10 +15,10 @@ export type MarketingMeta = {
 const marketingMeta: Record<Locale, MarketingMeta> = {
   en: {
     landing: {
-      title: "DocuForge · Generate PDFs via API. Without Puppeteer.",
+      title: "DocuForge · Generate any PDF from JSON.",
       description:
-        "Generate invoices, receipts, and reports from JSON with a single API call. Rust-powered, no headless browser, no queue.",
-      ogAlt: "DocuForge — Generate PDFs via API. Without Puppeteer.",
+        "Invoices, contracts, reports, books, certificates — anything Typst can typeset. One POST, one PDF. Rust-powered, no headless browser, no queue.",
+      ogAlt: "DocuForge — Generate any PDF from JSON.",
     },
     pricing: {
       title: "DocuForge Pricing · Plans for every team",
@@ -35,10 +35,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   fr: {
     landing: {
-      title: "DocuForge · Infrastructure documentaire déterministe",
+      title: "DocuForge · Générez n'importe quel PDF depuis du JSON.",
       description:
-        "Rendu PDF en Rust pour des workflows synchrones, des templates versionnés et des contrôles de sécurité pragmatiques.",
-      ogAlt: "DocuForge — Infrastructure documentaire déterministe",
+        "Factures, contrats, rapports, livres, certificats — tout ce que Typst peut composer. Un POST, un PDF. Sans navigateur headless.",
+      ogAlt: "DocuForge — Générez n'importe quel PDF depuis du JSON.",
     },
     pricing: {
       title: "Tarifs DocuForge · Plans pour chaque équipe",
@@ -55,10 +55,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   de: {
     landing: {
-      title: "DocuForge · Deterministische Dokument-Infrastruktur",
+      title: "DocuForge · Erstelle jedes PDF aus JSON.",
       description:
-        "Rust-basiertes PDF-Rendering für synchrone Produktions-Workflows, versionierte Template-Verträge und praxisnahe Sicherheitskontrollen.",
-      ogAlt: "DocuForge — Deterministische Dokument-Infrastruktur",
+        "Rechnungen, Verträge, Berichte, Bücher, Zertifikate — alles, was Typst setzen kann. Ein POST, ein PDF. Kein Headless-Browser.",
+      ogAlt: "DocuForge — Erstelle jedes PDF aus JSON.",
     },
     pricing: {
       title: "DocuForge Preise · Pläne für jedes Team",
@@ -75,10 +75,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   it: {
     landing: {
-      title: "DocuForge · Genera PDF da JSON con un'API",
+      title: "DocuForge · Genera qualsiasi PDF da JSON.",
       description:
-        "Genera fatture, ricevute e report da JSON con una sola chiamata API. Niente browser headless, niente coda — solo un POST.",
-      ogAlt: "DocuForge — Genera PDF da JSON con un'API",
+        "Fatture, contratti, report, libri, certificati — tutto ciò che Typst può comporre. Un POST, un PDF. Senza browser headless.",
+      ogAlt: "DocuForge — Genera qualsiasi PDF da JSON.",
     },
     pricing: {
       title: "Prezzi DocuForge · Piani per ogni team",
@@ -95,10 +95,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   es: {
     landing: {
-      title: "DocuForge · Infraestructura documental determinista",
+      title: "DocuForge · Genera cualquier PDF desde JSON.",
       description:
-        "Renderizado PDF en Rust para flujos síncronos en producción, contratos de plantillas versionados y controles de seguridad prácticos.",
-      ogAlt: "DocuForge — Infraestructura documental determinista",
+        "Facturas, contratos, informes, libros, certificados — cualquier cosa que Typst pueda componer. Un POST, un PDF. Sin navegador headless.",
+      ogAlt: "DocuForge — Genera cualquier PDF desde JSON.",
     },
     pricing: {
       title: "Precios DocuForge · Planes para cada equipo",
@@ -115,10 +115,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   ar: {
     landing: {
-      title: "DocuForge · بنية مستندات حتمية",
+      title: "DocuForge · أنشئ أي PDF من JSON.",
       description:
-        "رندر PDF مبني على Rust لمسارات إنتاج متزامنة، مع قوالب بإصدارات واضحة وضوابط أمان عملية.",
-      ogAlt: "DocuForge — بنية مستندات حتمية",
+        "فواتير وعقود وتقارير وكتب وشهادات — كل ما يستطيع Typst إخراجه. طلب POST واحد وملف PDF واحد. بدون متصفح headless.",
+      ogAlt: "DocuForge — أنشئ أي PDF من JSON.",
     },
     pricing: {
       title: "أسعار DocuForge · خطط لكل فريق",
@@ -135,10 +135,10 @@ const marketingMeta: Record<Locale, MarketingMeta> = {
   },
   zh: {
     landing: {
-      title: "DocuForge · 确定性文档基础设施",
+      title: "DocuForge · 用 JSON 生成任何 PDF。",
       description:
-        "Rust 驱动的 PDF 渲染能力，面向同步生产流程、版本化模板契约与务实的安全控制。",
-      ogAlt: "DocuForge — 确定性文档基础设施",
+        "发票、合同、报告、书籍、证书 — Typst 能排版的一切。一次 POST，一个 PDF。无需无头浏览器。",
+      ogAlt: "DocuForge — 用 JSON 生成任何 PDF。",
     },
     pricing: {
       title: "DocuForge 定价 · 适合各类团队",

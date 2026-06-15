@@ -311,9 +311,9 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Developer Console",
-      title: "Generate invoices, receipts, and reports from JSON.",
+      title: "Generate any PDF from JSON.",
       subtitle:
-        "One POST to the API returns a PDF — no headless browser, no queue, no Puppeteer.",
+        "Invoices, contracts, reports, books, certificates — anything Typst can typeset. One POST, one PDF. No headless browser.",
       engineLabel: "Engine",
       engineBody:
         "Rust-powered rendering engine with no headless browser dependency.",
@@ -812,9 +812,9 @@ const translations = {
     },
     hero: {
       badge: "Console développeur DocuForge",
-      title: "Infrastructure documentaire pour les chemins critiques.",
+      title: "Générez n'importe quel PDF depuis du JSON.",
       subtitle:
-        "Générez des PDF de production inline avec un rendu Rust, des contrats de template versionnés et des contrôles de sécurité concrets.",
+        "Factures, contrats, rapports, livres, certificats — tout ce que Typst peut composer. Un POST, un PDF. Sans navigateur headless.",
       engineLabel: "Moteur",
       engineBody:
         "Moteur de rendu Rust sans dépendance headless browser. Typst alimente le moteur en coulisses.",
@@ -1313,9 +1313,9 @@ const translations = {
     },
     hero: {
       badge: "DocuForge Entwicklerkonsole",
-      title: "Dokument-Infrastruktur für den kritischen Pfad.",
+      title: "Erstelle jedes PDF aus JSON.",
       subtitle:
-        "Erzeuge produktive PDFs inline mit Rust-basiertem Rendering, versionierten Template-Verträgen und praxisnahen Sicherheitskontrollen.",
+        "Rechnungen, Verträge, Berichte, Bücher, Zertifikate — alles, was Typst setzen kann. Ein POST, ein PDF. Kein Headless-Browser.",
       engineLabel: "Engine",
       engineBody:
         "Rust-Rendering-Engine ohne Headless-Browser-Abhängigkeit. Typst läuft als Engine-Detail im Hintergrund.",
@@ -1814,9 +1814,9 @@ const translations = {
     },
     hero: {
       badge: "Console sviluppatori DocuForge",
-      title: "Infrastruttura documentale per il percorso critico.",
+      title: "Genera qualsiasi PDF da JSON.",
       subtitle:
-        "Genera PDF di produzione inline con rendering Rust, contratti template versionati e controlli di sicurezza concreti.",
+        "Fatture, contratti, report, libri, certificati — tutto ciò che Typst può comporre. Un POST, un PDF. Senza browser headless.",
       engineLabel: "Motore",
       engineBody:
         "Motore di rendering Rust senza dipendenze headless browser. Typst alimenta il motore dietro le quinte.",
@@ -2315,9 +2315,9 @@ const translations = {
     },
     hero: {
       badge: "Consola para desarrolladores DocuForge",
-      title: "Infraestructura documental para la ruta crítica.",
+      title: "Genera cualquier PDF desde JSON.",
       subtitle:
-        "Genera PDFs de producción inline con renderizado en Rust, contratos de plantilla versionados y controles de seguridad prácticos.",
+        "Facturas, contratos, informes, libros, certificados — cualquier cosa que Typst pueda componer. Un POST, un PDF. Sin navegador headless.",
       engineLabel: "Motor",
       engineBody:
         "Motor de render en Rust sin dependencia de headless browser. Typst impulsa el motor por debajo.",
@@ -2813,9 +2813,9 @@ const translations = {
     },
     hero: {
       badge: "لوحة مطوري DocuForge",
-      title: "بنية مستندات للمسار الحرج.",
+      title: "أنشئ أي PDF من JSON.",
       subtitle:
-        "أنشئ ملفات PDF الإنتاجية مباشرة داخل الطلب مع رندر Rust وعقود قوالب مُنسخة وضوابط أمان عملية.",
+        "فواتير وعقود وتقارير وكتب وشهادات — كل ما يستطيع Typst إخراجه. طلب POST واحد وملف PDF واحد. بدون متصفح headless.",
       engineLabel: "المحرك",
       engineBody:
         "محرك رندر بلغة Rust بدون اعتماد على headless browser. يعمل Typst كطبقة تنفيذ داخلية.",
@@ -3303,9 +3303,9 @@ const translations = {
     },
     hero: {
       badge: "DocuForge 开发者控制台",
-      title: "面向关键路径的文档基础设施。",
+      title: "用 JSON 生成任何 PDF。",
       subtitle:
-        "用 Rust 渲染、版本化模板契约和可落地的安全控制，在请求链路内直接生成生产级 PDF。",
+        "发票、合同、报告、书籍、证书 — Typst 能排版的一切。一次 POST，一个 PDF。无需无头浏览器。",
       engineLabel: "引擎",
       engineBody:
         "Rust 渲染引擎，无需 headless browser 依赖。Typst 作为底层引擎细节运行。",
