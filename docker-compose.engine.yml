@@ -5,10 +5,13 @@ networks:
 services:
   engine:
     container_name: engine
-    # Image is built and pushed by CI (deploy-staging.yml / deploy-prod.yml).
-    # Override IMAGE_TAG via .env to pin a specific build; defaults to whatever
-    # the deploy script pulled most recently for the current environment.
+    # CI builds + pushes to GHCR (deploy-staging.yml / deploy-prod.yml).
+    # Local fallback: if the image isn't pulled, `compose up` builds from ./engine
+    # and tags it as the same ref. Override IMAGE_TAG to pin a specific build.
     image: ghcr.io/kintama48/docuforge-engine:${IMAGE_TAG:-latest}
+    build:
+      context: ./engine
+      dockerfile: docker/Dockerfile
     networks:
       - engine-net
     expose:

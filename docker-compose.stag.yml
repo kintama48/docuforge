@@ -8,6 +8,7 @@ services:
   api:
     container_name: stag-api
     image: ghcr.io/kintama48/docuforge-api:${IMAGE_TAG:-staging}
+    build: ./api
     networks:
       - stag-net
       - engine-net
@@ -30,6 +31,14 @@ services:
   frontend:
     container_name: stag-frontend
     image: ghcr.io/kintama48/docuforge-frontend:${IMAGE_TAG:-staging}
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.stag.docuforge.app}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-DocuForge Staging}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://stag.docuforge.app}
+        NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL:-https://stag.docuforge.app}
+        NEXT_PUBLIC_CONSOLE_URL: ${NEXT_PUBLIC_CONSOLE_URL:-https://stag.docuforge.app}
     expose:
       - "5173"
     networks:
