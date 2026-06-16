@@ -88,6 +88,7 @@ export async function initTestDb() {
       description TEXT,
       live_version_id TEXT,
       is_public INTEGER NOT NULL DEFAULT 0,
+      preview_url TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )

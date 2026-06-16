@@ -202,6 +202,9 @@ CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_status ON webhook_deliveries(s
 -- Backfill plan limits for existing users after limit changes.
 UPDATE users SET plan_renders = 1000 WHERE plan_tier = 'free' AND plan_renders < 1000;
 UPDATE users SET plan_renders = 3000 WHERE plan_tier = 'dev' AND plan_renders < 3000;
+
+-- KAN-60: preview image URL for official templates
+ALTER TABLE templates ADD COLUMN preview_url TEXT;
 `;
 
 export async function runMigrations() {
@@ -230,6 +233,9 @@ export async function runMigrations() {
         continue;
       }
       if (message.includes('duplicate column name: signup_ip_hash')) {
+        continue;
+      }
+      if (message.includes('duplicate column name: preview_url')) {
         continue;
       }
       throw error;

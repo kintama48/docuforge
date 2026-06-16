@@ -1,13 +1,75 @@
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { eq, isNull } from 'drizzle-orm';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getDb, schema } from '../src/db/client';
 import { generateTemplateId, generateVersionId, generateUserId, generateApiKeyId } from '../src/lib/id';
 import { generateRawApiKey, hashApiKey, extractKeyPrefix } from '../src/lib/api-key';
-import { getPlanLimit } from '../src/config/env';
+import { getPlanLimit, env } from '../src/config/env';
 import { runMigrations } from '../src/db/migrate';
 
 const TEMPLATES_DIR = join(import.meta.dir, '..', 'templates');
+const FRONTEND_PUBLIC_PREVIEWS = join(import.meta.dir, '..', '..', 'frontend', 'public', 'template-previews');
+
+async function generatePreview(
+  templateId: string,
+  source: string,
+  files: Record<string, string> | null,
+  defaults: Record<string, unknown> | null
+): Promise<string | null> {
+  try {
+    const engineUrl = env.ENGINE_URL;
+    const body = {
+      template: { main: source, files: files ?? {} },
+      data: defaults ?? {},
+      options: { output: 'images', image_format: 'png', image_dpi: 144, image_pages: [1] },
+    };
+
+    const res = await fetch(`${engineUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (!res.ok) {
+      console.warn(`  Preview render failed for ${templateId}: ${res.status}`);
+      return null;
+    }
+
+    const json = (await res.json()) as { pages?: Array<{ data?: string }> };
+    const pageData = json.pages?.[0]?.data;
+    if (!pageData) return null;
+
+    const pngBuffer = Buffer.from(pageData, 'base64');
+
+    // Try R2 first
+    try {
+      const s3 = new S3Client({
+        region: 'auto',
+        endpoint: env.R2_ENDPOINT,
+        credentials: { accessKeyId: env.R2_ACCESS_KEY_ID, secretAccessKey: env.R2_SECRET_ACCESS_KEY },
+      });
+      const r2Key = `template-previews/${templateId}.png`;
+      await s3.send(new PutObjectCommand({
+        Bucket: env.R2_BUCKET,
+        Key: r2Key,
+        Body: pngBuffer,
+        ContentType: 'image/png',
+      }));
+      return `${env.R2_PUBLIC_URL}/${r2Key}`;
+    } catch (r2Err) {
+      // Fallback: write to frontend/public/template-previews/
+      console.warn(`  R2 upload failed, falling back to local: ${r2Err instanceof Error ? r2Err.message : r2Err}`);
+      mkdirSync(FRONTEND_PUBLIC_PREVIEWS, { recursive: true });
+      writeFileSync(join(FRONTEND_PUBLIC_PREVIEWS, `${templateId}.png`), pngBuffer);
+      return `/template-previews/${templateId}.png`;
+    }
+  } catch (err) {
+    console.warn(`  Preview generation failed for ${templateId}: ${err instanceof Error ? err.message : err}`);
+    return null;
+  }
+}
 
 interface TemplateConfig {
   name: string;
@@ -46,11 +108,12 @@ async function seedTemplates() {
 
   // Get existing official templates
   const existingTemplates = await db
-    .select({ name: schema.templates.name })
+    .select({ id: schema.templates.id, name: schema.templates.name, previewUrl: schema.templates.previewUrl })
     .from(schema.templates)
     .where(isNull(schema.templates.userId));
 
   const existingNames = new Set(existingTemplates.map((t) => t.name));
+  const existingByName = new Map(existingTemplates.map((t) => [t.name, t]));
 
   // Read template directories
   const templateDirs = readdirSync(TEMPLATES_DIR, { withFileTypes: true })
@@ -63,11 +126,6 @@ async function seedTemplates() {
     const config = TEMPLATE_CONFIGS[templateDir];
     if (!config) {
       console.log(`Skipping ${templateDir}: no config defined`);
-      continue;
-    }
-
-    if (existingNames.has(config.name)) {
-      console.log(`Skipping ${config.name}: already exists`);
       continue;
     }
 
@@ -86,8 +144,40 @@ async function seedTemplates() {
       defaults = JSON.parse(readFileSync(defaultsPath, 'utf-8'));
     }
 
+    // Bundle the shared design module + any sibling .typ files so templates can
+    // `#import "design.typ": *`. The engine receives all files in one map.
+    const filesMap: Record<string, string> = {};
+    const sharedDesignPath = join(TEMPLATES_DIR, '_shared', 'design.typ');
+    if (existsSync(sharedDesignPath)) {
+      filesMap['design.typ'] = readFileSync(sharedDesignPath, 'utf-8');
+    }
+    for (const entry of readdirSync(join(TEMPLATES_DIR, templateDir))) {
+      if (entry.endsWith('.typ') && entry !== 'main.typ') {
+        filesMap[entry] = readFileSync(join(TEMPLATES_DIR, templateDir, entry), 'utf-8');
+      }
+    }
+
+    // Backfill preview for existing templates that don't have one
+    if (existingNames.has(config.name)) {
+      const existing = existingByName.get(config.name)!;
+      if (!existing.previewUrl) {
+        console.log(`Backfilling preview for ${config.name}...`);
+        const filesForPreview = Object.keys(filesMap).length > 0 ? filesMap : null;
+        const preview = await generatePreview(existing.id, source, filesForPreview, defaults);
+        if (preview) {
+          await db.update(schema.templates).set({ previewUrl: preview }).where(eq(schema.templates.id, existing.id));
+          console.log(`  Preview updated: ${preview}`);
+        }
+      } else {
+        console.log(`Skipping ${config.name}: already exists with preview`);
+      }
+      continue;
+    }
+
     const templateId = generateTemplateId();
     const versionId = generateVersionId();
+
+    const previewUrl = await generatePreview(templateId, source, Object.keys(filesMap).length > 0 ? filesMap : null, defaults);
 
     // Create template (official = userId is null)
     await db.insert(schema.templates).values({
@@ -97,6 +187,7 @@ async function seedTemplates() {
       description: config.description,
       liveVersionId: versionId,
       isPublic: true,
+      previewUrl,
       createdAt: now,
       updatedAt: now,
     });
@@ -107,13 +198,13 @@ async function seedTemplates() {
       templateId,
       versionNumber: 1,
       source,
-      files: null,
+      files: Object.keys(filesMap).length > 0 ? filesMap : null,
       defaults,
       commitMessage: 'Initial official template',
       createdAt: now,
     });
 
-    console.log(`✓ Seeded: ${config.name}`);
+    console.log(`✓ Seeded: ${config.name}${previewUrl ? ' (preview: ' + previewUrl + ')' : ' (no preview)'}`);
   }
 
   console.log('Seeding complete!');

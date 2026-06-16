@@ -52,6 +52,7 @@ export const templates = sqliteTable(
     description: text('description'),
     liveVersionId: text('live_version_id'),
     isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
+    previewUrl: text('preview_url'),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull(),
   },
