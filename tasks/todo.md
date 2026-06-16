@@ -9,7 +9,7 @@
 - [x] KAN-66: improve blog structure with reusable code/code-group components and inline playground/rendered preview.
 - [x] KAN-67: add active navbar underline behavior for nav routes, excluding individual blog posts.
 - [x] Add focused regression coverage and run quality gates.
-- [ ] Update Jira statuses/comments after verification.
+- [x] Update Jira statuses/comments after verification.
 
 ## Local Redis + Email Logo Hardening Plan (2026-03-09)
 
