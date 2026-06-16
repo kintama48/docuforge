@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, isNull } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
 import { shortCache, mediumCache, noCache } from '../middleware/cache';
@@ -30,6 +30,33 @@ import { consumeAiCreditOrThrow, updateAiUsageLog } from '../services/ai-usage';
 import { decodePdfBase64, extractPdfText } from '../services/pdf-import';
 
 const templates = new Hono();
+
+// GET /v1/templates/official - Public list of official templates (no auth)
+templates.get('/official', shortCache, etag, async (c) => {
+  const db = getDb();
+
+  const officialTemplates = await db
+    .select({
+      id: schema.templates.id,
+      name: schema.templates.name,
+      description: schema.templates.description,
+      previewUrl: schema.templates.previewUrl,
+      createdAt: schema.templates.createdAt,
+    })
+    .from(schema.templates)
+    .where(isNull(schema.templates.userId));
+
+  return c.json({
+    templates: officialTemplates.map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      preview_url: t.previewUrl,
+      slug: t.name.toLowerCase().replace(/\s+/g, '-'),
+      created_at: t.createdAt,
+    })),
+  });
+});
 
 // GET /v1/templates - List templates
 templates.get('/', jwtAuth, shortCache, etag, zValidator('query', listTemplatesQuerySchema), async (c) => {
@@ -65,6 +92,7 @@ templates.get('/', jwtAuth, shortCache, etag, zValidator('query', listTemplatesQ
       name: template.name,
       description: template.description,
       is_official: template.userId === null,
+      preview_url: template.previewUrl ?? null,
       live_version: version
         ? {
             id: version.id,
