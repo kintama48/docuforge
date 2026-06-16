@@ -228,6 +228,7 @@ async function seedTestUser() {
   await db.insert(schema.users).values({
     id: userId,
     email,
+    emailCanonical: email.toLowerCase().trim(),
     passwordHash,
     planTier: 'free',
     planRenders: getPlanLimit('free'),

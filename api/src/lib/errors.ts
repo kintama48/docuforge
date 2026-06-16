@@ -101,8 +101,8 @@ export class LimitExceededError extends AppError {
     return {
       error: this.code,
       message: this.message,
-      ...(this.usage && { usage: this.usage }),
-      ...(this.upgradeUrl && { upgrade_url: this.upgradeUrl }),
+      ...(this.usage ? { usage: this.usage } : {}),
+      ...(this.upgradeUrl ? { upgrade_url: this.upgradeUrl } : {}),
     };
   }
 }

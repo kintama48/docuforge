@@ -91,6 +91,14 @@
 - **Local Redis Requirement**: Keep Redis in the default local-dev startup path (`make dev` / compose) when Redis-backed features are active.
 - **Email Branding Requirement**: Transactional email HTML must include the DocuForge logo mark, not just text branding.
 
+# Code Modification Tool
+
+- **Use Graphify for code changes.** From 2026-06-15 onward, all code modifications in this repo should be made through Graphify rather than direct Edit/Write. If Graphify is currently in use by another process, continue working with available tools and switch to Graphify as soon as it frees up — do not block waiting on it.
+
+# Local Dev Environment
+
+- **Use the Mac for development + testing.** The Digital Ocean droplet (`ssh do_droplet`) is for **deployments only** — do not use it for dev work, ad-hoc renders, or testing. All local rendering / template iteration / verification should happen on the Mac.
+
 # Communication Efficiency
 - **Conserve Tokens**: Use only the tokens necessary to complete the task.
 - **Structured Delivery**: Communicate in clear, structured, minimal formats (brief sections, short bullets, direct actions).

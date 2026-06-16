@@ -20,7 +20,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Typecheck
-        run: bunx tsc --noEmit
+        run: bunx tsc --noEmit -p tsconfig.src.json
 
       - name: Run tests
         run: bun test
@@ -41,7 +41,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Typecheck
-        run: bunx tsc --noEmit
+        run: bunx tsc --noEmit -p tsconfig.src.json
 
       - name: Lint
         run: bun run lint

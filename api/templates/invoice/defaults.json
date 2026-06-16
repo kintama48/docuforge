@@ -1,20 +1,30 @@
 {
-  "invoice_id": "INV-2024-001",
-  "company_name": "Acme Corporation",
-  "company_address": "123 Business Boulevard",
-  "company_city": "San Francisco, CA 94102",
-  "company_email": "billing@acme.com",
-  "customer_name": "John Smith",
-  "customer_address": "456 Client Street",
-  "customer_city": "Los Angeles, CA 90001",
-  "invoice_date": "2024-01-15",
-  "due_date": "2024-02-15",
+  "brand_color": "#1f3a8a",
+  "currency": "USD",
+  "status": "unpaid",
+  "invoice_id": "INV-2026-0142",
+  "invoice_date": "2026-06-15",
+  "due_date": "2026-07-15",
   "payment_terms": "Net 30",
+
+  "company_name": "Northwind Studio",
+  "company_address": "240 Mission Street, Suite 1200",
+  "company_city": "San Francisco, CA 94105",
+  "company_email": "billing@northwindstudio.com",
+
+  "customer_name": "Acme Manufacturing Co.",
+  "customer_address": "1500 Industrial Parkway",
+  "customer_city": "Cleveland, OH 44114",
+
   "items": [
-    {"description": "Web Development Services", "qty": 40, "price": 150.00},
-    {"description": "UI/UX Design", "qty": 20, "price": 125.00},
-    {"description": "Project Management", "qty": 10, "price": 100.00}
+    { "description": "Brand identity system — logo, palette, typography spec", "qty": 1, "price": 4800 },
+    { "description": "Marketing site design (8 pages, responsive)", "qty": 1, "price": 7200 },
+    { "description": "Component library + Storybook handoff", "qty": 1, "price": 3400 },
+    { "description": "Project management & client reviews", "qty": 24, "price": 95 }
   ],
   "tax_rate": 8.5,
-  "notes": "Payment is due within 30 days. Please include invoice number on your check."
+  "discount": 500,
+
+  "notes": "Project scope per signed SOW dated 2026-04-12. Net 30 payment terms; late fees of 1.5% per month apply after due date.",
+  "payment_instructions": "Wire: Northwind Studio LLC · Routing 121000358 · Account 4827019233 · Reference INV-2026-0142. ACH and check also accepted."
 }

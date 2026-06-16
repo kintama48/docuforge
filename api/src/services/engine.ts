@@ -170,6 +170,7 @@ export async function renderPdf(payload: EnginePayload): Promise<RenderResult> {
   } catch (err) {
     handleEngineRequestError(err);
   }
+  throw new Error('unreachable');
 }
 
 export async function renderImages(payload: EnginePayload): Promise<RenderImagesResult> {
@@ -202,6 +203,7 @@ export async function renderImages(payload: EnginePayload): Promise<RenderImages
   } catch (err) {
     handleEngineRequestError(err);
   }
+  throw new Error('unreachable');
 }
 
 export async function checkEngineHealth(): Promise<boolean> {

@@ -1,131 +1,185 @@
-#set page(paper: "a4", margin: (x: 2cm, y: 2cm))
-#set text(font: "Inter", size: 10pt)
+#import "design.typ": *
 
 #let data = sys.inputs
+#let brand = resolve-brand(data)
+#let currency = data.at("currency", default: "USD")
 
-// Header
+#set page(paper: "a4", margin: (x: 22mm, top: 0mm, bottom: 22mm))
+#set text(font: "Inter Variable", size: 10pt, fill: INK)
+
+// Brand strip at top of page
+#brand-strip(brand)
+
+#v(18mm)
+
+// ── Header: title + meta block on the right ─────────────────────────────────
+
 #grid(
-  columns: (1fr, 1fr),
+  columns: (1fr, auto),
+  align: (left + top, right + top),
+  column-gutter: 24pt,
+  [
+    #h1[Invoice]
+    #v(2pt)
+    #text(font: "JetBrains Mono", size: 11pt, fill: MUTED)[
+      #data.at("invoice_id", default: "INV-0001")
+    ]
+    #v(8pt)
+    #status-badge(data.at("status", default: "unpaid"))
+  ],
+  [
+    #set align(right)
+    #text(font: "Inter Variable", size: 13pt, weight: 700, fill: INK)[
+      #data.at("company_name", default: "Your Company")
+    ]
+    #v(4pt)
+    #text(size: 9pt, fill: MUTED)[
+      #data.at("company_address", default: "Street, City") \
+      #data.at("company_city", default: "City, State ZIP") \
+      #data.at("company_email", default: "hello@yourcompany.com")
+    ]
+  ],
+)
+
+#v(12pt)
+#line(length: 100%, stroke: 0.5pt + HAIRLINE)
+#v(12pt)
+
+// ── Bill-To + Dates block ───────────────────────────────────────────────────
+
+#grid(
+  columns: (1fr, auto),
+  column-gutter: 24pt,
   align: (left, right),
   [
-    #text(size: 24pt, weight: "bold", fill: rgb("#1a1a2e"))[INVOICE]
-    #v(0.5em)
-    #text(size: 11pt, fill: rgb("#666"))[\##data.at("invoice_id", default: "INV-001")]
-  ],
-  [
-    #align(right)[
-      #text(weight: "semibold")[#data.at("company_name", default: "Your Company")]
-      #linebreak()
-      #text(size: 9pt, fill: rgb("#666"))[
-        #data.at("company_address", default: "123 Business St")
-        #linebreak()
-        #data.at("company_city", default: "City, State 12345")
-        #linebreak()
-        #data.at("company_email", default: "hello@company.com")
-      ]
+    #caption[Bill to]
+    #v(4pt)
+    #text(weight: 600, size: 11pt, fill: INK)[
+      #data.at("customer_name", default: "Customer")
     ]
-  ]
-)
-
-#v(1.5em)
-#line(length: 100%, stroke: 0.5pt + rgb("#e0e0e0"))
-#v(1em)
-
-// Bill To
-#grid(
-  columns: (1fr, 1fr),
-  [
-    #text(size: 9pt, fill: rgb("#666"), weight: "semibold")[BILL TO]
-    #v(0.3em)
-    #text(weight: "semibold")[#data.at("customer_name", default: "Customer Name")]
-    #linebreak()
-    #text(size: 9pt, fill: rgb("#666"))[
-      #data.at("customer_address", default: "456 Client Ave")
-      #linebreak()
-      #data.at("customer_city", default: "City, State 67890")
+    #v(2pt)
+    #text(size: 9.5pt, fill: MUTED)[
+      #data.at("customer_address", default: "—") \
+      #data.at("customer_city", default: "—")
     ]
   ],
   [
-    #align(right)[
-      #grid(
-        columns: (auto, auto),
-        column-gutter: 1em,
-        row-gutter: 0.3em,
-        align: (right, left),
-        text(size: 9pt, fill: rgb("#666"))[Invoice Date:], text(size: 9pt)[#data.at("invoice_date", default: "2024-01-15")],
-        text(size: 9pt, fill: rgb("#666"))[Due Date:], text(size: 9pt)[#data.at("due_date", default: "2024-02-15")],
-        text(size: 9pt, fill: rgb("#666"))[Payment Terms:], text(size: 9pt)[#data.at("payment_terms", default: "Net 30")],
-      )
-    ]
-  ]
+    #set align(right)
+    #table(
+      columns: (auto, auto),
+      stroke: none,
+      inset: (x: 4pt, y: 2pt),
+      column-gutter: 10pt,
+      align: (right, right),
+      caption[Issue date], body-text(date-pretty(data.at("invoice_date", default: "2026-06-15"))),
+      caption[Due date],   body-text(date-pretty(data.at("due_date", default: "2026-07-15"))),
+      caption[Terms],      body-text(str(data.at("payment_terms", default: "Net 30"))),
+    )
+  ],
 )
 
-#v(2em)
+#v(18pt)
 
-// Items table
-#let items = data.at("items", default: ((description: "Service", qty: 1, price: 100.00),))
+// ── Line items table ────────────────────────────────────────────────────────
+
+#let items = data.at("items", default: ())
 
 #table(
   columns: (1fr, auto, auto, auto),
+  align: (left, right, right, right),
   stroke: none,
-  inset: (x: 0.5em, y: 0.7em),
-
-  // Header
-  table.cell(fill: rgb("#f5f5f5"))[#text(size: 9pt, weight: "semibold")[Description]],
-  table.cell(fill: rgb("#f5f5f5"), align: center)[#text(size: 9pt, weight: "semibold")[Qty]],
-  table.cell(fill: rgb("#f5f5f5"), align: right)[#text(size: 9pt, weight: "semibold")[Price]],
-  table.cell(fill: rgb("#f5f5f5"), align: right)[#text(size: 9pt, weight: "semibold")[Amount]],
-
-  table.hline(stroke: 0.5pt + rgb("#e0e0e0")),
-
-  // Items
-  ..items.map(item => (
-    [#item.description],
-    align(center)[#item.qty],
-    align(right)[\$#str(item.price)],
-    align(right)[\$#str(item.qty * item.price)],
-  )).flatten(),
+  inset: (x: 8pt, y: 9pt),
+  fill: (_, row) => if row == 0 { CANVAS },
+  // header
+  text(font: "Inter Variable", size: 9pt, weight: 600, tracking: 0.06em, fill: MUTED)[#upper("Description")],
+  text(font: "Inter Variable", size: 9pt, weight: 600, tracking: 0.06em, fill: MUTED)[#upper("Qty")],
+  text(font: "Inter Variable", size: 9pt, weight: 600, tracking: 0.06em, fill: MUTED)[#upper("Unit price")],
+  text(font: "Inter Variable", size: 9pt, weight: 600, tracking: 0.06em, fill: MUTED)[#upper("Amount")],
+  ..items.map(it => {
+    let desc = it.at("description", default: "—")
+    let qty = it.at("qty", default: 1)
+    let price = it.at("price", default: 0.0)
+    let amount = qty * price
+    (
+      body-text(desc),
+      text(font: "JetBrains Mono", size: 10pt)[#qty],
+      text(font: "JetBrains Mono", size: 10pt)[#money(price, currency: currency)],
+      text(font: "JetBrains Mono", size: 10pt, weight: 500)[#money(amount, currency: currency)],
+    )
+  }).flatten(),
 )
 
-#v(1em)
-#line(length: 100%, stroke: 0.5pt + rgb("#e0e0e0"))
+#line(length: 100%, stroke: 0.5pt + HAIRLINE)
 
-// Totals
-#let subtotal = items.map(i => i.qty * i.price).sum()
-#let tax_rate = data.at("tax_rate", default: 0)
-#let tax = subtotal * tax_rate / 100
-#let total = subtotal + tax
+// ── Totals block ────────────────────────────────────────────────────────────
 
+#let subtotal = items.fold(0.0, (acc, it) => acc + it.at("qty", default: 1) * it.at("price", default: 0.0))
+#let tax-rate = data.at("tax_rate", default: 0.0)
+#let tax = subtotal * tax-rate / 100.0
+#let discount = data.at("discount", default: 0.0)
+#let total = subtotal + tax - discount
+
+#v(8pt)
 #align(right)[
-  #grid(
-    columns: (auto, 6em),
-    column-gutter: 2em,
-    row-gutter: 0.5em,
+  #table(
+    columns: (auto, 80pt),
+    stroke: none,
+    inset: (x: 6pt, y: 4pt),
     align: (right, right),
-    text(size: 9pt, fill: rgb("#666"))[Subtotal:], text(size: 9pt)[\$#str(subtotal)],
-    text(size: 9pt, fill: rgb("#666"))[Tax (#tax_rate%):], text(size: 9pt)[\$#str(tax)],
-  )
-  #v(0.5em)
-  #line(length: 10em, stroke: 0.5pt + rgb("#e0e0e0"))
-  #v(0.3em)
-  #grid(
-    columns: (auto, 6em),
-    column-gutter: 2em,
-    align: (right, right),
-    text(size: 12pt, weight: "bold")[Total Due:], text(size: 12pt, weight: "bold", fill: rgb("#1a1a2e"))[\$#str(total)],
+    caption[Subtotal], text(font: "JetBrains Mono", size: 10pt)[#money(subtotal, currency: currency)],
+    ..(if tax-rate > 0 {
+      (caption[Tax (#str(tax-rate)%)], text(font: "JetBrains Mono", size: 10pt)[#money(tax, currency: currency)])
+    } else { () }),
+    ..(if discount > 0 {
+      (caption[Discount], text(font: "JetBrains Mono", size: 10pt, fill: SUCCESS)[−#money(discount, currency: currency)])
+    } else { () }),
   )
 ]
 
-#v(2em)
-
-// Notes
-#if data.at("notes", default: none) != none [
-  #text(size: 9pt, fill: rgb("#666"), weight: "semibold")[NOTES]
-  #v(0.3em)
-  #text(size: 9pt, fill: rgb("#666"))[#data.notes]
+#v(4pt)
+#align(right)[
+  #block(
+    inset: (x: 16pt, y: 14pt),
+    radius: 6pt,
+    fill: brand,
+    grid(
+      columns: (auto, 90pt),
+      column-gutter: 16pt,
+      align: (right, right),
+      text(font: "Inter Variable", size: 10pt, weight: 600, fill: white, tracking: 0.06em)[#upper("Total due")],
+      text(font: "JetBrains Mono", size: 16pt, weight: 700, fill: white)[#money(total, currency: currency)],
+    ),
+  )
 ]
 
-// Footer
-#place(bottom + center)[
-  #text(size: 8pt, fill: rgb("#999"))[Thank you for your business!]
+#v(20pt)
+
+// ── Notes / payment instructions ────────────────────────────────────────────
+
+#if "notes" in data and data.notes != none and data.notes != "" [
+  #caption[Notes]
+  #v(4pt)
+  #text(size: 9.5pt, fill: MUTED)[#data.notes]
+  #v(12pt)
+]
+
+#if "payment_instructions" in data and data.payment_instructions != none [
+  #block(
+    inset: 12pt,
+    radius: 4pt,
+    fill: CANVAS,
+    stroke: 0.5pt + HAIRLINE,
+    [
+      #caption[Payment instructions]
+      #v(4pt)
+      #text(size: 9.5pt, fill: INK)[#data.payment_instructions]
+    ],
+  )
+]
+
+#v(1fr)
+#align(center)[
+  #text(size: 8pt, fill: SUBTLE)[
+    Thank you for your business. Questions? #data.at("company_email", default: "hello@yourcompany.com")
+  ]
 ]

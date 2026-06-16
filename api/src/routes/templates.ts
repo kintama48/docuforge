@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 
-import { eq, inArray, isNull } from 'drizzle-orm';
+import { inArray, isNull } from 'drizzle-orm';
 import { getDb, schema } from '../db/client';
 import { jwtAuth } from '../middleware/auth';
 import { shortCache, mediumCache, noCache } from '../middleware/cache';
