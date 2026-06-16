@@ -1,0 +1,53 @@
+{
+  "brand_color": "#1f3a8a",
+  "contract_id": "MSA-2026-0047",
+  "contract_title": "Master Services Agreement",
+  "effective_date": "2026-07-01",
+  "currency": "USD",
+  "total_value": 84000,
+  "payment_terms": "Net 30",
+  "contract_term": "12 months",
+
+  "provider_name": "Northwind Studio LLC",
+  "provider_address": "240 Mission Street, Suite 1200",
+  "provider_city": "San Francisco, CA 94105",
+  "provider_email": "legal@northwindstudio.com",
+  "provider_signatory": "James R. Thornton, CEO",
+
+  "client_name": "Acme Manufacturing Co.",
+  "client_address": "1500 Industrial Parkway",
+  "client_city": "Cleveland, OH 44114",
+  "client_email": "legal@acmemfg.com",
+  "client_signatory": "Patricia W. Holbrook, VP Procurement",
+
+  "sections": [
+    {
+      "title": "1. Scope of Services",
+      "content": "Provider agrees to deliver the professional services described in each Statement of Work (SOW) executed under this Agreement. Each SOW will specify deliverables, timelines, and fees. Services include brand strategy, digital product design, and engineering consulting as mutually agreed in writing."
+    },
+    {
+      "title": "2. Fees and Payment",
+      "content": "Client shall pay Provider the fees set forth in each SOW. Invoices are due Net 30 from the invoice date. Late payments accrue interest at 1.5% per month. Provider may suspend services after 15 days of non-payment without waiving any rights. All fees are exclusive of applicable taxes."
+    },
+    {
+      "title": "3. Intellectual Property",
+      "content": "Upon receipt of full payment, Provider assigns to Client all right, title, and interest in work product created specifically for Client under each SOW. Provider retains ownership of pre-existing IP, tools, frameworks, and general methodologies. Client grants Provider a limited license to use Client marks solely to perform the services."
+    },
+    {
+      "title": "4. Confidentiality",
+      "content": "Each party agrees to hold the other's Confidential Information in strict confidence, using at least the same degree of care used to protect its own confidential information (but no less than reasonable care). Confidential Information does not include information that is publicly known, independently developed, or rightfully received from a third party."
+    },
+    {
+      "title": "5. Term and Termination",
+      "content": "This Agreement commences on the Effective Date and continues for twelve (12) months, automatically renewing for successive one-year terms unless either party provides 60 days written notice of non-renewal. Either party may terminate for cause upon 30 days written notice if the other party materially breaches and fails to cure within the notice period."
+    },
+    {
+      "title": "6. Limitation of Liability",
+      "content": "In no event will either party be liable for indirect, incidental, special, or consequential damages. Provider's total cumulative liability under this Agreement shall not exceed the fees paid by Client in the three months preceding the claim. These limitations apply even if advised of the possibility of such damages."
+    },
+    {
+      "title": "7. Governing Law",
+      "content": "This Agreement is governed by the laws of the State of California, without regard to conflict of law principles. The parties consent to exclusive jurisdiction and venue in the state and federal courts located in San Francisco County, California."
+    }
+  ]
+}

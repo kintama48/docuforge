@@ -1,0 +1,42 @@
+{
+  "brand_color": "#6d28d9",
+  "currency": "USD",
+  "proposal_title": "Product Design & Engineering Proposal",
+  "client_name": "Beacon Health Technologies",
+  "company_name": "Northwind Studio LLC",
+  "company_address": "240 Mission Street, Suite 1200, San Francisco, CA 94105",
+  "company_email": "hello@northwindstudio.com",
+  "date": "2026-06-16",
+  "valid_until": "2026-07-16",
+
+  "executive_summary": "Northwind Studio proposes a 14-week engagement to design and build Beacon's patient-facing mobile experience. Our team will deliver a research-driven information architecture, a polished iOS/Android design system, and production-ready React Native components. This proposal covers Discovery, Design, and Engineering phases with a clear handoff plan at each milestone.",
+
+  "sections": [
+    {
+      "title": "The Opportunity",
+      "content": "Beacon's current patient portal has a 28% task completion rate and a 4.1-star App Store rating — well below the 4.6 category benchmark. User interviews surfaced three root causes: confusing appointment flow, unclear medication reminders, and a visual design that erodes trust in a clinical context. A ground-up redesign addresses all three while establishing a scalable design system for future product lines."
+    },
+    {
+      "title": "Our Approach",
+      "content": "We work in three tightly-coupled phases. Phase 1 (Discovery, weeks 1–3): generative research with 20 patients and 8 clinicians, competitive audit, and a Jobs-to-be-Done framework that prioritizes 12 key user scenarios. Phase 2 (Design, weeks 4–9): IA + user flows, hi-fi Figma prototypes, and 3 rounds of usability testing. Phase 3 (Engineering, weeks 10–14): React Native build, Storybook component library, and integration testing with your existing EHR API."
+    },
+    {
+      "title": "Team & Timeline",
+      "content": "The engagement runs 14 weeks from contract signing. Core team: 1 Design Lead, 1 UX Researcher, 2 Product Designers, 1 Engineering Lead, 2 Frontend Engineers. Weekly syncs every Tuesday at 10am PT. Milestone reviews at weeks 3, 6, 9, and 14. All design artifacts delivered via Figma; engineering deliverables via your GitHub organization."
+    }
+  ],
+
+  "pricing": [
+    { "description": "Discovery & Research (3 weeks)", "qty": 1, "amount": 22000 },
+    { "description": "UX & Visual Design (6 weeks)", "qty": 1, "amount": 44000 },
+    { "description": "React Native Engineering (5 weeks)", "qty": 1, "amount": 38000 },
+    { "description": "Project management & quality assurance", "qty": 1, "amount": 8000 }
+  ],
+
+  "next_steps": [
+    "Review this proposal and share feedback by June 23, 2026.",
+    "Schedule a 45-minute kickoff call to align on timeline and stakeholders.",
+    "Sign the Master Services Agreement and Statement of Work.",
+    "Northwind Studio will mobilize the team within 5 business days of contract execution."
+  ]
+}

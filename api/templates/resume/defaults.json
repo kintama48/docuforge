@@ -1,0 +1,60 @@
+{
+  "brand_color": "#0f4c81",
+  "name": "Sophia Reinholt",
+  "title": "Staff Software Engineer",
+  "email": "sophia.reinholt@mail.com",
+  "phone": "+1 (415) 882-4401",
+  "location": "San Francisco, CA",
+  "linkedin": "linkedin.com/in/sophiareinholt",
+  "summary": "Staff engineer with 9 years building distributed systems at scale. Led platform teams shipping to 80M+ users. Deep expertise in Go, Kubernetes, and observability. Proven track record of turning architectural debt into competitive advantage through iterative, data-driven re-platforming.",
+
+  "experience": [
+    {
+      "title": "Staff Software Engineer",
+      "company": "Stripe",
+      "period": "2022 – Present",
+      "location": "San Francisco, CA",
+      "bullets": [
+        "Architected the next-gen payment routing engine (Go, gRPC, Spanner) processing $420B+ annually — reduced p99 latency from 340 ms to 48 ms.",
+        "Led a 12-engineer platform team; introduced golden-signal SLOs that cut incident MTTR by 62%.",
+        "Drove adoption of internal service mesh across 200+ microservices, eliminating 8,400 lines of bespoke retry/circuit-breaker code."
+      ]
+    },
+    {
+      "title": "Senior Software Engineer",
+      "company": "Figma",
+      "period": "2019 – 2022",
+      "location": "San Francisco, CA",
+      "bullets": [
+        "Built the real-time collaboration sync layer (Rust + WebSocket) supporting 5M concurrent editing sessions.",
+        "Re-designed document storage schema to support multiplayer branching; reduced cold-load times by 71%.",
+        "Mentored 6 engineers from L3 to L5; 2 promoted to senior in 18 months."
+      ]
+    },
+    {
+      "title": "Software Engineer II",
+      "company": "Dropbox",
+      "period": "2016 – 2019",
+      "location": "San Francisco, CA",
+      "bullets": [
+        "Owned the metadata indexing pipeline for 600B+ files (Python, Kafka, Cassandra).",
+        "Reduced storage cost 18% by designing and rolling out a tiered cold-storage policy."
+      ]
+    }
+  ],
+
+  "education": [
+    {
+      "degree": "B.S. Computer Science",
+      "school": "University of Michigan",
+      "year": "2016",
+      "details": "Graduated with Distinction · GPA 3.91 · NSF Research Fellowship"
+    }
+  ],
+
+  "skills": [
+    { "category": "Languages", "items": ["Go", "Rust", "Python", "TypeScript"] },
+    { "category": "Infrastructure", "items": ["Kubernetes", "Terraform", "AWS", "GCP", "Spanner", "Kafka"] },
+    { "category": "Practices", "items": ["SRE / SLOs", "Domain-driven design", "Incident command", "Technical roadmapping"] }
+  ]
+}

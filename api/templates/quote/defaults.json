@@ -1,0 +1,28 @@
+{
+  "brand_color": "#d97706",
+  "currency": "USD",
+  "quote_id": "QT-2026-0089",
+  "quote_date": "2026-06-16",
+  "valid_until": "2026-07-16",
+  "prepared_by": "Lena Chowdhury",
+
+  "company_name": "Northwind Studio LLC",
+  "company_address": "240 Mission Street, Suite 1200",
+  "company_city": "San Francisco, CA 94105",
+  "company_email": "sales@northwindstudio.com",
+
+  "customer_name": "Beacon Health Technologies",
+  "customer_address": "88 Howard Street, Floor 12",
+  "customer_city": "San Francisco, CA 94105",
+
+  "items": [
+    { "description": "Discovery & UX Research (3 weeks)", "qty": 1, "price": 22000 },
+    { "description": "Product Design — mobile app (6 weeks)", "qty": 1, "price": 44000 },
+    { "description": "React Native engineering (5 weeks)", "qty": 1, "price": 38000 },
+    { "description": "Project management & QA", "qty": 1, "price": 8000 },
+    { "description": "Travel expenses (est.)", "qty": 1, "price": 2400 }
+  ],
+  "tax_rate": 0,
+
+  "notes": "Estimates based on initial scope conversations — final fees confirmed in signed SOW. Scope changes may affect pricing. Payment schedule: 33% on signing, 33% at design approval, 34% on delivery."
+}

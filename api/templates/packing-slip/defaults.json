@@ -1,0 +1,26 @@
+{
+  "brand_color": "#0f172a",
+  "order_id": "ORD-2026-04721",
+  "warehouse_name": "Clearfield Distribution Center",
+  "pack_date": "Jun 16, 2026",
+  "picker_id": "W-047",
+
+  "from_name": "Clearfield Distribution Center",
+  "from_address": "4800 Logistics Blvd, Building C",
+  "from_city": "Columbus, OH 43219",
+
+  "to_name": "Dr. Rebecca Osei-Bonsu",
+  "to_address": "2210 Ridgewood Lane",
+  "to_city": "Nashville, TN 37215",
+
+  "items": [
+    { "sku": "BK-ML-001", "description": "Designing Machine Learning Systems (Hardcover)", "qty_ordered": 2, "qty_picked": 2 },
+    { "sku": "BK-SYS-014", "description": "Fundamentals of Data Engineering (Paperback)", "qty_ordered": 1, "qty_picked": 1 },
+    { "sku": "BK-DDD-003", "description": "Domain-Driven Design: Tackling Complexity (Hardcover)", "qty_ordered": 1, "qty_picked": 1 },
+    { "sku": "ACC-HDLR-01", "description": "USB-C Hub 7-in-1 (Space Gray)", "qty_ordered": 2, "qty_picked": 2 },
+    { "sku": "ACC-KBRD-08", "description": "Mechanical Keyboard — Quiet Red Switches", "qty_ordered": 1, "qty_picked": 1 },
+    { "sku": "ACC-CBLE-12", "description": "USB-C to MagSafe 3 Cable 2m", "qty_ordered": 3, "qty_picked": 3 }
+  ],
+
+  "notes": "Customer requested no gift receipts. Box 1 of 1. Fragile items on top."
+}
