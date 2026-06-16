@@ -1,18 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "next-env.d.ts",
-    "src/app/**/*.ts",
-    "src/app/**/*.tsx",
-    "src/components/**/*.ts",
-    "src/components/**/*.tsx",
-    "src/lib/**/*.ts",
-    "src/lib/**/*.tsx",
-    "src/hooks/**/*.ts",
-    "src/hooks/**/*.tsx",
-    "src/types/**/*.ts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "middleware.ts",
+    "instrumentation.ts"
   ],
-  "exclude": ["node_modules", "tests/**/*", "bun-tests/**/*"]
+  "exclude": ["node_modules", "tests/**/*", "bun-tests/**/*", "e2e/**/*", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx"]
 }
