@@ -1,46 +1,57 @@
 {
-  "title": "Q4 2024 Performance Report",
-  "subtitle": "Annual Review and Strategic Analysis",
-  "author": "Sarah Johnson",
-  "organization": "Acme Analytics Division",
-  "date": "January 15, 2024",
-  "executive_summary": "This report provides a comprehensive analysis of Q4 2024 performance metrics, highlighting key achievements, challenges, and strategic recommendations for the upcoming fiscal year. Overall performance exceeded expectations with a 15% increase in key metrics.",
+  "brand_color": "#1f3a8a",
+  "title": "2026 Mid-Year Business Review",
+  "subtitle": "Performance Analysis & Strategic Outlook",
+  "author": "Marcus Chen, VP Strategy",
+  "organization": "Meridian Capital Partners",
+  "date": "June 2026",
+  "executive_summary": "This mid-year review examines Meridian Capital Partners' performance across all business units for the first half of 2026. Revenue grew 31% year-over-year, driven by expansion into the Asia-Pacific corridor and strong performance in our private credit portfolio. AUM reached $4.2B, ahead of the full-year target of $3.9B. Key challenges include margin compression in the advisory segment and elevated operational costs from the London office build-out.",
   "sections": [
     {
-      "title": "Introduction",
-      "content": "The fourth quarter of 2024 marked a significant period of growth and transformation for our organization. This report analyzes performance across all major departments and provides actionable insights for future planning."
-    },
-    {
-      "title": "Key Findings",
+      "title": "Financial Performance",
       "subsections": [
         {
-          "title": "Revenue Growth",
-          "content": "Revenue increased by 23% compared to Q3, driven primarily by new product launches and expanded market presence in the Asia-Pacific region."
+          "title": "Revenue & AUM",
+          "content": "Total revenue for H1 2026 reached $182.4M, up from $139.2M in H1 2025. Management fees contributed 64% of revenue at $116.7M. Assets under management grew to $4.2B as of June 30, surpassing our $3.9B full-year target six months early. The private credit fund was the standout performer, returning 14.2% net annualized."
         },
         {
-          "title": "Customer Satisfaction",
-          "content": "Customer satisfaction scores improved from 4.2 to 4.6 out of 5, reflecting our investment in support infrastructure and product quality."
+          "title": "Cost Structure",
+          "content": "Operating expenses increased 18% to $94.1M, primarily driven by the London office lease ($6.2M), headcount additions in compliance (+12 FTEs), and technology infrastructure upgrades. EBITDA margin contracted from 34% to 31%, still within the board-approved 28–35% corridor."
         }
       ]
     },
     {
-      "title": "Recommendations",
-      "bullet_points": [
-        "Increase investment in R&D by 15% to maintain competitive advantage",
-        "Expand sales team in emerging markets",
-        "Implement new CRM system by Q2 2025",
-        "Launch customer loyalty program"
+      "title": "Business Unit Highlights",
+      "subsections": [
+        {
+          "title": "Private Credit",
+          "content": "The private credit team deployed $620M in Q1–Q2, well ahead of the $480M plan. Default rates remain at 0.4%, below the 1.2% peer median. Three new institutional LPs were onboarded, contributing $310M in commitments."
+        },
+        {
+          "title": "Advisory Services",
+          "content": "Advisory revenue of $41.6M was 8% below the H1 plan, reflecting deal slippage from three M&A mandates that pushed to H2. Pipeline coverage stands at 2.4× for the remainder of the year, providing confidence in a full-year recovery."
+        }
       ]
     },
     {
-      "title": "Next Steps",
+      "title": "Risk & Compliance",
+      "bullet_points": [
+        "No material regulatory findings in the SEC examination completed April 2026",
+        "Credit VaR across all funds held within board limits throughout H1",
+        "Cybersecurity posture upgraded — SOC 2 Type II audit underway, expected completion August 2026",
+        "Concentration risk in two portfolio companies flagged; remediation plan approved by Risk Committee"
+      ]
+    },
+    {
+      "title": "Strategic Priorities for H2",
       "numbered_list": [
-        "Review and approve budget allocations by February 1st",
-        "Schedule department head meetings for strategic planning",
-        "Finalize hiring plan for new positions",
-        "Begin vendor evaluation for technology upgrades"
+        "Close Fund IV at $1.8B hard cap by October 2026",
+        "Launch Singapore entity to access APAC LP base directly",
+        "Implement new portfolio monitoring platform (vendor selected: Allvue)",
+        "Complete London team build-out — 4 remaining hires in credit research",
+        "Review and renegotiate prime brokerage terms with Goldman and JPMorgan"
       ]
     }
   ],
-  "conclusion": "Q4 2024 demonstrated strong performance across all key metrics. By implementing the recommended strategies and maintaining focus on customer satisfaction, we are well-positioned for continued growth in 2025."
+  "conclusion": "Meridian Capital Partners is on track for its strongest year since founding. The AUM milestone reached ahead of schedule validates the strategic pivot toward private credit and direct lending. Execution on H2 priorities — particularly Fund IV close and the Singapore launch — will determine whether we achieve the upper end of our 2026 guidance. The board's confidence is reflected in the approved $15M budget increase for the London and APAC build-outs."
 }

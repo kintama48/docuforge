@@ -1,118 +1,135 @@
-#set page(width: 80mm, height: auto, margin: (x: 5mm, y: 8mm))
-#set text(font: "Inter", size: 9pt)
+#import "design.typ": *
 
 #let data = sys.inputs
+#let brand = resolve-brand(data)
+#let currency = data.at("currency", default: "USD")
 
-// Store header
+#set page(width: 80mm, height: auto, margin: (x: 5mm, y: 6mm))
+#set text(font: "Inter Variable", size: 9pt, fill: INK)
+
+// Header
 #align(center)[
-  #text(size: 14pt, weight: "bold")[#data.at("store_name", default: "Store Name")]
-  #linebreak()
-  #text(size: 8pt, fill: rgb("#666"))[
-    #data.at("store_address", default: "123 Main St")
-    #linebreak()
+  #block(width: 100%, height: 4pt, fill: brand)
+  #v(8pt)
+  #text(size: 13pt, weight: 700, fill: INK)[#data.at("store_name", default: "Store Name")]
+  #v(2pt)
+  #text(size: 8pt, fill: MUTED)[
+    #data.at("store_address", default: "123 Main St") \
     #data.at("store_phone", default: "(555) 123-4567")
   ]
 ]
 
-#v(0.8em)
-#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt))
-#v(0.5em)
+#v(8pt)
+#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt, paint: HAIRLINE))
+#v(5pt)
 
-// Receipt info
+// Receipt meta
 #grid(
-  columns: (1fr, 1fr),
-  text(size: 8pt, fill: rgb("#666"))[Receipt \##data.at("receipt_id", default: "001234")],
-  align(right)[#text(size: 8pt, fill: rgb("#666"))[#data.at("date", default: "01/15/2024")]],
+  columns: (1fr, auto),
+  caption[Receipt #sym.hash #data.at("receipt_id", default: "001234")],
+  align(right)[#caption[#data.at("date", default: "Jun 15, 2026")]],
 )
-#text(size: 8pt, fill: rgb("#666"))[Cashier: #data.at("cashier", default: "Employee")]
+#v(2pt)
+#caption[Cashier: #data.at("cashier", default: "Employee")]
 
-#v(0.8em)
-#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt))
-#v(0.5em)
+#v(8pt)
+#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt, paint: HAIRLINE))
+#v(5pt)
 
 // Items
-#let items = data.at("items", default: ((name: "Item", qty: 1, price: 0.00),))
-
-#for item in items [
-  #grid(
+#let items = data.at("items", default: ())
+#for item in items {
+  grid(
     columns: (1fr, auto),
     [
-      #text(size: 9pt)[#item.name]
-      #if item.qty > 1 [
-        #linebreak()
-        #text(size: 8pt, fill: rgb("#666"))[#item.qty × \$#str(item.price)]
+      #body-text(item.at("name", default: "Item"))
+      #let qty = item.at("qty", default: 1)
+      #if qty > 1 [
+        #v(1pt)
+        #text(size: 8pt, fill: MUTED)[#qty × #money(item.at("price", default: 0.0), currency: currency)]
       ]
     ],
-    align(right)[#text(size: 9pt)[\$#str(calc.round(item.qty * item.price, digits: 2))]],
+    align(right)[
+      #let amt = item.at("qty", default: 1) * item.at("price", default: 0.0)
+      #text(font: "JetBrains Mono", size: 9pt)[#money(amt, currency: currency)]
+    ],
   )
-  #v(0.3em)
-]
+  v(4pt)
+}
 
-#v(0.3em)
-#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt))
-#v(0.5em)
+#v(2pt)
+#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt, paint: HAIRLINE))
+#v(5pt)
 
 // Totals
-#let subtotal = items.map(i => i.qty * i.price).sum()
-#let tax_rate = data.at("tax_rate", default: 0)
-#let tax = calc.round(subtotal * tax_rate / 100, digits: 2)
+#let subtotal = items.fold(0.0, (acc, it) => acc + it.at("qty", default: 1) * it.at("price", default: 0.0))
+#let tax-rate = data.at("tax_rate", default: 0.0)
+#let tax = subtotal * tax-rate / 100.0
 #let total = subtotal + tax
 
 #grid(
   columns: (1fr, auto),
-  row-gutter: 0.3em,
-  text(size: 8pt, fill: rgb("#666"))[Subtotal], align(right)[#text(size: 8pt)[\$#str(calc.round(subtotal, digits: 2))]],
-  text(size: 8pt, fill: rgb("#666"))[Tax (#tax_rate%)], align(right)[#text(size: 8pt)[\$#str(tax)]],
+  row-gutter: 3pt,
+  caption[Subtotal], align(right)[#text(font: "JetBrains Mono", size: 9pt)[#money(subtotal, currency: currency)]],
+  caption[Tax (#str(tax-rate)%)], align(right)[#text(font: "JetBrains Mono", size: 9pt)[#money(tax, currency: currency)]],
 )
 
-#v(0.3em)
-#line(length: 100%, stroke: 0.5pt)
-#v(0.3em)
+#v(4pt)
+#line(length: 100%, stroke: 0.75pt + brand)
+#v(4pt)
 
 #grid(
   columns: (1fr, auto),
-  text(size: 11pt, weight: "bold")[TOTAL], align(right)[#text(size: 11pt, weight: "bold")[\$#str(calc.round(total, digits: 2))]],
+  text(size: 11pt, weight: 700, fill: INK)[TOTAL],
+  align(right)[#text(font: "JetBrains Mono", size: 11pt, weight: 700, fill: brand)[#money(total, currency: currency)]],
 )
 
-#v(0.5em)
-#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt))
-#v(0.5em)
+#v(6pt)
+#line(length: 100%, stroke: (dash: "dotted", thickness: 0.5pt, paint: HAIRLINE))
+#v(5pt)
 
-// Payment method
+// Payment
+#let method = data.at("payment_method", default: "Cash")
 #grid(
   columns: (1fr, auto),
-  row-gutter: 0.3em,
-  text(size: 8pt)[#data.at("payment_method", default: "Cash")], align(right)[#text(size: 8pt)[\$#str(calc.round(total, digits: 2))]],
+  caption[Paid by #method],
+  align(right)[#text(font: "JetBrains Mono", size: 9pt)[#money(total, currency: currency)]],
 )
 
-#if data.at("payment_method", default: "Cash") == "Cash" [
-  #let cash_tendered = data.at("cash_tendered", default: total)
-  #let change = cash_tendered - total
-  #grid(
+#if method == "Cash" {
+  let tendered = data.at("cash_tendered", default: total)
+  let change = tendered - total
+  v(3pt)
+  grid(
     columns: (1fr, auto),
-    row-gutter: 0.3em,
-    text(size: 8pt, fill: rgb("#666"))[Cash Tendered], align(right)[#text(size: 8pt)[\$#str(calc.round(cash_tendered, digits: 2))]],
-    text(size: 8pt, fill: rgb("#666"))[Change], align(right)[#text(size: 8pt)[\$#str(calc.round(change, digits: 2))]],
+    row-gutter: 3pt,
+    caption[Cash tendered], align(right)[#text(font: "JetBrains Mono", size: 9pt)[#money(tendered, currency: currency)]],
+    caption[Change], align(right)[#text(font: "JetBrains Mono", size: 9pt, fill: SUCCESS)[#money(change, currency: currency)]],
   )
-]
+}
 
-#v(1em)
-
-// Footer
+#v(10pt)
 #align(center)[
-  #text(size: 8pt, fill: rgb("#666"))[
-    Thank you for shopping with us!
-    #linebreak()
-    #v(0.3em)
+  #text(size: 8pt, fill: MUTED)[
+    Thank you for your business! \
+    #v(2pt)
     #data.at("footer_message", default: "Returns accepted within 30 days with receipt")
   ]
 ]
 
-#v(0.8em)
-
-// Barcode placeholder
+#v(8pt)
 #align(center)[
-  #rect(width: 50mm, height: 8mm, stroke: 0.5pt + rgb("#ccc"))[
-    #align(center + horizon)[#text(size: 7pt, fill: rgb("#999"))[#data.at("receipt_id", default: "001234")]]
+  #rect(
+    width: 52mm, height: 9mm,
+    stroke: 0.5pt + HAIRLINE,
+    fill: white,
+    radius: 2pt,
+  )[
+    #align(center + horizon)[
+      #text(font: "JetBrains Mono", size: 7pt, fill: MUTED)[#data.at("receipt_id", default: "001234")]
+    ]
   ]
 ]
+
+#v(5pt)
+#block(width: 100%, height: 3pt, fill: brand)

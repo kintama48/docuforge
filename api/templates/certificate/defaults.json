@@ -1,10 +1,11 @@
 {
-  "certificate_type": "EXCELLENCE",
-  "recipient_name": "Alexandra Thompson",
-  "description": "has demonstrated outstanding achievement and dedication in completing the Advanced Leadership Development Program with distinction, showing exceptional skills in strategic thinking, team management, and organizational leadership.",
-  "date": "January 15, 2024",
-  "certificate_id": "CERT-ALD-2024-0042",
-  "issuer_name": "Dr. Michael Roberts",
+  "brand_color": "#1f3a8a",
+  "certificate_type": "Excellence",
+  "recipient_name": "Priya Vasanthakumar",
+  "description": "for outstanding achievement and dedication in completing the Advanced Machine Learning Engineering Program with distinction, demonstrating exceptional skills in model architecture, systems design, and applied AI research.",
+  "date": "June 16, 2026",
+  "certificate_id": "CERT-AML-2026-0084",
+  "issuer_name": "Dr. Elena Marchetti",
   "issuer_title": "Program Director",
-  "organization": "Global Leadership Institute"
+  "organization": "Institute for Applied Intelligence"
 }
