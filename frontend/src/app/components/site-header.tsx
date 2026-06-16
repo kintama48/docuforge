@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useI18n } from "@/src/lib/i18n";
 import { getConsoleLocaleUrl } from "@/src/lib/urls";
 import { ThemeToggle } from "./theme-toggle";
@@ -8,27 +9,42 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { useLocalePath } from "@/src/lib/use-locale-path";
 import { getContentHubCopy } from "@/src/lib/content-hub";
 import { BrandLogo } from "@/src/components/brand/BrandLogo";
+import { stripLocalePath } from "@/src/lib/locale-path";
+
+type NavKey = "home-anchor" | "pricing" | "docs" | "blog" | "playground";
+
+function isActiveNavItem(basePath: string, key: NavKey) {
+  if (key === "pricing") return basePath === "/pricing";
+  if (key === "docs") return basePath === "/docs" || basePath.startsWith("/docs/");
+  if (key === "blog") return basePath === "/blog";
+  if (key === "playground") return basePath === "/playground" || basePath.startsWith("/playground/");
+  return false;
+}
 
 export function SiteHeader() {
   const { messages, locale } = useI18n();
   const contentCopy = getContentHubCopy(locale);
   const localePath = useLocalePath();
   const consoleUrl = getConsoleLocaleUrl("/dashboard", locale);
+  const pathname = usePathname();
+  const { basePath } = stripLocalePath(pathname);
 
   const navLinks = [
-    { href: localePath("/#features"), label: messages.nav.features },
-    { href: localePath("/#workflow"), label: messages.nav.workflow },
-    { href: localePath("/pricing"), label: messages.nav.pricing },
-    { href: localePath("/docs"), label: messages.nav.docs },
-    { href: localePath("/#api"), label: messages.nav.api },
+    { href: localePath("/#features"), label: messages.nav.features, key: "home-anchor" as const },
+    { href: localePath("/#workflow"), label: messages.nav.workflow, key: "home-anchor" as const },
+    { href: localePath("/pricing"), label: messages.nav.pricing, key: "pricing" as const },
+    { href: localePath("/docs"), label: messages.nav.docs, key: "docs" as const },
+    { href: localePath("/#api"), label: messages.nav.api, key: "home-anchor" as const },
     {
       href: localePath("/blog"),
       label: contentCopy.navBlogs,
+      key: "blog" as const,
       desktopOnly: true,
     },
     {
       href: localePath("/playground"),
       label: contentCopy.navPlayground,
+      key: "playground" as const,
       desktopOnly: true,
     },
   ];
@@ -49,15 +65,27 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
-          {navLinks.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`rounded-full px-3 py-2 text-sm font-medium text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--ink)] ${item.desktopOnly ? "hidden xl:inline-flex" : "inline-flex"}`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navLinks.map((item) => {
+            const active = isActiveNavItem(basePath, item.key);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`relative rounded-full px-3 py-2 text-sm font-medium transition hover:bg-[var(--surface)] hover:text-[var(--ink)] ${
+                  active ? "text-[var(--ink)]" : "text-[var(--muted)]"
+                } ${item.desktopOnly ? "hidden xl:inline-flex" : "inline-flex"}`}
+              >
+                {item.label}
+                {active ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-[var(--accent)]"
+                  />
+                ) : null}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-2">

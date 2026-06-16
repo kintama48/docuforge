@@ -5,9 +5,10 @@ use axum::{
     Json,
 };
 
+use crate::engine::compiler::CompiledRender;
 use crate::error::EngineError;
 use crate::models::request::RenderRequest;
-use crate::models::response::ErrorResponse;
+use crate::models::response::{ErrorResponse, ImageRenderResponse};
 use crate::server::AppState;
 
 /// Render a Typst template to PDF
@@ -17,6 +18,7 @@ use crate::server::AppState;
     request_body = RenderRequest,
     responses(
         (status = 200, description = "PDF generated successfully", content_type = "application/pdf"),
+        (status = 200, description = "Images generated successfully", body = ImageRenderResponse, content_type = "application/json"),
         (status = 400, description = "Template compilation failed", body = ErrorResponse),
         (status = 422, description = "Invalid request (e.g., missing main file)", body = ErrorResponse),
         (status = 408, description = "Render timeout exceeded", body = ErrorResponse),
@@ -36,17 +38,21 @@ pub async fn render(
         .unwrap_or(state.config.render_timeout_ms);
 
     // Compile the template
-    let pdf_bytes = state.compiler.compile(&request, timeout_ms).await?;
+    let output = state.compiler.compile_render(&request, timeout_ms).await?;
 
-    // Return PDF with appropriate headers
-    let response = Response::builder()
-        .header(header::CONTENT_TYPE, "application/pdf")
-        .header(
-            header::CONTENT_DISPOSITION,
-            "inline; filename=\"document.pdf\"",
-        )
-        .body(axum::body::Body::from(pdf_bytes))
-        .map_err(|e| EngineError::Internal(format!("Failed to build response: {}", e)))?;
+    match output {
+        CompiledRender::Pdf(pdf_bytes) => {
+            let response = Response::builder()
+                .header(header::CONTENT_TYPE, "application/pdf")
+                .header(
+                    header::CONTENT_DISPOSITION,
+                    "inline; filename=\"document.pdf\"",
+                )
+                .body(axum::body::Body::from(pdf_bytes))
+                .map_err(|e| EngineError::Internal(format!("Failed to build response: {}", e)))?;
 
-    Ok(response)
+            Ok(response)
+        }
+        CompiledRender::Images(images) => Ok(Json(images).into_response()),
+    }
 }

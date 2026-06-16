@@ -17,7 +17,7 @@ import {
   renderValidateSchema,
 } from '../lib/validation';
 import { compileLowCodeSpec } from '../lib/low-code';
-import { renderPdf } from '../services/engine';
+import { renderImages, renderPdf } from '../services/engine';
 import { checkCredits, logRender } from '../services/usage';
 import { resolveUserAssets } from '../services/asset';
 import { assertPresent } from '../lib/assert';
@@ -25,7 +25,7 @@ import { NotFoundError, LimitExceededError, UnauthorizedError, ValidationError }
 import { env } from '../config/env';
 import { dispatchWebhookEvent } from '../services/webhook';
 import type { EnginePayload } from '../types';
-import { renderPdfToImages } from '../services/image-render';
+import { packageRenderedImages } from '../services/image-render';
 import {
   assertPublicPreviewSourceSize,
   assertTrustedPublicPreviewOrigin,
@@ -41,6 +41,12 @@ import {
 const render = new Hono();
 type PasswordProtectionMode = 'none' | 'client_blind' | 'server_ephemeral_legacy';
 type RenderNamespace = 'consumer' | 'console';
+type ImageRenderRequestOptions = {
+  format: 'png' | 'jpeg';
+  dpi: number;
+  quality: number;
+  page_numbers?: number[];
+};
 
 function toHttpBody(binary: Buffer): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(binary);
@@ -99,6 +105,23 @@ function computeTemplateFingerprint(
   }
 
   return hasher.digest('hex');
+}
+
+function withEngineImageOutput(
+  payload: EnginePayload,
+  options: ImageRenderRequestOptions
+): EnginePayload {
+  return {
+    ...payload,
+    options: {
+      ...payload.options,
+      output: 'images',
+      image_format: options.format === 'jpeg' ? 'jpg' : 'png',
+      image_dpi: options.dpi,
+      image_quality: options.quality,
+      ...(options.page_numbers ? { image_pages: options.page_numbers } : {}),
+    },
+  };
 }
 
 function applyPublicPreviewWatermark(source: string): string {
@@ -420,13 +443,13 @@ render.post('/image', requireConsumerRenderPath, apiKeyAuth, renderRateLimit, no
   let logId: string;
 
   try {
-    const pdfResult = await renderPdf(payload);
-    const imageResult = await renderPdfToImages(pdfResult.pdf, {
+    const engineImageResult = await renderImages(withEngineImageOutput(payload, {
       format,
       dpi,
       quality,
       page_numbers,
-    });
+    }));
+    const imageResult = await packageRenderedImages(engineImageResult.pages, engineImageResult.format);
 
     logId = await logRender({
       userId,
@@ -812,13 +835,13 @@ render.post(
     let logId: string;
 
     try {
-      const pdfResult = await renderPdf(payload);
-      const imageResult = await renderPdfToImages(pdfResult.pdf, {
+      const engineImageResult = await renderImages(withEngineImageOutput(payload, {
         format,
         dpi,
         quality,
         page_numbers,
-      });
+      }));
+      const imageResult = await packageRenderedImages(engineImageResult.pages, engineImageResult.format);
 
       logId = await logRender({
         userId,

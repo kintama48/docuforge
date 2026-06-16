@@ -49,10 +49,39 @@ pub struct RenderOptions {
     /// Compilation timeout in milliseconds (default: 30000)
     #[schema(example = 30000)]
     pub timeout_ms: Option<u64>,
+    /// Output format for the render request. Defaults to PDF bytes.
+    pub output: Option<RenderOutput>,
+    /// Image format when output is images. Defaults to PNG.
+    pub image_format: Option<RenderImageFormat>,
+    /// Rasterization DPI when output is images. Defaults to 144.
+    #[schema(example = 144)]
+    pub image_dpi: Option<u32>,
+    /// JPEG quality when output is images and image_format is jpg. Defaults to 90.
+    #[schema(example = 90)]
+    pub image_quality: Option<u8>,
+    /// One-based page numbers to rasterize. Omit/null for all pages.
+    #[schema(example = json!([1, 2]))]
+    pub image_pages: Option<Vec<usize>>,
     /// Template compilation cache hints for in-process (L1) and Redis (L2) cache layers.
     pub cache: Option<TemplateCacheOptions>,
     /// Optional in-memory PDF encryption config.
     pub encryption: Option<EncryptionOptions>,
+}
+
+/// Supported render output formats.
+#[derive(Debug, Deserialize, ToSchema, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum RenderOutput {
+    Pdf,
+    Images,
+}
+
+/// Supported engine image output formats.
+#[derive(Debug, Deserialize, ToSchema, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum RenderImageFormat {
+    Png,
+    Jpg,
 }
 
 /// Template cache hints from the API tier.

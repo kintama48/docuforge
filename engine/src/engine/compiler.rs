@@ -1,15 +1,19 @@
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine as _;
 use bytes::Bytes;
+use image::codecs::jpeg::JpegEncoder;
+use image::ExtendedColorType;
 use lopdf::encryption::crypt_filters::{Aes256CryptFilter, CryptFilter};
-use lopdf::{Document, EncryptionState, EncryptionVersion, Permissions};
+use lopdf::{Document as PdfDocument, EncryptionState, EncryptionVersion, Permissions};
 use rand::RngCore;
 use tracing::{debug, info, warn};
 use typst::diag::{Severity, SourceDiagnostic, Warned};
+use typst::model::Document;
 use typst::syntax::Span;
 use typst::World;
 use zeroize::Zeroize;
@@ -21,9 +25,32 @@ use crate::engine::fonts::FontLoader;
 use crate::engine::world::DocuForgeWorld;
 use crate::error::EngineError;
 use crate::models::request::{
-    EncryptionMode, EncryptionOptions, EncryptionPermissions, RenderRequest, TemplateCacheOptions,
+    EncryptionMode, EncryptionOptions, EncryptionPermissions, RenderImageFormat, RenderOutput,
+    RenderRequest, TemplateCacheOptions,
 };
-use crate::models::response::ErrorSpan;
+use crate::models::response::{ErrorSpan, ImagePage, ImageRenderResponse};
+
+const DEFAULT_IMAGE_DPI: u32 = 144;
+const MIN_IMAGE_DPI: u32 = 72;
+const MAX_IMAGE_DPI: u32 = 300;
+const DEFAULT_IMAGE_QUALITY: u8 = 90;
+
+/// Compiled render output.
+#[derive(Debug)]
+pub enum CompiledRender {
+    Pdf(Vec<u8>),
+    Images(ImageRenderResponse),
+}
+
+#[derive(Clone)]
+struct ExportOptions {
+    output: RenderOutput,
+    image_format: RenderImageFormat,
+    image_dpi: u32,
+    image_quality: u8,
+    image_pages: Option<Vec<usize>>,
+    encryption: Option<EncryptionOptions>,
+}
 
 /// Compilation orchestrator.
 /// Handles asset resolution, world construction, and Typst compilation with timeout.
@@ -59,6 +86,21 @@ impl Compiler {
     }
 
     /// Compile a render request to PDF bytes.
+    pub async fn compile(
+        &self,
+        request: &RenderRequest,
+        timeout_ms: u64,
+    ) -> Result<Vec<u8>, EngineError> {
+        match self.compile_render(request, timeout_ms).await? {
+            CompiledRender::Pdf(pdf_bytes) => Ok(pdf_bytes),
+            CompiledRender::Images(_) => Err(EngineError::InvalidRequest(
+                "Compiler::compile returns PDF bytes; use compile_render for image output"
+                    .to_string(),
+            )),
+        }
+    }
+
+    /// Compile a render request to PDF bytes or page images.
     ///
     /// # Flow
     /// 1. Resolve all assets (fetch URLs, decode base64)
@@ -66,11 +108,11 @@ impl Compiler {
     /// 3. Compile with timeout using spawn_blocking
     /// 4. Export to PDF on success
     /// 5. Extract error spans on failure
-    pub async fn compile(
+    pub async fn compile_render(
         &self,
         request: &RenderRequest,
         timeout_ms: u64,
-    ) -> Result<Vec<u8>, EngineError> {
+    ) -> Result<CompiledRender, EngineError> {
         let file_count = request.template.files.len();
         debug!(file_count, main = %request.template.main, "Starting compilation");
 
@@ -96,26 +138,38 @@ impl Compiler {
             Arc::clone(&self.fonts),
             assets,
         )?;
-        let encryption = request
-            .options
-            .as_ref()
-            .and_then(|options| options.encryption.clone());
+        let export_options = ExportOptions::from_request(request)?;
 
         // Step 3: Compile with timeout
         let timeout = Duration::from_millis(timeout_ms);
 
         let compile_result = tokio::time::timeout(timeout, async {
             // Typst compilation is CPU-bound, run in blocking thread pool
-            tokio::task::spawn_blocking(move || compile_and_export(world, encryption))
+            tokio::task::spawn_blocking(move || compile_and_export(world, export_options))
                 .await
                 .map_err(|e| EngineError::Internal(format!("Task join error: {}", e)))?
         })
         .await;
 
         match compile_result {
-            Ok(Ok(pdf_bytes)) => {
-                info!(size = pdf_bytes.len(), "Compilation successful");
-                Ok(pdf_bytes)
+            Ok(Ok(output)) => {
+                match &output {
+                    CompiledRender::Pdf(pdf_bytes) => {
+                        info!(
+                            size = pdf_bytes.len(),
+                            output = "pdf",
+                            "Compilation successful"
+                        );
+                    }
+                    CompiledRender::Images(images) => {
+                        info!(
+                            pages = images.pages.len(),
+                            output = "images",
+                            "Compilation successful"
+                        );
+                    }
+                }
+                Ok(output)
             }
             Ok(Err(e)) => Err(e),
             Err(_) => {
@@ -191,12 +245,72 @@ impl Compiler {
     }
 }
 
+impl ExportOptions {
+    fn from_request(request: &RenderRequest) -> Result<Self, EngineError> {
+        let options = request.options.as_ref();
+        let output = options
+            .and_then(|options| options.output)
+            .unwrap_or(RenderOutput::Pdf);
+        let image_format = options
+            .and_then(|options| options.image_format)
+            .unwrap_or(RenderImageFormat::Png);
+        let image_dpi = options
+            .and_then(|options| options.image_dpi)
+            .unwrap_or(DEFAULT_IMAGE_DPI);
+        let image_quality = options
+            .and_then(|options| options.image_quality)
+            .unwrap_or(DEFAULT_IMAGE_QUALITY);
+        let image_pages = options.and_then(|options| options.image_pages.clone());
+        let encryption = options.and_then(|options| options.encryption.clone());
+
+        if !(MIN_IMAGE_DPI..=MAX_IMAGE_DPI).contains(&image_dpi) {
+            return Err(EngineError::InvalidRequest(format!(
+                "image_dpi must be between {MIN_IMAGE_DPI} and {MAX_IMAGE_DPI}"
+            )));
+        }
+
+        if !(1..=100).contains(&image_quality) {
+            return Err(EngineError::InvalidRequest(
+                "image_quality must be between 1 and 100".to_string(),
+            ));
+        }
+
+        if output == RenderOutput::Images && encryption.is_some() {
+            return Err(EngineError::InvalidRequest(
+                "PDF encryption is not supported for image output".to_string(),
+            ));
+        }
+
+        if let Some(pages) = &image_pages {
+            if pages.is_empty() {
+                return Err(EngineError::InvalidRequest(
+                    "image_pages must contain at least one page".to_string(),
+                ));
+            }
+            if pages.iter().any(|page| *page == 0) {
+                return Err(EngineError::InvalidRequest(
+                    "image_pages must use one-based page numbers".to_string(),
+                ));
+            }
+        }
+
+        Ok(Self {
+            output,
+            image_format,
+            image_dpi,
+            image_quality,
+            image_pages,
+            encryption,
+        })
+    }
+}
+
 /// Perform Typst compilation and PDF export.
 /// This runs in a blocking thread.
 fn compile_and_export(
     world: DocuForgeWorld,
-    encryption: Option<EncryptionOptions>,
-) -> Result<Vec<u8>, EngineError> {
+    options: ExportOptions,
+) -> Result<CompiledRender, EngineError> {
     // Compile to document - returns Warned<SourceResult<Document>>
     let Warned { output, warnings } = typst::compile(&world);
 
@@ -207,18 +321,13 @@ fn compile_and_export(
 
     match output {
         Ok(document) => {
-            // Export to PDF
-            let mut pdf_bytes = typst_pdf::pdf(&document, &typst_pdf::PdfOptions::default())
-                .map_err(|e| EngineError::Internal(format!("PDF export failed: {:?}", e)))?;
-
-            if let Some(mut encryption_options) = encryption {
-                let encrypted_pdf = encrypt_pdf_in_memory(&mut pdf_bytes, &mut encryption_options)?;
-                pdf_bytes.zeroize();
-                encryption_options.user_password.zeroize();
-                return Ok(encrypted_pdf);
+            if options.output == RenderOutput::Images {
+                let images = export_images(&document, &options)?;
+                return Ok(CompiledRender::Images(images));
             }
 
-            Ok(pdf_bytes)
+            let pdf = export_pdf(&document, options.encryption)?;
+            Ok(CompiledRender::Pdf(pdf))
         }
         Err(errors) => {
             // Extract first error for structured response
@@ -244,6 +353,129 @@ fn compile_and_export(
             })
         }
     }
+}
+
+fn export_pdf(
+    document: &Document,
+    encryption: Option<EncryptionOptions>,
+) -> Result<Vec<u8>, EngineError> {
+    let mut pdf_bytes = typst_pdf::pdf(document, &typst_pdf::PdfOptions::default())
+        .map_err(|e| EngineError::Internal(format!("PDF export failed: {:?}", e)))?;
+
+    if let Some(mut encryption_options) = encryption {
+        let encrypted_pdf = encrypt_pdf_in_memory(&mut pdf_bytes, &mut encryption_options)?;
+        pdf_bytes.zeroize();
+        encryption_options.user_password.zeroize();
+        return Ok(encrypted_pdf);
+    }
+
+    Ok(pdf_bytes)
+}
+
+fn export_images(
+    document: &Document,
+    options: &ExportOptions,
+) -> Result<ImageRenderResponse, EngineError> {
+    let page_count = document.pages.len();
+    if page_count == 0 {
+        return Err(EngineError::InvalidRequest(
+            "Cannot render images for a document with no pages".to_string(),
+        ));
+    }
+
+    let selected_pages = selected_image_pages(options.image_pages.as_deref(), page_count)?;
+    let scale = options.image_dpi as f32 / 72.0;
+    let format_label = match options.image_format {
+        RenderImageFormat::Png => "png",
+        RenderImageFormat::Jpg => "jpg",
+    };
+
+    let mut pages = Vec::with_capacity(selected_pages.len());
+    for index in selected_pages {
+        let zero_based = index - 1;
+        let page = document.pages.get(zero_based).ok_or_else(|| {
+            EngineError::InvalidRequest(format!("image_pages must be between 1 and {page_count}"))
+        })?;
+        let pixmap = typst_render::render(page, scale);
+        let image_bytes = match options.image_format {
+            RenderImageFormat::Png => pixmap
+                .encode_png()
+                .map_err(|e| EngineError::Internal(format!("PNG export failed: {e}")))?,
+            RenderImageFormat::Jpg => encode_jpeg(
+                pixmap.data(),
+                pixmap.width(),
+                pixmap.height(),
+                options.image_quality,
+            )?,
+        };
+
+        pages.push(ImagePage {
+            index,
+            data: base64::engine::general_purpose::STANDARD.encode(image_bytes),
+        });
+    }
+
+    Ok(ImageRenderResponse {
+        pages,
+        format: format_label.to_string(),
+    })
+}
+
+fn selected_image_pages(
+    requested_pages: Option<&[usize]>,
+    page_count: usize,
+) -> Result<Vec<usize>, EngineError> {
+    let Some(requested_pages) = requested_pages else {
+        return Ok((1..=page_count).collect());
+    };
+
+    let mut selected = BTreeSet::new();
+    for page in requested_pages {
+        if *page == 0 || *page > page_count {
+            return Err(EngineError::InvalidRequest(format!(
+                "image_pages must be between 1 and {page_count}"
+            )));
+        }
+        selected.insert(*page);
+    }
+
+    if selected.is_empty() {
+        return Err(EngineError::InvalidRequest(
+            "image_pages must contain at least one page".to_string(),
+        ));
+    }
+
+    Ok(selected.into_iter().collect())
+}
+
+fn encode_jpeg(
+    premultiplied_rgba: &[u8],
+    width: u32,
+    height: u32,
+    quality: u8,
+) -> Result<Vec<u8>, EngineError> {
+    let expected_len = width as usize * height as usize * 4;
+    if premultiplied_rgba.len() != expected_len {
+        return Err(EngineError::Internal(
+            "Unexpected raster buffer length".to_string(),
+        ));
+    }
+
+    let mut rgb = Vec::with_capacity(width as usize * height as usize * 3);
+    for pixel in premultiplied_rgba.chunks_exact(4) {
+        let alpha = u16::from(pixel[3]);
+        let white = 255 - alpha;
+        rgb.push((u16::from(pixel[0]) + white).min(255) as u8);
+        rgb.push((u16::from(pixel[1]) + white).min(255) as u8);
+        rgb.push((u16::from(pixel[2]) + white).min(255) as u8);
+    }
+
+    let mut out = Vec::new();
+    let mut encoder = JpegEncoder::new_with_quality(&mut out, quality);
+    encoder
+        .encode(&rgb, width, height, ExtendedColorType::Rgb8)
+        .map_err(|e| EngineError::Internal(format!("JPEG export failed: {e}")))?;
+    Ok(out)
 }
 
 fn encrypt_pdf_in_memory(
@@ -272,7 +504,7 @@ fn encrypt_pdf_in_memory(
         EncryptionPermissions::PrintOnly => Permissions::PRINTABLE,
     };
 
-    let mut document = Document::load_mem(plaintext_pdf)
+    let mut document = PdfDocument::load_mem(plaintext_pdf)
         .map_err(|e| EngineError::EncryptionFailed(format!("Failed to load generated PDF: {e}")))?;
 
     let mut owner_password_bytes = [0u8; 32];
@@ -359,7 +591,7 @@ fn log_diagnostic(world: &DocuForgeWorld, diag: &SourceDiagnostic) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::request::{Asset, RenderOptions, Template};
+    use crate::models::request::{Asset, RenderImageFormat, RenderOptions, RenderOutput, Template};
     use serde_json::json;
 
     fn empty_fonts() -> Arc<FontLoader> {
@@ -396,6 +628,35 @@ mod tests {
         let pdf = result.unwrap();
         assert!(pdf.starts_with(b"%PDF"));
         assert!(pdf.len() > 100);
+    }
+
+    #[tokio::test]
+    async fn test_compile_image_output() {
+        let compiler = Compiler::new(empty_fonts(), test_cache());
+        let mut request = simple_request("Hello, image render!");
+        request.options = Some(RenderOptions {
+            timeout_ms: Some(5000),
+            output: Some(RenderOutput::Images),
+            image_format: Some(RenderImageFormat::Png),
+            image_dpi: Some(144),
+            image_quality: None,
+            image_pages: Some(vec![1]),
+            cache: None,
+            encryption: None,
+        });
+
+        let result = compiler.compile_render(&request, 5000).await;
+        assert!(result.is_ok());
+
+        match result.unwrap() {
+            CompiledRender::Images(images) => {
+                assert_eq!(images.format, "png");
+                assert_eq!(images.pages.len(), 1);
+                assert_eq!(images.pages[0].index, 1);
+                assert!(!images.pages[0].data.is_empty());
+            }
+            other => panic!("Expected image render output, got {:?}", other),
+        }
     }
 
     #[tokio::test]
@@ -539,6 +800,11 @@ mod tests {
             assets: None,
             options: Some(RenderOptions {
                 timeout_ms: Some(5000),
+                output: None,
+                image_format: None,
+                image_dpi: None,
+                image_quality: None,
+                image_pages: None,
                 cache: None,
                 encryption: Some(EncryptionOptions {
                     user_password: "super-secret-password".to_string(),
@@ -552,7 +818,7 @@ mod tests {
         assert!(result.is_ok());
 
         let pdf_bytes = result.unwrap();
-        let document = Document::load_mem(&pdf_bytes).unwrap();
+        let document = PdfDocument::load_mem(&pdf_bytes).unwrap();
         assert!(document.trailer.get(b"Encrypt").is_ok());
     }
 
@@ -572,6 +838,11 @@ mod tests {
             assets: None,
             options: Some(RenderOptions {
                 timeout_ms: Some(5000),
+                output: None,
+                image_format: None,
+                image_dpi: None,
+                image_quality: None,
+                image_pages: None,
                 cache: None,
                 encryption: Some(EncryptionOptions {
                     user_password: "short".to_string(),

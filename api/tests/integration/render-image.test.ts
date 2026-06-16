@@ -41,6 +41,11 @@ describe('POST /v1/render/image and /console/render/preview/image', () => {
     expect(response.headers.get('X-Image-Archive')).toBe('false');
     const bytes = new Uint8Array(await response.arrayBuffer());
     expect(bytes.byteLength).toBeGreaterThan(100);
+
+    const engineRequest = ctx.engine.getLastRequest();
+    expect(engineRequest?.body?.options.output).toBe('images');
+    expect(engineRequest?.body?.options.image_format).toBe('png');
+    expect(engineRequest?.body?.options.image_dpi).toBe(150);
   });
 
   it('renders template image with API key auth', async () => {
@@ -63,6 +68,11 @@ describe('POST /v1/render/image and /console/render/preview/image', () => {
     expect(response.headers.get('X-Image-Archive')).toBe('false');
     const bytes = new Uint8Array(await response.arrayBuffer());
     expect(bytes.byteLength).toBeGreaterThan(100);
+
+    const engineRequest = ctx.engine.getLastRequest();
+    expect(engineRequest?.body?.options.output).toBe('images');
+    expect(engineRequest?.body?.options.image_format).toBe('jpg');
+    expect(engineRequest?.body?.options.image_quality).toBe(85);
   });
 
   it('rejects out-of-range page numbers', async () => {
@@ -81,4 +91,3 @@ describe('POST /v1/render/image and /console/render/preview/image', () => {
     expect(body.error).toBe('validation_error');
   });
 });
-

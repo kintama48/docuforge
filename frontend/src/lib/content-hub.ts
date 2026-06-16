@@ -1,4 +1,5 @@
 import type { Locale } from "@/src/lib/i18n-config";
+import blogPlaygrounds from "@/src/data/blog-playgrounds.json";
 
 export type ContentCollection = "blog" | "templates" | "compare" | "industries";
 
@@ -17,6 +18,26 @@ export type ContentLink = {
   title: string;
 };
 
+export type ContentCodeSnippet = {
+  label: string;
+  language: string;
+  code: string;
+};
+
+export type ContentPlayground = {
+  problem: string;
+  templateTitle: string;
+  templateCode: string;
+  dataTitle: string;
+  dataJson: string;
+  previewTitle: string;
+  previewRows: Array<{
+    label: string;
+    value: string;
+  }>;
+  previewStatus: string;
+};
+
 export type ContentBlock =
   | {
       kind: "paragraph";
@@ -33,6 +54,17 @@ export type ContentBlock =
       title: string;
       language: string;
       code: string;
+    }
+  | {
+      kind: "codeGroup";
+      title: string;
+      description: string;
+      snippets: ContentCodeSnippet[];
+    }
+  | {
+      kind: "playground";
+      title: string;
+      playground: ContentPlayground;
     }
   | {
       kind: "links";
@@ -120,6 +152,26 @@ type BlogSpec = {
   keyword: string;
   priority?: boolean;
 };
+
+type BlogPlaygroundFixture = {
+  problem: string;
+  documentTitle: string;
+  templateTopic: string;
+  customer: string;
+  reference: string;
+  date: string;
+  status: string;
+  lineItems: Array<{
+    name: string;
+    qty: number;
+    amount: number;
+  }>;
+};
+
+const blogPlaygroundFixtures = blogPlaygrounds as Record<
+  BlogSpec["category"],
+  BlogPlaygroundFixture
+>;
 
 const blogSpecs: BlogSpec[] = [
   {
@@ -914,6 +966,231 @@ function buildArticleCodeExample(slug: string) {
   --output document.pdf`;
 }
 
+function blogTemplateId(slug: string) {
+  return `tpl_${slug.replaceAll("-", "_")}`;
+}
+
+function getBlogPlaygroundFixture(category: BlogSpec["category"]): BlogPlaygroundFixture {
+  const fixture = blogPlaygroundFixtures[category] ?? blogPlaygroundFixtures.foundation;
+  if (!fixture) {
+    throw new Error(`Missing blog playground fixture for category: ${category}`);
+  }
+  return fixture;
+}
+
+function buildBlogPlaygroundTemplate() {
+  return `#set page(paper: "a4", margin: 18mm)
+#set text(font: "Inter", size: 10pt)
+
+#let data = sys.inputs
+
+#text(size: 22pt, weight: "bold")[#data.title]
+#v(4pt)
+#text(fill: rgb("#64748b"))[#data.reference + " - " + data.date]
+
+#v(12pt)
+#block(
+  fill: rgb("#f8fafc"),
+  stroke: 0.5pt + rgb("#e2e8f0"),
+  inset: 12pt,
+  radius: 4pt,
+)[
+  #text(weight: "semibold")[#data.customer]
+  #linebreak()
+  #text(fill: rgb("#64748b"))[#data.status]
+]
+
+#v(12pt)
+#table(
+  columns: (1fr, auto, auto),
+  inset: 7pt,
+  stroke: 0.5pt + rgb("#e2e8f0"),
+  [*Item*], [*Qty*], [*Amount*],
+  ..data.line_items.map(item => (
+    item.name,
+    str(item.qty),
+    "$" + str(item.amount),
+  )).flatten(),
+)`;
+}
+
+function buildBlogPlayground(spec: BlogSpec): ContentPlayground {
+  const fixture = getBlogPlaygroundFixture(spec.category);
+  const data = {
+    title: fixture.documentTitle,
+    customer: fixture.customer,
+    reference: fixture.reference,
+    date: fixture.date,
+    status: fixture.status,
+    line_items: fixture.lineItems,
+  };
+
+  return {
+    problem: fixture.problem,
+    templateTitle: `${fixture.templateTopic} Typst template`,
+    templateCode: buildBlogPlaygroundTemplate(),
+    dataTitle: "Sample JSON payload",
+    dataJson: JSON.stringify(data, null, 2),
+    previewTitle: fixture.documentTitle,
+    previewRows: [
+      { label: "Customer", value: fixture.customer },
+      { label: "Reference", value: fixture.reference },
+      { label: "Date", value: fixture.date },
+      { label: "Rows", value: String(fixture.lineItems.length) },
+    ],
+    previewStatus: fixture.status,
+  };
+}
+
+function buildBlogCustomizationTips(category: BlogSpec["category"]): string[] {
+  const sharedTips = [
+    "Keep brand colors, spacing, and repeated footer copy in shared template variables.",
+    "Pass customer-specific values through JSON data instead of forking the template.",
+    "Store one approved sample payload per template so preview regressions are easy to catch.",
+  ];
+
+  if (category === "programmatic") {
+    return [
+      "Attach an idempotency key to each business event before rendering.",
+      "Keep retry metadata outside the PDF payload so document output stays deterministic.",
+      ...sharedTips,
+    ];
+  }
+
+  if (category === "pain") {
+    return [
+      "Measure p50 and p95 render time before and after each template change.",
+      "Avoid browser-only layout assumptions such as print CSS side effects.",
+      ...sharedTips,
+    ];
+  }
+
+  return [
+    "Start with the smallest layout that proves the document contract.",
+    "Use real customer-shaped sample data before publishing a new version.",
+    ...sharedTips,
+  ];
+}
+
+function buildApiCodeSnippets(slug: string): ContentCodeSnippet[] {
+  const templateId = blogTemplateId(slug);
+  return [
+    {
+      label: "Node.js",
+      language: "ts",
+      code: `const response = await fetch(\`\${process.env.DOCUFORGE_API_URL}/v1/render\`, {
+  method: "POST",
+  headers: {
+    "X-API-Key": process.env.DOCUFORGE_API_KEY,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ template_id: "${templateId}", data: payload }),
+});
+
+const pdf = Buffer.from(await response.arrayBuffer());`,
+    },
+    {
+      label: "Python",
+      language: "python",
+      code: `import requests
+
+resp = requests.post(
+    f"{API_URL}/v1/render",
+    headers={"X-API-Key": API_KEY},
+    json={"template_id": "${templateId}", "data": payload},
+    timeout=30,
+)
+open("document.pdf", "wb").write(resp.content)`,
+    },
+    {
+      label: "PHP",
+      language: "php",
+      code: `<?php
+$response = file_get_contents(getenv("DOCUFORGE_API_URL") . "/v1/render", false, stream_context_create([
+  "http" => [
+    "method" => "POST",
+    "header" => "X-API-Key: " . getenv("DOCUFORGE_API_KEY") . "\\r\\nContent-Type: application/json",
+    "content" => json_encode(["template_id" => "${templateId}", "data" => $payload]),
+  ],
+]));
+file_put_contents("document.pdf", $response);`,
+    },
+    {
+      label: "Ruby",
+      language: "ruby",
+      code: `require "net/http"
+require "json"
+
+uri = URI("#{ENV["DOCUFORGE_API_URL"]}/v1/render")
+req = Net::HTTP::Post.new(uri, "X-API-Key" => ENV["DOCUFORGE_API_KEY"], "Content-Type" => "application/json")
+req.body = { template_id: "${templateId}", data: payload }.to_json
+File.binwrite("document.pdf", Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req).body })`,
+    },
+    {
+      label: "Go",
+      language: "go",
+      code: `body, _ := json.Marshal(map[string]any{
+  "template_id": "${templateId}",
+  "data": payload,
+})
+req, _ := http.NewRequest("POST", os.Getenv("DOCUFORGE_API_URL")+"/v1/render", bytes.NewReader(body))
+req.Header.Set("X-API-Key", os.Getenv("DOCUFORGE_API_KEY"))
+req.Header.Set("Content-Type", "application/json")
+resp, _ := http.DefaultClient.Do(req)
+defer resp.Body.Close()`,
+    },
+    {
+      label: "Rust",
+      language: "rust",
+      code: `let client = reqwest::Client::new();
+let bytes = client
+    .post(format!("{}/v1/render", std::env::var("DOCUFORGE_API_URL")?))
+    .header("X-API-Key", std::env::var("DOCUFORGE_API_KEY")?)
+    .json(&serde_json::json!({ "template_id": "${templateId}", "data": payload }))
+    .send()
+    .await?
+    .bytes()
+    .await?;`,
+    },
+    {
+      label: "Java",
+      language: "java",
+      code: `HttpRequest request = HttpRequest.newBuilder()
+  .uri(URI.create(System.getenv("DOCUFORGE_API_URL") + "/v1/render"))
+  .header("X-API-Key", System.getenv("DOCUFORGE_API_KEY"))
+  .header("Content-Type", "application/json")
+  .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+  .build();
+
+HttpResponse<byte[]> response = HttpClient.newHttpClient().send(request, BodyHandlers.ofByteArray());`,
+    },
+    {
+      label: ".NET",
+      language: "csharp",
+      code: `using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("X-API-Key", Environment.GetEnvironmentVariable("DOCUFORGE_API_KEY"));
+var response = await client.PostAsJsonAsync(
+  $"{Environment.GetEnvironmentVariable("DOCUFORGE_API_URL")}/v1/render",
+  new { template_id = "${templateId}", data = payload }
+);
+var pdf = await response.Content.ReadAsByteArrayAsync();`,
+    },
+    {
+      label: "cURL",
+      language: "bash",
+      code: buildArticleCodeExample(slug),
+    },
+    {
+      label: "CLI",
+      language: "bash",
+      code: `docuforge render \\
+  --template "${templateId}" \\
+  --data payload.json \\
+  --output document.pdf`,
+    },
+  ];
+}
+
 function buildTemplateTypst(topic: string) {
   return `#set page(paper: "a4", margin: 12pt)
 #set text(font: "Inter", size: 10pt)
@@ -1183,23 +1460,29 @@ function buildBlogDocument(spec: BlogSpec, locale: Locale): ContentDocument {
   };
 
   const profile = profileByCategory[spec.category];
+  const playground = buildBlogPlayground(spec);
 
   const blocks: ContentBlock[] = [
     {
       kind: "paragraph",
-      title: copy.quickAnswerTitle,
-      paragraphs: [profile.quickAnswer],
+      title: "Problem",
+      paragraphs: [playground.problem, profile.quickAnswer],
     },
     {
-      kind: "paragraph",
-      title: profile.implementationTitle,
-      paragraphs: profile.implementationParagraphs,
+      kind: "playground",
+      title: "Typst playground",
+      playground,
     },
     {
-      kind: "code",
-      title: "API request example",
-      language: "bash",
-      code: buildArticleCodeExample(spec.slug),
+      kind: "codeGroup",
+      title: "Solution & copyable API code",
+      description: profile.implementationParagraphs.join(" "),
+      snippets: buildApiCodeSnippets(spec.slug),
+    },
+    {
+      kind: "list",
+      title: "Customization tips",
+      items: buildBlogCustomizationTips(spec.category),
     },
     {
       kind: "list",

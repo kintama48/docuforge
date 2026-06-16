@@ -7,9 +7,12 @@ import {
   type ContentDocument,
   type ContentLink,
   type ContentFaq,
+  getContentHubCopy,
 } from "@/src/lib/content-hub";
 import { withLocale } from "@/src/lib/locale-path";
 import type { Locale } from "@/src/lib/i18n-config";
+import { BlogPlaygroundBlock } from "./blog-playground";
+import { ContentCodeGroup } from "./code-group";
 
 function localizeHref(href: string, locale: Locale) {
   if (/^https?:\/\//.test(href)) return href;
@@ -85,6 +88,20 @@ function RenderBlock({ block, locale }: { block: ContentBlock; locale: Locale })
     );
   }
 
+  if (block.kind === "codeGroup") {
+    return (
+      <ContentCodeGroup
+        title={block.title}
+        description={block.description}
+        snippets={block.snippets}
+      />
+    );
+  }
+
+  if (block.kind === "playground") {
+    return <BlogPlaygroundBlock title={block.title} playground={block.playground} />;
+  }
+
   return (
     <section>
       <h2 className="font-display text-2xl text-[var(--ink)]">{block.title}</h2>
@@ -93,11 +110,11 @@ function RenderBlock({ block, locale }: { block: ContentBlock; locale: Locale })
   );
 }
 
-function FaqSection({ faq }: { faq: ContentFaq[] }) {
+function FaqSection({ faq, title }: { faq: ContentFaq[]; title: string }) {
   if (faq.length === 0) return null;
   return (
     <section>
-      <h2 className="font-display text-2xl text-[var(--ink)]">FAQ</h2>
+      <h2 className="font-display text-2xl text-[var(--ink)]">{title}</h2>
       <div className="mt-4 space-y-4">
         {faq.map((item) => (
           <div
@@ -151,6 +168,8 @@ export function ContentDocumentPage({
   locale: Locale;
   document: ContentDocument;
 }) {
+  const copy = getContentHubCopy(locale);
+
   return (
     <div className="min-h-screen page-background">
       <SiteHeader />
@@ -173,11 +192,11 @@ export function ContentDocumentPage({
             <RenderBlock key={`${block.kind}:${block.title}`} block={block} locale={locale} />
           ))}
 
-          <FaqSection faq={document.faq} />
+          <FaqSection faq={document.faq} title={copy.faqTitle} />
 
           {document.related.length > 0 && (
             <section>
-              <h2 className="font-display text-2xl text-[var(--ink)]">Related guides</h2>
+              <h2 className="font-display text-2xl text-[var(--ink)]">{copy.relatedTitle}</h2>
               <LinksBlock links={document.related} locale={locale} />
             </section>
           )}

@@ -1,0 +1,67 @@
+{
+  "foundation": {
+    "problem": "A finance team needs every invoice preview to match the production PDF, even when the template changes over time.",
+    "documentTitle": "Invoice preview",
+    "templateTopic": "Invoice",
+    "customer": "Northwind Studio",
+    "reference": "INV-2026-1042",
+    "date": "2026-06-16",
+    "status": "Ready for review",
+    "lineItems": [
+      { "name": "Template version audit", "qty": 1, "amount": 420 },
+      { "name": "Preview parity check", "qty": 2, "amount": 180 }
+    ]
+  },
+  "pain": {
+    "problem": "A browser-based PDF worker is adding seconds of cold-start latency and failing whenever print CSS behaves differently in production.",
+    "documentTitle": "Render latency report",
+    "templateTopic": "Performance report",
+    "customer": "Acme Platform",
+    "reference": "PERF-2026-071",
+    "date": "2026-06-16",
+    "status": "p95 under review",
+    "lineItems": [
+      { "name": "Browser render p95", "qty": 1, "amount": 3100 },
+      { "name": "Typst render p95", "qty": 1, "amount": 740 }
+    ]
+  },
+  "tutorial": {
+    "problem": "A developer needs to turn a JSON payload into a clean report without building and maintaining a custom PDF renderer.",
+    "documentTitle": "Weekly report",
+    "templateTopic": "Report",
+    "customer": "Ops Team",
+    "reference": "RPT-2026-W24",
+    "date": "2026-06-16",
+    "status": "Draft",
+    "lineItems": [
+      { "name": "Open tickets", "qty": 14, "amount": 0 },
+      { "name": "Resolved tickets", "qty": 31, "amount": 0 }
+    ]
+  },
+  "use-case": {
+    "problem": "A product team wants customer-specific PDF output without forking layouts for every customer account.",
+    "documentTitle": "Customer document",
+    "templateTopic": "Customer handoff",
+    "customer": "Atlas Logistics",
+    "reference": "DOC-2026-219",
+    "date": "2026-06-16",
+    "status": "Tenant branded",
+    "lineItems": [
+      { "name": "Shared layout", "qty": 1, "amount": 0 },
+      { "name": "Tenant data payload", "qty": 1, "amount": 0 }
+    ]
+  },
+  "programmatic": {
+    "problem": "A backend worker needs to render documents idempotently from queue events and avoid duplicate PDFs during retries.",
+    "documentTitle": "Queue render receipt",
+    "templateTopic": "Queue receipt",
+    "customer": "Fulfillment Worker",
+    "reference": "JOB-2026-8831",
+    "date": "2026-06-16",
+    "status": "Idempotent",
+    "lineItems": [
+      { "name": "Queue event", "qty": 1, "amount": 0 },
+      { "name": "Render retry", "qty": 2, "amount": 0 }
+    ]
+  }
+}

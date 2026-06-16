@@ -49,6 +49,14 @@ const MINIMAL_PDF_BYTES = new Uint8Array([
   0x46,                                           // F
 ]);
 
+const MINIMAL_IMAGE_BYTES = new Uint8Array([
+  ...Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7+X8QAAAAASUVORK5CYII=',
+    'base64'
+  ),
+  ...new Uint8Array(128),
+]);
+
 export interface RecordedRequest {
   method: string;
   path: string;
@@ -149,6 +157,24 @@ export function createMockEngine(initialConfig: MockEngineConfig = {}): MockEngi
 
       if (config.forceError === 'unavailable') {
         return new Response('Service Unavailable', { status: 503 });
+      }
+
+      if (body.options?.output === 'images') {
+        const requestedPages = body.options.image_pages || [1];
+        if (requestedPages.some((page) => page !== 1)) {
+          return Response.json(
+            { error: 'invalid_request', message: 'image_pages must be between 1 and 1' },
+            { status: 422 }
+          );
+        }
+
+        return Response.json({
+          format: body.options.image_format === 'jpg' ? 'jpg' : 'png',
+          pages: requestedPages.map((page) => ({
+            index: page,
+            data: Buffer.from(MINIMAL_IMAGE_BYTES).toString('base64'),
+          })),
+        });
       }
 
       // Return PDF

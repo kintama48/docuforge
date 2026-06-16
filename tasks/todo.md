@@ -1,5 +1,16 @@
 # Task Plan
 
+## KAN-65 / KAN-66 / KAN-67 Plan (2026-06-16)
+
+- [x] Read Jira requirements for KAN-65, KAN-66, and KAN-67.
+- [x] Fetch and audit local/remote branches for existing KAN-65/66/67 or Claude work.
+- [x] Preserve and account for existing uncommitted Claude template/design changes.
+- [x] KAN-65: add engine `/render` image output and refactor API image render paths to use it.
+- [x] KAN-66: improve blog structure with reusable code/code-group components and inline playground/rendered preview.
+- [x] KAN-67: add active navbar underline behavior for nav routes, excluding individual blog posts.
+- [x] Add focused regression coverage and run quality gates.
+- [ ] Update Jira statuses/comments after verification.
+
 ## Local Redis + Email Logo Hardening Plan (2026-03-09)
 
 - [x] Ensure local development boot flow provisions Redis reliably (compose + make target wiring).

@@ -2,7 +2,7 @@
  * Unit tests for engine service error handling.
  */
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
-import { renderPdf, checkEngineHealth } from '../../src/services/engine';
+import { renderImages, renderPdf, checkEngineHealth } from '../../src/services/engine';
 import {
   CompilationError,
   EngineTimeoutError,
@@ -38,6 +38,31 @@ describe('engine service', () => {
     const result = await renderPdf({ source: '= Hello', data: {} } as any);
     expect(result.pdf).toBeInstanceOf(Buffer);
     expect(result.pdf.length).toBeGreaterThan(0);
+  });
+
+  test('renderImages returns decoded image pages on success', async () => {
+    unregister = registerFetchHandler(engineOrigin, async () =>
+      Response.json({
+        format: 'jpg',
+        pages: [
+          {
+            index: 1,
+            data: Buffer.from([0xff, 0xd8, 0xff, 0xd9]).toString('base64'),
+          },
+        ],
+      })
+    );
+
+    const result = await renderImages({
+      template: { main: 'main.typ', files: { 'main.typ': '= Hello' } },
+      data: {},
+      assets: [],
+      options: { timeout_ms: 10, output: 'images', image_format: 'jpg' },
+    });
+    expect(result.format).toBe('jpeg');
+    expect(result.pages).toHaveLength(1);
+    expect(result.pages[0]?.index).toBe(1);
+    expect(result.pages[0]?.data.length).toBe(4);
   });
 
   test('renderPdf throws EngineTimeoutError on 408', async () => {

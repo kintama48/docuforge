@@ -96,6 +96,11 @@ export interface EnginePayload {
   assets: EngineAsset[];
   options: {
     timeout_ms: number;
+    output?: 'pdf' | 'images';
+    image_format?: 'png' | 'jpg';
+    image_dpi?: number;
+    image_quality?: number;
+    image_pages?: number[];
     cache?: {
       cacheable: boolean;
       template_fingerprint?: string;

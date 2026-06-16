@@ -35,6 +35,11 @@ export interface ImageRenderOutput {
   archive: boolean;
 }
 
+export interface RenderedImagePage {
+  index: number;
+  data: Buffer;
+}
+
 function parsePdfInfoPageCount(raw: string): number {
   const match = raw.match(/^Pages:\s+(\d+)/m);
   const count = match ? Number(match[1]) : NaN;
@@ -158,6 +163,59 @@ async function zipFiles(zipPath: string, files: string[]): Promise<void> {
       throw new InternalError('zip is not installed on this host');
     }
     throw new InternalError('Failed to package image export');
+  }
+}
+
+export async function packageRenderedImages(
+  pages: RenderedImagePage[],
+  format: ImageFormat
+): Promise<ImageRenderOutput> {
+  if (pages.length === 0) {
+    throw new InternalError('No rendered image pages returned by engine');
+  }
+
+  const ext = format === 'png' ? 'png' : 'jpg';
+
+  if (pages.length === 1) {
+    const page = assertPresent(pages[0], 'Single-page image render returned no page');
+    if (!page.data || page.data.length === 0) {
+      throw new InternalError('Rendered image page is empty');
+    }
+    return {
+      body: page.data,
+      contentType: format === 'png' ? 'image/png' : 'image/jpeg',
+      filename: `document-page-${String(page.index).padStart(4, '0')}.${ext}`,
+      pageCount: 1,
+      archive: false,
+    };
+  }
+
+  const workDir = await mkdtemp(join(tmpdir(), 'docuforge-image-export-'));
+
+  try {
+    const createdFiles: string[] = [];
+    for (const page of pages) {
+      if (!page.data || page.data.length === 0) {
+        throw new InternalError(`Rendered image page ${page.index} is empty`);
+      }
+
+      const filePath = join(workDir, `document-page-${String(page.index).padStart(4, '0')}.${ext}`);
+      await writeFile(filePath, page.data);
+      createdFiles.push(filePath);
+    }
+
+    const zipPath = join(workDir, 'document-images.zip');
+    await zipFiles(zipPath, createdFiles);
+
+    return {
+      body: await readFile(zipPath),
+      contentType: 'application/zip',
+      filename: 'document-images.zip',
+      pageCount: createdFiles.length,
+      archive: true,
+    };
+  } finally {
+    await rm(workDir, { recursive: true, force: true }).catch(() => {});
   }
 }
 

@@ -48,3 +48,21 @@ pub struct HealthResponse {
     #[schema(example = 3600)]
     pub uptime_seconds: u64,
 }
+
+/// JSON response for image render output.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct ImageRenderResponse {
+    /// Base64-encoded image pages.
+    pub pages: Vec<ImagePage>,
+    /// Image format used for all returned pages.
+    pub format: String,
+}
+
+/// One rendered page image.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct ImagePage {
+    /// One-based page index in the source document.
+    pub index: usize,
+    /// Base64-encoded image bytes.
+    pub data: String,
+}

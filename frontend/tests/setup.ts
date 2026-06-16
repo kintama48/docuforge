@@ -9,7 +9,8 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => "/",
+  usePathname: () =>
+    typeof window === "undefined" ? "/" : window.location.pathname || "/",
 }));
 
 beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));

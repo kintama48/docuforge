@@ -51,4 +51,33 @@ describe("content hub", () => {
     expect(doc?.excerpt).toContain("API-first throughput");
     expect(doc?.excerpt).not.toContain("Typst-first");
   });
+
+  it("adds playground and supported-language code groups to every blog post", () => {
+    const blog = listContent("blog", "en");
+
+    for (const doc of blog) {
+      const blockKinds = doc.blocks.map((block) => block.kind);
+      expect(blockKinds.slice(0, 3)).toEqual(["paragraph", "playground", "codeGroup"]);
+      expect(doc.blocks.some((block) => block.kind === "list" && block.title === "Customization tips")).toBe(true);
+      expect(doc.faq.length).toBeGreaterThan(0);
+      expect(doc.related.length).toBeGreaterThan(0);
+
+      const codeGroup = doc.blocks.find((block) => block.kind === "codeGroup");
+      expect(codeGroup?.kind).toBe("codeGroup");
+      if (codeGroup?.kind !== "codeGroup") continue;
+
+      expect(codeGroup.snippets.map((snippet) => snippet.label)).toEqual([
+        "Node.js",
+        "Python",
+        "PHP",
+        "Ruby",
+        "Go",
+        "Rust",
+        "Java",
+        ".NET",
+        "cURL",
+        "CLI",
+      ]);
+    }
+  });
 });
