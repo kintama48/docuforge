@@ -15,10 +15,10 @@ export type MarketingMeta = {
 const marketingMeta: Record<Locale, MarketingMeta> = {
   en: {
     landing: {
-      title: "DocuForge · Generate any PDF from JSON.",
+      title: "DocuForge · Generate PDFs via API — invoices, receipts, and reports from JSON.",
       description:
-        "Invoices, contracts, reports, books, certificates — anything Typst can typeset. One POST, one PDF. Rust-powered, no headless browser, no queue.",
-      ogAlt: "DocuForge — Generate any PDF from JSON.",
+        "Generate invoices, receipts, and reports from JSON via a single POST. Rust-powered rendering engine — no headless browser, no queue.",
+      ogAlt: "DocuForge — Generate PDFs via API from JSON.",
     },
     pricing: {
       title: "DocuForge Pricing · Plans for every team",

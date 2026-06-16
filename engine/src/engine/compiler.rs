@@ -287,7 +287,7 @@ impl ExportOptions {
                     "image_pages must contain at least one page".to_string(),
                 ));
             }
-            if pages.iter().any(|page| *page == 0) {
+            if pages.contains(&0) {
                 return Err(EngineError::InvalidRequest(
                     "image_pages must use one-based page numbers".to_string(),
                 ));
