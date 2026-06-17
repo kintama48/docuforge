@@ -1,0 +1,2397 @@
+{
+  "/Users/abdullah/Projects/docuforge/frontend/bun-tests/smoke.test.ts": {
+    "mtime": 1776859899.391883,
+    "ast_hash": "84e8344d5cca6f54bbe2b639b3260d0e",
+    "semantic_hash": "84e8344d5cca6f54bbe2b639b3260d0e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/e2e/docs.spec.ts": {
+    "mtime": 1776859930.476611,
+    "ast_hash": "da814c254e7b2c85d7667618deb1c4e7",
+    "semantic_hash": "da814c254e7b2c85d7667618deb1c4e7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/e2e/editor-version-revert.spec.ts": {
+    "mtime": 1776859930.4761505,
+    "ast_hash": "c054d5da990d6dacb907e48c4b04d6c6",
+    "semantic_hash": "c054d5da990d6dacb907e48c4b04d6c6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/e2e/landing.spec.ts": {
+    "mtime": 1781203487.534341,
+    "ast_hash": "0f9b10063a1ff1cb086c48969a6d5047",
+    "semantic_hash": "0f9b10063a1ff1cb086c48969a6d5047"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/eslint.config.mjs": {
+    "mtime": 1776859930.4773505,
+    "ast_hash": "a7d4235019c72235403e6b97ea547819",
+    "semantic_hash": "a7d4235019c72235403e6b97ea547819"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/instrumentation.ts": {
+    "mtime": 1776859930.4771094,
+    "ast_hash": "6d3347cf1c9e1bd4da59e16e48b83bfc",
+    "semantic_hash": "6d3347cf1c9e1bd4da59e16e48b83bfc"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/middleware.ts": {
+    "mtime": 1781203487.5351584,
+    "ast_hash": "0dd77e7ec00db2a25477e0d126086354",
+    "semantic_hash": "0dd77e7ec00db2a25477e0d126086354"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/next.config.ts": {
+    "mtime": 1781203487.5354128,
+    "ast_hash": "e37eff72dedcb600fc607a1baf053cb5",
+    "semantic_hash": "e37eff72dedcb600fc607a1baf053cb5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/open-next.config.ts": {
+    "mtime": 1776859899.3909905,
+    "ast_hash": "caa87a9bba9fec053ee7c351d2700337",
+    "semantic_hash": "caa87a9bba9fec053ee7c351d2700337"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/package.json": {
+    "mtime": 1776859929.550548,
+    "ast_hash": "97aab7d5977b077a223c2fade22e11f2",
+    "semantic_hash": "97aab7d5977b077a223c2fade22e11f2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/playwright.config.ts": {
+    "mtime": 1776859930.4749854,
+    "ast_hash": "79fce542c57781171abaa16f24c1287d",
+    "semantic_hash": "79fce542c57781171abaa16f24c1287d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/postcss.config.mjs": {
+    "mtime": 1780251020.5747168,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/scripts/benchmarks/adapters/puppeteer-worker.mjs": {
+    "mtime": 1776859929.5519152,
+    "ast_hash": "5fdc0354d7cbcd7f2b0763eadef341bd",
+    "semantic_hash": "5fdc0354d7cbcd7f2b0763eadef341bd"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/scripts/benchmarks/run-competitor-benchmarks.ts": {
+    "mtime": 1776859929.5512378,
+    "ast_hash": "00de4e1548a3855349020ecb2d0f8cb8",
+    "semantic_hash": "00de4e1548a3855349020ecb2d0f8cb8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/sentry.client.config.ts": {
+    "mtime": 1776859929.5423756,
+    "ast_hash": "f2d547fb63fd9f687529d9e7a8b77cc1",
+    "semantic_hash": "f2d547fb63fd9f687529d9e7a8b77cc1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/sentry.edge.config.ts": {
+    "mtime": 1776859929.549418,
+    "ast_hash": "f2d547fb63fd9f687529d9e7a8b77cc1",
+    "semantic_hash": "f2d547fb63fd9f687529d9e7a8b77cc1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/sentry.server.config.ts": {
+    "mtime": 1776859929.541422,
+    "ast_hash": "f2d547fb63fd9f687529d9e7a8b77cc1",
+    "semantic_hash": "f2d547fb63fd9f687529d9e7a8b77cc1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/blog/[slug]/page.tsx": {
+    "mtime": 1781203487.5358684,
+    "ast_hash": "0fa7b3b558b868d92d84c86f84e5bdb4",
+    "semantic_hash": "0fa7b3b558b868d92d84c86f84e5bdb4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/blog/page.tsx": {
+    "mtime": 1781203487.5370142,
+    "ast_hash": "d4fb2dbc41b8968f274c2c0ca2a13957",
+    "semantic_hash": "d4fb2dbc41b8968f274c2c0ca2a13957"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/compare/[slug]/page.tsx": {
+    "mtime": 1781203487.5382206,
+    "ast_hash": "ff6a2e537e74b11db76821d955fcf026",
+    "semantic_hash": "ff6a2e537e74b11db76821d955fcf026"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/compare/compare-showcase.tsx": {
+    "mtime": 1781203487.5393436,
+    "ast_hash": "1ebf5947cae05a319dc4c74fb2ef4765",
+    "semantic_hash": "1ebf5947cae05a319dc4c74fb2ef4765"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/compare/page.tsx": {
+    "mtime": 1781203487.540193,
+    "ast_hash": "1436abecd9885eb28e282e2359a4fcee",
+    "semantic_hash": "1436abecd9885eb28e282e2359a4fcee"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/components/content-hub-page.tsx": {
+    "mtime": 1781203487.5407553,
+    "ast_hash": "d64910f4a8cf9fd0045724b632aa2988",
+    "semantic_hash": "d64910f4a8cf9fd0045724b632aa2988"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/components/legal-layout.tsx": {
+    "mtime": 1781203487.541158,
+    "ast_hash": "6074d8c8e2280ffc3a30dab4203f2137",
+    "semantic_hash": "6074d8c8e2280ffc3a30dab4203f2137"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/components/locale-switcher.tsx": {
+    "mtime": 1776859930.49217,
+    "ast_hash": "20a6f0dba0c6319babca77ac3703b1de",
+    "semantic_hash": "20a6f0dba0c6319babca77ac3703b1de"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/components/site-footer.tsx": {
+    "mtime": 1781203487.5419095,
+    "ast_hash": "aaea41a4ff11c4da6cdceb7a26446e21",
+    "semantic_hash": "aaea41a4ff11c4da6cdceb7a26446e21"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/components/site-header.tsx": {
+    "mtime": 1781203487.5428553,
+    "ast_hash": "3554b2698534da1d466fa4d13375646e",
+    "semantic_hash": "3554b2698534da1d466fa4d13375646e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/components/theme-toggle.tsx": {
+    "mtime": 1776859930.4927104,
+    "ast_hash": "b3f815a5a61d3893d29d10103aeaebf7",
+    "semantic_hash": "b3f815a5a61d3893d29d10103aeaebf7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/content-policy/page.tsx": {
+    "mtime": 1781203487.5432158,
+    "ast_hash": "974e54ecf729b77620575eb241254685",
+    "semantic_hash": "974e54ecf729b77620575eb241254685"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/dashboard/page.tsx": {
+    "mtime": 1776859930.4910731,
+    "ast_hash": "472f4f5f3a60b460a854e07eeed1adf6",
+    "semantic_hash": "472f4f5f3a60b460a854e07eeed1adf6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/demo/invoice/page.tsx": {
+    "mtime": 1781353146.0849607,
+    "ast_hash": "ab9941d06ceccdc9740d9d4de2478228",
+    "semantic_hash": "ab9941d06ceccdc9740d9d4de2478228"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/docs-content.ts": {
+    "mtime": 1776859930.4900658,
+    "ast_hash": "99af2d82f158b9440768a6575ab2ee91",
+    "semantic_hash": "99af2d82f158b9440768a6575ab2ee91"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/mcp/claude/page.tsx": {
+    "mtime": 1781203487.543841,
+    "ast_hash": "747f6be6db6110e382de6bc8d8a229f4",
+    "semantic_hash": "747f6be6db6110e382de6bc8d8a229f4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/mcp/codex/page.tsx": {
+    "mtime": 1781203487.5442283,
+    "ast_hash": "b122211b760d33e30d76b7575491f9b9",
+    "semantic_hash": "b122211b760d33e30d76b7575491f9b9"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/mcp/cursor/page.tsx": {
+    "mtime": 1781203487.5450742,
+    "ast_hash": "28e550e15ef86bde1a309f6837a16028",
+    "semantic_hash": "28e550e15ef86bde1a309f6837a16028"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/mcp/mcp-guides.ts": {
+    "mtime": 1781203487.5457277,
+    "ast_hash": "54226b7bb30549a6f477d52c87d2deec",
+    "semantic_hash": "54226b7bb30549a6f477d52c87d2deec"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/mcp/page.tsx": {
+    "mtime": 1781203487.5460956,
+    "ast_hash": "41253ab25e5b528a59f1a8fb8d4f4b0e",
+    "semantic_hash": "41253ab25e5b528a59f1a8fb8d4f4b0e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/docs/page.tsx": {
+    "mtime": 1781203487.5466568,
+    "ast_hash": "12d5f504f67d09e160822a877b400964",
+    "semantic_hash": "12d5f504f67d09e160822a877b400964"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/editor/[id]/page.tsx": {
+    "mtime": 1776859930.4983864,
+    "ast_hash": "d6adf0b878be1ff40022a76df4da9368",
+    "semantic_hash": "d6adf0b878be1ff40022a76df4da9368"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/editor/page.tsx": {
+    "mtime": 1776859930.498723,
+    "ast_hash": "1b71614c1479fc7bcd6acb7da1bba25f",
+    "semantic_hash": "1b71614c1479fc7bcd6acb7da1bba25f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/error.tsx": {
+    "mtime": 1776859930.4939475,
+    "ast_hash": "3de244da0fed068d3870549aca2d28a8",
+    "semantic_hash": "3de244da0fed068d3870549aca2d28a8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/global-error.tsx": {
+    "mtime": 1776859930.4992013,
+    "ast_hash": "1ed1997f04d5d7ac2a8c0816ccd64118",
+    "semantic_hash": "1ed1997f04d5d7ac2a8c0816ccd64118"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/home-client.tsx": {
+    "mtime": 1781353146.0854542,
+    "ast_hash": "4236bebbed8428abac368d702fcbcf97",
+    "semantic_hash": "4236bebbed8428abac368d702fcbcf97"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/industries/[slug]/page.tsx": {
+    "mtime": 1781203487.5484414,
+    "ast_hash": "d61f5436a4a3fd23c4759963cc090f2d",
+    "semantic_hash": "d61f5436a4a3fd23c4759963cc090f2d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/industries/page.tsx": {
+    "mtime": 1781203487.548828,
+    "ast_hash": "774d204f2d626147fdafb48ad74972c4",
+    "semantic_hash": "774d204f2d626147fdafb48ad74972c4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/layout.tsx": {
+    "mtime": 1781203487.5491462,
+    "ast_hash": "9ea50581ca963444d32a9a65a4c5c314",
+    "semantic_hash": "9ea50581ca963444d32a9a65a4c5c314"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/login/page.tsx": {
+    "mtime": 1776859930.497948,
+    "ast_hash": "459e301a7d23f037a0e039a194dce5f7",
+    "semantic_hash": "459e301a7d23f037a0e039a194dce5f7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/not-found.tsx": {
+    "mtime": 1776859930.4993563,
+    "ast_hash": "c540c017907de6c83c2afbec0331e580",
+    "semantic_hash": "c540c017907de6c83c2afbec0331e580"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/oauth/callback/page.tsx": {
+    "mtime": 1776859930.4816887,
+    "ast_hash": "e07699ac514464f036d52ab7a549de2c",
+    "semantic_hash": "e07699ac514464f036d52ab7a549de2c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/og/[locale]/route.tsx": {
+    "mtime": 1776859930.4957817,
+    "ast_hash": "d0674ca43835cecb065ff0ca380de674",
+    "semantic_hash": "d0674ca43835cecb065ff0ca380de674"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/og/docs/[locale]/route.tsx": {
+    "mtime": 1776859930.4962409,
+    "ast_hash": "c96b2282dfc5025e6aca8690bc9635d4",
+    "semantic_hash": "c96b2282dfc5025e6aca8690bc9635d4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/og/pricing/[locale]/route.tsx": {
+    "mtime": 1776859930.4967396,
+    "ast_hash": "b42396e6a6a55dce62342c9ae1aa1f54",
+    "semantic_hash": "b42396e6a6a55dce62342c9ae1aa1f54"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/onboarding/page.tsx": {
+    "mtime": 1776859930.4989324,
+    "ast_hash": "323007367cf823a2e0b0c4f8eea12ec6",
+    "semantic_hash": "323007367cf823a2e0b0c4f8eea12ec6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/page.tsx": {
+    "mtime": 1781203487.5496583,
+    "ast_hash": "38444d1af4921596c4ec97544adfed75",
+    "semantic_hash": "38444d1af4921596c4ec97544adfed75"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/plans/page.tsx": {
+    "mtime": 1776859930.4849718,
+    "ast_hash": "027de2eb81498fac4e408c34792cf005",
+    "semantic_hash": "027de2eb81498fac4e408c34792cf005"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/playground/[slug]/page.tsx": {
+    "mtime": 1781203487.5501933,
+    "ast_hash": "a55728acdd49656bc19d9c3b20aa2d49",
+    "semantic_hash": "a55728acdd49656bc19d9c3b20aa2d49"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/playground/page.tsx": {
+    "mtime": 1781203487.550389,
+    "ast_hash": "e724d3113cfc6f18ce70e859e4eabca2",
+    "semantic_hash": "e724d3113cfc6f18ce70e859e4eabca2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/playground/playground-client.tsx": {
+    "mtime": 1781203487.550578,
+    "ast_hash": "f52fcd07cece489fa46f56dd3214e75d",
+    "semantic_hash": "f52fcd07cece489fa46f56dd3214e75d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/playground/playground-presets.ts": {
+    "mtime": 1776859930.4826653,
+    "ast_hash": "34ea3ab7dce76012a1b5a4597ca2d084",
+    "semantic_hash": "34ea3ab7dce76012a1b5a4597ca2d084"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/pricing/page.tsx": {
+    "mtime": 1781203487.5513895,
+    "ast_hash": "29bd51d5cac9ff8ca34c4d6d207aa4e3",
+    "semantic_hash": "29bd51d5cac9ff8ca34c4d6d207aa4e3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/privacy/page.tsx": {
+    "mtime": 1781205288.9049907,
+    "ast_hash": "ec846c029862aad40bea063ef2aa4552",
+    "semantic_hash": "ec846c029862aad40bea063ef2aa4552"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/providers.tsx": {
+    "mtime": 1776859930.4995198,
+    "ast_hash": "273850156d2b9520a038ff5d71c88a83",
+    "semantic_hash": "273850156d2b9520a038ff5d71c88a83"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/register/page.tsx": {
+    "mtime": 1776859930.49303,
+    "ast_hash": "216f1ae2fe3e0665476ea5e9bb7d3757",
+    "semantic_hash": "216f1ae2fe3e0665476ea5e9bb7d3757"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/settings/page.tsx": {
+    "mtime": 1776859930.480649,
+    "ast_hash": "9ebd0a5fc6e16f2e9f5f62a30a3bb50b",
+    "semantic_hash": "9ebd0a5fc6e16f2e9f5f62a30a3bb50b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/sitemap.ts": {
+    "mtime": 1781203487.5522106,
+    "ast_hash": "62668b676bd1e72e6aeb0dd5ffd0ac90",
+    "semantic_hash": "62668b676bd1e72e6aeb0dd5ffd0ac90"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/templates/[slug]/page.tsx": {
+    "mtime": 1781203487.552754,
+    "ast_hash": "d7682820cc5ce8593ae7cbaae6abfbb8",
+    "semantic_hash": "d7682820cc5ce8593ae7cbaae6abfbb8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/templates/page.tsx": {
+    "mtime": 1781203487.555093,
+    "ast_hash": "eda29a455dcb1587990ab126f5fc5667",
+    "semantic_hash": "eda29a455dcb1587990ab126f5fc5667"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/terms/page.tsx": {
+    "mtime": 1781203487.5561013,
+    "ast_hash": "86dd885668f4d628693dcec28ec5a93b",
+    "semantic_hash": "86dd885668f4d628693dcec28ec5a93b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/ai/AiCreditsIndicator.tsx": {
+    "mtime": 1776859930.5088997,
+    "ast_hash": "efd1c93ccc17b42c48bad96d27450b05",
+    "semantic_hash": "efd1c93ccc17b42c48bad96d27450b05"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/ai/AiImageUpload.tsx": {
+    "mtime": 1776859930.5084453,
+    "ast_hash": "4c24e2851fdbe8db8da709db33cf13bc",
+    "semantic_hash": "4c24e2851fdbe8db8da709db33cf13bc"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/ai/AiPromptInput.tsx": {
+    "mtime": 1776859930.5086007,
+    "ast_hash": "82444c14ec81d954f1087512a70fb975",
+    "semantic_hash": "82444c14ec81d954f1087512a70fb975"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/ai/AiResponseView.tsx": {
+    "mtime": 1776859930.5087519,
+    "ast_hash": "a7e7c819a72cdfd3585d13ac3560015a",
+    "semantic_hash": "a7e7c819a72cdfd3585d13ac3560015a"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/auth/LoginForm.tsx": {
+    "mtime": 1776859930.5037494,
+    "ast_hash": "1cc5d1aa3ddcf6dd10168d7e81664376",
+    "semantic_hash": "1cc5d1aa3ddcf6dd10168d7e81664376"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/auth/OAuthButtons.tsx": {
+    "mtime": 1776859930.5043917,
+    "ast_hash": "0394ecde00fe515718036e2adc0817c7",
+    "semantic_hash": "0394ecde00fe515718036e2adc0817c7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/auth/ProtectedRoute.tsx": {
+    "mtime": 1776859930.5042439,
+    "ast_hash": "523abcebb969c71b1961e5ddf01e498f",
+    "semantic_hash": "523abcebb969c71b1961e5ddf01e498f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/auth/RegisterForm.tsx": {
+    "mtime": 1776859930.5040936,
+    "ast_hash": "8335ab1a61b78f5a84617b7f0b2133a1",
+    "semantic_hash": "8335ab1a61b78f5a84617b7f0b2133a1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/brand/BrandLogo.tsx": {
+    "mtime": 1776859930.506259,
+    "ast_hash": "6338e240dc419a5f4d146b6b08495de5",
+    "semantic_hash": "6338e240dc419a5f4d146b6b08495de5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/CreateTemplateDialog.tsx": {
+    "mtime": 1776859930.506702,
+    "ast_hash": "f9c265c381282842f110b5ffaa4ee320",
+    "semantic_hash": "f9c265c381282842f110b5ffaa4ee320"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/OfficialTemplateGallery.tsx": {
+    "mtime": 1776859930.5072303,
+    "ast_hash": "76c4804dd8ce5321dc3bb10845d1441d",
+    "semantic_hash": "76c4804dd8ce5321dc3bb10845d1441d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/QuickStartCard.tsx": {
+    "mtime": 1776859930.5069582,
+    "ast_hash": "54391da35a8d481d1fef6eb20d31c0b9",
+    "semantic_hash": "54391da35a8d481d1fef6eb20d31c0b9"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/StarterTemplatePicker.tsx": {
+    "mtime": 1781353146.085548,
+    "ast_hash": "82df6c3e3bfc4c63e96fefee341b178a",
+    "semantic_hash": "82df6c3e3bfc4c63e96fefee341b178a"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/TemplateCard.tsx": {
+    "mtime": 1776859930.5082026,
+    "ast_hash": "54f91bf042369ab8d7ef7c218f5bba80",
+    "semantic_hash": "54f91bf042369ab8d7ef7c218f5bba80"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/TemplateGrid.tsx": {
+    "mtime": 1776859930.5080404,
+    "ast_hash": "b70c06456dcdca6bb497680d14373a38",
+    "semantic_hash": "b70c06456dcdca6bb497680d14373a38"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/dashboard/UsageCard.tsx": {
+    "mtime": 1776859930.5078685,
+    "ast_hash": "1c162678925d5f9a5e9ad4a67e265066",
+    "semantic_hash": "1c162678925d5f9a5e9ad4a67e265066"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/demo/InvoiceDemo.tsx": {
+    "mtime": 1781353146.0856671,
+    "ast_hash": "3391edd07ad3d254c4c3deb2ba45ae7b",
+    "semantic_hash": "3391edd07ad3d254c4c3deb2ba45ae7b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/AiDrawer.tsx": {
+    "mtime": 1776859930.5100791,
+    "ast_hash": "64cfe5e827df1f77b64d5ec617a6f5ca",
+    "semantic_hash": "64cfe5e827df1f77b64d5ec617a6f5ca"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/ApiCurlPanel.tsx": {
+    "mtime": 1776859930.5117967,
+    "ast_hash": "4e778e3374c3b0eaea86e020020bb6ea",
+    "semantic_hash": "4e778e3374c3b0eaea86e020020bb6ea"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/AssetPanel.tsx": {
+    "mtime": 1776859930.5132034,
+    "ast_hash": "e288ac894b0d9c8d2fb810e68b0a585d",
+    "semantic_hash": "e288ac894b0d9c8d2fb810e68b0a585d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/CommandPalette.tsx": {
+    "mtime": 1776859930.5114603,
+    "ast_hash": "50fe67a0a76a982ec073e9999be12302",
+    "semantic_hash": "50fe67a0a76a982ec073e9999be12302"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/DataEditor.tsx": {
+    "mtime": 1781121514.1375203,
+    "ast_hash": "cfe5c96b32b2800f3556a0d1bb669d2d",
+    "semantic_hash": "cfe5c96b32b2800f3556a0d1bb669d2d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/DiagnosticsPanel.tsx": {
+    "mtime": 1776859930.511619,
+    "ast_hash": "69b71558efc00bb83a615025d50bb643",
+    "semantic_hash": "69b71558efc00bb83a615025d50bb643"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/DocuMasterWidget.tsx": {
+    "mtime": 1776859930.5102468,
+    "ast_hash": "3e5686e52c3bfc6304d750f82ac7b784",
+    "semantic_hash": "3e5686e52c3bfc6304d750f82ac7b784"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/EditorLayout.tsx": {
+    "mtime": 1781353146.0860205,
+    "ast_hash": "9006728b2de019657e1ad58d3d9aa4ee",
+    "semantic_hash": "9006728b2de019657e1ad58d3d9aa4ee"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/EditorStatusBar.tsx": {
+    "mtime": 1776859930.5130417,
+    "ast_hash": "da28f83b1359023c55f339bb4c1e8863",
+    "semantic_hash": "da28f83b1359023c55f339bb4c1e8863"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/EditorToolbar.tsx": {
+    "mtime": 1781353146.0862687,
+    "ast_hash": "fddd1d027d84019fd35a26c7e488e035",
+    "semantic_hash": "fddd1d027d84019fd35a26c7e488e035"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/FileExplorer.tsx": {
+    "mtime": 1776859930.5144112,
+    "ast_hash": "2ce6941fc0c51382521031fc69363f29",
+    "semantic_hash": "2ce6941fc0c51382521031fc69363f29"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/ImageExportDialog.tsx": {
+    "mtime": 1776859930.512865,
+    "ast_hash": "286794900d0206c8c2d62b5fd7671193",
+    "semantic_hash": "286794900d0206c8c2d62b5fd7671193"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/KeyboardShortcutsModal.tsx": {
+    "mtime": 1776859930.51368,
+    "ast_hash": "84b5b12d68d79f202ae831b731640e34",
+    "semantic_hash": "84b5b12d68d79f202ae831b731640e34"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/LiveCurlPanel.tsx": {
+    "mtime": 1781353146.0863323,
+    "ast_hash": "14670e7758937a27b795390478817374",
+    "semantic_hash": "14670e7758937a27b795390478817374"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/LowCodeBlocksEditor.tsx": {
+    "mtime": 1776859930.5113056,
+    "ast_hash": "d0d15c889e776478f269325b4910b564",
+    "semantic_hash": "d0d15c889e776478f269325b4910b564"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/LowCodeBlocksPanel.tsx": {
+    "mtime": 1776859930.5134099,
+    "ast_hash": "f8a1412203ac17625b27c5c7998d70b4",
+    "semantic_hash": "f8a1412203ac17625b27c5c7998d70b4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/MonacoEditor.tsx": {
+    "mtime": 1776859930.5121202,
+    "ast_hash": "b151253898519fc850f1cb79f45afef4",
+    "semantic_hash": "b151253898519fc850f1cb79f45afef4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/PdfPreview.tsx": {
+    "mtime": 1776859930.509706,
+    "ast_hash": "41a6ea6e750295d6604d81427523ca90",
+    "semantic_hash": "41a6ea6e750295d6604d81427523ca90"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/PublishDialog.tsx": {
+    "mtime": 1776859930.5104876,
+    "ast_hash": "56d118a7b329e87220c03f8b698e0d1e",
+    "semantic_hash": "56d118a7b329e87220c03f8b698e0d1e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/TemplateCurlSnippet.tsx": {
+    "mtime": 1781353146.0863993,
+    "ast_hash": "241388114be64227c0ebe32abae6f4f3",
+    "semantic_hash": "241388114be64227c0ebe32abae6f4f3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/TemplateSettingsDialog.tsx": {
+    "mtime": 1776859930.5126863,
+    "ast_hash": "0782b36a93ac269698f192a81dd730d1",
+    "semantic_hash": "0782b36a93ac269698f192a81dd730d1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/editor/VersionHistoryPanel.tsx": {
+    "mtime": 1776859930.5146415,
+    "ast_hash": "833d532735a56ba05d6b2d739e65e9c2",
+    "semantic_hash": "833d532735a56ba05d6b2d739e65e9c2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/layout/AppShell.tsx": {
+    "mtime": 1781203487.560112,
+    "ast_hash": "cf474927a128bff75c6ccbf9d6e08158",
+    "semantic_hash": "cf474927a128bff75c6ccbf9d6e08158"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/layout/MobileNav.tsx": {
+    "mtime": 1781203487.5620427,
+    "ast_hash": "8578cc351198578c3da8e701da12a2c5",
+    "semantic_hash": "8578cc351198578c3da8e701da12a2c5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/layout/Sidebar.tsx": {
+    "mtime": 1781203487.5629282,
+    "ast_hash": "cb997760a7f7ede646163bbb6a91c801",
+    "semantic_hash": "cb997760a7f7ede646163bbb6a91c801"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/layout/TopBar.tsx": {
+    "mtime": 1781203487.5630472,
+    "ast_hash": "108e88c167da153010cee21107632b04",
+    "semantic_hash": "108e88c167da153010cee21107632b04"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/onboarding/ApiKeyRevealStep.tsx": {
+    "mtime": 1776859930.5151756,
+    "ast_hash": "e6b80d730f026e46692eb4d6513d5526",
+    "semantic_hash": "e6b80d730f026e46692eb4d6513d5526"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/onboarding/OnboardingFlow.tsx": {
+    "mtime": 1781353683.8577313,
+    "ast_hash": "736ea5758bd9e2fe6541b17baf8d9f7c",
+    "semantic_hash": "736ea5758bd9e2fe6541b17baf8d9f7c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/onboarding/QuickStartStep.tsx": {
+    "mtime": 1776859930.5149407,
+    "ast_hash": "b90d0da541add1c3487566529c17e764",
+    "semantic_hash": "b90d0da541add1c3487566529c17e764"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/onboarding/TemplatePickerStep.tsx": {
+    "mtime": 1776859930.5153987,
+    "ast_hash": "e3335c12abbd616a63a79a8289feab7f",
+    "semantic_hash": "e3335c12abbd616a63a79a8289feab7f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/settings/ApiKeyRow.tsx": {
+    "mtime": 1776859930.5029714,
+    "ast_hash": "86d75b9fdfa980a08ca3683852bd1e20",
+    "semantic_hash": "86d75b9fdfa980a08ca3683852bd1e20"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/settings/ApiKeySection.tsx": {
+    "mtime": 1776859930.5028222,
+    "ast_hash": "42f029edf01730ab45028e39bb8ff95d",
+    "semantic_hash": "42f029edf01730ab45028e39bb8ff95d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/settings/PlanSection.tsx": {
+    "mtime": 1776859930.503252,
+    "ast_hash": "d6288c5338eef35cc605ef19e61b3b97",
+    "semantic_hash": "d6288c5338eef35cc605ef19e61b3b97"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/settings/ProfileSection.tsx": {
+    "mtime": 1776859930.502566,
+    "ast_hash": "87677fbd7f405c1e8632090d6277394d",
+    "semantic_hash": "87677fbd7f405c1e8632090d6277394d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/settings/QuickStartGuide.tsx": {
+    "mtime": 1776859930.5019803,
+    "ast_hash": "df30029f3c8890abc3de3e928983be8d",
+    "semantic_hash": "df30029f3c8890abc3de3e928983be8d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/settings/UsageSection.tsx": {
+    "mtime": 1776859930.502253,
+    "ast_hash": "6da8821ebd510d31f6acc4a440675cfd",
+    "semantic_hash": "6da8821ebd510d31f6acc4a440675cfd"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/components/ui/Modal.tsx": {
+    "mtime": 1776859930.5015936,
+    "ast_hash": "26e918f8b8812d91577ab5237bbbfb2f",
+    "semantic_hash": "26e918f8b8812d91577ab5237bbbfb2f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/config/env.ts": {
+    "mtime": 1776859930.4998574,
+    "ast_hash": "0bfe7ad0fb68d856843b2e32aadb8d1d",
+    "semantic_hash": "0bfe7ad0fb68d856843b2e32aadb8d1d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/data/benchmarks/latest.json": {
+    "mtime": 1776859930.5236,
+    "ast_hash": "9464c078631bb98700fd2a94e853ccee",
+    "semantic_hash": "9464c078631bb98700fd2a94e853ccee"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-ai.ts": {
+    "mtime": 1776859930.5173128,
+    "ast_hash": "c4e8eb05818e3ba2f1de0d341aa49e43",
+    "semantic_hash": "c4e8eb05818e3ba2f1de0d341aa49e43"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-api-keys.ts": {
+    "mtime": 1776859930.517162,
+    "ast_hash": "2aa522e9edb5148ff7cc07d4a9230f3c",
+    "semantic_hash": "2aa522e9edb5148ff7cc07d4a9230f3c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-assets.ts": {
+    "mtime": 1776859930.5179822,
+    "ast_hash": "4f06e8d77518039402201849b7c0f795",
+    "semantic_hash": "4f06e8d77518039402201849b7c0f795"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-auth.ts": {
+    "mtime": 1776859930.5168774,
+    "ast_hash": "dab3362903400ee9dd623a6abce078af",
+    "semantic_hash": "dab3362903400ee9dd623a6abce078af"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-billing.ts": {
+    "mtime": 1776859930.517461,
+    "ast_hash": "566eb7fe45174435675286992425f787",
+    "semantic_hash": "566eb7fe45174435675286992425f787"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-debounce.ts": {
+    "mtime": 1776859930.51702,
+    "ast_hash": "95e4782766444c9b55e4e566eb7b0d84",
+    "semantic_hash": "95e4782766444c9b55e4e566eb7b0d84"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-editor-commands.ts": {
+    "mtime": 1776859930.5181906,
+    "ast_hash": "bd0d3c5efb34f12105444604f1e74ea6",
+    "semantic_hash": "bd0d3c5efb34f12105444604f1e74ea6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-keyboard.ts": {
+    "mtime": 1776859930.5164714,
+    "ast_hash": "7aabf486d68a57b28a933064f43b98fc",
+    "semantic_hash": "7aabf486d68a57b28a933064f43b98fc"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-monaco-formatting.ts": {
+    "mtime": 1776859930.5178444,
+    "ast_hash": "ea4e27cf80d21a4b24b7a76f0f3236e7",
+    "semantic_hash": "ea4e27cf80d21a4b24b7a76f0f3236e7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-onboarding-state.ts": {
+    "mtime": 1781353679.213007,
+    "ast_hash": "63c29405783942355bb8e4b07301bc16",
+    "semantic_hash": "63c29405783942355bb8e4b07301bc16"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-render.ts": {
+    "mtime": 1776859930.5162485,
+    "ast_hash": "cdf6d772a317fbeea9bff474e095fda3",
+    "semantic_hash": "cdf6d772a317fbeea9bff474e095fda3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-templates.ts": {
+    "mtime": 1776859930.516043,
+    "ast_hash": "546d65ce2d8ffd816288244cfa5f2866",
+    "semantic_hash": "546d65ce2d8ffd816288244cfa5f2866"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/hooks/use-usage.ts": {
+    "mtime": 1776859930.5166306,
+    "ast_hash": "41806b7839058ea91d5e9951be3b773b",
+    "semantic_hash": "41806b7839058ea91d5e9951be3b773b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/api-types.ts": {
+    "mtime": 1776859930.519627,
+    "ast_hash": "f52d3f281333284e52d994725ca233de",
+    "semantic_hash": "f52d3f281333284e52d994725ca233de"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/api.ts": {
+    "mtime": 1776859930.520102,
+    "ast_hash": "78ba0292a1e2138a71d660d8926887ac",
+    "semantic_hash": "78ba0292a1e2138a71d660d8926887ac"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/assert.ts": {
+    "mtime": 1776859930.521563,
+    "ast_hash": "7e504b9c245a8b3a2e6ca71ca06fd9e4",
+    "semantic_hash": "7e504b9c245a8b3a2e6ca71ca06fd9e4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/benchmark-report.ts": {
+    "mtime": 1776859930.5229998,
+    "ast_hash": "efc9296ef6d8941610765d011f63161e",
+    "semantic_hash": "efc9296ef6d8941610765d011f63161e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/constants.ts": {
+    "mtime": 1776859930.5218198,
+    "ast_hash": "5ae49937d8c68c1a2cc4634994abd4eb",
+    "semantic_hash": "5ae49937d8c68c1a2cc4634994abd4eb"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/content-hub-seo.ts": {
+    "mtime": 1776859930.5231419,
+    "ast_hash": "f3f9414e94b1ab5d186daeb201bc3773",
+    "semantic_hash": "f3f9414e94b1ab5d186daeb201bc3773"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/content-hub.ts": {
+    "mtime": 1781353146.086964,
+    "ast_hash": "75f352675a1fd1e1b273e882a890b28c",
+    "semantic_hash": "75f352675a1fd1e1b273e882a890b28c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/dev-plan-content.ts": {
+    "mtime": 1776859930.5198839,
+    "ast_hash": "9264bb53046849a72cc42f0ae735e32e",
+    "semantic_hash": "9264bb53046849a72cc42f0ae735e32e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/i18n-config.ts": {
+    "mtime": 1776859930.5232902,
+    "ast_hash": "13471f792d1ee95d186551ce1a30f0a8",
+    "semantic_hash": "13471f792d1ee95d186551ce1a30f0a8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/i18n.tsx": {
+    "mtime": 1781531112.043842,
+    "ast_hash": "cf683470a9dad23187e09daa29803418",
+    "semantic_hash": "cf683470a9dad23187e09daa29803418"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/locale-path.ts": {
+    "mtime": 1776859930.5220938,
+    "ast_hash": "3ddf9b107cd02c3f61208973a4c5c3e5",
+    "semantic_hash": "3ddf9b107cd02c3f61208973a4c5c3e5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/low-code-compiler.ts": {
+    "mtime": 1776859930.5194874,
+    "ast_hash": "87e598e3d3e2a42f43512b384b6b72bd",
+    "semantic_hash": "87e598e3d3e2a42f43512b384b6b72bd"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/low-code.ts": {
+    "mtime": 1776859930.518772,
+    "ast_hash": "47c4697305f2ce5b345e32b10a2d62ad",
+    "semantic_hash": "47c4697305f2ce5b345e32b10a2d62ad"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/marketing-metadata.ts": {
+    "mtime": 1781531143.8150098,
+    "ast_hash": "289f822b65d15fd45d0c39d09d83d179",
+    "semantic_hash": "289f822b65d15fd45d0c39d09d83d179"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/marketing-nav.ts": {
+    "mtime": 1776859930.5191727,
+    "ast_hash": "e6748f74877aeebdc3c757c275d9f1a0",
+    "semantic_hash": "e6748f74877aeebdc3c757c275d9f1a0"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/redirect.ts": {
+    "mtime": 1776859930.522238,
+    "ast_hash": "9520b2d9c7c51d4cff9869d8fc586e06",
+    "semantic_hash": "9520b2d9c7c51d4cff9869d8fc586e06"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/security-mcp-content.ts": {
+    "mtime": 1776859930.522404,
+    "ast_hash": "23f0b5cdb2958b0fcd27def18c60a698",
+    "semantic_hash": "23f0b5cdb2958b0fcd27def18c60a698"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/template-defaults.ts": {
+    "mtime": 1776859930.5185642,
+    "ast_hash": "7d3f2b560238cc569670f08dc3452733",
+    "semantic_hash": "7d3f2b560238cc569670f08dc3452733"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/template-fields.ts": {
+    "mtime": 1776859930.5189917,
+    "ast_hash": "fae548e5220dae6b19f04b3b51fd98be",
+    "semantic_hash": "fae548e5220dae6b19f04b3b51fd98be"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/theme.tsx": {
+    "mtime": 1776859930.5207853,
+    "ast_hash": "b5009c334f12bcc07a4e7818ca538779",
+    "semantic_hash": "b5009c334f12bcc07a4e7818ca538779"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/typst-decorations.ts": {
+    "mtime": 1776859930.521417,
+    "ast_hash": "91775641fd8cf8f4c19260daec611b9d",
+    "semantic_hash": "91775641fd8cf8f4c19260daec611b9d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/typst.ts": {
+    "mtime": 1776859930.5204084,
+    "ast_hash": "58135c562ced87ace598b96cb768a420",
+    "semantic_hash": "58135c562ced87ace598b96cb768a420"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/urls.ts": {
+    "mtime": 1776859930.5193193,
+    "ast_hash": "834af81375b26217b24b808f479906d8",
+    "semantic_hash": "834af81375b26217b24b808f479906d8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/use-locale-path.ts": {
+    "mtime": 1776859930.5216928,
+    "ast_hash": "27f4771285f75232c8b87bb5cf013ec2",
+    "semantic_hash": "27f4771285f75232c8b87bb5cf013ec2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/lib/utils.ts": {
+    "mtime": 1776859930.5197608,
+    "ast_hash": "97fd38f24ae3d4c005a0a0570697fa5c",
+    "semantic_hash": "97fd38f24ae3d4c005a0a0570697fa5c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/stores/auth.ts": {
+    "mtime": 1776859930.5008743,
+    "ast_hash": "869a082f435815c3e56c36113649abd8",
+    "semantic_hash": "869a082f435815c3e56c36113649abd8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/stores/editor.ts": {
+    "mtime": 1781353146.0880766,
+    "ast_hash": "e89ec4bd5362c08ac281d3e9a9bdfd41",
+    "semantic_hash": "e89ec4bd5362c08ac281d3e9a9bdfd41"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/stores/onboarding.ts": {
+    "mtime": 1776859930.5006,
+    "ast_hash": "1bb8da77226447fc3c9b18b4d63a7aa0",
+    "semantic_hash": "1bb8da77226447fc3c9b18b4d63a7aa0"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/auth/LoginPage.tsx": {
+    "mtime": 1776859930.5288792,
+    "ast_hash": "093873c2b0afa91b17fe5e231b209f1b",
+    "semantic_hash": "093873c2b0afa91b17fe5e231b209f1b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/auth/RegisterPage.tsx": {
+    "mtime": 1776859930.5284038,
+    "ast_hash": "2d79879791923ad5133f261c38c6eaf2",
+    "semantic_hash": "2d79879791923ad5133f261c38c6eaf2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/dashboard/DashboardPage.tsx": {
+    "mtime": 1781353146.0882738,
+    "ast_hash": "0f76084bf6455ff7699390c646e460b1",
+    "semantic_hash": "0f76084bf6455ff7699390c646e460b1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/editor/EditorPage.tsx": {
+    "mtime": 1781353146.0886421,
+    "ast_hash": "d8d1ed3354a8ec7d62a1ed86f7b47083",
+    "semantic_hash": "d8d1ed3354a8ec7d62a1ed86f7b47083"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/not-found/NotFoundPage.tsx": {
+    "mtime": 1776859930.526276,
+    "ast_hash": "c01e613847ac323818a7b206c59d4543",
+    "semantic_hash": "c01e613847ac323818a7b206c59d4543"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/onboarding/OnboardingPage.tsx": {
+    "mtime": 1781203487.5659556,
+    "ast_hash": "17615dacd37df0b87a22dfe1c6108228",
+    "semantic_hash": "17615dacd37df0b87a22dfe1c6108228"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/pricing/PricingPage.tsx": {
+    "mtime": 1781203487.56635,
+    "ast_hash": "f0f350c176537c3335a162ba11912d41",
+    "semantic_hash": "f0f350c176537c3335a162ba11912d41"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/views/settings/SettingsPage.tsx": {
+    "mtime": 1776859930.524318,
+    "ast_hash": "8aadb2e2ba5d23d652cde9907a58f9b9",
+    "semantic_hash": "8aadb2e2ba5d23d652cde9907a58f9b9"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/test-results/.last-run.json": {
+    "mtime": 1776859930.4757776,
+    "ast_hash": "f196824657d8858bc7fa44eecbba38b1",
+    "semantic_hash": "f196824657d8858bc7fa44eecbba38b1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/AiCreditsIndicator.test.tsx": {
+    "mtime": 1776859926.701816,
+    "ast_hash": "1d1d73aa9f5dde2bf8a768e174e5e14a",
+    "semantic_hash": "1d1d73aa9f5dde2bf8a768e174e5e14a"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/AiDrawer.test.tsx": {
+    "mtime": 1776859926.7058697,
+    "ast_hash": "1e2a27b4850d9e58ab157b504ae833d0",
+    "semantic_hash": "1e2a27b4850d9e58ab157b504ae833d0"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/AiImageUpload.test.tsx": {
+    "mtime": 1776859926.7030823,
+    "ast_hash": "c139e161dc70e91f43c5d6c85b213366",
+    "semantic_hash": "c139e161dc70e91f43c5d6c85b213366"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/AiPromptInput.test.tsx": {
+    "mtime": 1776859926.6982121,
+    "ast_hash": "baf3e45800ac3d3718ab93db288d2142",
+    "semantic_hash": "baf3e45800ac3d3718ab93db288d2142"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/AiResponseView.test.tsx": {
+    "mtime": 1776859926.700156,
+    "ast_hash": "a3e0547a082a9658c2bd301e94407541",
+    "semantic_hash": "a3e0547a082a9658c2bd301e94407541"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/ApiKeyRevealStep.test.tsx": {
+    "mtime": 1776859926.6989481,
+    "ast_hash": "d9c0a0809af72e494969912e1aeb7e1e",
+    "semantic_hash": "d9c0a0809af72e494969912e1aeb7e1e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/ApiKeyRow.test.tsx": {
+    "mtime": 1776859926.7041783,
+    "ast_hash": "c7d2f6e020e66f700f105495cf123c89",
+    "semantic_hash": "c7d2f6e020e66f700f105495cf123c89"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/ApiKeySection.test.tsx": {
+    "mtime": 1776859926.6995184,
+    "ast_hash": "8e3f3ce000c529542f46dd415eab82f3",
+    "semantic_hash": "8e3f3ce000c529542f46dd415eab82f3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/CommandPalette.test.tsx": {
+    "mtime": 1776859926.7061636,
+    "ast_hash": "a06246298d968085d55df099f7e966ce",
+    "semantic_hash": "a06246298d968085d55df099f7e966ce"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/CreateTemplateDialog.test.tsx": {
+    "mtime": 1776859926.7007487,
+    "ast_hash": "e3b6c739c251408567ae0fe8149eaff5",
+    "semantic_hash": "e3b6c739c251408567ae0fe8149eaff5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/FileExplorer.test.tsx": {
+    "mtime": 1776859926.7038782,
+    "ast_hash": "3aa4d49da7b434b2cc6b8ac59c7b36bd",
+    "semantic_hash": "3aa4d49da7b434b2cc6b8ac59c7b36bd"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/LoginForm.state.test.tsx": {
+    "mtime": 1776859926.7027767,
+    "ast_hash": "55a086a874b36cf5276bc234c1155024",
+    "semantic_hash": "55a086a874b36cf5276bc234c1155024"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/LoginForm.test.tsx": {
+    "mtime": 1776859926.7040439,
+    "ast_hash": "0c1bc9e73ad7c90ff970e0cca87a6b3f",
+    "semantic_hash": "0c1bc9e73ad7c90ff970e0cca87a6b3f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/OfficialTemplateGallery.test.tsx": {
+    "mtime": 1776859926.7063298,
+    "ast_hash": "e0a6b81e9c263d90322c104420154c14",
+    "semantic_hash": "e0a6b81e9c263d90322c104420154c14"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/PdfPreview.test.tsx": {
+    "mtime": 1776859926.6985812,
+    "ast_hash": "6d6b6fd9760b4d97adb487de335b54b9",
+    "semantic_hash": "6d6b6fd9760b4d97adb487de335b54b9"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/PlanSection.test.tsx": {
+    "mtime": 1776859926.701679,
+    "ast_hash": "e2435a7d1e26291d86a1aba6b54a60b7",
+    "semantic_hash": "e2435a7d1e26291d86a1aba6b54a60b7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/PlaygroundClient.test.tsx": {
+    "mtime": 1776859926.7051942,
+    "ast_hash": "4a2d27b0169b3223a4920624b9205243",
+    "semantic_hash": "4a2d27b0169b3223a4920624b9205243"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/PricingPage.test.tsx": {
+    "mtime": 1776859926.7044976,
+    "ast_hash": "c6658405427ce828371ad2a9309e0bd8",
+    "semantic_hash": "c6658405427ce828371ad2a9309e0bd8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/PublishDialog.test.tsx": {
+    "mtime": 1776859926.7049634,
+    "ast_hash": "52ef69c139c61e4a6028472f469f806f",
+    "semantic_hash": "52ef69c139c61e4a6028472f469f806f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/QuickStartGuide.test.tsx": {
+    "mtime": 1776859926.7053459,
+    "ast_hash": "119c34b80b2e891529b5817ad2f53c20",
+    "semantic_hash": "119c34b80b2e891529b5817ad2f53c20"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/QuickStartStep.test.tsx": {
+    "mtime": 1776859926.7004333,
+    "ast_hash": "b10b16e96bb425ca54402511acbad670",
+    "semantic_hash": "b10b16e96bb425ca54402511acbad670"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/RegisterForm.state.test.tsx": {
+    "mtime": 1776859926.7033439,
+    "ast_hash": "bc49c9bf3ee94a4dce373edea5ace80a",
+    "semantic_hash": "bc49c9bf3ee94a4dce373edea5ace80a"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/RegisterForm.test.tsx": {
+    "mtime": 1776859926.7046516,
+    "ast_hash": "5d9c6506afa6df055132dc4242c304a9",
+    "semantic_hash": "5d9c6506afa6df055132dc4242c304a9"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/SiteHeader.test.tsx": {
+    "mtime": 1776859926.7055295,
+    "ast_hash": "f13736ff3ad618ed25def1b7ca89c6ef",
+    "semantic_hash": "f13736ff3ad618ed25def1b7ca89c6ef"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/TemplateCard.test.tsx": {
+    "mtime": 1776859926.702914,
+    "ast_hash": "44e5369d9cd359bac378adbf132b753c",
+    "semantic_hash": "44e5369d9cd359bac378adbf132b753c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/TemplateGrid.test.tsx": {
+    "mtime": 1776859926.699993,
+    "ast_hash": "2420976991d45d7bb654f44677855276",
+    "semantic_hash": "2420976991d45d7bb654f44677855276"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/TemplatePickerStep.test.tsx": {
+    "mtime": 1776859926.6984003,
+    "ast_hash": "2c469281e55b95cb5ff770d737932b98",
+    "semantic_hash": "2c469281e55b95cb5ff770d737932b98"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/TemplateSettingsDialog.test.tsx": {
+    "mtime": 1776859926.701322,
+    "ast_hash": "9464a0f0643896e02940728801c60b9c",
+    "semantic_hash": "9464a0f0643896e02940728801c60b9c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/UsageCard.test.tsx": {
+    "mtime": 1776859926.6997926,
+    "ast_hash": "8f5c1df82183dccef824845877d305f1",
+    "semantic_hash": "8f5c1df82183dccef824845877d305f1"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/VersionHistoryPanel.test.tsx": {
+    "mtime": 1776859926.7009819,
+    "ast_hash": "8a7ebedd894452e003b1e908dbd52c58",
+    "semantic_hash": "8a7ebedd894452e003b1e908dbd52c58"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/dashboard/QuickStartCard.test.tsx": {
+    "mtime": 1776859926.7036517,
+    "ast_hash": "9698bc8c7e3fc6ed37ac6b998eaebed6",
+    "semantic_hash": "9698bc8c7e3fc6ed37ac6b998eaebed6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/AssetPanel.test.tsx": {
+    "mtime": 1776859926.7067382,
+    "ast_hash": "6961ebccecfc1462975a3f0246a36df9",
+    "semantic_hash": "6961ebccecfc1462975a3f0246a36df9"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/DataEditor.test.tsx": {
+    "mtime": 1776859926.7087839,
+    "ast_hash": "61ea4351d1b89ec72eb1a4fd6fcb4798",
+    "semantic_hash": "61ea4351d1b89ec72eb1a4fd6fcb4798"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/DiagnosticsPanel.test.tsx": {
+    "mtime": 1776859926.7079263,
+    "ast_hash": "35e3d222a5626e47ce1b3ff6f9559b2e",
+    "semantic_hash": "35e3d222a5626e47ce1b3ff6f9559b2e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/DocuMasterWidget.test.tsx": {
+    "mtime": 1776859926.7083485,
+    "ast_hash": "4f5888937eeff2932984bb169dd7845f",
+    "semantic_hash": "4f5888937eeff2932984bb169dd7845f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/EditorLayout.test.tsx": {
+    "mtime": 1781203487.5667937,
+    "ast_hash": "67338a7d6b151a3cbfcaf2cf80648d13",
+    "semantic_hash": "67338a7d6b151a3cbfcaf2cf80648d13"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/EditorStatusBar.test.tsx": {
+    "mtime": 1776859926.706925,
+    "ast_hash": "74bd6e4fbf81a05caecb33ab8d69045a",
+    "semantic_hash": "74bd6e4fbf81a05caecb33ab8d69045a"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/EditorToolbar.test.tsx": {
+    "mtime": 1776859926.7081769,
+    "ast_hash": "7ca648831b5fcfec189f3f0246933093",
+    "semantic_hash": "7ca648831b5fcfec189f3f0246933093"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/KeyboardShortcutsModal.test.tsx": {
+    "mtime": 1776859926.708558,
+    "ast_hash": "300d7c9ce1e2b11f9aea93e47193dcc5",
+    "semantic_hash": "300d7c9ce1e2b11f9aea93e47193dcc5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/LowCodeBlocksPanel.test.tsx": {
+    "mtime": 1776859926.707712,
+    "ast_hash": "f315391a486145f75d997790ff50dfc5",
+    "semantic_hash": "f315391a486145f75d997790ff50dfc5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/editor/MonacoEditor.test.tsx": {
+    "mtime": 1776859926.707463,
+    "ast_hash": "20f37bab07861863a7607aa5ecad2c60",
+    "semantic_hash": "20f37bab07861863a7607aa5ecad2c60"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/layout/MobileNav.test.tsx": {
+    "mtime": 1781203487.5671313,
+    "ast_hash": "4fbc54b37e57bfcd835f759484d23480",
+    "semantic_hash": "4fbc54b37e57bfcd835f759484d23480"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/component/layout/TopBar.test.tsx": {
+    "mtime": 1781203487.5673544,
+    "ast_hash": "0c292876f5d4357a66e510053d406cf2",
+    "semantic_hash": "0c292876f5d4357a66e510053d406cf2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/helpers/fixtures.ts": {
+    "mtime": 1776859926.7091138,
+    "ast_hash": "a22a706874004990a43833ed9793e62a",
+    "semantic_hash": "a22a706874004990a43833ed9793e62a"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/helpers/msw-handlers.ts": {
+    "mtime": 1776859926.7092957,
+    "ast_hash": "d2bb78561f93bf60afb10b09f0663cf3",
+    "semantic_hash": "d2bb78561f93bf60afb10b09f0663cf3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/helpers/msw-server.ts": {
+    "mtime": 1776859926.7096314,
+    "ast_hash": "359d92a905d26caf945651c4b58889f6",
+    "semantic_hash": "359d92a905d26caf945651c4b58889f6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/helpers/render-app.tsx": {
+    "mtime": 1776859926.7098472,
+    "ast_hash": "161efa0146590fb9d3e6294201537a4f",
+    "semantic_hash": "161efa0146590fb9d3e6294201537a4f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/helpers/render.tsx": {
+    "mtime": 1776859926.7100506,
+    "ast_hash": "08220ca1f45a0259b21e1148b2e6a9d2",
+    "semantic_hash": "08220ca1f45a0259b21e1148b2e6a9d2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/assets-flow.test.tsx": {
+    "mtime": 1776859926.69677,
+    "ast_hash": "e2ce3d4a5c0c39b07815ad12fd025387",
+    "semantic_hash": "e2ce3d4a5c0c39b07815ad12fd025387"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/auth-flow.test.tsx": {
+    "mtime": 1776859926.6969564,
+    "ast_hash": "947fd59e34813d1e1f00d1f81f61ddb0",
+    "semantic_hash": "947fd59e34813d1e1f00d1f81f61ddb0"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/auth-security-flow.test.tsx": {
+    "mtime": 1776859926.6960967,
+    "ast_hash": "70c2b78cd40485125f66e5e10ec0713f",
+    "semantic_hash": "70c2b78cd40485125f66e5e10ec0713f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/billing-flow.test.tsx": {
+    "mtime": 1776859926.696623,
+    "ast_hash": "051b89db05c82711f7991869f0c5aa40",
+    "semantic_hash": "051b89db05c82711f7991869f0c5aa40"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/editor-render.test.tsx": {
+    "mtime": 1776859926.6953957,
+    "ast_hash": "eb86de154cd92fccc88594d358139aec",
+    "semantic_hash": "eb86de154cd92fccc88594d358139aec"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/guided-template-flow.test.tsx": {
+    "mtime": 1776859926.697144,
+    "ast_hash": "b9dd667e5230a4931108fca7966fa282",
+    "semantic_hash": "b9dd667e5230a4931108fca7966fa282"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/onboarding-flow.test.tsx": {
+    "mtime": 1776859926.6963437,
+    "ast_hash": "8821419de750d6b691b8a16d9cab6c8e",
+    "semantic_hash": "8821419de750d6b691b8a16d9cab6c8e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/settings-keys-flow.test.tsx": {
+    "mtime": 1776859926.6951253,
+    "ast_hash": "bd39c7cfcf3b5293cd4ec9148b205541",
+    "semantic_hash": "bd39c7cfcf3b5293cd4ec9148b205541"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/template-version.test.tsx": {
+    "mtime": 1776859926.6957164,
+    "ast_hash": "cbc979a456efdb9c4895b1e4b2be6157",
+    "semantic_hash": "cbc979a456efdb9c4895b1e4b2be6157"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/integration/templates-flow.test.tsx": {
+    "mtime": 1776859926.6955342,
+    "ast_hash": "f0853cfcc5c784cbe73d81fe35a2252c",
+    "semantic_hash": "f0853cfcc5c784cbe73d81fe35a2252c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/setup.ts": {
+    "mtime": 1776859926.6974268,
+    "ast_hash": "95e2d122f81b1d92fca883373b92546b",
+    "semantic_hash": "95e2d122f81b1d92fca883373b92546b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/api.test.ts": {
+    "mtime": 1776859926.6942425,
+    "ast_hash": "af92b242f8e139a788b2c794d0caa5e8",
+    "semantic_hash": "af92b242f8e139a788b2c794d0caa5e8"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/assert.test.ts": {
+    "mtime": 1776859926.6883018,
+    "ast_hash": "a74d36389836d81711fc77435ef41946",
+    "semantic_hash": "a74d36389836d81711fc77435ef41946"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/auth-store.test.ts": {
+    "mtime": 1776859926.6872244,
+    "ast_hash": "5204d1ce282a73de8d1e86236dacb8c3",
+    "semantic_hash": "5204d1ce282a73de8d1e86236dacb8c3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/benchmark-report.test.ts": {
+    "mtime": 1776859926.693343,
+    "ast_hash": "87e07ef22eb46681e1add4142ae5d993",
+    "semantic_hash": "87e07ef22eb46681e1add4142ae5d993"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/content-hub.test.ts": {
+    "mtime": 1781353634.6126432,
+    "ast_hash": "37392c018692fca606e28df3600192e7",
+    "semantic_hash": "37392c018692fca606e28df3600192e7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/editor-store.test.ts": {
+    "mtime": 1776859926.6947227,
+    "ast_hash": "f7599ad153706669b7481d952157c117",
+    "semantic_hash": "f7599ad153706669b7481d952157c117"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/i18n-config.test.ts": {
+    "mtime": 1776859926.6924908,
+    "ast_hash": "78c81686b680ad539cbd1e641d77c65c",
+    "semantic_hash": "78c81686b680ad539cbd1e641d77c65c"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/i18n.test.tsx": {
+    "mtime": 1781353428.095618,
+    "ast_hash": "ca82f5367b1eb7b73c3a1623446da3f4",
+    "semantic_hash": "ca82f5367b1eb7b73c3a1623446da3f4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/locale-path.test.ts": {
+    "mtime": 1776859926.6943917,
+    "ast_hash": "41f127465335e0feaed5dc77ba497b0b",
+    "semantic_hash": "41f127465335e0feaed5dc77ba497b0b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/low-code.test.ts": {
+    "mtime": 1776859926.6875057,
+    "ast_hash": "45e407f99d6ce5b67b661f893526ce5b",
+    "semantic_hash": "45e407f99d6ce5b67b661f893526ce5b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/marketing-metadata.test.ts": {
+    "mtime": 1781353428.1884344,
+    "ast_hash": "979d53da714665ea8d08e89d9ea3cb8d",
+    "semantic_hash": "979d53da714665ea8d08e89d9ea3cb8d"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/playground-presets.test.ts": {
+    "mtime": 1776859926.6898906,
+    "ast_hash": "3dca7672dc572c4ea20900d4cd2382d2",
+    "semantic_hash": "3dca7672dc572c4ea20900d4cd2382d2"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/redirect.test.ts": {
+    "mtime": 1776859926.6891756,
+    "ast_hash": "e9c044d8ac72c4109ecf1d87b37ce6e5",
+    "semantic_hash": "e9c044d8ac72c4109ecf1d87b37ce6e5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/security-regressions.test.ts": {
+    "mtime": 1776859926.6880498,
+    "ast_hash": "a073db92ce6dbb82f03daf3f65a4d846",
+    "semantic_hash": "a073db92ce6dbb82f03daf3f65a4d846"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/sitemap-playground.test.ts": {
+    "mtime": 1776859926.6920648,
+    "ast_hash": "b695ea168aa9b7a76d8eb8ad9cfa26d6",
+    "semantic_hash": "b695ea168aa9b7a76d8eb8ad9cfa26d6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/template-fields.test.ts": {
+    "mtime": 1776859926.6934803,
+    "ast_hash": "c90256e7fe59ab911ec3fb43129ea6e3",
+    "semantic_hash": "c90256e7fe59ab911ec3fb43129ea6e3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/theme.test.tsx": {
+    "mtime": 1776859926.6928585,
+    "ast_hash": "381092f07fbc860b29fa55992c763b43",
+    "semantic_hash": "381092f07fbc860b29fa55992c763b43"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/typst-decorations.test.ts": {
+    "mtime": 1776859926.6904547,
+    "ast_hash": "718b58e0637dbafdf941e3354785ebd0",
+    "semantic_hash": "718b58e0637dbafdf941e3354785ebd0"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/typst.test.ts": {
+    "mtime": 1776859926.689431,
+    "ast_hash": "08c7441e3cdd086227c257549cc30812",
+    "semantic_hash": "08c7441e3cdd086227c257549cc30812"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-ai.test.tsx": {
+    "mtime": 1776859926.6930346,
+    "ast_hash": "6aa51abd238f4489e93a6492e0112b91",
+    "semantic_hash": "6aa51abd238f4489e93a6492e0112b91"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-api-keys.test.tsx": {
+    "mtime": 1776859926.6901634,
+    "ast_hash": "f259524866fb7d523dd8e92d5033afab",
+    "semantic_hash": "f259524866fb7d523dd8e92d5033afab"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-assets.test.tsx": {
+    "mtime": 1776859926.6888745,
+    "ast_hash": "2e45923b6e1eef8c1988dba3bfe4d19b",
+    "semantic_hash": "2e45923b6e1eef8c1988dba3bfe4d19b"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-auth.test.tsx": {
+    "mtime": 1776859926.6912174,
+    "ast_hash": "caaea5ba8177c581183aed294b3c01b5",
+    "semantic_hash": "caaea5ba8177c581183aed294b3c01b5"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-debounce.test.tsx": {
+    "mtime": 1776859926.6926856,
+    "ast_hash": "2de480477099d2df35ef2c222f725946",
+    "semantic_hash": "2de480477099d2df35ef2c222f725946"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-keyboard.test.tsx": {
+    "mtime": 1776859926.690821,
+    "ast_hash": "276426513acacd993fce98afd6b26c47",
+    "semantic_hash": "276426513acacd993fce98afd6b26c47"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-monaco-formatting.test.tsx": {
+    "mtime": 1776859926.6919074,
+    "ast_hash": "398e4084e420b90d61836878798cdb26",
+    "semantic_hash": "398e4084e420b90d61836878798cdb26"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-render.test.tsx": {
+    "mtime": 1776859926.6923537,
+    "ast_hash": "5a6701fd985b1363d547c66e8ec1b2be",
+    "semantic_hash": "5a6701fd985b1363d547c66e8ec1b2be"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/use-templates.test.tsx": {
+    "mtime": 1776859926.6915193,
+    "ast_hash": "a3bc5a9c53f558f4c1473ad3219e86be",
+    "semantic_hash": "a3bc5a9c53f558f4c1473ad3219e86be"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tests/unit/utils.test.ts": {
+    "mtime": 1776859926.68775,
+    "ast_hash": "3b562b982e6ce6621955ab7f6006f342",
+    "semantic_hash": "3b562b982e6ce6621955ab7f6006f342"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/tsconfig.json": {
+    "mtime": 1776859929.5520747,
+    "ast_hash": "02fc19ad21338c2ab820a70136310db4",
+    "semantic_hash": "02fc19ad21338c2ab820a70136310db4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/vitest.config.ts": {
+    "mtime": 1776859930.4754548,
+    "ast_hash": "fdf2fef0ce890330f4b65016f88e35cd",
+    "semantic_hash": "fdf2fef0ce890330f4b65016f88e35cd"
+  },
+  "/Users/abdullah/Projects/docuforge/api/drizzle.config.ts": {
+    "mtime": 1776859937.6594863,
+    "ast_hash": "1264d46df7847c8c6598aedfc9f55f35",
+    "semantic_hash": "1264d46df7847c8c6598aedfc9f55f35"
+  },
+  "/Users/abdullah/Projects/docuforge/api/package.json": {
+    "mtime": 1776859937.6537373,
+    "ast_hash": "99723acbbfeb6744f8631ebd9248a476",
+    "semantic_hash": "99723acbbfeb6744f8631ebd9248a476"
+  },
+  "/Users/abdullah/Projects/docuforge/api/scripts/migrate.ts": {
+    "mtime": 1776859937.6543717,
+    "ast_hash": "3f2c00c6a99a134762aefd2deabd0f26",
+    "semantic_hash": "3f2c00c6a99a134762aefd2deabd0f26"
+  },
+  "/Users/abdullah/Projects/docuforge/api/scripts/seed.ts": {
+    "mtime": 1776859937.6549199,
+    "ast_hash": "c3fd85b2dbc0aba85ce9fd774a326642",
+    "semantic_hash": "c3fd85b2dbc0aba85ce9fd774a326642"
+  },
+  "/Users/abdullah/Projects/docuforge/api/scripts/send-email-template-matrix.ts": {
+    "mtime": 1776859937.6546416,
+    "ast_hash": "f2da94a7aa7b1b95b55fc2f6a54918b5",
+    "semantic_hash": "f2da94a7aa7b1b95b55fc2f6a54918b5"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/app.ts": {
+    "mtime": 1780251039.808241,
+    "ast_hash": "923caf852672a9f9232b2e57d7970ee7",
+    "semantic_hash": "923caf852672a9f9232b2e57d7970ee7"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/config/config.ts": {
+    "mtime": 1776859937.666743,
+    "ast_hash": "d8fe19dda9fdbaa29680b2374bece799",
+    "semantic_hash": "d8fe19dda9fdbaa29680b2374bece799"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/config/env.ts": {
+    "mtime": 1781353146.0827434,
+    "ast_hash": "98c7a0230a3b2527d4b26622535c02b4",
+    "semantic_hash": "98c7a0230a3b2527d4b26622535c02b4"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/db/client.ts": {
+    "mtime": 1776859937.6700277,
+    "ast_hash": "307d6d9ed33ff834c6ffc22f130d5b33",
+    "semantic_hash": "307d6d9ed33ff834c6ffc22f130d5b33"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/db/migrate.ts": {
+    "mtime": 1776859937.6697328,
+    "ast_hash": "b7d4b76919c857b60f361b142b4259b2",
+    "semantic_hash": "b7d4b76919c857b60f361b142b4259b2"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/db/schema.ts": {
+    "mtime": 1776859937.6695669,
+    "ast_hash": "569c5ca317446a42a8e9767f04b174f9",
+    "semantic_hash": "569c5ca317446a42a8e9767f04b174f9"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/index.ts": {
+    "mtime": 1776859937.6702175,
+    "ast_hash": "cb062fbc45032a03f7044af25b851fc0",
+    "semantic_hash": "cb062fbc45032a03f7044af25b851fc0"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/api-key.ts": {
+    "mtime": 1776859937.6689775,
+    "ast_hash": "69f0e519e217d9b039bec28c02f54742",
+    "semantic_hash": "69f0e519e217d9b039bec28c02f54742"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/assert.ts": {
+    "mtime": 1776859937.6682596,
+    "ast_hash": "db89a81d28605720ea962101f81182c6",
+    "semantic_hash": "db89a81d28605720ea962101f81182c6"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/browser-origins.ts": {
+    "mtime": 1780251039.8084671,
+    "ast_hash": "4d2e46a1da518bd40c6cdf287411ac3d",
+    "semantic_hash": "4d2e46a1da518bd40c6cdf287411ac3d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/errors.ts": {
+    "mtime": 1776859937.6680233,
+    "ast_hash": "26f7c74e411ab843130e96ec227589c3",
+    "semantic_hash": "26f7c74e411ab843130e96ec227589c3"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/id.ts": {
+    "mtime": 1776859937.6691637,
+    "ast_hash": "75e41da65c625dc97c78ea826a17070d",
+    "semantic_hash": "75e41da65c625dc97c78ea826a17070d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/low-code.ts": {
+    "mtime": 1776859937.667642,
+    "ast_hash": "72acb394740aa5300ea85f17839ef655",
+    "semantic_hash": "72acb394740aa5300ea85f17839ef655"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/sentry.ts": {
+    "mtime": 1776859937.667807,
+    "ast_hash": "d95d745a99713e70af03dd2556c1da76",
+    "semantic_hash": "d95d745a99713e70af03dd2556c1da76"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/validation.ts": {
+    "mtime": 1781353146.0832152,
+    "ast_hash": "884f591932734d8e711640b3af86ba6d",
+    "semantic_hash": "884f591932734d8e711640b3af86ba6d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/lib/webhook-url.ts": {
+    "mtime": 1776859937.6693144,
+    "ast_hash": "c16af107fa4c4a7b504876a129dd33fe",
+    "semantic_hash": "c16af107fa4c4a7b504876a129dd33fe"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/abuse-protection.ts": {
+    "mtime": 1776859937.6638498,
+    "ast_hash": "4c06cd2a4651a7f16fc5670543b0614c",
+    "semantic_hash": "4c06cd2a4651a7f16fc5670543b0614c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/auth.ts": {
+    "mtime": 1776859937.6657388,
+    "ast_hash": "55fda5a80396e316a909ead35f2c2ef7",
+    "semantic_hash": "55fda5a80396e316a909ead35f2c2ef7"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/cache.ts": {
+    "mtime": 1776859937.665204,
+    "ast_hash": "efe5e8c4a7ccced91ff2c57c18d7f41b",
+    "semantic_hash": "efe5e8c4a7ccced91ff2c57c18d7f41b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/error-handler.ts": {
+    "mtime": 1776859937.663608,
+    "ast_hash": "c250fedf2c72e5e2783642c6bb6a3d2f",
+    "semantic_hash": "c250fedf2c72e5e2783642c6bb6a3d2f"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/etag.ts": {
+    "mtime": 1776859937.6643262,
+    "ast_hash": "d61773ee3d64319ce8416211a878a339",
+    "semantic_hash": "d61773ee3d64319ce8416211a878a339"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/logger.ts": {
+    "mtime": 1776859937.6645577,
+    "ast_hash": "f6b64a2398362f8a05d9f4e3a46fbf87",
+    "semantic_hash": "f6b64a2398362f8a05d9f4e3a46fbf87"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/middleware/rate-limit.ts": {
+    "mtime": 1776859937.6655025,
+    "ast_hash": "805e65e245e30a0844c8ee4b90505dea",
+    "semantic_hash": "805e65e245e30a0844c8ee4b90505dea"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/ai.ts": {
+    "mtime": 1781353146.0834827,
+    "ast_hash": "ee7d71f4489234c23432bb9865352bec",
+    "semantic_hash": "ee7d71f4489234c23432bb9865352bec"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/assets.ts": {
+    "mtime": 1776859937.6710548,
+    "ast_hash": "e35b3037409ea2325ebb8ddaa5065863",
+    "semantic_hash": "e35b3037409ea2325ebb8ddaa5065863"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/auth.ts": {
+    "mtime": 1780251039.8086095,
+    "ast_hash": "73a102b7db6815b92a7138f87fa3a7a2",
+    "semantic_hash": "73a102b7db6815b92a7138f87fa3a7a2"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/billing.ts": {
+    "mtime": 1780248126.2691483,
+    "ast_hash": "249de46555d0d0c64934e2c7d598a440",
+    "semantic_hash": "249de46555d0d0c64934e2c7d598a440"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/health.ts": {
+    "mtime": 1776859937.6715593,
+    "ast_hash": "031c5a5c7bdb531614adce7d7b0bbca8",
+    "semantic_hash": "031c5a5c7bdb531614adce7d7b0bbca8"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/index.ts": {
+    "mtime": 1776859937.6720405,
+    "ast_hash": "224e59dff43577fc211c8209ec43bd45",
+    "semantic_hash": "224e59dff43577fc211c8209ec43bd45"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/render.ts": {
+    "mtime": 1781353427.8898523,
+    "ast_hash": "0ce8fd997572dae1046a4066f17abae2",
+    "semantic_hash": "0ce8fd997572dae1046a4066f17abae2"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/templates.ts": {
+    "mtime": 1776859937.6712189,
+    "ast_hash": "c6faa955e0c234acc130f50e3d385abf",
+    "semantic_hash": "c6faa955e0c234acc130f50e3d385abf"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/routes/webhooks.ts": {
+    "mtime": 1776859937.6707706,
+    "ast_hash": "a3df9742216d147fcebe7f1e07cbae49",
+    "semantic_hash": "a3df9742216d147fcebe7f1e07cbae49"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/ai-usage.ts": {
+    "mtime": 1776859937.6743565,
+    "ast_hash": "cb42d7475282a188b198367e2bb55e1c",
+    "semantic_hash": "cb42d7475282a188b198367e2bb55e1c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/ai.ts": {
+    "mtime": 1776859937.6765666,
+    "ast_hash": "657e0069a6610992024d4c18c572ae90",
+    "semantic_hash": "657e0069a6610992024d4c18c572ae90"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/asset.ts": {
+    "mtime": 1776859937.6773138,
+    "ast_hash": "2dcafd3fea91fff11a7414254f663499",
+    "semantic_hash": "2dcafd3fea91fff11a7414254f663499"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/auth-security.ts": {
+    "mtime": 1776859937.6746736,
+    "ast_hash": "3eb7e676c38bbdfaec280203494274da",
+    "semantic_hash": "3eb7e676c38bbdfaec280203494274da"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/email-locale.ts": {
+    "mtime": 1776859937.6770375,
+    "ast_hash": "8260d3368162a982afbe931bdf894421",
+    "semantic_hash": "8260d3368162a982afbe931bdf894421"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/email-sender.ts": {
+    "mtime": 1776859937.6733491,
+    "ast_hash": "9a26b8054c6689d2976b7f4f1b31259a",
+    "semantic_hash": "9a26b8054c6689d2976b7f4f1b31259a"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/email-templates.ts": {
+    "mtime": 1781353518.6429014,
+    "ast_hash": "3111f6aaf085062fb51236d1a31c2216",
+    "semantic_hash": "3111f6aaf085062fb51236d1a31c2216"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/email.ts": {
+    "mtime": 1776859937.6755378,
+    "ast_hash": "1d706a07bccae353f9e501fdaec3bb9d",
+    "semantic_hash": "1d706a07bccae353f9e501fdaec3bb9d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/engine.ts": {
+    "mtime": 1776859937.6763976,
+    "ast_hash": "3c25b46752711a957e7f2f095876dbfb",
+    "semantic_hash": "3c25b46752711a957e7f2f095876dbfb"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/image-render.ts": {
+    "mtime": 1776859937.6784453,
+    "ast_hash": "97fe6637cfcf72a33eec164843abced8",
+    "semantic_hash": "97fe6637cfcf72a33eec164843abced8"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/key-cache.ts": {
+    "mtime": 1776859937.6787283,
+    "ast_hash": "8a12b0b34f730278006a29c8bb52dd76",
+    "semantic_hash": "8a12b0b34f730278006a29c8bb52dd76"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/oauth-exchange.ts": {
+    "mtime": 1776859937.6730826,
+    "ast_hash": "f45b6cf246daa38e652fb86b09f234c7",
+    "semantic_hash": "f45b6cf246daa38e652fb86b09f234c7"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/oauth.ts": {
+    "mtime": 1776859937.6735103,
+    "ast_hash": "1a337ea6976d841e1292618763968c10",
+    "semantic_hash": "1a337ea6976d841e1292618763968c10"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/pdf-import.ts": {
+    "mtime": 1776859937.6751554,
+    "ast_hash": "8cb9d828867c6e29e57d42cefa5c1121",
+    "semantic_hash": "8cb9d828867c6e29e57d42cefa5c1121"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/public-preview.ts": {
+    "mtime": 1780251039.8088145,
+    "ast_hash": "6e96c8164f29c11e615d4efe2ed70c06",
+    "semantic_hash": "6e96c8164f29c11e615d4efe2ed70c06"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/redis.ts": {
+    "mtime": 1776859937.6760023,
+    "ast_hash": "fa3533c6ab30d0e0da423adaa90759ec",
+    "semantic_hash": "fa3533c6ab30d0e0da423adaa90759ec"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/render-queue.ts": {
+    "mtime": 1776859937.67451,
+    "ast_hash": "d4a9c6f417f89b72c3c278ece8f645d9",
+    "semantic_hash": "d4a9c6f417f89b72c3c278ece8f645d9"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/render-task.ts": {
+    "mtime": 1776859937.6741538,
+    "ast_hash": "17e38e8e369af448d45bda62fb6ab8ec",
+    "semantic_hash": "17e38e8e369af448d45bda62fb6ab8ec"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/template.ts": {
+    "mtime": 1776859937.674852,
+    "ast_hash": "35d06707626184e93694b18709ba071c",
+    "semantic_hash": "35d06707626184e93694b18709ba071c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/typst-docs.ts": {
+    "mtime": 1776859937.6793027,
+    "ast_hash": "ee1912dd2148df46ebb6aa9ffc94e527",
+    "semantic_hash": "ee1912dd2148df46ebb6aa9ffc94e527"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/usage.ts": {
+    "mtime": 1776859937.6739662,
+    "ast_hash": "d18333da26dc5229d310c2fe29f19754",
+    "semantic_hash": "d18333da26dc5229d310c2fe29f19754"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/vector-store.ts": {
+    "mtime": 1776859937.675353,
+    "ast_hash": "f5b9bc6d0a1e325f00d4cfe1bf3f28ac",
+    "semantic_hash": "f5b9bc6d0a1e325f00d4cfe1bf3f28ac"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/services/webhook.ts": {
+    "mtime": 1776859937.6782522,
+    "ast_hash": "d21805f5cfb8e2cbfb7c31d112cdd6b4",
+    "semantic_hash": "d21805f5cfb8e2cbfb7c31d112cdd6b4"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/types/index.ts": {
+    "mtime": 1776859937.66607,
+    "ast_hash": "1896c0752d8f2bf2e8818c773efab114",
+    "semantic_hash": "1896c0752d8f2bf2e8818c773efab114"
+  },
+  "/Users/abdullah/Projects/docuforge/api/src/worker.ts": {
+    "mtime": 1776859937.6799815,
+    "ast_hash": "5949c4c92cdec089563a9cda230f4d85",
+    "semantic_hash": "5949c4c92cdec089563a9cda230f4d85"
+  },
+  "/Users/abdullah/Projects/docuforge/api/templates/certificate/defaults.json": {
+    "mtime": 1776859937.6557348,
+    "ast_hash": "f5f094c5597c79afa71f14e14a867f2b",
+    "semantic_hash": "f5f094c5597c79afa71f14e14a867f2b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/templates/invoice/defaults.json": {
+    "mtime": 1776859937.6584578,
+    "ast_hash": "02685b6b4d417b4d7e3dfc99b026e478",
+    "semantic_hash": "02685b6b4d417b4d7e3dfc99b026e478"
+  },
+  "/Users/abdullah/Projects/docuforge/api/templates/receipt/defaults.json": {
+    "mtime": 1776859937.6562886,
+    "ast_hash": "82763b8674ea02c0d02a7c18537070b4",
+    "semantic_hash": "82763b8674ea02c0d02a7c18537070b4"
+  },
+  "/Users/abdullah/Projects/docuforge/api/templates/report/defaults.json": {
+    "mtime": 1776859937.6570156,
+    "ast_hash": "c63d996562ca5dda22c2a05ce0641a9b",
+    "semantic_hash": "c63d996562ca5dda22c2a05ce0641a9b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/templates/shipping-label/defaults.json": {
+    "mtime": 1776859937.6578765,
+    "ast_hash": "7ee9cc6a109c141b3a1f74281d4baaa0",
+    "semantic_hash": "7ee9cc6a109c141b3a1f74281d4baaa0"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/e2e/billing-flow.test.ts": {
+    "mtime": 1780248126.2692478,
+    "ast_hash": "7a0d0c22e98f7ad86838506bd6f01258",
+    "semantic_hash": "7a0d0c22e98f7ad86838506bd6f01258"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/e2e/full-render-flow.test.ts": {
+    "mtime": 1776859937.6495614,
+    "ast_hash": "349d57e300555a11f024658e94f478a8",
+    "semantic_hash": "349d57e300555a11f024658e94f478a8"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/e2e/versioning-flow.test.ts": {
+    "mtime": 1776859937.64995,
+    "ast_hash": "02c9c252109eb83c6698a0503d4c640f",
+    "semantic_hash": "02c9c252109eb83c6698a0503d4c640f"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/auth.ts": {
+    "mtime": 1776859937.6524367,
+    "ast_hash": "f48306a63b111d24e2c2b4cc4161d18c",
+    "semantic_hash": "f48306a63b111d24e2c2b4cc4161d18c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/db.ts": {
+    "mtime": 1776859937.6522012,
+    "ast_hash": "e17423f4f908eb748def958ea76d1119",
+    "semantic_hash": "e17423f4f908eb748def958ea76d1119"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/fetch-router.ts": {
+    "mtime": 1776859937.6520016,
+    "ast_hash": "94a6ae008395184b6e8039a7b19ad614",
+    "semantic_hash": "94a6ae008395184b6e8039a7b19ad614"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/fixtures.ts": {
+    "mtime": 1776859937.6507616,
+    "ast_hash": "3724fc246558d040d1c6a1b3cd67cfee",
+    "semantic_hash": "3724fc246558d040d1c6a1b3cd67cfee"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/index.ts": {
+    "mtime": 1776859937.6517365,
+    "ast_hash": "913c2cbac19385c14994ef29da1ff704",
+    "semantic_hash": "913c2cbac19385c14994ef29da1ff704"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/mock-engine.ts": {
+    "mtime": 1776859937.6510537,
+    "ast_hash": "802421104c207d99af6cda6aead85691",
+    "semantic_hash": "802421104c207d99af6cda6aead85691"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/mock-stripe.ts": {
+    "mtime": 1776859937.6515133,
+    "ast_hash": "f06a7d9f5a15d4f2c232e11e83577d7b",
+    "semantic_hash": "f06a7d9f5a15d4f2c232e11e83577d7b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/helpers/test-server.ts": {
+    "mtime": 1776859937.6512437,
+    "ast_hash": "b3dd2f36e7fcca97cdbe8f6f7f30e294",
+    "semantic_hash": "b3dd2f36e7fcca97cdbe8f6f7f30e294"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/infrastructure.test.ts": {
+    "mtime": 1776859937.642503,
+    "ast_hash": "73509985d4b797ec0ba2ded41337bc00",
+    "semantic_hash": "73509985d4b797ec0ba2ded41337bc00"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/ai.test.ts": {
+    "mtime": 1776859937.648042,
+    "ast_hash": "b3b8b4032dda27ae35b4d44d0c850ef6",
+    "semantic_hash": "b3b8b4032dda27ae35b4d44d0c850ef6"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/assets.test.ts": {
+    "mtime": 1776859937.6476686,
+    "ast_hash": "0a632ca3887fec81fa5e1203ee838045",
+    "semantic_hash": "0a632ca3887fec81fa5e1203ee838045"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/auth-apikey.test.ts": {
+    "mtime": 1776859937.647181,
+    "ast_hash": "9a85838e09dd72c8ef46fe563fcecd63",
+    "semantic_hash": "9a85838e09dd72c8ef46fe563fcecd63"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/auth-login.test.ts": {
+    "mtime": 1776859937.645384,
+    "ast_hash": "90756bd55478f54eb9035c5c6ef25f88",
+    "semantic_hash": "90756bd55478f54eb9035c5c6ef25f88"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/auth-oauth.test.ts": {
+    "mtime": 1781353466.5123389,
+    "ast_hash": "30497b9599b361cb542dd45506a33616",
+    "semantic_hash": "30497b9599b361cb542dd45506a33616"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/auth-refresh.test.ts": {
+    "mtime": 1776859937.6433463,
+    "ast_hash": "ee8ee6913e91145daad6f915ea0c55de",
+    "semantic_hash": "ee8ee6913e91145daad6f915ea0c55de"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/auth-register.test.ts": {
+    "mtime": 1776859937.6436014,
+    "ast_hash": "a61929a69c2503e8523df0dbee07163e",
+    "semantic_hash": "a61929a69c2503e8523df0dbee07163e"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/auth-security.test.ts": {
+    "mtime": 1781353466.4248977,
+    "ast_hash": "0e95297d712c2bbed3c9b8d80d4c4fe7",
+    "semantic_hash": "0e95297d712c2bbed3c9b8d80d4c4fe7"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/billing-checkout.test.ts": {
+    "mtime": 1780248126.2693374,
+    "ast_hash": "93caf56d2b46cd0b4623d7f7fd4c79ef",
+    "semantic_hash": "93caf56d2b46cd0b4623d7f7fd4c79ef"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/console-consumer-split.test.ts": {
+    "mtime": 1776859937.644876,
+    "ast_hash": "3f0aa0a7edf5c6b94df96277565b6d7a",
+    "semantic_hash": "3f0aa0a7edf5c6b94df96277565b6d7a"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/health.test.ts": {
+    "mtime": 1776859937.648538,
+    "ast_hash": "4a42a024115bbeff28ab35019186b9fe",
+    "semantic_hash": "4a42a024115bbeff28ab35019186b9fe"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-billing-limit.test.ts": {
+    "mtime": 1776859937.6487265,
+    "ast_hash": "b7fcd84d2d4a27d462199c89283e3d1c",
+    "semantic_hash": "b7fcd84d2d4a27d462199c89283e3d1c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-byot.test.ts": {
+    "mtime": 1781353146.0844254,
+    "ast_hash": "f4ec89c0b350afd832be1360aeda119d",
+    "semantic_hash": "f4ec89c0b350afd832be1360aeda119d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-engine-pipeline.test.ts": {
+    "mtime": 1776859937.6446002,
+    "ast_hash": "356fec64aaaba2fac104fadbb26b2d4d",
+    "semantic_hash": "356fec64aaaba2fac104fadbb26b2d4d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-image.test.ts": {
+    "mtime": 1776859937.6430883,
+    "ast_hash": "7779522623a66625b4fe6e10a2feb9ce",
+    "semantic_hash": "7779522623a66625b4fe6e10a2feb9ce"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-preview.test.ts": {
+    "mtime": 1776859937.645594,
+    "ast_hash": "5a45ff6a9d4b7004e61b0ac57d8d707d",
+    "semantic_hash": "5a45ff6a9d4b7004e61b0ac57d8d707d"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-public-preview.test.ts": {
+    "mtime": 1776859937.644058,
+    "ast_hash": "2c6d0e269286bcf308aa37bb98226e44",
+    "semantic_hash": "2c6d0e269286bcf308aa37bb98226e44"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-secure.test.ts": {
+    "mtime": 1776859937.6458268,
+    "ast_hash": "8121f7adddef9725e92b08124fae9d09",
+    "semantic_hash": "8121f7adddef9725e92b08124fae9d09"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-validate.test.ts": {
+    "mtime": 1781353146.084552,
+    "ast_hash": "b697f32bc6754b578781efa40c0924c8",
+    "semantic_hash": "b697f32bc6754b578781efa40c0924c8"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render-with-template.test.ts": {
+    "mtime": 1776859937.6464188,
+    "ast_hash": "77a0c5f42ed947e63d55684098942845",
+    "semantic_hash": "77a0c5f42ed947e63d55684098942845"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/render.test.ts": {
+    "mtime": 1776859937.6483095,
+    "ast_hash": "3104857a8041c74b63681b264f8dbeb0",
+    "semantic_hash": "3104857a8041c74b63681b264f8dbeb0"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/template-import.test.ts": {
+    "mtime": 1776859937.6474802,
+    "ast_hash": "4adca95ac1c66e1ea9bea4ad094b8115",
+    "semantic_hash": "4adca95ac1c66e1ea9bea4ad094b8115"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/templates-routes.test.ts": {
+    "mtime": 1776859937.6443934,
+    "ast_hash": "98a9f8c0c8f76593bcbbc91ae1dbb759",
+    "semantic_hash": "98a9f8c0c8f76593bcbbc91ae1dbb759"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/integration/templates-version.test.ts": {
+    "mtime": 1776859937.646977,
+    "ast_hash": "671e1ef3e69abf4761f1907f508d4dce",
+    "semantic_hash": "671e1ef3e69abf4761f1907f508d4dce"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/setup.ts": {
+    "mtime": 1780248126.2695656,
+    "ast_hash": "307990a9e480a6efed4e2eae340e85bc",
+    "semantic_hash": "307990a9e480a6efed4e2eae340e85bc"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/abuse-protection.test.ts": {
+    "mtime": 1776859937.6398492,
+    "ast_hash": "0cb0fec2a3e7abbb1032177126a88ec7",
+    "semantic_hash": "0cb0fec2a3e7abbb1032177126a88ec7"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/ai-service.test.ts": {
+    "mtime": 1776859937.6417422,
+    "ast_hash": "55d6995de88e6296114c40f4543b8a37",
+    "semantic_hash": "55d6995de88e6296114c40f4543b8a37"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/api-key.test.ts": {
+    "mtime": 1776859937.6361737,
+    "ast_hash": "714772260f86e8de1e7b7f9a5b472e1b",
+    "semantic_hash": "714772260f86e8de1e7b7f9a5b472e1b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/assert.test.ts": {
+    "mtime": 1776859937.6353822,
+    "ast_hash": "c0ec92718389876ff57b1af821281265",
+    "semantic_hash": "c0ec92718389876ff57b1af821281265"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/asset-cache.test.ts": {
+    "mtime": 1776859937.6413827,
+    "ast_hash": "d5750a87f52784b1f6ff0264c237580c",
+    "semantic_hash": "d5750a87f52784b1f6ff0264c237580c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/asset-resolution.test.ts": {
+    "mtime": 1776859937.6339145,
+    "ast_hash": "f5afb0d9fb5a714ee85193bb3c69b58e",
+    "semantic_hash": "f5afb0d9fb5a714ee85193bb3c69b58e"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/auth-middleware.test.ts": {
+    "mtime": 1776859937.6421108,
+    "ast_hash": "697f70c264d12c8c49a8fc2679a9e0c8",
+    "semantic_hash": "697f70c264d12c8c49a8fc2679a9e0c8"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/config.test.ts": {
+    "mtime": 1776859937.640598,
+    "ast_hash": "390ebea3a2546cc7eb1bcafab6e3aba6",
+    "semantic_hash": "390ebea3a2546cc7eb1bcafab6e3aba6"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/email-locale.test.ts": {
+    "mtime": 1776859937.6368089,
+    "ast_hash": "8d1655dad7bbbab8b2ba88f2fd61b773",
+    "semantic_hash": "8d1655dad7bbbab8b2ba88f2fd61b773"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/email-sender.test.ts": {
+    "mtime": 1776859937.6316614,
+    "ast_hash": "d84e1be7468437edd1bfd3fc1d96197b",
+    "semantic_hash": "d84e1be7468437edd1bfd3fc1d96197b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/email-templates.test.ts": {
+    "mtime": 1781353518.7335014,
+    "ast_hash": "507bfc9d4d7589ec86ecaddc4aebb035",
+    "semantic_hash": "507bfc9d4d7589ec86ecaddc4aebb035"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/engine.test.ts": {
+    "mtime": 1776859937.63718,
+    "ast_hash": "6337d591fd3891fbc6ab0b8b6d5b4cb0",
+    "semantic_hash": "6337d591fd3891fbc6ab0b8b6d5b4cb0"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/env-runtime.test.ts": {
+    "mtime": 1780248126.2696412,
+    "ast_hash": "4f1cb498ecafcc34ecc6fc825f057664",
+    "semantic_hash": "4f1cb498ecafcc34ecc6fc825f057664"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/env.test.ts": {
+    "mtime": 1780248126.2697108,
+    "ast_hash": "1dd19157f0e97c838f0b266107782b07",
+    "semantic_hash": "1dd19157f0e97c838f0b266107782b07"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/error-handler.test.ts": {
+    "mtime": 1776859937.637567,
+    "ast_hash": "41d4453a78cd180c345629afed4c879f",
+    "semantic_hash": "41d4453a78cd180c345629afed4c879f"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/errors.test.ts": {
+    "mtime": 1776859937.6327498,
+    "ast_hash": "4952b0604c4ec0897baaed5e64772a15",
+    "semantic_hash": "4952b0604c4ec0897baaed5e64772a15"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/helpers-auth.test.ts": {
+    "mtime": 1776859937.6346064,
+    "ast_hash": "c912c18ac514ce1905d929b9f15ee26a",
+    "semantic_hash": "c912c18ac514ce1905d929b9f15ee26a"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/key-cache.test.ts": {
+    "mtime": 1776859937.6387107,
+    "ast_hash": "d22986e08382a75eb3cd6439016f88dc",
+    "semantic_hash": "d22986e08382a75eb3cd6439016f88dc"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/low-code.test.ts": {
+    "mtime": 1776859937.6312985,
+    "ast_hash": "dbc7e97323636f8d61961b05e2c179b1",
+    "semantic_hash": "dbc7e97323636f8d61961b05e2c179b1"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/oauth.test.ts": {
+    "mtime": 1776859937.639099,
+    "ast_hash": "669febc19fa715b99c84c89b68c658f0",
+    "semantic_hash": "669febc19fa715b99c84c89b68c658f0"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/rate-limit.test.ts": {
+    "mtime": 1776859937.6383235,
+    "ast_hash": "db0d4128e77c8130a7952848f077227b",
+    "semantic_hash": "db0d4128e77c8130a7952848f077227b"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/render-queue.test.ts": {
+    "mtime": 1776859937.6394746,
+    "ast_hash": "ac30a76ccc31de3bef2183438d3787d6",
+    "semantic_hash": "ac30a76ccc31de3bef2183438d3787d6"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/render-schema-byot.test.ts": {
+    "mtime": 1781353146.0846784,
+    "ast_hash": "1ab7097cba36146d5d8f91da4897c133",
+    "semantic_hash": "1ab7097cba36146d5d8f91da4897c133"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/security-regressions.test.ts": {
+    "mtime": 1781353427.9865925,
+    "ast_hash": "4dcb48248fa7f6e81de31e5f3982202c",
+    "semantic_hash": "4dcb48248fa7f6e81de31e5f3982202c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/template-service.test.ts": {
+    "mtime": 1776859937.632044,
+    "ast_hash": "d97f756b6e27bc5c58c27e61af6f3ff6",
+    "semantic_hash": "d97f756b6e27bc5c58c27e61af6f3ff6"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/usage.test.ts": {
+    "mtime": 1776859937.6402392,
+    "ast_hash": "1b44eaeb716c684d148943ee7af7fd67",
+    "semantic_hash": "1b44eaeb716c684d148943ee7af7fd67"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/validation.test.ts": {
+    "mtime": 1776859937.6409853,
+    "ast_hash": "94eb4b6da11a472e83d603e1f62af8db",
+    "semantic_hash": "94eb4b6da11a472e83d603e1f62af8db"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/vector-store.test.ts": {
+    "mtime": 1776859937.6342642,
+    "ast_hash": "f5bd4e76c8f92457f0b6f9a2e3d7fd48",
+    "semantic_hash": "f5bd4e76c8f92457f0b6f9a2e3d7fd48"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tests/unit/webhook-url.test.ts": {
+    "mtime": 1776859937.6331332,
+    "ast_hash": "2db3fa139633bf64492d206793f4d67c",
+    "semantic_hash": "2db3fa139633bf64492d206793f4d67c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/tsconfig.json": {
+    "mtime": 1776859937.6587029,
+    "ast_hash": "9b4346efb748d7c734e71292befd0ac4",
+    "semantic_hash": "9b4346efb748d7c734e71292befd0ac4"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/demo.sh": {
+    "mtime": 1776859957.682401,
+    "ast_hash": "87177e4fe410b52b8b860d42a0c51821",
+    "semantic_hash": "87177e4fe410b52b8b860d42a0c51821"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/assertions.rs": {
+    "mtime": 1776859957.7076464,
+    "ast_hash": "cf668d0e5274863c4d919b8f595c4122",
+    "semantic_hash": "cf668d0e5274863c4d919b8f595c4122"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/cache/asset_cache.rs": {
+    "mtime": 1776859957.708467,
+    "ast_hash": "3d2abd865995ef8f93d9edb050537f5f",
+    "semantic_hash": "3d2abd865995ef8f93d9edb050537f5f"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/cache/mod.rs": {
+    "mtime": 1776859957.7087884,
+    "ast_hash": "428c18515546fc62a875d289e3b95ccf",
+    "semantic_hash": "428c18515546fc62a875d289e3b95ccf"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/cache/template_cache.rs": {
+    "mtime": 1776859957.7091713,
+    "ast_hash": "25d609e0ec86d3947ccfc23f8b451739",
+    "semantic_hash": "25d609e0ec86d3947ccfc23f8b451739"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/cache/template_cache_l2.rs": {
+    "mtime": 1776859957.7080495,
+    "ast_hash": "ccf37571db32c5d8beee1a1faab402be",
+    "semantic_hash": "ccf37571db32c5d8beee1a1faab402be"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/config.rs": {
+    "mtime": 1776859957.7103732,
+    "ast_hash": "f1a4be587c4eb9ad47b8f2b723ce768e",
+    "semantic_hash": "f1a4be587c4eb9ad47b8f2b723ce768e"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/engine/compiler.rs": {
+    "mtime": 1776859957.7126794,
+    "ast_hash": "c355e49df788793dd670431e7d2b26c7",
+    "semantic_hash": "c355e49df788793dd670431e7d2b26c7"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/engine/fonts.rs": {
+    "mtime": 1776859957.7138476,
+    "ast_hash": "de97876ec860a56fb215536b658f8ea4",
+    "semantic_hash": "de97876ec860a56fb215536b658f8ea4"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/engine/mod.rs": {
+    "mtime": 1776859957.7135072,
+    "ast_hash": "e07f5e1323dc2922d0bef1bc4979a17a",
+    "semantic_hash": "e07f5e1323dc2922d0bef1bc4979a17a"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/engine/world.rs": {
+    "mtime": 1776859957.7133029,
+    "ast_hash": "f4b2a0bb984f21820a713f6d6e55a056",
+    "semantic_hash": "f4b2a0bb984f21820a713f6d6e55a056"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/error.rs": {
+    "mtime": 1776859957.709585,
+    "ast_hash": "e68284e6c45dac2ec358e999b836241b",
+    "semantic_hash": "e68284e6c45dac2ec358e999b836241b"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/handlers/health.rs": {
+    "mtime": 1776859957.7140884,
+    "ast_hash": "6e6eadd66790803dcd036df000871679",
+    "semantic_hash": "6e6eadd66790803dcd036df000871679"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/handlers/mod.rs": {
+    "mtime": 1776859957.7143517,
+    "ast_hash": "b968b11569cb77fe65a54c3f648f9a64",
+    "semantic_hash": "b968b11569cb77fe65a54c3f648f9a64"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/handlers/render.rs": {
+    "mtime": 1776859957.7142227,
+    "ast_hash": "1aa04f1af5ec11764e5728b39628316f",
+    "semantic_hash": "1aa04f1af5ec11764e5728b39628316f"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/lib.rs": {
+    "mtime": 1776859957.710897,
+    "ast_hash": "15e80c0e519df86bed15020f70780e3c",
+    "semantic_hash": "15e80c0e519df86bed15020f70780e3c"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/main.rs": {
+    "mtime": 1776859957.7119813,
+    "ast_hash": "1ebb5dc5f9db0b66f8159f7a4d61a199",
+    "semantic_hash": "1ebb5dc5f9db0b66f8159f7a4d61a199"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/models/mod.rs": {
+    "mtime": 1776859957.7116723,
+    "ast_hash": "b5174066a901ac2e89c2a92eb874e504",
+    "semantic_hash": "b5174066a901ac2e89c2a92eb874e504"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/models/request.rs": {
+    "mtime": 1776859957.711516,
+    "ast_hash": "a4b9badde8a97caf9f2bd6e1230de2c0",
+    "semantic_hash": "a4b9badde8a97caf9f2bd6e1230de2c0"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/models/response.rs": {
+    "mtime": 1776859957.7111206,
+    "ast_hash": "a3bb07ee8052999d265868ddd89aa31c",
+    "semantic_hash": "a3bb07ee8052999d265868ddd89aa31c"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/src/server.rs": {
+    "mtime": 1776859957.7118332,
+    "ast_hash": "4c147045373d4b1af20f817673d7a523",
+    "semantic_hash": "4c147045373d4b1af20f817673d7a523"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/comprehensive_tests.rs": {
+    "mtime": 1776859957.6675727,
+    "ast_hash": "1b15af00c060f4d060b5d465849f133a",
+    "semantic_hash": "1b15af00c060f4d060b5d465849f133a"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/coverage_smoke.rs": {
+    "mtime": 1776859957.6683216,
+    "ast_hash": "69ea9dd9c9c09b3474ba5c4b4add3294",
+    "semantic_hash": "69ea9dd9c9c09b3474ba5c4b4add3294"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/contract_data.json": {
+    "mtime": 1776859957.6757288,
+    "ast_hash": "de4f31a5993f0db0e72670fc4abf08a9",
+    "semantic_hash": "de4f31a5993f0db0e72670fc4abf08a9"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/invoice_data.json": {
+    "mtime": 1776859957.677294,
+    "ast_hash": "a9b448d06b4a93563a721fe60e52c3fe",
+    "semantic_hash": "a9b448d06b4a93563a721fe60e52c3fe"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/invoice_detailed.json": {
+    "mtime": 1776859957.6779363,
+    "ast_hash": "0c4a3ec084ce936c9d7f05e547e4ad36",
+    "semantic_hash": "0c4a3ec084ce936c9d7f05e547e4ad36"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/layout_complex.json": {
+    "mtime": 1776859957.6760476,
+    "ast_hash": "7a29ac562375b4cc0e2f21d7bd86a77a",
+    "semantic_hash": "7a29ac562375b4cc0e2f21d7bd86a77a"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/letter_data.json": {
+    "mtime": 1776859957.677452,
+    "ast_hash": "04b1c1eb5b8b4870f2a25b11c5e1f628",
+    "semantic_hash": "04b1c1eb5b8b4870f2a25b11c5e1f628"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/nested_complex.json": {
+    "mtime": 1776859957.6763492,
+    "ast_hash": "c1646dfd7ebc474cd66e755f73fd6850",
+    "semantic_hash": "c1646dfd7ebc474cd66e755f73fd6850"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/report_data.json": {
+    "mtime": 1776859957.6782444,
+    "ast_hash": "8bb5c7c66a83fbbdc9e108533a85bc45",
+    "semantic_hash": "8bb5c7c66a83fbbdc9e108533a85bc45"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/report_multipage.json": {
+    "mtime": 1776859957.6755626,
+    "ast_hash": "b1fa9c2bf8510a0a2adb46c1a76be602",
+    "semantic_hash": "b1fa9c2bf8510a0a2adb46c1a76be602"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/resume_data.json": {
+    "mtime": 1776859957.6758826,
+    "ast_hash": "09e29dd53fe68a51e5c5372fc87557f6",
+    "semantic_hash": "09e29dd53fe68a51e5c5372fc87557f6"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/simple.json": {
+    "mtime": 1776859957.675194,
+    "ast_hash": "793e563661f515c4e7fdc83c23936444",
+    "semantic_hash": "793e563661f515c4e7fdc83c23936444"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/fixtures/data/table_large.json": {
+    "mtime": 1776859957.6780932,
+    "ast_hash": "462b3af98a8543a1f56a31cceb780ef4",
+    "semantic_hash": "462b3af98a8543a1f56a31cceb780ef4"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/http_tests.rs": {
+    "mtime": 1776859957.669144,
+    "ast_hash": "d8e3a831df7e2953b331231272702609",
+    "semantic_hash": "d8e3a831df7e2953b331231272702609"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/integration_tests.rs": {
+    "mtime": 1776859957.6784317,
+    "ast_hash": "88f36d172b1907ff7ee96d1ed67e65d8",
+    "semantic_hash": "88f36d172b1907ff7ee96d1ed67e65d8"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/pdf_debug_tests.rs": {
+    "mtime": 1776859957.6687179,
+    "ast_hash": "30b8406b77df1a764595736cb29fe152",
+    "semantic_hash": "30b8406b77df1a764595736cb29fe152"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/tests/template_tests.rs": {
+    "mtime": 1776859957.667947,
+    "ast_hash": "1202743819b30e0da2423f0eddc61eb7",
+    "semantic_hash": "1202743819b30e0da2423f0eddc61eb7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/README.md": {
+    "mtime": 1776859929.5427368,
+    "ast_hash": "3f6b3e6bc754b93bf08ba8e2b67b8086",
+    "semantic_hash": "3f6b3e6bc754b93bf08ba8e2b67b8086"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/llms-full.txt": {
+    "mtime": 1776859929.5477283,
+    "ast_hash": "5841baf6d207db262fdb2d0e7d7e8fb6",
+    "semantic_hash": "5841baf6d207db262fdb2d0e7d7e8fb6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/llms.txt": {
+    "mtime": 1776859929.5437577,
+    "ast_hash": "dffbdf87dba9263152f869c5e025c3c6",
+    "semantic_hash": "dffbdf87dba9263152f869c5e025c3c6"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/scripts/benchmarks/README.md": {
+    "mtime": 1776859929.5515218,
+    "ast_hash": "1ed7a54201d68b4fb30ab0bd4b8a44bd",
+    "semantic_hash": "1ed7a54201d68b4fb30ab0bd4b8a44bd"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/spec.md": {
+    "mtime": 1776859929.5523245,
+    "ast_hash": "cdb7a0f3872b6452d350452c7e478dce",
+    "semantic_hash": "cdb7a0f3872b6452d350452c7e478dce"
+  },
+  "/Users/abdullah/Projects/docuforge/api/README.md": {
+    "mtime": 1776859937.6530585,
+    "ast_hash": "155f506dcca600ab175d35ceec8d939c",
+    "semantic_hash": "155f506dcca600ab175d35ceec8d939c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/data.md": {
+    "mtime": 1776859937.6613204,
+    "ast_hash": "8c7122fe012a267e3be2d53a2d19d9a1",
+    "semantic_hash": "8c7122fe012a267e3be2d53a2d19d9a1"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/foundations.md": {
+    "mtime": 1776859937.66105,
+    "ast_hash": "5bdf388420e910cccd9cefd884f30068",
+    "semantic_hash": "5bdf388420e910cccd9cefd884f30068"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/layout.md": {
+    "mtime": 1776859937.6624079,
+    "ast_hash": "9fb3eb14e4d9cbd3a52cade47e86cf1c",
+    "semantic_hash": "9fb3eb14e4d9cbd3a52cade47e86cf1c"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/math.md": {
+    "mtime": 1776859937.6615345,
+    "ast_hash": "70ded6a8c1d9fd15abacf1166d781b9e",
+    "semantic_hash": "70ded6a8c1d9fd15abacf1166d781b9e"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/misc.md": {
+    "mtime": 1776859937.6618667,
+    "ast_hash": "e9ea2668e9515f3c506acc45f64e7a00",
+    "semantic_hash": "e9ea2668e9515f3c506acc45f64e7a00"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/reference.md": {
+    "mtime": 1776859937.6607616,
+    "ast_hash": "f8566b7bb4ea91357df2ca384707ee32",
+    "semantic_hash": "f8566b7bb4ea91357df2ca384707ee32"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/tables.md": {
+    "mtime": 1776859937.6605003,
+    "ast_hash": "81861823f5696eaf2e543326ceb12cf2",
+    "semantic_hash": "81861823f5696eaf2e543326ceb12cf2"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/text.md": {
+    "mtime": 1776859937.6602035,
+    "ast_hash": "137bd7d26cc0bb21314c4d51c27b51c3",
+    "semantic_hash": "137bd7d26cc0bb21314c4d51c27b51c3"
+  },
+  "/Users/abdullah/Projects/docuforge/api/data/typst-docs/visualize.md": {
+    "mtime": 1776859937.6621256,
+    "ast_hash": "3017d8277c9f18d256465c0be02f85e6",
+    "semantic_hash": "3017d8277c9f18d256465c0be02f85e6"
+  },
+  "/Users/abdullah/Projects/docuforge/api/spec.md": {
+    "mtime": 1776859937.6589773,
+    "ast_hash": "1e1fd1a39d7ba41784aabe8c894805da",
+    "semantic_hash": "1e1fd1a39d7ba41784aabe8c894805da"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/.claude/agents/blueprint-engineer.md": {
+    "mtime": 1776859957.679041,
+    "ast_hash": "1f86f2e95ba185a3e30d756afab8e51e",
+    "semantic_hash": "1f86f2e95ba185a3e30d756afab8e51e"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/docs/openapi.yaml": {
+    "mtime": 1776859957.6798995,
+    "ast_hash": "4a1dadbeab5f8e91ec5a1f3fa4f53e90",
+    "semantic_hash": "4a1dadbeab5f8e91ec5a1f3fa4f53e90"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/specs.md": {
+    "mtime": 1776859957.6818254,
+    "ast_hash": "085d7aee342d7e8c4da3eb286c77efa8",
+    "semantic_hash": "085d7aee342d7e8c4da3eb286c77efa8"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/01-hello-world.pdf": {
+    "mtime": 1776859957.684671,
+    "ast_hash": "a55eb406d287895644c867c9d2d3514f",
+    "semantic_hash": "a55eb406d287895644c867c9d2d3514f"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/02-data-substitution.pdf": {
+    "mtime": 1776859957.682755,
+    "ast_hash": "359a4accfd8c7a061b8122ee962c16d4",
+    "semantic_hash": "359a4accfd8c7a061b8122ee962c16d4"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/03-invoice.pdf": {
+    "mtime": 1776859957.684493,
+    "ast_hash": "211a6789c393dda3a4379f08e45bf91c",
+    "semantic_hash": "211a6789c393dda3a4379f08e45bf91c"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/04-multifile.pdf": {
+    "mtime": 1776859957.6831493,
+    "ast_hash": "7dda7d223bcb0960568a49fcca4c60f9",
+    "semantic_hash": "7dda7d223bcb0960568a49fcca4c60f9"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/05-large-table.pdf": {
+    "mtime": 1776859957.6839495,
+    "ast_hash": "772b3e5234fd2a391b9fbd55c2809714",
+    "semantic_hash": "772b3e5234fd2a391b9fbd55c2809714"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/06-resume.pdf": {
+    "mtime": 1776859957.6843302,
+    "ast_hash": "c9e91448a184e19f216e14bac5ea325b",
+    "semantic_hash": "c9e91448a184e19f216e14bac5ea325b"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/07-letter.pdf": {
+    "mtime": 1776859957.6834936,
+    "ast_hash": "3b7334609247d0408e5676e9c09fc021",
+    "semantic_hash": "3b7334609247d0408e5676e9c09fc021"
+  },
+  "/Users/abdullah/Projects/docuforge/engine/examples/pdfs/08-custom-timeout.pdf": {
+    "mtime": 1776859957.6833203,
+    "ast_hash": "cf6bd0917450db7c5853abd4de0ae3c7",
+    "semantic_hash": "cf6bd0917450db7c5853abd4de0ae3c7"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-mark.png": {
+    "mtime": 1776859929.547405,
+    "ast_hash": "16789495b5b79b478e16b48f288ecaeb",
+    "semantic_hash": "16789495b5b79b478e16b48f288ecaeb"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-source.png": {
+    "mtime": 1776859929.544496,
+    "ast_hash": "1cbf3c00c3b9b40aee96a02e56512beb",
+    "semantic_hash": "1cbf3c00c3b9b40aee96a02e56512beb"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-16.png": {
+    "mtime": 1776859929.5464804,
+    "ast_hash": "285fe2524e9a58c00330950aece77b3f",
+    "semantic_hash": "285fe2524e9a58c00330950aece77b3f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-180.png": {
+    "mtime": 1776859929.545974,
+    "ast_hash": "15b801e6e597dbaf1198efc9da7e1b95",
+    "semantic_hash": "15b801e6e597dbaf1198efc9da7e1b95"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-192.png": {
+    "mtime": 1776859929.5454113,
+    "ast_hash": "9a2de66ea43fe4c00541661c496dc3c3",
+    "semantic_hash": "9a2de66ea43fe4c00541661c496dc3c3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-256.png": {
+    "mtime": 1776859929.5469098,
+    "ast_hash": "c0a622f5847fe2d49df3681b7f3026c4",
+    "semantic_hash": "c0a622f5847fe2d49df3681b7f3026c4"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-32.png": {
+    "mtime": 1776859929.544775,
+    "ast_hash": "e519b222500abee488ab4496366608de",
+    "semantic_hash": "e519b222500abee488ab4496366608de"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-512.png": {
+    "mtime": 1776859929.5451581,
+    "ast_hash": "d3d43acc6ad9fe79fae2d7867f698bcb",
+    "semantic_hash": "d3d43acc6ad9fe79fae2d7867f698bcb"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/brand/logo-square-64.png": {
+    "mtime": 1776859929.5456724,
+    "ast_hash": "727991b9787af4d35056e452b516d18f",
+    "semantic_hash": "727991b9787af4d35056e452b516d18f"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/file.svg": {
+    "mtime": 1776859929.543994,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/globe.svg": {
+    "mtime": 1776859929.5488424,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/next.svg": {
+    "mtime": 1776859929.5484424,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/vercel.svg": {
+    "mtime": 1776859929.548061,
+    "ast_hash": "c0af2f507b369b085b35ef4bbe3bcf1e",
+    "semantic_hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/public/window.svg": {
+    "mtime": 1776859929.5490117,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/apple-icon.png": {
+    "mtime": 1776859930.4823442,
+    "ast_hash": "15b801e6e597dbaf1198efc9da7e1b95",
+    "semantic_hash": "15b801e6e597dbaf1198efc9da7e1b95"
+  },
+  "/Users/abdullah/Projects/docuforge/frontend/src/app/icon.png": {
+    "mtime": 1776859930.4810076,
+    "ast_hash": "d3d43acc6ad9fe79fae2d7867f698bcb",
+    "semantic_hash": "d3d43acc6ad9fe79fae2d7867f698bcb"
+  }
+}
