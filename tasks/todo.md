@@ -1,5 +1,33 @@
 # Task Plan
 
+## KAN-62 Playground UX Revamp Plan (2026-06-30)
+
+- [x] Confirm the active playground/editor component and existing template catalog API.
+- [x] Add `TemplateSwitcher` with collapsed/expanded sidebar, persisted state, catalog fetch, search, thumbnails, unsaved-change confirmation, and Cmd/Ctrl+P palette selection.
+- [x] Refactor the public playground desktop layout to `sidebar | editor/data | PDF preview` with above-the-fold preview at 1440x900.
+- [x] Add mobile Editor/Preview tabs with Preview active by default and hide the desktop sidebar on mobile.
+- [x] Preserve live preview, BYOT/Typst editing, sample data loading, and existing render controls.
+- [x] Add/update focused regression coverage for switcher filtering, persistence, keyboard palette, and unsaved-change confirmation.
+- [x] Run `bun run typecheck` and `bun run build` from `frontend/`; fix any failures.
+- [x] Perform a code review pass, document results here, then commit and push `kan-62-playground-revamp`.
+
+## KAN-62 Playground UX Revamp Review (2026-06-30)
+
+- Added `frontend/src/components/TemplateSwitcher.tsx` backed by the existing public `/v1/templates/official` catalog and local playground presets for sample source/data.
+- Reworked `frontend/src/app/playground/playground-client.tsx` into desktop `template switcher | editor/data | PDF preview` and mobile Preview/Editor tabs with Preview active by default.
+- Preserved public preview session/render behavior, low-code quick edits, Typst/BYOT mode, JSON data editing, request payload view, and sample-data reset on template switch.
+- Added `frontend/tsconfig.typecheck.json` and `frontend` `typecheck` script for source-code TypeScript verification.
+- Regression coverage:
+  - `frontend/tests/component/TemplateSwitcher.test.tsx`
+  - `frontend/tests/component/PlaygroundClient.test.tsx`
+- Verification:
+  - `cd frontend && bun run test:run tests/component/TemplateSwitcher.test.tsx tests/component/PlaygroundClient.test.tsx` (pass)
+  - `cd frontend && bun run typecheck` (pass)
+  - `cd frontend && bun run build` (pass; first sandboxed attempt failed on Google Fonts DNS, rerun/build passed)
+  - Targeted eslint on touched files (pass)
+  - 1440x900 Playwright layout check (pass: header, template name, render button, sidebar, and preview top visible)
+- Full `bun run lint` still fails on pre-existing/generated `.open-next` artifacts outside this change; touched-file lint is clean.
+
 ## KAN-65 / KAN-66 / KAN-67 Plan (2026-06-16)
 
 - [x] Read Jira requirements for KAN-65, KAN-66, and KAN-67.

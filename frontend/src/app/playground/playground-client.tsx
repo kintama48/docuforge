@@ -2,15 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  FileCode,
-  FilePdf,
-  MagnifyingGlass,
-  Receipt,
-  SealCheck,
-  Truck,
-} from "@phosphor-icons/react";
+import { FileCode, FilePdf } from "@phosphor-icons/react";
 import { env } from "@/src/config/env";
+import {
+  TemplateSwitcher,
+  type TemplateSwitcherTemplate,
+} from "@/src/components/TemplateSwitcher";
 import { LowCodeBlocksEditor } from "@/src/components/editor/LowCodeBlocksEditor";
 import { useDebounce } from "@/src/hooks/use-debounce";
 import { useI18n } from "@/src/lib/i18n";
@@ -19,10 +16,8 @@ import { useLocalePath } from "@/src/lib/use-locale-path";
 import {
   cloneSpec,
   getPlaygroundPresetBySlug,
-  playgroundPresetCategories,
   playgroundPresets,
   type PlaygroundPreset,
-  type PlaygroundPresetCategory,
 } from "@/src/app/playground/playground-presets";
 
 type PlaygroundClientProps = {
@@ -42,25 +37,30 @@ type PreviewInputs = {
   dataJson: string;
 };
 
-function PresetIcon({ kind }: { kind: PlaygroundPreset["icon"] }) {
-  if (kind === "freight") {
-    return <Truck className="h-4 w-4 phosphor-icon" aria-hidden="true" />;
-  }
-  if (kind === "certificate") {
-    return <SealCheck className="h-4 w-4 phosphor-icon" aria-hidden="true" />;
-  }
-  return <Receipt className="h-4 w-4 phosphor-icon" aria-hidden="true" />;
+type MobileTab = "editor" | "preview";
+
+function useIsMobileViewport() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const updateViewport = () => setIsMobile(mediaQuery.matches);
+    updateViewport();
+    mediaQuery.addEventListener("change", updateViewport);
+    return () => mediaQuery.removeEventListener("change", updateViewport);
+  }, []);
+
+  return isMobile;
 }
 
 export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClientProps) {
   const { messages } = useI18n();
   const localePath = useLocalePath();
+  const isMobile = useIsMobileViewport();
   const initialPreset = getPlaygroundPresetBySlug(initialPresetSlug ?? "") ?? playgroundPresets[0];
 
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<"all" | PlaygroundPresetCategory>("all");
   const [mode, setMode] = useState<"low-code" | "typst">("low-code");
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const [activePresetId, setActivePresetId] = useState(initialPreset.id);
   const [source, setSource] = useState(initialPreset.source);
   const [lowCodeSpec, setLowCodeSpec] = useState<LowCodeSpec>(cloneSpec(initialPreset.lowCodeSpec));
@@ -83,15 +83,24 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
     return playgroundPresets.find((preset) => preset.id === activePresetId) ?? playgroundPresets[0];
   }, [activePresetId]);
 
-  const filteredPresets = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    return playgroundPresets.filter((preset) => {
-      const categoryMatch = category === "all" || preset.category === category;
-      if (!categoryMatch) return false;
-      if (!search) return true;
-      return [preset.title, preset.description, ...preset.tags].join(" ").toLowerCase().includes(search);
-    });
-  }, [category, query]);
+  const switcherTemplates = useMemo<TemplateSwitcherTemplate[]>(
+    () =>
+      playgroundPresets.map((preset) => ({
+        id: preset.id,
+        name: preset.title,
+        description: preset.description,
+        slug: preset.slug,
+      })),
+    []
+  );
+
+  const hasUnsavedChanges = useMemo(() => {
+    return (
+      source !== activePreset.source ||
+      dataJson !== activePreset.data ||
+      JSON.stringify(lowCodeSpec) !== JSON.stringify(activePreset.lowCodeSpec)
+    );
+  }, [activePreset, dataJson, lowCodeSpec, source]);
 
   const payloadPreview = useMemo(() => {
     let parsed: unknown;
@@ -180,7 +189,7 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
     return startPublicPreviewSession();
   }, [sessionExpiresAt, sessionId, startPublicPreviewSession]);
 
-  const applyPreset = (preset: PlaygroundPreset) => {
+  const applyPreset = useCallback((preset: PlaygroundPreset) => {
     setActivePresetId(preset.id);
     setSource(preset.source);
     setLowCodeSpec(cloneSpec(preset.lowCodeSpec));
@@ -190,7 +199,38 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
       if (previous) URL.revokeObjectURL(previous);
       return null;
     });
-  };
+  }, []);
+
+  const findPresetForTemplate = useCallback((template: TemplateSwitcherTemplate) => {
+    return (
+      getPlaygroundPresetBySlug(template.slug ?? "") ??
+      getPlaygroundPresetBySlug(template.id) ??
+      playgroundPresets.find((preset) => preset.title === template.name)
+    );
+  }, []);
+
+  const handleSwitcherSelect = useCallback(
+    (template: TemplateSwitcherTemplate) => {
+      const preset = findPresetForTemplate(template);
+      if (!preset) return;
+      applyPreset(preset);
+    },
+    [applyPreset, findPresetForTemplate]
+  );
+
+  const requestPresetSwitch = useCallback(
+    (preset: PlaygroundPreset) => {
+      if (preset.id === activePresetId) return;
+      if (
+        hasUnsavedChanges &&
+        !window.confirm("You have unsaved changes. Switch template anyway?")
+      ) {
+        return;
+      }
+      applyPreset(preset);
+    },
+    [activePresetId, applyPreset, hasUnsavedChanges]
+  );
 
   const runPreview = useCallback(async ({ mode, source, lowCodeSpec, dataJson }: PreviewInputs) => {
     const requestId = requestSequenceRef.current + 1;
@@ -301,249 +341,252 @@ export default function PlaygroundClient({ initialPresetSlug }: PlaygroundClient
     });
   }, [debouncedDataJson, debouncedLowCodeSpec, debouncedSource, mode]);
 
-  return (
-    <div className="mx-auto w-full max-w-[1460px] px-6 pb-20 pt-10 lg:pt-14">
-      <div className="max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Template gallery</p>
-        <h1 className="mt-3 font-display text-4xl text-[var(--ink)] sm:text-5xl">Find a PDF template and preview instantly.</h1>
+  const renderPreviewNow = () =>
+    runPreview({
+      mode,
+      source,
+      lowCodeSpec,
+      dataJson,
+    });
+
+  const editorPanel = (
+    <section
+      className={`min-w-0 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4 ${
+        isMobile ? "" : "max-h-[calc(100vh-150px)] overflow-y-auto"
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+            Editor
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-[var(--ink)]">
+            {activePreset.title}
+          </h2>
+        </div>
+        <div className="inline-flex rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-1">
+          <button
+            type="button"
+            onClick={() => setMode("low-code")}
+            className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
+              mode === "low-code" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"
+            }`}
+          >
+            Quick edits
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("typst")}
+            className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
+              mode === "typst" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"
+            }`}
+          >
+            Typst (advanced)
+          </button>
+        </div>
       </div>
 
-      <section className="mt-7 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <label className="relative block w-full xl:max-w-[420px]">
-            <MagnifyingGlass
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)] phosphor-icon"
-              aria-hidden="true"
-            />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search templates (freight invoice, shopify invoice...)"
-              className="w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] py-2 pl-9 pr-3 text-sm text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-            />
+      {mode === "low-code" ? (
+        <LowCodeBlocksEditor
+          lowCodeSpec={lowCodeSpec}
+          onChange={setLowCodeSpec}
+          className="mt-4 bg-[var(--surface-2)]"
+          title="Template blocks"
+        />
+      ) : null}
+
+      {mode === "typst" ? (
+        <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-4">
+          <div className="flex items-center gap-2">
+            <FileCode className="h-4 w-4 text-[var(--muted)] phosphor-icon" aria-hidden="true" />
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+              Typst source
+            </p>
+          </div>
+          <textarea
+            value={source}
+            onChange={(event) => setSource(event.target.value)}
+            className="mt-3 h-56 w-full resize-y rounded-md border border-[var(--line)] bg-[var(--surface)] p-3 font-mono text-xs text-[var(--ink)] outline-none focus:border-[var(--accent)]"
+          />
+        </div>
+      ) : null}
+
+      <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+        JSON data
+      </label>
+      <textarea
+        value={dataJson}
+        onChange={(event) => setDataJson(event.target.value)}
+        className="mt-2 h-44 w-full resize-y rounded-md border border-[var(--line)] bg-[var(--surface-2)] p-3 font-mono text-xs text-[var(--ink)] outline-none focus:border-[var(--accent)]"
+      />
+
+      <details className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-4">
+        <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+          Request payload
+        </summary>
+        <pre className="mt-3 max-h-64 overflow-auto text-xs text-[var(--ink)]">
+          <code>{payloadPreview}</code>
+        </pre>
+      </details>
+    </section>
+  );
+
+  const previewPanel = (
+    <section
+      className={`relative min-w-0 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4 ${
+        isMobile ? "" : "max-h-[calc(100vh-150px)] overflow-hidden"
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+          <FilePdf className="h-4 w-4 phosphor-icon" aria-hidden="true" />
+          {activePreset.title} preview
+        </p>
+        <span className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
+          Remaining previews: {sessionRemaining ?? "--"}
+        </span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={renderPreviewNow}
+          disabled={isRunning}
+          className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {isRunning ? "Rendering preview..." : "Render now"}
+        </button>
+        {isMobile ? (
+          <button
+            type="button"
+            onClick={() => setMobileTab("editor")}
+            className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+          >
+            Editor
+          </button>
+        ) : null}
+        <Link
+          href={localePath("/register")}
+          className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+        >
+          Try DocuForge free
+        </Link>
+        <Link
+          href={localePath("/docs")}
+          className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
+        >
+          {messages.nav.readDocs}
+        </Link>
+      </div>
+
+      {error ? (
+        <p className="mt-4 rounded-md border border-[color-mix(in_oklab,var(--bad),white_45%)] bg-[color-mix(in_oklab,var(--bad),transparent_90%)] px-3 py-2 text-sm text-[var(--bad)]">
+          {error}
+        </p>
+      ) : null}
+
+      {pdfUrl ? (
+        <div
+          data-testid="playground-preview-frame"
+          className={`mt-4 overflow-hidden rounded-lg border border-[var(--line)] bg-white isolate [contain:paint] ${
+            isMobile ? "h-[520px]" : "h-[calc(100vh-340px)] min-h-[430px]"
+          }`}
+        >
+          <iframe
+            src={pdfUrl}
+            title="DocuForge playground preview"
+            className="block h-full w-full border-0"
+          />
+        </div>
+      ) : (
+        <div
+          className={`mt-4 flex items-center justify-center rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 text-center text-sm text-[var(--muted)] ${
+            isMobile ? "h-[520px]" : "h-[calc(100vh-340px)] min-h-[430px]"
+          }`}
+        >
+          {isRunning ? "Rendering preview..." : "Preview renders automatically as you edit."}
+        </div>
+      )}
+    </section>
+  );
+
+  return (
+    <div className="mx-auto w-full max-w-[1500px] px-4 pb-12 pt-6 md:px-6 md:pb-16 md:pt-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+            Playground
+          </p>
+          <h1 className="mt-2 font-display text-3xl text-[var(--ink)] sm:text-4xl">
+            Find a PDF template and preview instantly.
+          </h1>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
+          <span className="rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-1">
+            {activePreset.title}
+          </span>
+          {hasUnsavedChanges ? (
+            <span className="rounded-full border border-[var(--line)] bg-[var(--accent-soft)] px-3 py-1 text-[var(--ink)]">
+              Unsaved changes
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      {isMobile ? (
+        <div className="mt-4 space-y-4">
+          <label className="block">
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+              Template
+            </span>
+            <select
+              value={activePresetId}
+              onChange={(event) => {
+                const preset = getPlaygroundPresetBySlug(event.target.value);
+                if (preset) requestPresetSwitch(preset);
+              }}
+              className="h-11 w-full rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 text-sm font-semibold text-[var(--ink)] outline-none focus:border-[var(--accent)]"
+            >
+              {playgroundPresets.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.title}
+                </option>
+              ))}
+            </select>
           </label>
-          <div className="flex flex-wrap gap-2">
-            {playgroundPresetCategories.map((option) => (
+
+          <div className="grid grid-cols-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-1">
+            {(["preview", "editor"] as const).map((tab) => (
               <button
-                key={option.value}
+                key={tab}
                 type="button"
-                onClick={() => setCategory(option.value)}
-                className={`rounded-md border px-3 py-1.5 text-xs font-semibold ${
-                  category === option.value
-                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--ink)]"
-                    : "border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)]"
+                onClick={() => setMobileTab(tab)}
+                className={`rounded-md px-3 py-2 text-sm font-semibold ${
+                  mobileTab === tab
+                    ? "bg-[var(--accent)] text-white"
+                    : "text-[var(--muted)]"
                 }`}
               >
-                {option.label}
+                {tab === "preview" ? "Preview" : "Editor"}
               </button>
             ))}
           </div>
+
+          {mobileTab === "preview" ? previewPanel : editorPanel}
         </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {filteredPresets.map((preset) => (
-            <article
-              key={preset.id}
-              className={`rounded-xl border p-4 ${
-                activePresetId === preset.id
-                  ? "border-[var(--accent)] bg-[var(--accent-soft)]"
-                  : "border-[var(--line)] bg-[var(--surface-2)]"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-[var(--ink)]">
-                  <PresetIcon kind={preset.icon} />
-                  <p className="text-sm font-semibold">{preset.title}</p>
-                </div>
-                <Link
-                  href={localePath(`/playground/${preset.slug}`)}
-                  className="text-xs font-semibold text-[var(--accent)] hover:underline"
-                >
-                  Open page
-                </Link>
-              </div>
-              <p className="mt-2 text-xs text-[var(--muted)]">{preset.description}</p>
-              <p className="mt-2 text-[11px] text-[var(--muted-dim)]">{preset.tags.join(" · ")}</p>
-              <button
-                type="button"
-                onClick={() => applyPreset(preset)}
-                className="mt-3 rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:border-[var(--line-hover)]"
-              >
-                Use this template
-              </button>
-            </article>
-          ))}
-          {filteredPresets.length === 0 ? (
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-sm text-[var(--muted)]">
-              No templates matched your search.
-            </div>
-          ) : null}
+      ) : (
+        <div className="mt-5 grid grid-cols-[auto_minmax(0,55fr)_minmax(0,45fr)] items-start gap-4">
+          <TemplateSwitcher
+            activeTemplateId={activePresetId}
+            templates={switcherTemplates}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onSelectTemplate={handleSwitcherSelect}
+            className="sticky top-6 h-[calc(100vh-150px)] min-h-[620px]"
+          />
+          {editorPanel}
+          {previewPanel}
         </div>
-      </section>
-
-      <div className={`mt-6 grid gap-6 ${isEditorOpen ? "xl:grid-cols-[390px_minmax(0,1fr)]" : "grid-cols-1"}`}>
-        {isEditorOpen ? (
-          <aside className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Edit menu</p>
-              <button
-                type="button"
-                onClick={() => setIsEditorOpen(false)}
-                className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-2.5 py-1 text-xs font-semibold text-[var(--muted)]"
-              >
-                Hide
-              </button>
-            </div>
-
-            <div className="mt-3 inline-flex rounded-lg border border-[var(--line)] bg-[var(--surface-2)] p-1">
-              <button
-                type="button"
-                onClick={() => setMode("low-code")}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
-                  mode === "low-code" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"
-                }`}
-              >
-                Quick edits
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("typst")}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
-                  mode === "typst" ? "bg-[var(--accent)] text-white" : "text-[var(--muted)]"
-                }`}
-              >
-                Typst (advanced)
-              </button>
-            </div>
-
-            {mode === "low-code" ? (
-              <LowCodeBlocksEditor
-                lowCodeSpec={lowCodeSpec}
-                onChange={setLowCodeSpec}
-                className="mt-4 bg-[var(--surface-2)]"
-                title="Template blocks"
-              />
-            ) : null}
-
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">JSON data</label>
-            <textarea
-              value={dataJson}
-              onChange={(event) => setDataJson(event.target.value)}
-              className="mt-2 h-40 w-full rounded-md border border-[var(--line)] bg-[var(--surface-2)] p-3 font-mono text-xs text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-            />
-
-            {mode === "typst" ? (
-              <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4">
-                <div className="flex items-center gap-2">
-                  <FileCode className="h-4 w-4 text-[var(--muted)] phosphor-icon" aria-hidden="true" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Typst source</p>
-                </div>
-                <textarea
-                  value={source}
-                  onChange={(event) => setSource(event.target.value)}
-                  className="mt-3 h-52 w-full rounded-md border border-[var(--line)] bg-[var(--surface)] p-3 font-mono text-xs text-[var(--ink)] outline-none focus:border-[var(--accent)]"
-                />
-              </div>
-            ) : null}
-          </aside>
-        ) : null}
-
-        <section className="relative rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              <FilePdf className="h-4 w-4 phosphor-icon" aria-hidden="true" />
-              {activePreset.title} preview
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-[var(--line)] bg-[var(--surface-2)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
-                Remaining previews: {sessionRemaining ?? "--"}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("typst");
-                  setIsEditorOpen(true);
-                }}
-                className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--ink)]"
-              >
-                Typst (advanced)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("low-code");
-                  setIsEditorOpen((previous) => !previous);
-                }}
-                className="rounded-md border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--ink)]"
-              >
-                {isEditorOpen ? "Hide editor" : "Edit template"}
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                runPreview({
-                  mode,
-                  source,
-                  lowCodeSpec,
-                  dataJson,
-                })
-              }
-              disabled={isRunning}
-              className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {isRunning ? "Rendering preview..." : "Render now"}
-            </button>
-            <Link
-              href={localePath("/register")}
-              className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
-            >
-              Try DocuForge free
-            </Link>
-            <Link
-              href={localePath("/docs")}
-              className="inline-flex items-center justify-center rounded-md border border-[var(--line)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--line-hover)] hover:bg-[var(--surface-2)]"
-            >
-              {messages.nav.readDocs}
-            </Link>
-          </div>
-
-          {error ? (
-            <p className="mt-4 rounded-md border border-[color-mix(in_oklab,var(--bad),white_45%)] bg-[color-mix(in_oklab,var(--bad),transparent_90%)] px-3 py-2 text-sm text-[var(--bad)]">
-              {error}
-            </p>
-          ) : null}
-
-          {pdfUrl ? (
-            <div
-              data-testid="playground-preview-frame"
-              className="mt-4 h-[780px] overflow-hidden rounded-xl border border-[var(--line)] bg-white isolate [contain:paint]"
-            >
-              <iframe
-                src={pdfUrl}
-                title="DocuForge playground preview"
-                className="block h-full w-full border-0"
-              />
-            </div>
-          ) : (
-            <div className="mt-4 flex h-[780px] items-center justify-center rounded-xl border border-dashed border-[var(--line)] bg-[var(--surface-2)] px-6 text-center text-sm text-[var(--muted)]">
-              {isRunning ? "Rendering preview..." : "Preview renders automatically as you edit."}
-            </div>
-          )}
-
-          <details className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4">
-            <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-              Request payload
-            </summary>
-            <pre className="mt-3 overflow-x-auto text-xs text-[var(--ink)]">
-              <code>{payloadPreview}</code>
-            </pre>
-          </details>
-        </section>
-      </div>
+      )}
 
       <div
         className={`pointer-events-none fixed bottom-6 right-6 z-20 max-w-[320px] rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--ink)] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-500 ${

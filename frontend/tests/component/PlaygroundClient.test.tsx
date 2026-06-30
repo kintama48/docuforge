@@ -11,6 +11,7 @@ const sessionResponse = {
 
 const sessionPath = "/v1/render/public/session";
 const previewPath = "/v1/render/public/preview";
+const officialTemplatesPath = "/v1/templates/official";
 
 function getRequestUrl(input: Parameters<typeof fetch>[0]) {
   if (typeof input === "string") return input;
@@ -35,9 +36,19 @@ describe("PlaygroundClient", () => {
       headers: { "Content-Type": "application/json" },
     });
 
+  const createOfficialTemplatesResponse = () =>
+    new Response(JSON.stringify({ templates: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       const url = getRequestUrl(input);
+
+      if (url.includes(officialTemplatesPath)) {
+        return createOfficialTemplatesResponse();
+      }
 
       if (url.includes(sessionPath)) {
         return createSessionResponse();
@@ -62,10 +73,25 @@ describe("PlaygroundClient", () => {
       expect(screen.getByText(/remaining previews:/i)).toBeInTheDocument();
     });
 
+    await waitFor(() => {
+      expect(screen.getByTitle(/docuforge playground preview/i)).toBeInTheDocument();
+    }, { timeout: 4000 });
+
+    const previewCallsBeforeModeChange = vi
+      .mocked(globalThis.fetch)
+      .mock.calls.filter(([input]) => getRequestUrl(input).includes(previewPath)).length;
+
     fireEvent.click(screen.getByRole("button", { name: /typst \(advanced\)/i }));
 
     expect(screen.getByText(/typst source/i)).toBeInTheDocument();
     expect(screen.queryByText(/session:/i)).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      const previewCallsAfterModeChange = vi
+        .mocked(globalThis.fetch)
+        .mock.calls.filter(([input]) => getRequestUrl(input).includes(previewPath)).length;
+      expect(previewCallsAfterModeChange).toBeGreaterThan(previewCallsBeforeModeChange);
+    }, { timeout: 4000 });
   });
 
   it("runs preview and renders iframe output", async () => {
@@ -101,6 +127,10 @@ describe("PlaygroundClient", () => {
         });
       }
 
+      if (url.includes(officialTemplatesPath)) {
+        return createOfficialTemplatesResponse();
+      }
+
       if (url.includes(previewPath)) {
         if (typeof init?.body === "string") {
           previewBodies.push(JSON.parse(init.body) as Record<string, unknown>);
@@ -113,7 +143,6 @@ describe("PlaygroundClient", () => {
 
     renderWithProviders(<PlaygroundClient />);
 
-    fireEvent.click(screen.getByRole("button", { name: /edit template/i }));
     expect(screen.getByRole("button", { name: /\+ header/i })).toBeInTheDocument();
 
     await waitFor(() => {
