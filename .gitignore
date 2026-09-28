@@ -5,3 +5,7 @@ dist/
 .env
 nginx/ssl/*
 !nginx/ssl/.gitkeep
+
+.env
+.env.*
+!.env.example
